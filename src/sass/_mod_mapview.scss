@@ -1,0 +1,17 @@
+.map-view, .map-editor {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.city-map {
+  background-color: white;
+  position: relative;
+  border: 1px solid #fff;
+
+  .city-map-tile {
+    position: absolute;
+    background-color: #529ea9;
+    border: 1px solid #fff;
+  }
+}
