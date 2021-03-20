@@ -1,0 +1,32 @@
+{
+  "name": "future-mobility",
+  "version": "0.1.0",
+  "description": "An exhibit about the Future of Mobility",
+  "main": "index.html",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/IMAGINARY/future-mobility.git"
+  },
+  "author": "IMAGINARY <info@imaginary.org>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/IMAGINARY/future-mobility/issues"
+  },
+  "scripts": {
+    "build": "npx webpack",
+    "watch": "npx webpack --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "clean-webpack-plugin": "^3.0.0",
+    "css-loader": "^5.0.2",
+    "esm": "^3.2.25",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.1.0",
+    "mini-css-extract-plugin": "^1.3.6",
+    "node-sass": "^5.0.0",
+    "sass-loader": "^11.0.1",
+    "webpack": "^5.21.2",
+    "webpack-cli": "^4.5.0"
+  }
+}

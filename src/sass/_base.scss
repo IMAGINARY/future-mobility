@@ -1,0 +1,13 @@
+body {
+  @include regularText;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @include headingText;
+  color: $c-black-light;
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.75em;
+}
