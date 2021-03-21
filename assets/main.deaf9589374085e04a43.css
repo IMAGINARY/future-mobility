@@ -34,6 +34,8 @@ h2 {
 
 .map-editor {
   padding: 0 60px; }
+  .map-editor .map-view {
+    cursor: url(2174451d87ee3f5a3181.svg) 0 20, auto; }
 
 .map-editor-palette {
   position: absolute;
@@ -64,4 +66,4 @@ h2 {
         margin-bottom: -2px; }
 
 
-/*# sourceMappingURL=main.d7f2e359c82fbec1e0d1.css.map*/
+/*# sourceMappingURL=main.deaf9589374085e04a43.css.map*/

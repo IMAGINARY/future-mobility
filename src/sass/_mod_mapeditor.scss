@@ -1,5 +1,9 @@
 .map-editor {
   padding: 0 60px;
+
+  .map-view {
+    cursor: url('../../static/fa/pencil-alt-solid.svg') 0 20, auto;
+  }
 }
 
 .map-editor-palette {
