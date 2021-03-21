@@ -48,12 +48,12 @@ module.exports = {
     new HtmlWebpackPlugin({
       // Load a custom template (lodash by default)
       template: path.resolve(__dirname, 'src/html/index.html'),
-      filename: path.resolve(__dirname, "index.html"),
+      filename: path.resolve(__dirname, 'index.html'),
       minify: true,
     }),
     new CleanWebpackPlugin({
       // todo: temporary measure. Dev builds should be done without hashes in the filename.
-      cleanAfterEveryBuildPatterns: ['**/*'],
+      cleanOnceBeforeBuildPatterns: ['**/*'],
     }),
   ],
   mode: 'development',
