@@ -4501,10 +4501,23 @@ class MapEditor {
       this.tileType = tileType;
     });
 
-    this.mapView.events.on('action', ([i, j]) => {
+    let lastEdit = null;
+    this.mapView.events.on('action', ([x, y], props) => {
       if (this.tileType) {
-        this.city.set(i, j, this.tileType);
-        this.mapView.renderTile(i, j);
+        if (lastEdit && props.shiftKey) {
+          const [lastX, lastY] = lastEdit;
+          for (let i = Math.min(lastX, x); i <= Math.max(lastX, x); i += 1) {
+            for (let j = Math.min(lastY, y); j <= Math.max(lastY, y); j += 1) {
+              this.city.set(i, j, this.tileType);
+              this.mapView.renderTile(i, j);
+            }
+          }
+        } else {
+          this.city.set(x, y, this.tileType);
+          this.mapView.renderTile(x, y);
+        }
+
+        lastEdit = [x, y];
       }
     });
   }
@@ -4565,13 +4578,17 @@ class MapView {
           top: `${j * tileHeight * 100}%`,
           left: `${i * tileWidth * 100}%`,
         })
-        .on('mousedown', () => {
+        .on('mousedown', (ev) => {
           pointerActive = true;
-          this.events.emit('action', [i, j]);
+          this.events.emit('action', [i, j], {
+            shiftKey: ev.shiftKey,
+          });
         })
-        .on('mouseenter', () => {
+        .on('mouseenter', (ev) => {
           if (pointerActive) {
-            this.events.emit('action', [i, j]);
+            this.events.emit('action', [i, j], {
+              shiftKey: ev.shiftKey,
+            });
           }
         });
       this.renderTile(i, j);
@@ -4702,4 +4719,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=bundle.1eaf365e91294a76a51b.js.map
+//# sourceMappingURL=bundle.59a77b241d355508a964.js.map

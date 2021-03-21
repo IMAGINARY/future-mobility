@@ -17,10 +17,23 @@ export default class MapEditor {
       this.tileType = tileType;
     });
 
-    this.mapView.events.on('action', ([i, j]) => {
+    let lastEdit = null;
+    this.mapView.events.on('action', ([x, y], props) => {
       if (this.tileType) {
-        this.city.set(i, j, this.tileType);
-        this.mapView.renderTile(i, j);
+        if (lastEdit && props.shiftKey) {
+          const [lastX, lastY] = lastEdit;
+          for (let i = Math.min(lastX, x); i <= Math.max(lastX, x); i += 1) {
+            for (let j = Math.min(lastY, y); j <= Math.max(lastY, y); j += 1) {
+              this.city.set(i, j, this.tileType);
+              this.mapView.renderTile(i, j);
+            }
+          }
+        } else {
+          this.city.set(x, y, this.tileType);
+          this.mapView.renderTile(x, y);
+        }
+
+        lastEdit = [x, y];
       }
     });
   }

@@ -38,13 +38,17 @@ export default class MapView {
           top: `${j * tileHeight * 100}%`,
           left: `${i * tileWidth * 100}%`,
         })
-        .on('mousedown', () => {
+        .on('mousedown', (ev) => {
           pointerActive = true;
-          this.events.emit('action', [i, j]);
+          this.events.emit('action', [i, j], {
+            shiftKey: ev.shiftKey,
+          });
         })
-        .on('mouseenter', () => {
+        .on('mouseenter', (ev) => {
           if (pointerActive) {
-            this.events.emit('action', [i, j]);
+            this.events.emit('action', [i, j], {
+              shiftKey: ev.shiftKey,
+            });
           }
         });
       this.renderTile(i, j);
