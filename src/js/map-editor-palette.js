@@ -5,6 +5,7 @@ export default class MapEditorPalette {
     this.$element = $element;
     this.config = config;
     this.activeButton = null;
+    this.tileId = null;
     this.events = new EventEmitter();
 
     this.$element.addClass('map-editor-palette');
@@ -25,9 +26,13 @@ export default class MapEditorPalette {
         }
         this.activeButton = $(ev.target);
         this.activeButton.addClass('active');
+        this.tileId = id;
         this.events.emit('change', id);
       }));
 
     this.$element.append(this.buttons);
+    if (this.buttons.length) {
+      this.buttons[0].click();
+    }
   }
 }

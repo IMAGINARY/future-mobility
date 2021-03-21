@@ -4440,6 +4440,7 @@ class MapEditorPalette {
     this.$element = $element;
     this.config = config;
     this.activeButton = null;
+    this.tileId = null;
     this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
 
     this.$element.addClass('map-editor-palette');
@@ -4460,10 +4461,14 @@ class MapEditorPalette {
         }
         this.activeButton = $(ev.target);
         this.activeButton.addClass('active');
+        this.tileId = id;
         this.events.emit('change', id);
       }));
 
     this.$element.append(this.buttons);
+    if (this.buttons.length) {
+      this.buttons[0].click();
+    }
   }
 }
 
@@ -4496,7 +4501,7 @@ class MapEditor {
     this.mapView = new _map_view__WEBPACK_IMPORTED_MODULE_0__.default($('<div></div>').appendTo(this.$element), city, config);
     this.palette = new _map_editor_palette__WEBPACK_IMPORTED_MODULE_1__.default($('<div></div>').appendTo(this.$element), config);
 
-    this.tileType = null;
+    this.tileType = this.palette.tileId;
     this.palette.events.on('change', (tileType) => {
       this.tileType = tileType;
     });
@@ -4719,4 +4724,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=bundle.59a77b241d355508a964.js.map
+//# sourceMappingURL=bundle.c04ea583c6d7d8fa9a61.js.map

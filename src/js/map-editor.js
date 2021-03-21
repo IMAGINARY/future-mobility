@@ -12,7 +12,7 @@ export default class MapEditor {
     this.mapView = new MapView($('<div></div>').appendTo(this.$element), city, config);
     this.palette = new MapEditorPalette($('<div></div>').appendTo(this.$element), config);
 
-    this.tileType = null;
+    this.tileType = this.palette.tileId;
     this.palette.events.on('change', (tileType) => {
       this.tileType = tileType;
     });
