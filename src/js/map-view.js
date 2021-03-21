@@ -21,31 +21,44 @@ export default class MapView {
 
     const tileWidth = mapWidth / this.city.width;
     const tileHeight = mapHeight / this.city.height;
-    this.$tiles = this.city.items.map(() => $('<div class="city-map-tile"></div>')
-      .css({
-        width: `${tileWidth * 100}%`,
-        height: `${tileHeight * 100}%`,
-      }));
-    for (let i = 0; i < this.city.width; i += 1) {
-      for (let j = 0; j < this.city.height; j += 1) {
-        this.$tiles[this.city.offset(i, j)].css({
+    this.$tiles = Array(this.city.width * this.city.height);
+
+    let pointerActive = false;
+    $(window).on('mouseup', () => { pointerActive = false; });
+
+    this.city.forEach((i, j) => {
+      this.$tiles[this.city.offset(i, j)] = $('<div class="city-map-tile"></div>')
+        .attr({
+          'data-x': i,
+          'data-y': j,
+        })
+        .css({
+          width: `${tileWidth * 100}%`,
+          height: `${tileHeight * 100}%`,
           top: `${j * tileHeight * 100}%`,
           left: `${i * tileWidth * 100}%`,
-        }).on('click', () => {
-          this.events.emit('click', [i, j]);
+        })
+        .on('mousedown', () => {
+          pointerActive = true;
+          this.events.emit('action', [i, j]);
+        })
+        .on('mouseenter', () => {
+          if (pointerActive) {
+            this.events.emit('action', [i, j]);
+          }
         });
-        this.renderTile(i, j);
-      }
-    }
+      this.renderTile(i, j);
+    });
+
     this.$map.append(this.$tiles);
   }
 
+  getTile(i, j) {
+    return this.$tiles[this.city.offset(i, j)];
+  }
+
   renderTile(i, j) {
-    const offset = this.city.offset(i, j);
-    this.$tiles[offset].css({
-      backgroundColor: this.config.tileTypes[this.city.items[offset]]
-        ? this.config.tileTypes[this.city.items[offset]].color
-        : null,
-    });
+    const tileType = this.config.tileTypes[this.city.get(i, j)] || null;
+    this.getTile(i, j).css({ backgroundColor: tileType ? tileType.color : null });
   }
 }

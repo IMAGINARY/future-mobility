@@ -17,7 +17,7 @@ export default class MapEditor {
       this.tileType = tileType;
     });
 
-    this.mapView.events.on('click', ([i, j]) => {
+    this.mapView.events.on('action', ([i, j]) => {
       if (this.tileType) {
         this.city.set(i, j, this.tileType);
         this.mapView.renderTile(i, j);
