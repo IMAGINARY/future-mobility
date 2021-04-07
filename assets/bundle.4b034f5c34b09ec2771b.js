@@ -4416,6 +4416,37 @@ class Grid {
   set(i, j, value) {
     this.items[this.offset(i, j)] = value;
   }
+
+  getAdjacentCoords(i, j) {
+    return [
+      j === 0 ? null : [i, j - 1], // N
+      i + 1 >= this.width ? null : [i + 1, j], // E
+      j + 1 >= this.height ? null : [i, j + 1], // S
+      i === 0 ? null : [i - 1, j], // W
+    ].filter(v => v !== null);
+  }
+
+  getAdjacent(i, j) {
+    return {
+      n: j === 0 ? null : this.get(i, j - 1),
+      e: i + 1 >= this.width ? null : this.get(i + 1, j),
+      s: j + 1 >= this.height ? null : this.get(i, j + 1),
+      w: i === 0 ? null : this.get(i - 1, j),
+    };
+  }
+
+  getAround(i, j) {
+    return {
+      n: j === 0 ? null : this.get(i, j - 1),
+      ne: j === 0 || i > this.width ? null : this.get(i + 1, j - 1),
+      e: i + 1 >= this.width ? null : this.get(i + 1, j),
+      se: j === 0 || j + 1 >= this.height ? null : this.get(i + 1, j + 1),
+      s: j + 1 >= this.height ? null : this.get(i, j + 1),
+      sw: i === 0 || j + 1 >= this.height ? null : this.get(i - 1, j + 1),
+      w: i === 0 ? null : this.get(i - 1, j),
+      nw: i === 0 || j === 0 ? null : this.get(i - 1, j - 1),
+    };
+  }
 }
 
 
@@ -4545,6 +4576,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
 
 
+const ROAD_TILE = '1';
+
 class MapView {
   constructor($element, city, config) {
     this.$element = $element;
@@ -4608,7 +4641,19 @@ class MapView {
 
   renderTile(i, j) {
     const tileType = this.config.tileTypes[this.city.get(i, j)] || null;
-    this.getTile(i, j).css({ backgroundColor: tileType ? tileType.color : null });
+    this.getTile(i, j)
+      .css({ backgroundColor: tileType ? tileType.color : null })
+      .removeAttr('data-road-connectivity');
+    this.updateRoadTileConnections(i, j);
+    this.city.getAdjacentCoords(i, j).forEach(coords => this.updateRoadTileConnections(...coords));
+  }
+
+  updateRoadTileConnections(i, j) {
+    if (this.city.get(i, j) === ROAD_TILE) {
+      this.getTile(i, j).attr('data-road-connectivity',
+        Object.values(this.city.getAdjacent(i, j))
+          .map(v => (v === ROAD_TILE || v === null ? '1' : '0')).join(''));
+    }
   }
 }
 
@@ -4724,4 +4769,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=bundle.c04ea583c6d7d8fa9a61.js.map
+//# sourceMappingURL=bundle.4b034f5c34b09ec2771b.js.map

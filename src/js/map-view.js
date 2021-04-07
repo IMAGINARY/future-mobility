@@ -1,5 +1,7 @@
 import EventEmitter from 'events';
 
+const ROAD_TILE = '1';
+
 export default class MapView {
   constructor($element, city, config) {
     this.$element = $element;
@@ -63,6 +65,18 @@ export default class MapView {
 
   renderTile(i, j) {
     const tileType = this.config.tileTypes[this.city.get(i, j)] || null;
-    this.getTile(i, j).css({ backgroundColor: tileType ? tileType.color : null });
+    this.getTile(i, j)
+      .css({ backgroundColor: tileType ? tileType.color : null })
+      .removeAttr('data-road-connectivity');
+    this.updateRoadTileConnections(i, j);
+    this.city.getAdjacentCoords(i, j).forEach(coords => this.updateRoadTileConnections(...coords));
+  }
+
+  updateRoadTileConnections(i, j) {
+    if (this.city.get(i, j) === ROAD_TILE) {
+      this.getTile(i, j).attr('data-road-connectivity',
+        Object.values(this.city.getAdjacent(i, j))
+          .map(v => (v === ROAD_TILE || v === null ? '1' : '0')).join(''));
+    }
   }
 }
