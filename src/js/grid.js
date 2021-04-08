@@ -1,8 +1,11 @@
+import EventEmitter from 'events';
+
 export default class Grid {
   constructor(width, height) {
     this.width = width;
     this.height = height;
     this.items = Array.apply(null, Array(width * height)).map(() => 0);
+    this.events = new EventEmitter();
   }
 
   forEach(callback) {
@@ -23,6 +26,7 @@ export default class Grid {
 
   set(i, j, value) {
     this.items[this.offset(i, j)] = value;
+    this.events.emit('update', [[i, j, value]]);
   }
 
   getAdjacentCoords(i, j) {

@@ -4390,11 +4390,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Grid)
 /* harmony export */ });
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
+
+
 class Grid {
   constructor(width, height) {
     this.width = width;
     this.height = height;
     this.items = Array.apply(null, Array(width * height)).map(() => 0);
+    this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
   }
 
   forEach(callback) {
@@ -4415,6 +4420,7 @@ class Grid {
 
   set(i, j, value) {
     this.items[this.offset(i, j)] = value;
+    this.events.emit('update', [[i, j, value]]);
   }
 
   getAdjacentCoords(i, j) {
@@ -4545,14 +4551,11 @@ class MapEditor {
           for (let i = Math.min(lastX, x); i <= Math.max(lastX, x); i += 1) {
             for (let j = Math.min(lastY, y); j <= Math.max(lastY, y); j += 1) {
               this.city.set(i, j, this.tileType);
-              this.mapView.renderTile(i, j);
             }
           }
         } else {
           this.city.set(x, y, this.tileType);
-          this.mapView.renderTile(x, y);
         }
-
         lastEdit = [x, y];
       }
     });
@@ -4633,6 +4636,8 @@ class MapView {
     });
 
     this.$map.append(this.$tiles);
+
+    this.city.events.on('update', this.handleCityUpdate.bind(this));
   }
 
   getTile(i, j) {
@@ -4649,11 +4654,16 @@ class MapView {
   }
 
   updateRoadTileConnections(i, j) {
+    // Todo: This should be optimized so it's not called twice per frame for the same tile.
     if (this.city.get(i, j) === ROAD_TILE) {
       this.getTile(i, j).attr('data-road-connectivity',
         Object.values(this.city.getAdjacent(i, j))
           .map(v => (v === ROAD_TILE || v === null ? '1' : '0')).join(''));
     }
+  }
+
+  handleCityUpdate(updates) {
+    updates.forEach(([i, j]) => { this.renderTile(i, j); });
   }
 }
 
@@ -4769,4 +4779,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=bundle.4b034f5c34b09ec2771b.js.map
+//# sourceMappingURL=bundle.0864cafcf2b78d25d0ef.js.map

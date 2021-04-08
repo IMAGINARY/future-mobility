@@ -57,6 +57,8 @@ export default class MapView {
     });
 
     this.$map.append(this.$tiles);
+
+    this.city.events.on('update', this.handleCityUpdate.bind(this));
   }
 
   getTile(i, j) {
@@ -73,10 +75,15 @@ export default class MapView {
   }
 
   updateRoadTileConnections(i, j) {
+    // Todo: This should be optimized so it's not called twice per frame for the same tile.
     if (this.city.get(i, j) === ROAD_TILE) {
       this.getTile(i, j).attr('data-road-connectivity',
         Object.values(this.city.getAdjacent(i, j))
           .map(v => (v === ROAD_TILE || v === null ? '1' : '0')).join(''));
     }
+  }
+
+  handleCityUpdate(updates) {
+    updates.forEach(([i, j]) => { this.renderTile(i, j); });
   }
 }
