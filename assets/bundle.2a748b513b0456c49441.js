@@ -4380,6 +4380,63 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./src/js/emissions-variable.js":
+/*!**************************************!*\
+  !*** ./src/js/emissions-variable.js ***!
+  \**************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ EmissionsVariable)
+/* harmony export */ });
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
+
+
+
+class EmissionsVariable {
+  constructor(city, config) {
+    this.city = city;
+    this.config = config;
+    this.grid = new _grid__WEBPACK_IMPORTED_MODULE_1__.default(this.city.width, this.city.height);
+    this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
+
+    this.city.events.on('update', this.handleCityUpdate.bind(this));
+  }
+
+  calculate(i, j) {
+    const emissions = (x, y) => (this.config.tileTypes[this.city.get(x, y)]
+      && this.config.tileTypes[this.city.get(x, y)].emissions)
+      || 0;
+
+    return Math.min(1, Math.max(0, emissions(i, j)
+      + this.city.getAround(i, j, 1)
+        .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.5, 0)
+      + this.city.getAround(i, j, 2)
+        .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.25, 0)));
+  }
+
+  handleCityUpdate(updates) {
+    const coords = [];
+    updates.forEach(([i, j]) => {
+      coords.push([i, j]);
+      coords.push(...this.city.getAround(i, j, 1).map(([x, y]) => [x, y]));
+      coords.push(...this.city.getAround(i, j, 2).map(([x, y]) => [x, y]));
+    });
+    // Todo: deduplicating coords might be necessary if the way calculations
+    //    and updates are handled is not changed
+    coords.forEach(([i, j]) => {
+      this.grid.set(i, j, this.calculate(i, j));
+    });
+    this.events.emit('update', coords);
+  }
+}
+
+
+/***/ }),
+
 /***/ "./src/js/grid.js":
 /*!************************!*\
   !*** ./src/js/grid.js ***!
@@ -4441,17 +4498,42 @@ class Grid {
     };
   }
 
-  getAround(i, j) {
-    return {
-      n: j === 0 ? null : this.get(i, j - 1),
-      ne: j === 0 || i > this.width ? null : this.get(i + 1, j - 1),
-      e: i + 1 >= this.width ? null : this.get(i + 1, j),
-      se: j === 0 || j + 1 >= this.height ? null : this.get(i + 1, j + 1),
-      s: j + 1 >= this.height ? null : this.get(i, j + 1),
-      sw: i === 0 || j + 1 >= this.height ? null : this.get(i - 1, j + 1),
-      w: i === 0 ? null : this.get(i - 1, j),
-      nw: i === 0 || j === 0 ? null : this.get(i - 1, j - 1),
-    };
+  isValidCoords(i, j) {
+    return i >= 0 && j >= 0 && i < this.width && j < this.height;
+  }
+
+  getAround(i, j, diameter = 1) {
+    const answer = [];
+    // Top
+    let fixed = j - diameter;
+    for (let x = i - diameter; x < i + diameter; x += 1) {
+      if (this.isValidCoords(x, fixed)) {
+        answer.push([x, fixed, this.get(x, fixed)]);
+      }
+    }
+    // Right
+    fixed = i + diameter;
+    for (let y = j - diameter; y < j + diameter; y += 1) {
+      if (this.isValidCoords(fixed, y)) {
+        answer.push([fixed, y, this.get(fixed, y)]);
+      }
+    }
+    // Bottom
+    fixed = j + diameter;
+    for (let x = i + diameter; x > i - diameter; x -= 1) {
+      if (this.isValidCoords(x, fixed)) {
+        answer.push([x, fixed, this.get(x, fixed)]);
+      }
+    }
+    // Left
+    fixed = i - diameter;
+    for (let y = j + diameter; y > j - diameter; y -= 1) {
+      if (this.isValidCoords(fixed, y)) {
+        answer.push([fixed, y, this.get(fixed, y)]);
+      }
+    }
+
+    return answer;
   }
 }
 
@@ -4668,6 +4750,75 @@ class MapView {
 }
 
 
+/***/ }),
+
+/***/ "./src/js/variable-view.js":
+/*!*********************************!*\
+  !*** ./src/js/variable-view.js ***!
+  \*********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ VariableView)
+/* harmony export */ });
+class VariableView {
+  constructor($element, variable) {
+    this.$element = $element;
+    this.variable = variable;
+
+    this.$element.addClass('variable-view');
+
+    const mapWidth = 1;
+    const mapHeight = this.variable.grid.height / this.variable.grid.width;
+    this.$map = $('<div class="variable-map"></div>')
+      .css({
+        width: `${mapWidth * 100}%`,
+        height: 0,
+        paddingBottom: `${mapHeight * 100}%`,
+      })
+      .appendTo(this.$element);
+
+    const tileWidth = mapWidth / this.variable.grid.width;
+    const tileHeight = mapHeight / this.variable.grid.height;
+    this.$tiles = Array(this.variable.grid.width * this.variable.grid.height);
+    this.variable.grid.forEach((i, j) => {
+      this.$tiles[this.variable.grid.offset(i, j)] = $('<div class="variable-map-tile"></div>')
+        .attr({
+          'data-x': i,
+          'data-y': j,
+        })
+        .css({
+          width: `${tileWidth * 100}%`,
+          height: `${tileHeight * 100}%`,
+          top: `${j * tileHeight * 100}%`,
+          left: `${i * tileWidth * 100}%`,
+        });
+      this.renderTile(i, j);
+    });
+
+    this.$map.append(this.$tiles);
+
+    this.variable.events.on('update', this.handleUpdate.bind(this));
+  }
+
+  getTile(i, j) {
+    return this.$tiles[this.variable.grid.offset(i, j)];
+  }
+
+  renderTile(i, j) {
+    this.getTile(i, j)
+      .css({ backgroundColor: `rgba(95, 32, 2, ${this.variable.grid.get(i, j)})` });
+  }
+
+  handleUpdate(updates) {
+    updates.forEach(([i, j]) => {
+      this.renderTile(i, j);
+    });
+  }
+}
+
+
 /***/ })
 
 /******/ 	});
@@ -4747,9 +4898,13 @@ var __webpack_exports__ = {};
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var js_yaml__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! js-yaml */ "./node_modules/js-yaml/dist/js-yaml.mjs");
 /* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
-/* harmony import */ var _map_view__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./map-view */ "./src/js/map-view.js");
-/* harmony import */ var _map_editor__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./map-editor */ "./src/js/map-editor.js");
-/* harmony import */ var _sass_default_scss__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
+/* harmony import */ var _emissions_variable__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./emissions-variable */ "./src/js/emissions-variable.js");
+/* harmony import */ var _map_view__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./map-view */ "./src/js/map-view.js");
+/* harmony import */ var _map_editor__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./map-editor */ "./src/js/map-editor.js");
+/* harmony import */ var _variable_view__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./variable-view */ "./src/js/variable-view.js");
+/* harmony import */ var _sass_default_scss__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
+
+
 
 
 
@@ -4765,13 +4920,18 @@ fetch('./config.yml', { cache: 'no-store' })
   })
   .then((config) => {
     const city = new _grid__WEBPACK_IMPORTED_MODULE_1__.default(config.cityWidth, config.cityHeight);
+    const emissions = new _emissions_variable__WEBPACK_IMPORTED_MODULE_2__.default(city, config);
 
     $('[data-component=map-view]').each((i, element) => {
-      const mapView = new _map_view__WEBPACK_IMPORTED_MODULE_2__.default($(element), city, config);
+      const mapView = new _map_view__WEBPACK_IMPORTED_MODULE_3__.default($(element), city, config);
     });
 
     $('[data-component=map-editor]').each((i, element) => {
-      const mapEditor = new _map_editor__WEBPACK_IMPORTED_MODULE_3__.default($(element), city, config);
+      const mapEditor = new _map_editor__WEBPACK_IMPORTED_MODULE_4__.default($(element), city, config);
+    });
+
+    $('[data-component=var-view]').each((i, element) => {
+      const varViewer = new _variable_view__WEBPACK_IMPORTED_MODULE_5__.default($(element), emissions);
     });
   });
 
@@ -4779,4 +4939,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=bundle.0864cafcf2b78d25d0ef.js.map
+//# sourceMappingURL=bundle.2a748b513b0456c49441.js.map

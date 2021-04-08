@@ -1,0 +1,17 @@
+.variable-view {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.variable-map {
+  background-color: white;
+  position: relative;
+  border: 1px solid #fff;
+
+  .variable-map-tile {
+    position: absolute;
+    background-color: $c-black-light;
+    border: 1px solid #fff;
+  }
+}

@@ -5,6 +5,7 @@ tileTypes:
     name: Road
     color: '#8f8f8f'
     editorIcon: 'static/fa/road-solid.svg'
+    emissions: 0.1
   2:
     name: Residential
     color: '#e27f7f'
@@ -13,6 +14,7 @@ tileTypes:
     name: Industrial
     color: '#e2ce7f'
     editorIcon: 'static/fa/industry-solid.svg'
+    emissions: 0.3
   4:
     name: Commercial
     color: '#7fb2e2'
@@ -21,6 +23,7 @@ tileTypes:
     name: Park
     color: '#3bab40'
     editorIcon: 'static/fa/tree-solid.svg'
+    emissions: -0.2
   6:
     name: Water
     color: '#32d3c2'

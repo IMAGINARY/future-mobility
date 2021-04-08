@@ -85,6 +85,20 @@ h2 {
 [data-road-connectivity='1111'] {
   background-image: url(9dd16a7ec1f9303122cb.png); }
 
+.variable-view {
+  width: 100%;
+  height: 100%;
+  position: relative; }
+
+.variable-map {
+  background-color: white;
+  position: relative;
+  border: 1px solid #fff; }
+  .variable-map .variable-map-tile {
+    position: absolute;
+    background-color: #4a4a4a;
+    border: 1px solid #fff; }
+
 .map-editor {
   padding: 0 60px; }
   .map-editor .map-view {
@@ -119,4 +133,4 @@ h2 {
         margin-bottom: -2px; }
 
 
-/*# sourceMappingURL=main.3a65b1c05d01b8cf8359.css.map*/
+/*# sourceMappingURL=main.67d273a3cd5d7f1a1e8a.css.map*/

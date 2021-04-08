@@ -47,16 +47,41 @@ export default class Grid {
     };
   }
 
-  getAround(i, j) {
-    return {
-      n: j === 0 ? null : this.get(i, j - 1),
-      ne: j === 0 || i > this.width ? null : this.get(i + 1, j - 1),
-      e: i + 1 >= this.width ? null : this.get(i + 1, j),
-      se: j === 0 || j + 1 >= this.height ? null : this.get(i + 1, j + 1),
-      s: j + 1 >= this.height ? null : this.get(i, j + 1),
-      sw: i === 0 || j + 1 >= this.height ? null : this.get(i - 1, j + 1),
-      w: i === 0 ? null : this.get(i - 1, j),
-      nw: i === 0 || j === 0 ? null : this.get(i - 1, j - 1),
-    };
+  isValidCoords(i, j) {
+    return i >= 0 && j >= 0 && i < this.width && j < this.height;
+  }
+
+  getAround(i, j, diameter = 1) {
+    const answer = [];
+    // Top
+    let fixed = j - diameter;
+    for (let x = i - diameter; x < i + diameter; x += 1) {
+      if (this.isValidCoords(x, fixed)) {
+        answer.push([x, fixed, this.get(x, fixed)]);
+      }
+    }
+    // Right
+    fixed = i + diameter;
+    for (let y = j - diameter; y < j + diameter; y += 1) {
+      if (this.isValidCoords(fixed, y)) {
+        answer.push([fixed, y, this.get(fixed, y)]);
+      }
+    }
+    // Bottom
+    fixed = j + diameter;
+    for (let x = i + diameter; x > i - diameter; x -= 1) {
+      if (this.isValidCoords(x, fixed)) {
+        answer.push([x, fixed, this.get(x, fixed)]);
+      }
+    }
+    // Left
+    fixed = i - diameter;
+    for (let y = j + diameter; y > j - diameter; y -= 1) {
+      if (this.isValidCoords(fixed, y)) {
+        answer.push([fixed, y, this.get(fixed, y)]);
+      }
+    }
+
+    return answer;
   }
 }
