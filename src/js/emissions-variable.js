@@ -17,9 +17,9 @@ export default class EmissionsVariable {
       || 0;
 
     return Math.min(1, Math.max(0, emissions(i, j)
-      + this.city.getAround(i, j, 1)
+      + this.city.nearbyCells(i, j, 1)
         .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.5, 0)
-      + this.city.getAround(i, j, 2)
+      + this.city.nearbyCells(i, j, 2)
         .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.25, 0)));
   }
 
@@ -27,8 +27,8 @@ export default class EmissionsVariable {
     const coords = [];
     updates.forEach(([i, j]) => {
       coords.push([i, j]);
-      coords.push(...this.city.getAround(i, j, 1).map(([x, y]) => [x, y]));
-      coords.push(...this.city.getAround(i, j, 2).map(([x, y]) => [x, y]));
+      coords.push(...this.city.nearbyCells(i, j, 1).map(([x, y]) => [x, y]));
+      coords.push(...this.city.nearbyCells(i, j, 2).map(([x, y]) => [x, y]));
     });
     // Todo: deduplicating coords might be necessary if the way calculations
     //    and updates are handled is not changed

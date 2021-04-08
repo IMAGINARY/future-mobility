@@ -18,7 +18,7 @@ export default class VariableView {
     const tileWidth = mapWidth / this.variable.grid.width;
     const tileHeight = mapHeight / this.variable.grid.height;
     this.$tiles = Array(this.variable.grid.width * this.variable.grid.height);
-    this.variable.grid.forEach((i, j) => {
+    this.variable.grid.allCells().forEach(([i, j]) => {
       this.$tiles[this.variable.grid.offset(i, j)] = $('<div class="variable-map-tile"></div>')
         .attr({
           'data-x': i,

@@ -28,7 +28,7 @@ export default class MapView {
     let pointerActive = false;
     $(window).on('mouseup', () => { pointerActive = false; });
 
-    this.city.forEach((i, j) => {
+    this.city.allCells().forEach(([i, j]) => {
       this.$tiles[this.city.offset(i, j)] = $('<div class="city-map-tile"></div>')
         .attr({
           'data-x': i,
@@ -71,15 +71,17 @@ export default class MapView {
       .css({ backgroundColor: tileType ? tileType.color : null })
       .removeAttr('data-road-connectivity');
     this.updateRoadTileConnections(i, j);
-    this.city.getAdjacentCoords(i, j).forEach(coords => this.updateRoadTileConnections(...coords));
+    this.city.adjacentCells(i, j)
+      .forEach(([x, y]) => this.updateRoadTileConnections(x, y));
   }
 
   updateRoadTileConnections(i, j) {
     // Todo: This should be optimized so it's not called twice per frame for the same tile.
     if (this.city.get(i, j) === ROAD_TILE) {
       this.getTile(i, j).attr('data-road-connectivity',
-        Object.values(this.city.getAdjacent(i, j))
-          .map(v => (v === ROAD_TILE || v === null ? '1' : '0')).join(''));
+        [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]]
+          .map(([x, y]) => (!this.city.isValidCoords(x, y) || this.city.get(x, y) === ROAD_TILE
+            ? '1' : '0')).join(''));
     }
   }
 

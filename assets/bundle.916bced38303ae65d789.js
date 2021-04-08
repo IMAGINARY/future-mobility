@@ -4412,9 +4412,9 @@ class EmissionsVariable {
       || 0;
 
     return Math.min(1, Math.max(0, emissions(i, j)
-      + this.city.getAround(i, j, 1)
+      + this.city.nearbyCells(i, j, 1)
         .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.5, 0)
-      + this.city.getAround(i, j, 2)
+      + this.city.nearbyCells(i, j, 2)
         .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.25, 0)));
   }
 
@@ -4422,8 +4422,8 @@ class EmissionsVariable {
     const coords = [];
     updates.forEach(([i, j]) => {
       coords.push([i, j]);
-      coords.push(...this.city.getAround(i, j, 1).map(([x, y]) => [x, y]));
-      coords.push(...this.city.getAround(i, j, 2).map(([x, y]) => [x, y]));
+      coords.push(...this.city.nearbyCells(i, j, 1).map(([x, y]) => [x, y]));
+      coords.push(...this.city.nearbyCells(i, j, 2).map(([x, y]) => [x, y]));
     });
     // Todo: deduplicating coords might be necessary if the way calculations
     //    and updates are handled is not changed
@@ -4451,89 +4451,146 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
 
 
+/**
+ * Represents a 2D grid map that stores a single Number per cell
+ */
 class Grid {
+  /**
+   * Create a new grid
+   *
+   * @param {number} width
+   * @param {number} height
+   */
   constructor(width, height) {
     this.width = width;
     this.height = height;
-    this.items = Array.apply(null, Array(width * height)).map(() => 0);
+    this.cells = Array(...Array(width * height)).map(() => 0);
     this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
   }
 
-  forEach(callback) {
-    for (let i = 0; i < this.width; i += 1) {
-      for (let j = 0; j < this.height; j += 1) {
-        callback(i, j, this.items[j * this.width + i]);
-      }
-    }
-  }
-
+  /**
+   * Map a 2D coordinate to an offset in the cell array
+   *
+   * @param {number} i
+   * @param {number} j
+   * @return {number}
+   */
   offset(i, j) {
     return j * this.width + i;
   }
 
+  /**
+   * Retrieves the value at (i,j)
+   *
+   * @param {number} i
+   * @param {number} j
+   * @return {number}
+   */
   get(i, j) {
-    return this.items[this.offset(i, j)];
+    return this.cells[this.offset(i, j)];
   }
 
+  /**
+   * Set the value at (i, j)
+   *
+   * @fires Grid.events#update
+   *
+   * @param {number} i
+   * @param {number} j
+   * @param {number} value
+   */
   set(i, j, value) {
-    this.items[this.offset(i, j)] = value;
+    this.cells[this.offset(i, j)] = value;
+
+    /**
+     * Update event.
+     *
+     * Argument is an array of updated cells. Each updated cell is represented
+     * by an array with three elements: [i, j, value]
+     *
+     * @event Grid.events#update
+     * @type {[[number, number, number]]}
+     */
     this.events.emit('update', [[i, j, value]]);
   }
 
-  getAdjacentCoords(i, j) {
-    return [
-      j === 0 ? null : [i, j - 1], // N
-      i + 1 >= this.width ? null : [i + 1, j], // E
-      j + 1 >= this.height ? null : [i, j + 1], // S
-      i === 0 ? null : [i - 1, j], // W
-    ].filter(v => v !== null);
-  }
-
-  getAdjacent(i, j) {
-    return {
-      n: j === 0 ? null : this.get(i, j - 1),
-      e: i + 1 >= this.width ? null : this.get(i + 1, j),
-      s: j + 1 >= this.height ? null : this.get(i, j + 1),
-      w: i === 0 ? null : this.get(i - 1, j),
-    };
-  }
-
+  /**
+   * Returns true if (i, j) are valid coordinates within the grid's bounds.
+   *
+   * @param {number} i
+   * @param {number} j
+   * @return {boolean}
+   */
   isValidCoords(i, j) {
     return i >= 0 && j >= 0 && i < this.width && j < this.height;
   }
 
-  getAround(i, j, diameter = 1) {
-    const answer = [];
-    // Top
-    let fixed = j - diameter;
-    for (let x = i - diameter; x < i + diameter; x += 1) {
-      if (this.isValidCoords(x, fixed)) {
-        answer.push([x, fixed, this.get(x, fixed)]);
+  /**
+   * Returns all cells, represented as [i, j, value] arrays.
+   *
+   * @return {[[number, number, number]]}
+   */
+  allCells() {
+    const answer = Array(this.cells.length);
+    for (let i = 0; i < this.width; i += 1) {
+      for (let j = 0; j < this.height; j += 1) {
+        answer.push([i, j, this.cells[j * this.width + i]]);
       }
+    }
+    return answer;
+  }
+
+  /**
+   * Get cells adjacent to the cell at (i, j).
+   *
+   * Each cell is represented by an array of the form [i, j, value]
+   * A cell has at most four adjacent cells, which share one side
+   * (diagonals are not adjacent).
+   *
+   * @param {number} i
+   * @param {number} j
+   * @return {[[number, number, number]]}
+   */
+  adjacentCells(i, j) {
+    return [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]]
+      .filter(([x, y]) => this.isValidCoords(x, y))
+      .map(([x, y]) => [x, y, this.get(x, y)]);
+  }
+
+  /**
+   * Returns the cells around the cell at (i, j).
+   *
+   * Each cells returned is represented as an array [i, j, value].
+   * Cells "around" are those reachable by no less than <distance> steps in
+   * any direction, including diagonals.
+   *
+   * @param {number} i
+   * @param {number} j
+   * @param {number} distance
+   * @return {[[number, number, number]]}
+   */
+  nearbyCells(i, j, distance = 1) {
+    const coords = [];
+    // Top
+    for (let x = i - distance; x < i + distance; x += 1) {
+      coords.push([x, j - distance]);
     }
     // Right
-    fixed = i + diameter;
-    for (let y = j - diameter; y < j + diameter; y += 1) {
-      if (this.isValidCoords(fixed, y)) {
-        answer.push([fixed, y, this.get(fixed, y)]);
-      }
+    for (let y = j - distance; y < j + distance; y += 1) {
+      coords.push([i + distance, y]);
     }
     // Bottom
-    fixed = j + diameter;
-    for (let x = i + diameter; x > i - diameter; x -= 1) {
-      if (this.isValidCoords(x, fixed)) {
-        answer.push([x, fixed, this.get(x, fixed)]);
-      }
+    for (let x = i + distance; x > i - distance; x -= 1) {
+      coords.push([x, j + distance]);
     }
     // Left
-    fixed = i - diameter;
-    for (let y = j + diameter; y > j - diameter; y -= 1) {
-      if (this.isValidCoords(fixed, y)) {
-        answer.push([fixed, y, this.get(fixed, y)]);
-      }
+    for (let y = j + distance; y > j - distance; y -= 1) {
+      coords.push([i - distance, y]);
     }
 
-    return answer;
+    return coords
+      .filter(([x, y]) => this.isValidCoords(x, y))
+      .map(([x, y]) => [x, y, this.get(x, y)]);
   }
 }
 
@@ -4689,7 +4746,7 @@ class MapView {
     let pointerActive = false;
     $(window).on('mouseup', () => { pointerActive = false; });
 
-    this.city.forEach((i, j) => {
+    this.city.allCells().forEach(([i, j]) => {
       this.$tiles[this.city.offset(i, j)] = $('<div class="city-map-tile"></div>')
         .attr({
           'data-x': i,
@@ -4732,15 +4789,17 @@ class MapView {
       .css({ backgroundColor: tileType ? tileType.color : null })
       .removeAttr('data-road-connectivity');
     this.updateRoadTileConnections(i, j);
-    this.city.getAdjacentCoords(i, j).forEach(coords => this.updateRoadTileConnections(...coords));
+    this.city.adjacentCells(i, j)
+      .forEach(([x, y]) => this.updateRoadTileConnections(x, y));
   }
 
   updateRoadTileConnections(i, j) {
     // Todo: This should be optimized so it's not called twice per frame for the same tile.
     if (this.city.get(i, j) === ROAD_TILE) {
       this.getTile(i, j).attr('data-road-connectivity',
-        Object.values(this.city.getAdjacent(i, j))
-          .map(v => (v === ROAD_TILE || v === null ? '1' : '0')).join(''));
+        [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]]
+          .map(([x, y]) => (!this.city.isValidCoords(x, y) || this.city.get(x, y) === ROAD_TILE
+            ? '1' : '0')).join(''));
     }
   }
 
@@ -4782,7 +4841,7 @@ class VariableView {
     const tileWidth = mapWidth / this.variable.grid.width;
     const tileHeight = mapHeight / this.variable.grid.height;
     this.$tiles = Array(this.variable.grid.width * this.variable.grid.height);
-    this.variable.grid.forEach((i, j) => {
+    this.variable.grid.allCells().forEach(([i, j]) => {
       this.$tiles[this.variable.grid.offset(i, j)] = $('<div class="variable-map-tile"></div>')
         .attr({
           'data-x': i,
@@ -4939,4 +4998,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=bundle.2a748b513b0456c49441.js.map
+//# sourceMappingURL=bundle.916bced38303ae65d789.js.map
