@@ -131,6 +131,8 @@ h2 {
       margin-bottom: 2px; }
       .map-editor-palette .editor-palette-button.active:last-child {
         margin-bottom: -2px; }
+  .map-editor-palette .editor-palette-button-tile-0 {
+    background-size: 60% 60%; }
 
 
-/*# sourceMappingURL=main.67d273a3cd5d7f1a1e8a.css.map*/
+/*# sourceMappingURL=main.5df2728292dcbd904067.css.map*/
