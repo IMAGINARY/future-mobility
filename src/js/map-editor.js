@@ -1,7 +1,10 @@
 import MapView from './map-view';
 import MapEditorPalette from './map-editor-palette';
+import ModalLoad from './modal-load';
+import ModalSave from './modal-save';
 import ModalExport from './modal-export';
 import ModalImport from './modal-import';
+import CityStore from './city-store';
 
 export default class MapEditor {
   constructor($element, city, config) {
@@ -42,7 +45,27 @@ export default class MapEditor {
       }
     });
 
+    this.cityStore = new CityStore();
     this.actionHandlers = {
+      load: () => {
+        const modal = new ModalLoad(this.config, this.cityStore);
+        modal.show().then((id) => {
+          const loadedCity = id && this.cityStore.get(id);
+          if (loadedCity) {
+            this.city.replace(loadedCity.map);
+          }
+        });
+      },
+      save: () => {
+        const modal = new ModalSave(this.config, this.cityStore);
+        modal.show().then((id) => {
+          if (id) {
+            this.cityStore.set(id === 'new' ? null : id, {
+              map: this.city.cells,
+            });
+          }
+        });
+      },
       import: () => {
         const isValidData = data => (typeof data === 'object'
           && Array.isArray(data.map)

@@ -4380,6 +4380,159 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./src/js/city-browser.js":
+/*!********************************!*\
+  !*** ./src/js/city-browser.js ***!
+  \********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ CityBrowser)
+/* harmony export */ });
+/* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
+
+
+class CityBrowser {
+  constructor($element, config, cityStore, saveMode = false) {
+    this.$element = $element;
+    this.config = config;
+    this.$selectedButton = null;
+    this.selectedData = null;
+
+    this.$element.addClass('city-browser');
+
+    const setSelection = (button) => {
+      if (this.$selectedButton) {
+        this.$selectedButton.removeClass('selected');
+      }
+      this.$selectedButton = $(button);
+      this.$selectedButton.addClass('selected');
+    };
+
+    const buttons = Object.entries(cityStore.getAll()).map(([id, city]) => $('<div></div>')
+      .addClass(['col-6', 'col-md-2', 'mb-3'])
+      .append(
+        $('<button></button>')
+          .addClass('city-browser-item')
+          .append(this.createPreviewImage(city))
+          .on('click', (ev) => {
+            setSelection(ev.currentTarget);
+            this.selectedData = id;
+          })
+      ));
+
+    if (saveMode) {
+      buttons.unshift($('<div></div>')
+        .addClass(['col-6', 'col-md-2', 'mb-3'])
+        .append($('<button></button>')
+          .addClass('city-browser-item-new')
+          .on('click', (ev) => {
+            setSelection(ev.currentTarget);
+            this.selectedData = 'new';
+          })
+        ));
+    }
+
+    this.$element.append($('<div class="row"></div>').append(buttons));
+  }
+
+  createPreviewImage(city) {
+    const $canvas = $('<canvas class="city-browser-item-preview"></canvas>')
+      .attr({
+        width: this.config.cityWidth,
+        height: this.config.cityHeight,
+      });
+    const map = new _grid__WEBPACK_IMPORTED_MODULE_0__.default(this.config.cityWidth, this.config.cityHeight);
+    map.replace(city.map);
+    const ctx = $canvas[0].getContext('2d');
+    map.allCells().forEach(([i, j, value]) => {
+      ctx.fillStyle = (this.config.tileTypes && this.config.tileTypes[value].color) || '#000000';
+      ctx.fillRect(i, j, 1, 1);
+    });
+
+    return $canvas;
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src/js/city-store.js":
+/*!******************************!*\
+  !*** ./src/js/city-store.js ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ CityStore)
+/* harmony export */ });
+class CityStore {
+  constructor() {
+    this.fixedCities = [];
+    this.userCities = [];
+
+    this.loadUserCities();
+    this.loadFixedCities();
+  }
+
+  async loadFixedCities() {
+    fetch('./cities.json', { cache: 'no-store' })
+      .then(response => response.json())
+      .then((data) => {
+        this.fixedCities = data.cities;
+      });
+  }
+
+  loadUserCities() {
+    const userCities = JSON.parse(localStorage.getItem('futureMobility.cityStore.cities'));
+    if (userCities) {
+      this.userCities = userCities;
+    }
+  }
+
+  saveLocal() {
+    localStorage.setItem('futureMobility.cityStore.cities', JSON.stringify(this.userCities));
+  }
+
+  getAll() {
+    const response = Object.assign(
+      {},
+      Object.fromEntries(this.userCities.map((city, i) => [
+        `L${i}`,
+        city,
+      ]).reverse()),
+      Object.fromEntries(this.fixedCities.map((city, i) => [
+        `F${i}`,
+        city,
+      ])),
+    );
+    return response;
+  }
+
+  get(id) {
+    if (id[0] === 'F') {
+      return this.fixedCities[id.substr(1)];
+    }
+    return this.userCities[id.substr(1)];
+  }
+
+  set(id, city) {
+    const clone = (obj => JSON.parse(JSON.stringify(obj)));
+
+    if (id === null || this.userCities[id.substr(1)] === undefined) {
+      this.userCities.push(clone(city));
+    } else {
+      this.userCities[id.substr(1)] = clone(city);
+    }
+    this.saveLocal();
+  }
+}
+
+
+/***/ }),
+
 /***/ "./src/js/emissions-variable.js":
 /*!**************************************!*\
   !*** ./src/js/emissions-variable.js ***!
@@ -4515,7 +4668,7 @@ class Grid {
   }
 
   replace(cells) {
-    this.cells = cells;
+    this.cells = JSON.parse(JSON.stringify(cells));
     this.events.emit('update', this.allCells());
   }
 
@@ -4680,6 +4833,16 @@ class MapEditorPalette {
 
 MapEditorPalette.Actions = [
   {
+    id: 'load',
+    title: 'Load map',
+    icon: 'static/fa/folder-open-solid.svg',
+  },
+  {
+    id: 'save',
+    title: 'Save map',
+    icon: 'static/fa/save-solid.svg',
+  },
+  {
     id: 'import',
     title: 'Import map',
     icon: 'static/fa/file-import-solid.svg',
@@ -4706,8 +4869,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _map_view__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./map-view */ "./src/js/map-view.js");
 /* harmony import */ var _map_editor_palette__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./map-editor-palette */ "./src/js/map-editor-palette.js");
-/* harmony import */ var _modal_export__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modal-export */ "./src/js/modal-export.js");
-/* harmony import */ var _modal_import__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modal-import */ "./src/js/modal-import.js");
+/* harmony import */ var _modal_load__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modal-load */ "./src/js/modal-load.js");
+/* harmony import */ var _modal_save__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modal-save */ "./src/js/modal-save.js");
+/* harmony import */ var _modal_export__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modal-export */ "./src/js/modal-export.js");
+/* harmony import */ var _modal_import__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modal-import */ "./src/js/modal-import.js");
+/* harmony import */ var _city_store__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./city-store */ "./src/js/city-store.js");
+
+
+
 
 
 
@@ -4752,12 +4921,32 @@ class MapEditor {
       }
     });
 
+    this.cityStore = new _city_store__WEBPACK_IMPORTED_MODULE_6__.default();
     this.actionHandlers = {
+      load: () => {
+        const modal = new _modal_load__WEBPACK_IMPORTED_MODULE_2__.default(this.config, this.cityStore);
+        modal.show().then((id) => {
+          const loadedCity = id && this.cityStore.get(id);
+          if (loadedCity) {
+            this.city.replace(loadedCity.map);
+          }
+        });
+      },
+      save: () => {
+        const modal = new _modal_save__WEBPACK_IMPORTED_MODULE_3__.default(this.config, this.cityStore);
+        modal.show().then((id) => {
+          if (id) {
+            this.cityStore.set(id === 'new' ? null : id, {
+              map: this.city.cells,
+            });
+          }
+        });
+      },
       import: () => {
         const isValidData = data => (typeof data === 'object'
           && Array.isArray(data.map)
           && data.map.length === this.city.cells.length);
-        const modal = new _modal_import__WEBPACK_IMPORTED_MODULE_3__.default(isValidData);
+        const modal = new _modal_import__WEBPACK_IMPORTED_MODULE_5__.default(isValidData);
         modal.show().then((importedData) => {
           if (importedData) {
             this.city.replace(importedData.map);
@@ -4765,7 +4954,7 @@ class MapEditor {
         });
       },
       export: () => {
-        const modal = new _modal_export__WEBPACK_IMPORTED_MODULE_2__.default(JSON.stringify({ map: this.city.cells }));
+        const modal = new _modal_export__WEBPACK_IMPORTED_MODULE_4__.default(JSON.stringify({ map: this.city.cells }));
         modal.show();
       },
     };
@@ -4982,6 +5171,122 @@ class ModalImport extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
 
 /***/ }),
 
+/***/ "./src/js/modal-load.js":
+/*!******************************!*\
+  !*** ./src/js/modal-load.js ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ModalLoad)
+/* harmony export */ });
+/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modal */ "./src/js/modal.js");
+/* harmony import */ var _city_browser__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./city-browser */ "./src/js/city-browser.js");
+
+
+
+class ModalLoad extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
+  constructor(config, cityStore) {
+    super({
+      title: 'Load map',
+      size: 'lg',
+    });
+
+    this.$browserContainer = $('<div></div>')
+      .appendTo(this.$body);
+    this.browser = new _city_browser__WEBPACK_IMPORTED_MODULE_1__.default(this.$browserContainer, config, cityStore);
+
+    // noinspection JSUnusedGlobalSymbols
+    this.$cancelButton = $('<button></button>')
+      .addClass(['btn', 'btn-secondary'])
+      .text('Cancel')
+      .on('click', () => {
+        this.hide(null);
+      })
+      .appendTo(this.$footer);
+
+    // noinspection JSUnusedGlobalSymbols
+    this.$loadButton = $('<button></button>')
+      .addClass(['btn', 'btn-primary'])
+      .text('Load')
+      .on('click', () => {
+        try {
+          this.hide(this.browser.selectedData);
+        } catch (err) {
+          this.showError(err.message);
+        }
+      })
+      .appendTo(this.$footer);
+  }
+
+  showError(errorText) {
+    this.$errorText.html(errorText);
+    this.$errorText.show();
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src/js/modal-save.js":
+/*!******************************!*\
+  !*** ./src/js/modal-save.js ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ModalSave)
+/* harmony export */ });
+/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modal */ "./src/js/modal.js");
+/* harmony import */ var _city_browser__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./city-browser */ "./src/js/city-browser.js");
+
+
+
+class ModalSave extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
+  constructor(config, cityStore) {
+    super({
+      title: 'Save map',
+      size: 'lg',
+    });
+
+    this.$browserContainer = $('<div></div>')
+      .appendTo(this.$body);
+    this.browser = new _city_browser__WEBPACK_IMPORTED_MODULE_1__.default(this.$browserContainer, config, cityStore, true);
+
+    // noinspection JSUnusedGlobalSymbols
+    this.$cancelButton = $('<button></button>')
+      .addClass(['btn', 'btn-secondary'])
+      .text('Cancel')
+      .on('click', () => {
+        this.hide(null);
+      })
+      .appendTo(this.$footer);
+
+    // noinspection JSUnusedGlobalSymbols
+    this.$saveButton = $('<button></button>')
+      .addClass(['btn', 'btn-primary'])
+      .text('Save')
+      .on('click', () => {
+        try {
+          this.hide(this.browser.selectedData);
+        } catch (err) {
+          this.showError(err.message);
+        }
+      })
+      .appendTo(this.$footer);
+  }
+
+  showError(errorText) {
+    this.$errorText.html(errorText);
+    this.$errorText.show();
+  }
+}
+
+
+/***/ }),
+
 /***/ "./src/js/modal.js":
 /*!*************************!*\
   !*** ./src/js/modal.js ***!
@@ -4998,6 +5303,8 @@ class Modal {
    *  Modal dialog options
    * @param {string} options.title
    *  Dialog title.
+   * @param {string} options.size
+   *  Modal size (lg or sm).
    * @param {boolean} options.showCloseButton
    *  Shows a close button in the dialog if true.
    * @param {boolean} options.showFooter
@@ -5022,6 +5329,10 @@ class Modal {
         .html(options.title)
         .prependTo(this.$header);
     }
+    if (options.size) {
+      this.$dialog.addClass(`modal-${options.size}`);
+    }
+
     if (options.showCloseButton === false) {
       this.$closeButton.remove();
     }
@@ -5237,4 +5548,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=bundle.65454b81b2fd7f55ff34.js.map
+//# sourceMappingURL=bundle.9062dcc4ec23b661a527.js.map

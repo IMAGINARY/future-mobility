@@ -64,7 +64,7 @@ export default class Grid {
   }
 
   replace(cells) {
-    this.cells = cells;
+    this.cells = JSON.parse(JSON.stringify(cells));
     this.events.emit('update', this.allCells());
   }
 

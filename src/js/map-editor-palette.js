@@ -64,6 +64,16 @@ export default class MapEditorPalette {
 
 MapEditorPalette.Actions = [
   {
+    id: 'load',
+    title: 'Load map',
+    icon: 'static/fa/folder-open-solid.svg',
+  },
+  {
+    id: 'save',
+    title: 'Save map',
+    icon: 'static/fa/save-solid.svg',
+  },
+  {
     id: 'import',
     title: 'Import map',
     icon: 'static/fa/file-import-solid.svg',

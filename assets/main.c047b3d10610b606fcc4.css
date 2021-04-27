@@ -147,5 +147,38 @@ h2 {
   background-size: 1.2em 1.2em;
   padding-left: 2em; }
 
+button.city-browser-item {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: none;
+  padding: 0; }
+  button.city-browser-item canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+    border: 3px solid #989898; }
+  button.city-browser-item.selected canvas {
+    border: 3px solid #000; }
 
-/*# sourceMappingURL=main.fccf028f8ba63452f1bb.css.map*/
+button.city-browser-item-new {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: #989898; }
+  button.city-browser-item-new:after {
+    content: "+";
+    display: block;
+    font-size: 4em;
+    line-height: 100%;
+    text-align: center;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    color: white; }
+  button.city-browser-item-new.selected {
+    border: 3px solid #000; }
+
+
+/*# sourceMappingURL=main.c047b3d10610b606fcc4.css.map*/

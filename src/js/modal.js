@@ -4,6 +4,8 @@ export default class Modal {
    *  Modal dialog options
    * @param {string} options.title
    *  Dialog title.
+   * @param {string} options.size
+   *  Modal size (lg or sm).
    * @param {boolean} options.showCloseButton
    *  Shows a close button in the dialog if true.
    * @param {boolean} options.showFooter
@@ -28,6 +30,10 @@ export default class Modal {
         .html(options.title)
         .prependTo(this.$header);
     }
+    if (options.size) {
+      this.$dialog.addClass(`modal-${options.size}`);
+    }
+
     if (options.showCloseButton === false) {
       this.$closeButton.remove();
     }
