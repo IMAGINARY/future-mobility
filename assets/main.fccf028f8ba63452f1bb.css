@@ -131,8 +131,21 @@ h2 {
       margin-bottom: 2px; }
       .map-editor-palette .editor-palette-button.active:last-child {
         margin-bottom: -2px; }
+  .map-editor-palette .separator {
+    height: 6px;
+    border-bottom: 6px solid #f2f2f2;
+    margin-bottom: 4px;
+    margin-left: -4px;
+    margin-right: -4px; }
   .map-editor-palette .editor-palette-button-tile-0 {
     background-size: 60% 60%; }
 
+.btn-copy {
+  background-image: url(0ec8ada5826b33769714.svg);
+  background-repeat: no-repeat;
+  background-position: 6px 8px;
+  background-size: 1.2em 1.2em;
+  padding-left: 2em; }
 
-/*# sourceMappingURL=main.5df2728292dcbd904067.css.map*/
+
+/*# sourceMappingURL=main.fccf028f8ba63452f1bb.css.map*/

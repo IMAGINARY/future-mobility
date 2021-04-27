@@ -63,6 +63,11 @@ export default class Grid {
     this.events.emit('update', [[i, j, value]]);
   }
 
+  replace(cells) {
+    this.cells = cells;
+    this.events.emit('update', this.allCells());
+  }
+
   /**
    * Returns true if (i, j) are valid coordinates within the grid's bounds.
    *

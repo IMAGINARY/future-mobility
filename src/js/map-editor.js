@@ -1,5 +1,7 @@
 import MapView from './map-view';
 import MapEditorPalette from './map-editor-palette';
+import ModalExport from './modal-export';
+import ModalImport from './modal-import';
 
 export default class MapEditor {
   constructor($element, city, config) {
@@ -15,6 +17,12 @@ export default class MapEditor {
     this.tileType = this.palette.tileId;
     this.palette.events.on('change', (tileType) => {
       this.tileType = tileType;
+    });
+
+    this.palette.events.on('action', (id) => {
+      if (this.actionHandlers[id]) {
+        this.actionHandlers[id]();
+      }
     });
 
     let lastEdit = null;
@@ -33,5 +41,23 @@ export default class MapEditor {
         lastEdit = [x, y];
       }
     });
+
+    this.actionHandlers = {
+      import: () => {
+        const isValidData = data => (typeof data === 'object'
+          && Array.isArray(data.map)
+          && data.map.length === this.city.cells.length);
+        const modal = new ModalImport(isValidData);
+        modal.show().then((importedData) => {
+          if (importedData) {
+            this.city.replace(importedData.map);
+          }
+        });
+      },
+      export: () => {
+        const modal = new ModalExport(JSON.stringify({ map: this.city.cells }));
+        modal.show();
+      },
+    };
   }
 }

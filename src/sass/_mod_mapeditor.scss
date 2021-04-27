@@ -42,7 +42,23 @@
     }
   }
 
+  .separator {
+    height: 6px;
+    border-bottom: 6px solid $c-gray-light;
+    margin-bottom: 4px;
+    margin-left: -4px;
+    margin-right: -4px;
+  }
+
   .editor-palette-button-tile-0 {
     background-size: 60% 60%;
   }
+}
+
+.btn-copy {
+  background-image: url('../../static/fa/copy-regular.svg');
+  background-repeat: no-repeat;
+  background-position: 6px 8px;
+  background-size: 1.2em 1.2em;
+  padding-left: 2em;
 }

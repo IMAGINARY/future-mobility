@@ -4514,6 +4514,11 @@ class Grid {
     this.events.emit('update', [[i, j, value]]);
   }
 
+  replace(cells) {
+    this.cells = cells;
+    this.events.emit('update', this.allCells());
+  }
+
   /**
    * Returns true if (i, j) are valid coordinates within the grid's bounds.
    *
@@ -4626,7 +4631,11 @@ class MapEditorPalette {
         type: 'button',
         title: typeCfg.name,
       })
-      .addClass(['editor-palette-button', 'editor-palette-button-tile', `editor-palette-button-tile-${id}`])
+      .addClass([
+        'editor-palette-button',
+        'editor-palette-button-tile',
+        `editor-palette-button-tile-${id}`,
+      ])
       .css({
         backgroundColor: typeCfg.color,
         backgroundImage: `url(${typeCfg.editorIcon})`,
@@ -4641,12 +4650,46 @@ class MapEditorPalette {
         this.events.emit('change', id);
       }));
 
+    this.buttons.push($('<div class="separator"></div>'));
+
+    const actionButtons = MapEditorPalette.Actions.map(action => $('<button></button>')
+      .attr({
+        type: 'button',
+        title: action.title,
+      })
+      .addClass([
+        'editor-palette-button',
+        'editor-palette-button-action',
+        `editor-palette-button-action-${action.id}`,
+      ])
+      .css({
+        backgroundImage: `url(${action.icon})`,
+      })
+      .on('click', () => {
+        this.events.emit('action', action.id);
+      }));
+
+    this.buttons.push(...actionButtons);
+
     this.$element.append(this.buttons);
     if (this.buttons.length) {
       this.buttons[0].click();
     }
   }
 }
+
+MapEditorPalette.Actions = [
+  {
+    id: 'import',
+    title: 'Import map',
+    icon: 'static/fa/file-import-solid.svg',
+  },
+  {
+    id: 'export',
+    title: 'Export map',
+    icon: 'static/fa/file-export-solid.svg',
+  },
+];
 
 
 /***/ }),
@@ -4663,6 +4706,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _map_view__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./map-view */ "./src/js/map-view.js");
 /* harmony import */ var _map_editor_palette__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./map-editor-palette */ "./src/js/map-editor-palette.js");
+/* harmony import */ var _modal_export__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modal-export */ "./src/js/modal-export.js");
+/* harmony import */ var _modal_import__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modal-import */ "./src/js/modal-import.js");
+
+
 
 
 
@@ -4682,6 +4729,12 @@ class MapEditor {
       this.tileType = tileType;
     });
 
+    this.palette.events.on('action', (id) => {
+      if (this.actionHandlers[id]) {
+        this.actionHandlers[id]();
+      }
+    });
+
     let lastEdit = null;
     this.mapView.events.on('action', ([x, y], props) => {
       if (this.tileType) {
@@ -4698,6 +4751,24 @@ class MapEditor {
         lastEdit = [x, y];
       }
     });
+
+    this.actionHandlers = {
+      import: () => {
+        const isValidData = data => (typeof data === 'object'
+          && Array.isArray(data.map)
+          && data.map.length === this.city.cells.length);
+        const modal = new _modal_import__WEBPACK_IMPORTED_MODULE_3__.default(isValidData);
+        modal.show().then((importedData) => {
+          if (importedData) {
+            this.city.replace(importedData.map);
+          }
+        });
+      },
+      export: () => {
+        const modal = new _modal_export__WEBPACK_IMPORTED_MODULE_2__.default(JSON.stringify({ map: this.city.cells }));
+        modal.show();
+      },
+    };
   }
 }
 
@@ -4805,6 +4876,174 @@ class MapView {
 
   handleCityUpdate(updates) {
     updates.forEach(([i, j]) => { this.renderTile(i, j); });
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src/js/modal-export.js":
+/*!********************************!*\
+  !*** ./src/js/modal-export.js ***!
+  \********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ModalExport)
+/* harmony export */ });
+/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modal */ "./src/js/modal.js");
+
+
+class ModalExport extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
+  constructor(exportData) {
+    super({
+      title: 'Export map',
+    });
+
+    this.$dataContainer = $('<textarea class="form-control"></textarea>')
+      .attr({
+        rows: 10,
+      })
+      .text(exportData)
+      .appendTo(this.$body);
+
+    this.$copyButton = $('<button></button>')
+      .addClass(['btn', 'btn-outline-dark', 'btn-copy', 'mt-2'])
+      .text('Copy to clipboard')
+      .on('click', () => {
+        this.$dataContainer[0].select();
+        document.execCommand('copy');
+        this.hide();
+      })
+      .appendTo(this.$footer);
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src/js/modal-import.js":
+/*!********************************!*\
+  !*** ./src/js/modal-import.js ***!
+  \********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ModalImport)
+/* harmony export */ });
+/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modal */ "./src/js/modal.js");
+
+
+class ModalImport extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
+  constructor(validationFunction) {
+    super({
+      title: 'Import map',
+    });
+
+    this.$dataContainer = $('<textarea class="form-control"></textarea>')
+      .attr({
+        rows: 10,
+        placeholder: 'Paste the JSON object here.',
+      })
+      .appendTo(this.$body);
+
+    // noinspection JSUnusedGlobalSymbols
+    this.$errorText = $('<p class="text-danger"></p>')
+      .appendTo(this.$footer)
+      .hide();
+
+    // noinspection JSUnusedGlobalSymbols
+    this.$copyButton = $('<button></button>')
+      .addClass(['btn', 'btn-primary'])
+      .text('Import')
+      .on('click', () => {
+        try {
+          const imported = JSON.parse(this.$dataContainer.val());
+          if (validationFunction(imported)) {
+            this.hide(imported);
+          } else {
+            this.showError('Invalid format');
+          }
+        } catch (err) {
+          this.showError(err.message);
+        }
+      })
+      .appendTo(this.$footer);
+  }
+
+  showError(errorText) {
+    this.$errorText.html(errorText);
+    this.$errorText.show();
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src/js/modal.js":
+/*!*************************!*\
+  !*** ./src/js/modal.js ***!
+  \*************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Modal)
+/* harmony export */ });
+class Modal {
+  /**
+   * @param {object} options
+   *  Modal dialog options
+   * @param {string} options.title
+   *  Dialog title.
+   * @param {boolean} options.showCloseButton
+   *  Shows a close button in the dialog if true.
+   * @param {boolean} options.showFooter
+   *  Adds a footer area to the dialog if true.
+   */
+  constructor(options) {
+    this.returnValue = null;
+
+    this.$element = $('<div class="modal fade"></div>');
+    this.$dialog = $('<div class="modal-dialog"></div>').appendTo(this.$element);
+    this.$content = $('<div class="modal-content"></div>').appendTo(this.$dialog);
+    this.$header = $('<div class="modal-header"></div>').appendTo(this.$content);
+    this.$body = $('<div class="modal-body"></div>').appendTo(this.$content);
+    this.$footer = $('<div class="modal-footer"></div>').appendTo(this.$content);
+
+    this.$closeButton = $('<button type="button" class="close" data-dismiss="modal">')
+      .append($('<span>&times;</span>'))
+      .appendTo(this.$header);
+
+    if (options.title) {
+      $('<h5 class="modal-title"></h5>')
+        .html(options.title)
+        .prependTo(this.$header);
+    }
+    if (options.showCloseButton === false) {
+      this.$closeButton.remove();
+    }
+    if (options.showFooter === false) {
+      this.$footer.remove();
+    }
+  }
+
+  async show() {
+    return new Promise((resolve) => {
+      $('body').append(this.$element);
+      this.$element.modal();
+      this.$element.on('hidden.bs.modal', () => {
+        this.$element.remove();
+        resolve(this.returnValue);
+      });
+    });
+  }
+
+  hide(returnValue) {
+    this.returnValue = returnValue;
+    this.$element.modal('hide');
   }
 }
 
@@ -4998,4 +5237,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=bundle.916bced38303ae65d789.js.map
+//# sourceMappingURL=bundle.65454b81b2fd7f55ff34.js.map
