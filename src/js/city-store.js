@@ -26,19 +26,27 @@ export default class CityStore {
     localStorage.setItem('futureMobility.cityStore.cities', JSON.stringify(this.userCities));
   }
 
-  getAll() {
+  getAllCities() {
     const response = Object.assign(
       {},
-      Object.fromEntries(this.userCities.map((city, i) => [
-        `L${i}`,
-        city,
-      ]).reverse()),
-      Object.fromEntries(this.fixedCities.map((city, i) => [
-        `F${i}`,
-        city,
-      ])),
+      this.getAllUserCities(),
+      this.getAllFixedCities(),
     );
     return response;
+  }
+
+  getAllFixedCities() {
+    return Object.fromEntries(this.fixedCities.map((city, i) => [
+      `F${i}`,
+      city,
+    ]));
+  }
+
+  getAllUserCities() {
+    return Object.fromEntries(this.userCities.map((city, i) => [
+      `L${i}`,
+      city,
+    ]).reverse());
   }
 
   get(id) {

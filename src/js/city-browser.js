@@ -17,7 +17,9 @@ export default class CityBrowser {
       this.$selectedButton.addClass('selected');
     };
 
-    const buttons = Object.entries(cityStore.getAll()).map(([id, city]) => $('<div></div>')
+    const buttons = Object.entries(
+      saveMode ? cityStore.getAllUserCities() : cityStore.getAllCities()
+    ).map(([id, city]) => $('<div></div>')
       .addClass(['col-6', 'col-md-2', 'mb-3'])
       .append(
         $('<button></button>')
@@ -37,8 +39,7 @@ export default class CityBrowser {
           .on('click', (ev) => {
             setSelection(ev.currentTarget);
             this.selectedData = 'new';
-          })
-        ));
+          })));
     }
 
     this.$element.append($('<div class="row"></div>').append(buttons));

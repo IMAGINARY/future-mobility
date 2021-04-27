@@ -4410,7 +4410,9 @@ class CityBrowser {
       this.$selectedButton.addClass('selected');
     };
 
-    const buttons = Object.entries(cityStore.getAll()).map(([id, city]) => $('<div></div>')
+    const buttons = Object.entries(
+      saveMode ? cityStore.getAllUserCities() : cityStore.getAllCities()
+    ).map(([id, city]) => $('<div></div>')
       .addClass(['col-6', 'col-md-2', 'mb-3'])
       .append(
         $('<button></button>')
@@ -4430,8 +4432,7 @@ class CityBrowser {
           .on('click', (ev) => {
             setSelection(ev.currentTarget);
             this.selectedData = 'new';
-          })
-        ));
+          })));
     }
 
     this.$element.append($('<div class="row"></div>').append(buttons));
@@ -4496,19 +4497,27 @@ class CityStore {
     localStorage.setItem('futureMobility.cityStore.cities', JSON.stringify(this.userCities));
   }
 
-  getAll() {
+  getAllCities() {
     const response = Object.assign(
       {},
-      Object.fromEntries(this.userCities.map((city, i) => [
-        `L${i}`,
-        city,
-      ]).reverse()),
-      Object.fromEntries(this.fixedCities.map((city, i) => [
-        `F${i}`,
-        city,
-      ])),
+      this.getAllUserCities(),
+      this.getAllFixedCities(),
     );
     return response;
+  }
+
+  getAllFixedCities() {
+    return Object.fromEntries(this.fixedCities.map((city, i) => [
+      `F${i}`,
+      city,
+    ]));
+  }
+
+  getAllUserCities() {
+    return Object.fromEntries(this.userCities.map((city, i) => [
+      `L${i}`,
+      city,
+    ]).reverse());
   }
 
   get(id) {
@@ -5548,4 +5557,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=bundle.9062dcc4ec23b661a527.js.map
+//# sourceMappingURL=bundle.4d2f5a0eb8c0211f21f2.js.map
