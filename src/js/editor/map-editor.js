@@ -1,10 +1,11 @@
-import MapView from './map-view';
+import City from '../city';
+import MapView from '../map-view';
 import MapEditorPalette from './map-editor-palette';
 import ModalLoad from './modal-load';
 import ModalSave from './modal-save';
 import ModalExport from './modal-export';
 import ModalImport from './modal-import';
-import CityStore from './city-store';
+import ObjectStore from './object-store';
 
 export default class MapEditor {
   constructor($element, city, config) {
@@ -35,50 +36,45 @@ export default class MapEditor {
           const [lastX, lastY] = lastEdit;
           for (let i = Math.min(lastX, x); i <= Math.max(lastX, x); i += 1) {
             for (let j = Math.min(lastY, y); j <= Math.max(lastY, y); j += 1) {
-              this.city.set(i, j, this.tileType);
+              this.city.map.set(i, j, this.tileType);
             }
           }
         } else {
-          this.city.set(x, y, this.tileType);
+          this.city.map.set(x, y, this.tileType);
         }
         lastEdit = [x, y];
       }
     });
 
-    this.cityStore = new CityStore();
+    this.objectStore = new ObjectStore('./cities.json');
     this.actionHandlers = {
       load: () => {
-        const modal = new ModalLoad(this.config, this.cityStore);
+        const modal = new ModalLoad(this.config, this.objectStore);
         modal.show().then((id) => {
-          const loadedCity = id && this.cityStore.get(id);
-          if (loadedCity) {
-            this.city.replace(loadedCity.map);
+          const jsonCity = id && this.objectStore.get(id);
+          if (jsonCity) {
+            this.city.copy(City.fromJSON(jsonCity));
           }
         });
       },
       save: () => {
-        const modal = new ModalSave(this.config, this.cityStore);
+        const modal = new ModalSave(this.config, this.objectStore);
         modal.show().then((id) => {
           if (id) {
-            this.cityStore.set(id === 'new' ? null : id, {
-              map: this.city.cells,
-            });
+            this.objectStore.set(id === 'new' ? null : id, this.city.toJSON());
           }
         });
       },
       import: () => {
-        const isValidData = data => (typeof data === 'object'
-          && Array.isArray(data.map)
-          && data.map.length === this.city.cells.length);
-        const modal = new ModalImport(isValidData);
+        const modal = new ModalImport();
         modal.show().then((importedData) => {
           if (importedData) {
-            this.city.replace(importedData.map);
+            this.city.copy(City.fromJSON(importedData));
           }
         });
       },
       export: () => {
-        const modal = new ModalExport(JSON.stringify({ map: this.city.cells }));
+        const modal = new ModalExport(JSON.stringify(this.city));
         modal.show();
       },
     };

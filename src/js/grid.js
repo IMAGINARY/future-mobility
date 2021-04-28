@@ -9,12 +9,41 @@ export default class Grid {
    *
    * @param {number} width
    * @param {number} height
+   * @param {number[]} cells
    */
-  constructor(width, height) {
+  constructor(width, height, cells = null) {
     this.width = width;
     this.height = height;
-    this.cells = Array(...Array(width * height)).map(() => 0);
+    this.cells = cells ? Array.from(cells) : Array(...Array(width * height)).map(() => 0);
     this.events = new EventEmitter();
+  }
+
+  /**
+   * Create a new Grid from a JSON string
+   * @return {Grid}
+   * @param {object} JSON object
+   */
+  static fromJSON(jsonObject) {
+    const { width, height, cells } = jsonObject;
+    return new Grid(width, height, cells);
+  }
+
+  /**
+   * Serializes to a JSON object
+   * @return {{cells: number[], width: number, height: number}}
+   */
+  toJSON() {
+    return {
+      width: this.width,
+      height: this.height,
+      cells: Array.from(this.cells),
+    };
+  }
+
+  copy(grid) {
+    this.width = grid.width;
+    this.height = grid.height;
+    this.replace(grid.cells);
   }
 
   /**
@@ -64,7 +93,7 @@ export default class Grid {
   }
 
   replace(cells) {
-    this.cells = JSON.parse(JSON.stringify(cells));
+    this.cells = Array.from(cells);
     this.events.emit('update', this.allCells());
   }
 

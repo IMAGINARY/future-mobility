@@ -1,8 +1,8 @@
 import yaml from 'js-yaml';
-import Grid from './grid';
+import City from './city';
 import EmissionsVariable from './emissions-variable';
 import MapView from './map-view';
-import MapEditor from './map-editor';
+import MapEditor from './editor/map-editor';
 import VariableView from './variable-view';
 import '../sass/default.scss';
 
@@ -14,7 +14,7 @@ fetch('./config.yml', { cache: 'no-store' })
     console.error(err);
   })
   .then((config) => {
-    const city = new Grid(config.cityWidth, config.cityHeight);
+    const city = new City(config.cityWidth, config.cityHeight);
     const emissions = new EmissionsVariable(city, config);
 
     $('[data-component=map-view]').each((i, element) => {

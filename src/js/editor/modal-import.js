@@ -1,7 +1,7 @@
-import Modal from './modal';
+import Modal from '../modal';
 
 export default class ModalImport extends Modal {
-  constructor(validationFunction) {
+  constructor() {
     super({
       title: 'Import map',
     });
@@ -25,11 +25,7 @@ export default class ModalImport extends Modal {
       .on('click', () => {
         try {
           const imported = JSON.parse(this.$dataContainer.val());
-          if (validationFunction(imported)) {
-            this.hide(imported);
-          } else {
-            this.showError('Invalid format');
-          }
+          this.hide(imported);
         } catch (err) {
           this.showError(err.message);
         }

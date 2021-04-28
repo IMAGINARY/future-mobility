@@ -4380,17 +4380,60 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./src/js/city-browser.js":
-/*!********************************!*\
-  !*** ./src/js/city-browser.js ***!
-  \********************************/
+/***/ "./src/js/city.js":
+/*!************************!*\
+  !*** ./src/js/city.js ***!
+  \************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ City)
+/* harmony export */ });
+/* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
+
+
+class City {
+  constructor(width, height, cells = null) {
+    this.map = new _grid__WEBPACK_IMPORTED_MODULE_0__.default(width, height, cells);
+  }
+
+  toJSON() {
+    const { map } = this;
+    return {
+      map: map.toJSON(),
+    };
+  }
+
+  static fromJSON(jsonObject) {
+    const { map } = jsonObject;
+    if (Array.isArray(map)) {
+      // Support old serialization format
+      return new City(16, 16, map);
+    }
+    const { width, height, cells } = map;
+    return new City(width, height, cells);
+  }
+
+  copy(city) {
+    this.map.copy(city.map);
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src/js/editor/city-browser.js":
+/*!***************************************!*\
+  !*** ./src/js/editor/city-browser.js ***!
+  \***************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ CityBrowser)
 /* harmony export */ });
-/* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
+/* harmony import */ var _city__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../city */ "./src/js/city.js");
 
 
 class CityBrowser {
@@ -4411,13 +4454,13 @@ class CityBrowser {
     };
 
     const buttons = Object.entries(
-      saveMode ? cityStore.getAllUserCities() : cityStore.getAllCities()
-    ).map(([id, city]) => $('<div></div>')
+      saveMode ? cityStore.getAllUserObjects() : cityStore.getAllObjects()
+    ).map(([id, cityJSON]) => $('<div></div>')
       .addClass(['col-6', 'col-md-2', 'mb-3'])
       .append(
         $('<button></button>')
           .addClass('city-browser-item')
-          .append(this.createPreviewImage(city))
+          .append(this.createPreviewImage(cityJSON))
           .on('click', (ev) => {
             setSelection(ev.currentTarget);
             this.selectedData = id;
@@ -4438,16 +4481,15 @@ class CityBrowser {
     this.$element.append($('<div class="row"></div>').append(buttons));
   }
 
-  createPreviewImage(city) {
+  createPreviewImage(cityJSON) {
     const $canvas = $('<canvas class="city-browser-item-preview"></canvas>')
       .attr({
         width: this.config.cityWidth,
         height: this.config.cityHeight,
       });
-    const map = new _grid__WEBPACK_IMPORTED_MODULE_0__.default(this.config.cityWidth, this.config.cityHeight);
-    map.replace(city.map);
+    const city = _city__WEBPACK_IMPORTED_MODULE_0__.default.fromJSON(cityJSON);
     const ctx = $canvas[0].getContext('2d');
-    map.allCells().forEach(([i, j, value]) => {
+    city.map.allCells().forEach(([i, j, value]) => {
       ctx.fillStyle = (this.config.tileTypes && this.config.tileTypes[value].color) || '#000000';
       ctx.fillRect(i, j, 1, 1);
     });
@@ -4459,315 +4501,10 @@ class CityBrowser {
 
 /***/ }),
 
-/***/ "./src/js/city-store.js":
-/*!******************************!*\
-  !*** ./src/js/city-store.js ***!
-  \******************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ CityStore)
-/* harmony export */ });
-class CityStore {
-  constructor() {
-    this.fixedCities = [];
-    this.userCities = [];
-
-    this.loadUserCities();
-    this.loadFixedCities();
-  }
-
-  async loadFixedCities() {
-    fetch('./cities.json', { cache: 'no-store' })
-      .then(response => response.json())
-      .then((data) => {
-        this.fixedCities = data.cities;
-      });
-  }
-
-  loadUserCities() {
-    const userCities = JSON.parse(localStorage.getItem('futureMobility.cityStore.cities'));
-    if (userCities) {
-      this.userCities = userCities;
-    }
-  }
-
-  saveLocal() {
-    localStorage.setItem('futureMobility.cityStore.cities', JSON.stringify(this.userCities));
-  }
-
-  getAllCities() {
-    const response = Object.assign(
-      {},
-      this.getAllUserCities(),
-      this.getAllFixedCities(),
-    );
-    return response;
-  }
-
-  getAllFixedCities() {
-    return Object.fromEntries(this.fixedCities.map((city, i) => [
-      `F${i}`,
-      city,
-    ]));
-  }
-
-  getAllUserCities() {
-    return Object.fromEntries(this.userCities.map((city, i) => [
-      `L${i}`,
-      city,
-    ]).reverse());
-  }
-
-  get(id) {
-    if (id[0] === 'F') {
-      return this.fixedCities[id.substr(1)];
-    }
-    return this.userCities[id.substr(1)];
-  }
-
-  set(id, city) {
-    const clone = (obj => JSON.parse(JSON.stringify(obj)));
-
-    if (id === null || this.userCities[id.substr(1)] === undefined) {
-      this.userCities.push(clone(city));
-    } else {
-      this.userCities[id.substr(1)] = clone(city);
-    }
-    this.saveLocal();
-  }
-}
-
-
-/***/ }),
-
-/***/ "./src/js/emissions-variable.js":
-/*!**************************************!*\
-  !*** ./src/js/emissions-variable.js ***!
-  \**************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ EmissionsVariable)
-/* harmony export */ });
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
-
-
-
-class EmissionsVariable {
-  constructor(city, config) {
-    this.city = city;
-    this.config = config;
-    this.grid = new _grid__WEBPACK_IMPORTED_MODULE_1__.default(this.city.width, this.city.height);
-    this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
-
-    this.city.events.on('update', this.handleCityUpdate.bind(this));
-  }
-
-  calculate(i, j) {
-    const emissions = (x, y) => (this.config.tileTypes[this.city.get(x, y)]
-      && this.config.tileTypes[this.city.get(x, y)].emissions)
-      || 0;
-
-    return Math.min(1, Math.max(0, emissions(i, j)
-      + this.city.nearbyCells(i, j, 1)
-        .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.5, 0)
-      + this.city.nearbyCells(i, j, 2)
-        .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.25, 0)));
-  }
-
-  handleCityUpdate(updates) {
-    const coords = [];
-    updates.forEach(([i, j]) => {
-      coords.push([i, j]);
-      coords.push(...this.city.nearbyCells(i, j, 1).map(([x, y]) => [x, y]));
-      coords.push(...this.city.nearbyCells(i, j, 2).map(([x, y]) => [x, y]));
-    });
-    // Todo: deduplicating coords might be necessary if the way calculations
-    //    and updates are handled is not changed
-    coords.forEach(([i, j]) => {
-      this.grid.set(i, j, this.calculate(i, j));
-    });
-    this.events.emit('update', coords);
-  }
-}
-
-
-/***/ }),
-
-/***/ "./src/js/grid.js":
-/*!************************!*\
-  !*** ./src/js/grid.js ***!
-  \************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ Grid)
-/* harmony export */ });
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
-
-
-/**
- * Represents a 2D grid map that stores a single Number per cell
- */
-class Grid {
-  /**
-   * Create a new grid
-   *
-   * @param {number} width
-   * @param {number} height
-   */
-  constructor(width, height) {
-    this.width = width;
-    this.height = height;
-    this.cells = Array(...Array(width * height)).map(() => 0);
-    this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
-  }
-
-  /**
-   * Map a 2D coordinate to an offset in the cell array
-   *
-   * @param {number} i
-   * @param {number} j
-   * @return {number}
-   */
-  offset(i, j) {
-    return j * this.width + i;
-  }
-
-  /**
-   * Retrieves the value at (i,j)
-   *
-   * @param {number} i
-   * @param {number} j
-   * @return {number}
-   */
-  get(i, j) {
-    return this.cells[this.offset(i, j)];
-  }
-
-  /**
-   * Set the value at (i, j)
-   *
-   * @fires Grid.events#update
-   *
-   * @param {number} i
-   * @param {number} j
-   * @param {number} value
-   */
-  set(i, j, value) {
-    this.cells[this.offset(i, j)] = value;
-
-    /**
-     * Update event.
-     *
-     * Argument is an array of updated cells. Each updated cell is represented
-     * by an array with three elements: [i, j, value]
-     *
-     * @event Grid.events#update
-     * @type {[[number, number, number]]}
-     */
-    this.events.emit('update', [[i, j, value]]);
-  }
-
-  replace(cells) {
-    this.cells = JSON.parse(JSON.stringify(cells));
-    this.events.emit('update', this.allCells());
-  }
-
-  /**
-   * Returns true if (i, j) are valid coordinates within the grid's bounds.
-   *
-   * @param {number} i
-   * @param {number} j
-   * @return {boolean}
-   */
-  isValidCoords(i, j) {
-    return i >= 0 && j >= 0 && i < this.width && j < this.height;
-  }
-
-  /**
-   * Returns all cells, represented as [i, j, value] arrays.
-   *
-   * @return {[[number, number, number]]}
-   */
-  allCells() {
-    const answer = Array(this.cells.length);
-    for (let i = 0; i < this.width; i += 1) {
-      for (let j = 0; j < this.height; j += 1) {
-        answer.push([i, j, this.cells[j * this.width + i]]);
-      }
-    }
-    return answer;
-  }
-
-  /**
-   * Get cells adjacent to the cell at (i, j).
-   *
-   * Each cell is represented by an array of the form [i, j, value]
-   * A cell has at most four adjacent cells, which share one side
-   * (diagonals are not adjacent).
-   *
-   * @param {number} i
-   * @param {number} j
-   * @return {[[number, number, number]]}
-   */
-  adjacentCells(i, j) {
-    return [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]]
-      .filter(([x, y]) => this.isValidCoords(x, y))
-      .map(([x, y]) => [x, y, this.get(x, y)]);
-  }
-
-  /**
-   * Returns the cells around the cell at (i, j).
-   *
-   * Each cells returned is represented as an array [i, j, value].
-   * Cells "around" are those reachable by no less than <distance> steps in
-   * any direction, including diagonals.
-   *
-   * @param {number} i
-   * @param {number} j
-   * @param {number} distance
-   * @return {[[number, number, number]]}
-   */
-  nearbyCells(i, j, distance = 1) {
-    const coords = [];
-    // Top
-    for (let x = i - distance; x < i + distance; x += 1) {
-      coords.push([x, j - distance]);
-    }
-    // Right
-    for (let y = j - distance; y < j + distance; y += 1) {
-      coords.push([i + distance, y]);
-    }
-    // Bottom
-    for (let x = i + distance; x > i - distance; x -= 1) {
-      coords.push([x, j + distance]);
-    }
-    // Left
-    for (let y = j + distance; y > j - distance; y -= 1) {
-      coords.push([i - distance, y]);
-    }
-
-    return coords
-      .filter(([x, y]) => this.isValidCoords(x, y))
-      .map(([x, y]) => [x, y, this.get(x, y)]);
-  }
-}
-
-
-/***/ }),
-
-/***/ "./src/js/map-editor-palette.js":
-/*!**************************************!*\
-  !*** ./src/js/map-editor-palette.js ***!
-  \**************************************/
+/***/ "./src/js/editor/map-editor-palette.js":
+/*!*********************************************!*\
+  !*** ./src/js/editor/map-editor-palette.js ***!
+  \*********************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -4866,23 +4603,25 @@ MapEditorPalette.Actions = [
 
 /***/ }),
 
-/***/ "./src/js/map-editor.js":
-/*!******************************!*\
-  !*** ./src/js/map-editor.js ***!
-  \******************************/
+/***/ "./src/js/editor/map-editor.js":
+/*!*************************************!*\
+  !*** ./src/js/editor/map-editor.js ***!
+  \*************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ MapEditor)
 /* harmony export */ });
-/* harmony import */ var _map_view__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./map-view */ "./src/js/map-view.js");
-/* harmony import */ var _map_editor_palette__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./map-editor-palette */ "./src/js/map-editor-palette.js");
-/* harmony import */ var _modal_load__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modal-load */ "./src/js/modal-load.js");
-/* harmony import */ var _modal_save__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modal-save */ "./src/js/modal-save.js");
-/* harmony import */ var _modal_export__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modal-export */ "./src/js/modal-export.js");
-/* harmony import */ var _modal_import__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modal-import */ "./src/js/modal-import.js");
-/* harmony import */ var _city_store__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./city-store */ "./src/js/city-store.js");
+/* harmony import */ var _city__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../city */ "./src/js/city.js");
+/* harmony import */ var _map_view__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
+/* harmony import */ var _map_editor_palette__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./map-editor-palette */ "./src/js/editor/map-editor-palette.js");
+/* harmony import */ var _modal_load__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modal-load */ "./src/js/editor/modal-load.js");
+/* harmony import */ var _modal_save__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modal-save */ "./src/js/editor/modal-save.js");
+/* harmony import */ var _modal_export__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modal-export */ "./src/js/editor/modal-export.js");
+/* harmony import */ var _modal_import__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./modal-import */ "./src/js/editor/modal-import.js");
+/* harmony import */ var _object_store__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./object-store */ "./src/js/editor/object-store.js");
+
 
 
 
@@ -4899,8 +4638,8 @@ class MapEditor {
 
     this.$element.addClass('map-editor');
 
-    this.mapView = new _map_view__WEBPACK_IMPORTED_MODULE_0__.default($('<div></div>').appendTo(this.$element), city, config);
-    this.palette = new _map_editor_palette__WEBPACK_IMPORTED_MODULE_1__.default($('<div></div>').appendTo(this.$element), config);
+    this.mapView = new _map_view__WEBPACK_IMPORTED_MODULE_1__.default($('<div></div>').appendTo(this.$element), city, config);
+    this.palette = new _map_editor_palette__WEBPACK_IMPORTED_MODULE_2__.default($('<div></div>').appendTo(this.$element), config);
 
     this.tileType = this.palette.tileId;
     this.palette.events.on('change', (tileType) => {
@@ -4920,50 +4659,45 @@ class MapEditor {
           const [lastX, lastY] = lastEdit;
           for (let i = Math.min(lastX, x); i <= Math.max(lastX, x); i += 1) {
             for (let j = Math.min(lastY, y); j <= Math.max(lastY, y); j += 1) {
-              this.city.set(i, j, this.tileType);
+              this.city.map.set(i, j, this.tileType);
             }
           }
         } else {
-          this.city.set(x, y, this.tileType);
+          this.city.map.set(x, y, this.tileType);
         }
         lastEdit = [x, y];
       }
     });
 
-    this.cityStore = new _city_store__WEBPACK_IMPORTED_MODULE_6__.default();
+    this.objectStore = new _object_store__WEBPACK_IMPORTED_MODULE_7__.default('./cities.json');
     this.actionHandlers = {
       load: () => {
-        const modal = new _modal_load__WEBPACK_IMPORTED_MODULE_2__.default(this.config, this.cityStore);
+        const modal = new _modal_load__WEBPACK_IMPORTED_MODULE_3__.default(this.config, this.objectStore);
         modal.show().then((id) => {
-          const loadedCity = id && this.cityStore.get(id);
-          if (loadedCity) {
-            this.city.replace(loadedCity.map);
+          const jsonCity = id && this.objectStore.get(id);
+          if (jsonCity) {
+            this.city.copy(_city__WEBPACK_IMPORTED_MODULE_0__.default.fromJSON(jsonCity));
           }
         });
       },
       save: () => {
-        const modal = new _modal_save__WEBPACK_IMPORTED_MODULE_3__.default(this.config, this.cityStore);
+        const modal = new _modal_save__WEBPACK_IMPORTED_MODULE_4__.default(this.config, this.objectStore);
         modal.show().then((id) => {
           if (id) {
-            this.cityStore.set(id === 'new' ? null : id, {
-              map: this.city.cells,
-            });
+            this.objectStore.set(id === 'new' ? null : id, this.city.toJSON());
           }
         });
       },
       import: () => {
-        const isValidData = data => (typeof data === 'object'
-          && Array.isArray(data.map)
-          && data.map.length === this.city.cells.length);
-        const modal = new _modal_import__WEBPACK_IMPORTED_MODULE_5__.default(isValidData);
+        const modal = new _modal_import__WEBPACK_IMPORTED_MODULE_6__.default();
         modal.show().then((importedData) => {
           if (importedData) {
-            this.city.replace(importedData.map);
+            this.city.copy(_city__WEBPACK_IMPORTED_MODULE_0__.default.fromJSON(importedData));
           }
         });
       },
       export: () => {
-        const modal = new _modal_export__WEBPACK_IMPORTED_MODULE_4__.default(JSON.stringify({ map: this.city.cells }));
+        const modal = new _modal_export__WEBPACK_IMPORTED_MODULE_5__.default(JSON.stringify(this.city));
         modal.show();
       },
     };
@@ -4973,124 +4707,17 @@ class MapEditor {
 
 /***/ }),
 
-/***/ "./src/js/map-view.js":
-/*!****************************!*\
-  !*** ./src/js/map-view.js ***!
-  \****************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ MapView)
-/* harmony export */ });
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
-
-
-const ROAD_TILE = '1';
-
-class MapView {
-  constructor($element, city, config) {
-    this.$element = $element;
-    this.city = city;
-    this.config = config;
-    this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
-
-    this.$element.addClass('map-view');
-
-    const mapWidth = 1;
-    const mapHeight = this.city.height / this.city.width;
-    this.$map = $('<div class="city-map"></div>')
-      .css({
-        width: `${mapWidth * 100}%`,
-        height: 0,
-        paddingBottom: `${mapHeight * 100}%`,
-      })
-      .appendTo(this.$element);
-
-    const tileWidth = mapWidth / this.city.width;
-    const tileHeight = mapHeight / this.city.height;
-    this.$tiles = Array(this.city.width * this.city.height);
-
-    let pointerActive = false;
-    $(window).on('mouseup', () => { pointerActive = false; });
-
-    this.city.allCells().forEach(([i, j]) => {
-      this.$tiles[this.city.offset(i, j)] = $('<div class="city-map-tile"></div>')
-        .attr({
-          'data-x': i,
-          'data-y': j,
-        })
-        .css({
-          width: `${tileWidth * 100}%`,
-          height: `${tileHeight * 100}%`,
-          top: `${j * tileHeight * 100}%`,
-          left: `${i * tileWidth * 100}%`,
-        })
-        .on('mousedown', (ev) => {
-          pointerActive = true;
-          this.events.emit('action', [i, j], {
-            shiftKey: ev.shiftKey,
-          });
-        })
-        .on('mouseenter', (ev) => {
-          if (pointerActive) {
-            this.events.emit('action', [i, j], {
-              shiftKey: ev.shiftKey,
-            });
-          }
-        });
-      this.renderTile(i, j);
-    });
-
-    this.$map.append(this.$tiles);
-
-    this.city.events.on('update', this.handleCityUpdate.bind(this));
-  }
-
-  getTile(i, j) {
-    return this.$tiles[this.city.offset(i, j)];
-  }
-
-  renderTile(i, j) {
-    const tileType = this.config.tileTypes[this.city.get(i, j)] || null;
-    this.getTile(i, j)
-      .css({ backgroundColor: tileType ? tileType.color : null })
-      .removeAttr('data-road-connectivity');
-    this.updateRoadTileConnections(i, j);
-    this.city.adjacentCells(i, j)
-      .forEach(([x, y]) => this.updateRoadTileConnections(x, y));
-  }
-
-  updateRoadTileConnections(i, j) {
-    // Todo: This should be optimized so it's not called twice per frame for the same tile.
-    if (this.city.get(i, j) === ROAD_TILE) {
-      this.getTile(i, j).attr('data-road-connectivity',
-        [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]]
-          .map(([x, y]) => (!this.city.isValidCoords(x, y) || this.city.get(x, y) === ROAD_TILE
-            ? '1' : '0')).join(''));
-    }
-  }
-
-  handleCityUpdate(updates) {
-    updates.forEach(([i, j]) => { this.renderTile(i, j); });
-  }
-}
-
-
-/***/ }),
-
-/***/ "./src/js/modal-export.js":
-/*!********************************!*\
-  !*** ./src/js/modal-export.js ***!
-  \********************************/
+/***/ "./src/js/editor/modal-export.js":
+/*!***************************************!*\
+  !*** ./src/js/editor/modal-export.js ***!
+  \***************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ ModalExport)
 /* harmony export */ });
-/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modal */ "./src/js/modal.js");
+/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../modal */ "./src/js/modal.js");
 
 
 class ModalExport extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
@@ -5121,21 +4748,21 @@ class ModalExport extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
 
 /***/ }),
 
-/***/ "./src/js/modal-import.js":
-/*!********************************!*\
-  !*** ./src/js/modal-import.js ***!
-  \********************************/
+/***/ "./src/js/editor/modal-import.js":
+/*!***************************************!*\
+  !*** ./src/js/editor/modal-import.js ***!
+  \***************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ ModalImport)
 /* harmony export */ });
-/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modal */ "./src/js/modal.js");
+/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../modal */ "./src/js/modal.js");
 
 
 class ModalImport extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
-  constructor(validationFunction) {
+  constructor() {
     super({
       title: 'Import map',
     });
@@ -5159,11 +4786,7 @@ class ModalImport extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
       .on('click', () => {
         try {
           const imported = JSON.parse(this.$dataContainer.val());
-          if (validationFunction(imported)) {
-            this.hide(imported);
-          } else {
-            this.showError('Invalid format');
-          }
+          this.hide(imported);
         } catch (err) {
           this.showError(err.message);
         }
@@ -5180,18 +4803,18 @@ class ModalImport extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
 
 /***/ }),
 
-/***/ "./src/js/modal-load.js":
-/*!******************************!*\
-  !*** ./src/js/modal-load.js ***!
-  \******************************/
+/***/ "./src/js/editor/modal-load.js":
+/*!*************************************!*\
+  !*** ./src/js/editor/modal-load.js ***!
+  \*************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ ModalLoad)
 /* harmony export */ });
-/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modal */ "./src/js/modal.js");
-/* harmony import */ var _city_browser__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./city-browser */ "./src/js/city-browser.js");
+/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../modal */ "./src/js/modal.js");
+/* harmony import */ var _city_browser__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./city-browser */ "./src/js/editor/city-browser.js");
 
 
 
@@ -5238,18 +4861,18 @@ class ModalLoad extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
 
 /***/ }),
 
-/***/ "./src/js/modal-save.js":
-/*!******************************!*\
-  !*** ./src/js/modal-save.js ***!
-  \******************************/
+/***/ "./src/js/editor/modal-save.js":
+/*!*************************************!*\
+  !*** ./src/js/editor/modal-save.js ***!
+  \*************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ ModalSave)
 /* harmony export */ });
-/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modal */ "./src/js/modal.js");
-/* harmony import */ var _city_browser__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./city-browser */ "./src/js/city-browser.js");
+/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../modal */ "./src/js/modal.js");
+/* harmony import */ var _city_browser__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./city-browser */ "./src/js/editor/city-browser.js");
 
 
 
@@ -5290,6 +4913,447 @@ class ModalSave extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
   showError(errorText) {
     this.$errorText.html(errorText);
     this.$errorText.show();
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src/js/editor/object-store.js":
+/*!***************************************!*\
+  !*** ./src/js/editor/object-store.js ***!
+  \***************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ObjectStore)
+/* harmony export */ });
+class ObjectStore {
+  constructor(fixedObjectsPath = null) {
+    this.fixedObjects = [];
+    this.userObjects = [];
+
+    this.loadUserObjects();
+    if (fixedObjectsPath) {
+      this.loadFixedObjects(fixedObjectsPath);
+    }
+  }
+
+  async loadFixedObjects(path) {
+    fetch(path, { cache: 'no-store' })
+      .then(response => response.json())
+      .then((data) => {
+        this.fixedObjects = data.cities;
+      });
+  }
+
+  loadUserObjects() {
+    const userObjects = JSON.parse(localStorage.getItem('futureMobility.cityStore.cities'));
+    if (userObjects) {
+      this.userObjects = userObjects;
+    }
+  }
+
+  saveLocal() {
+    localStorage.setItem('futureMobility.cityStore.cities', JSON.stringify(this.userObjects));
+  }
+
+  getAllObjects() {
+    return Object.assign(
+      {},
+      this.getAllUserObjects(),
+      this.getAllFixedObjects(),
+    );
+  }
+
+  getAllFixedObjects() {
+    return Object.fromEntries(this.fixedObjects.map((obj, i) => [
+      `F${i}`,
+      obj,
+    ]));
+  }
+
+  getAllUserObjects() {
+    return Object.fromEntries(this.userObjects.map((obj, i) => [
+      `L${i}`,
+      obj,
+    ]).reverse());
+  }
+
+  get(id) {
+    if (id[0] === 'F') {
+      return this.fixedObjects[id.substr(1)];
+    }
+    return this.userObjects[id.substr(1)];
+  }
+
+  set(id, obj) {
+    if (id === null || this.userObjects[id.substr(1)] === undefined) {
+      this.userObjects.push(obj);
+    } else {
+      this.userObjects[id.substr(1)] = obj;
+    }
+    this.saveLocal();
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src/js/emissions-variable.js":
+/*!**************************************!*\
+  !*** ./src/js/emissions-variable.js ***!
+  \**************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ EmissionsVariable)
+/* harmony export */ });
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
+
+
+
+class EmissionsVariable {
+  constructor(city, config) {
+    this.city = city;
+    this.config = config;
+    this.grid = new _grid__WEBPACK_IMPORTED_MODULE_1__.default(this.city.map.width, this.city.map.height);
+    this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
+
+    this.city.map.events.on('update', this.handleCityUpdate.bind(this));
+  }
+
+  calculate(i, j) {
+    const emissions = (x, y) => (this.config.tileTypes[this.city.map.get(x, y)]
+      && this.config.tileTypes[this.city.map.get(x, y)].emissions)
+      || 0;
+
+    return Math.min(1, Math.max(0, emissions(i, j)
+      + this.city.map.nearbyCells(i, j, 1)
+        .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.5, 0)
+      + this.city.map.nearbyCells(i, j, 2)
+        .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.25, 0)));
+  }
+
+  handleCityUpdate(updates) {
+    const coords = [];
+    updates.forEach(([i, j]) => {
+      coords.push([i, j]);
+      coords.push(...this.city.map.nearbyCells(i, j, 1).map(([x, y]) => [x, y]));
+      coords.push(...this.city.map.nearbyCells(i, j, 2).map(([x, y]) => [x, y]));
+    });
+    // Todo: deduplicating coords might be necessary if the way calculations
+    //    and updates are handled is not changed
+    coords.forEach(([i, j]) => {
+      this.grid.set(i, j, this.calculate(i, j));
+    });
+    this.events.emit('update', coords);
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src/js/grid.js":
+/*!************************!*\
+  !*** ./src/js/grid.js ***!
+  \************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Grid)
+/* harmony export */ });
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
+
+
+/**
+ * Represents a 2D grid map that stores a single Number per cell
+ */
+class Grid {
+  /**
+   * Create a new grid
+   *
+   * @param {number} width
+   * @param {number} height
+   * @param {number[]} cells
+   */
+  constructor(width, height, cells = null) {
+    this.width = width;
+    this.height = height;
+    this.cells = cells ? Array.from(cells) : Array(...Array(width * height)).map(() => 0);
+    this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
+  }
+
+  /**
+   * Create a new Grid from a JSON string
+   * @return {Grid}
+   * @param {object} JSON object
+   */
+  static fromJSON(jsonObject) {
+    const { width, height, cells } = jsonObject;
+    return new Grid(width, height, cells);
+  }
+
+  /**
+   * Serializes to a JSON object
+   * @return {{cells: number[], width: number, height: number}}
+   */
+  toJSON() {
+    return {
+      width: this.width,
+      height: this.height,
+      cells: Array.from(this.cells),
+    };
+  }
+
+  copy(grid) {
+    this.width = grid.width;
+    this.height = grid.height;
+    this.replace(grid.cells);
+  }
+
+  /**
+   * Map a 2D coordinate to an offset in the cell array
+   *
+   * @param {number} i
+   * @param {number} j
+   * @return {number}
+   */
+  offset(i, j) {
+    return j * this.width + i;
+  }
+
+  /**
+   * Retrieves the value at (i,j)
+   *
+   * @param {number} i
+   * @param {number} j
+   * @return {number}
+   */
+  get(i, j) {
+    return this.cells[this.offset(i, j)];
+  }
+
+  /**
+   * Set the value at (i, j)
+   *
+   * @fires Grid.events#update
+   *
+   * @param {number} i
+   * @param {number} j
+   * @param {number} value
+   */
+  set(i, j, value) {
+    this.cells[this.offset(i, j)] = value;
+
+    /**
+     * Update event.
+     *
+     * Argument is an array of updated cells. Each updated cell is represented
+     * by an array with three elements: [i, j, value]
+     *
+     * @event Grid.events#update
+     * @type {[[number, number, number]]}
+     */
+    this.events.emit('update', [[i, j, value]]);
+  }
+
+  replace(cells) {
+    this.cells = Array.from(cells);
+    this.events.emit('update', this.allCells());
+  }
+
+  /**
+   * Returns true if (i, j) are valid coordinates within the grid's bounds.
+   *
+   * @param {number} i
+   * @param {number} j
+   * @return {boolean}
+   */
+  isValidCoords(i, j) {
+    return i >= 0 && j >= 0 && i < this.width && j < this.height;
+  }
+
+  /**
+   * Returns all cells, represented as [i, j, value] arrays.
+   *
+   * @return {[[number, number, number]]}
+   */
+  allCells() {
+    const answer = Array(this.cells.length);
+    for (let i = 0; i < this.width; i += 1) {
+      for (let j = 0; j < this.height; j += 1) {
+        answer.push([i, j, this.cells[j * this.width + i]]);
+      }
+    }
+    return answer;
+  }
+
+  /**
+   * Get cells adjacent to the cell at (i, j).
+   *
+   * Each cell is represented by an array of the form [i, j, value]
+   * A cell has at most four adjacent cells, which share one side
+   * (diagonals are not adjacent).
+   *
+   * @param {number} i
+   * @param {number} j
+   * @return {[[number, number, number]]}
+   */
+  adjacentCells(i, j) {
+    return [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]]
+      .filter(([x, y]) => this.isValidCoords(x, y))
+      .map(([x, y]) => [x, y, this.get(x, y)]);
+  }
+
+  /**
+   * Returns the cells around the cell at (i, j).
+   *
+   * Each cells returned is represented as an array [i, j, value].
+   * Cells "around" are those reachable by no less than <distance> steps in
+   * any direction, including diagonals.
+   *
+   * @param {number} i
+   * @param {number} j
+   * @param {number} distance
+   * @return {[[number, number, number]]}
+   */
+  nearbyCells(i, j, distance = 1) {
+    const coords = [];
+    // Top
+    for (let x = i - distance; x < i + distance; x += 1) {
+      coords.push([x, j - distance]);
+    }
+    // Right
+    for (let y = j - distance; y < j + distance; y += 1) {
+      coords.push([i + distance, y]);
+    }
+    // Bottom
+    for (let x = i + distance; x > i - distance; x -= 1) {
+      coords.push([x, j + distance]);
+    }
+    // Left
+    for (let y = j + distance; y > j - distance; y -= 1) {
+      coords.push([i - distance, y]);
+    }
+
+    return coords
+      .filter(([x, y]) => this.isValidCoords(x, y))
+      .map(([x, y]) => [x, y, this.get(x, y)]);
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src/js/map-view.js":
+/*!****************************!*\
+  !*** ./src/js/map-view.js ***!
+  \****************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ MapView)
+/* harmony export */ });
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
+
+
+const ROAD_TILE = '1';
+
+class MapView {
+  constructor($element, city, config) {
+    this.$element = $element;
+    this.city = city;
+    this.config = config;
+    this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
+
+    this.$element.addClass('map-view');
+
+    const mapWidth = 1;
+    const mapHeight = this.city.map.height / this.city.map.width;
+    this.$map = $('<div class="city-map"></div>')
+      .css({
+        width: `${mapWidth * 100}%`,
+        height: 0,
+        paddingBottom: `${mapHeight * 100}%`,
+      })
+      .appendTo(this.$element);
+
+    const tileWidth = mapWidth / this.city.map.width;
+    const tileHeight = mapHeight / this.city.map.height;
+    this.$tiles = Array(this.city.map.width * this.city.map.height);
+
+    let pointerActive = false;
+    $(window).on('mouseup', () => { pointerActive = false; });
+
+    this.city.map.allCells().forEach(([i, j]) => {
+      this.$tiles[this.city.map.offset(i, j)] = $('<div class="city-map-tile"></div>')
+        .attr({
+          'data-x': i,
+          'data-y': j,
+        })
+        .css({
+          width: `${tileWidth * 100}%`,
+          height: `${tileHeight * 100}%`,
+          top: `${j * tileHeight * 100}%`,
+          left: `${i * tileWidth * 100}%`,
+        })
+        .on('mousedown', (ev) => {
+          pointerActive = true;
+          this.events.emit('action', [i, j], {
+            shiftKey: ev.shiftKey,
+          });
+        })
+        .on('mouseenter', (ev) => {
+          if (pointerActive) {
+            this.events.emit('action', [i, j], {
+              shiftKey: ev.shiftKey,
+            });
+          }
+        });
+      this.renderTile(i, j);
+    });
+
+    this.$map.append(this.$tiles);
+
+    this.city.map.events.on('update', this.handleCityUpdate.bind(this));
+  }
+
+  getTile(i, j) {
+    return this.$tiles[this.city.map.offset(i, j)];
+  }
+
+  renderTile(i, j) {
+    const tileType = this.config.tileTypes[this.city.map.get(i, j)] || null;
+    this.getTile(i, j)
+      .css({ backgroundColor: tileType ? tileType.color : null })
+      .removeAttr('data-road-connectivity');
+    this.updateRoadTileConnections(i, j);
+    this.city.map.adjacentCells(i, j)
+      .forEach(([x, y]) => this.updateRoadTileConnections(x, y));
+  }
+
+  updateRoadTileConnections(i, j) {
+    // Todo: This should be optimized so it's not called twice per frame for the same tile.
+    if (this.city.map.get(i, j) === ROAD_TILE) {
+      this.getTile(i, j).attr('data-road-connectivity',
+        [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]]
+          .map(([x, y]) => (!this.city.map.isValidCoords(x, y)
+            || this.city.map.get(x, y) === ROAD_TILE
+            ? '1' : '0')).join(''));
+    }
+  }
+
+  handleCityUpdate(updates) {
+    updates.forEach(([i, j]) => { this.renderTile(i, j); });
   }
 }
 
@@ -5515,10 +5579,10 @@ var __webpack_exports__ = {};
   \************************/
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var js_yaml__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! js-yaml */ "./node_modules/js-yaml/dist/js-yaml.mjs");
-/* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
+/* harmony import */ var _city__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./city */ "./src/js/city.js");
 /* harmony import */ var _emissions_variable__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./emissions-variable */ "./src/js/emissions-variable.js");
 /* harmony import */ var _map_view__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./map-view */ "./src/js/map-view.js");
-/* harmony import */ var _map_editor__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./map-editor */ "./src/js/map-editor.js");
+/* harmony import */ var _editor_map_editor__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./editor/map-editor */ "./src/js/editor/map-editor.js");
 /* harmony import */ var _variable_view__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./variable-view */ "./src/js/variable-view.js");
 /* harmony import */ var _sass_default_scss__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
 
@@ -5537,7 +5601,7 @@ fetch('./config.yml', { cache: 'no-store' })
     console.error(err);
   })
   .then((config) => {
-    const city = new _grid__WEBPACK_IMPORTED_MODULE_1__.default(config.cityWidth, config.cityHeight);
+    const city = new _city__WEBPACK_IMPORTED_MODULE_1__.default(config.cityWidth, config.cityHeight);
     const emissions = new _emissions_variable__WEBPACK_IMPORTED_MODULE_2__.default(city, config);
 
     $('[data-component=map-view]').each((i, element) => {
@@ -5545,7 +5609,7 @@ fetch('./config.yml', { cache: 'no-store' })
     });
 
     $('[data-component=map-editor]').each((i, element) => {
-      const mapEditor = new _map_editor__WEBPACK_IMPORTED_MODULE_4__.default($(element), city, config);
+      const mapEditor = new _editor_map_editor__WEBPACK_IMPORTED_MODULE_4__.default($(element), city, config);
     });
 
     $('[data-component=var-view]').each((i, element) => {
@@ -5557,4 +5621,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=bundle.4d2f5a0eb8c0211f21f2.js.map
+//# sourceMappingURL=bundle.355f4253c07f76f1c562.js.map

@@ -1,4 +1,4 @@
-import Modal from './modal';
+import Modal from '../modal';
 import CityBrowser from './city-browser';
 
 export default class ModalLoad extends Modal {
