@@ -9,6 +9,7 @@ export default class EmissionsVariable {
     this.events = new EventEmitter();
 
     this.city.map.events.on('update', this.handleCityUpdate.bind(this));
+    this.handleCityUpdate(this.city.map.allCells());
   }
 
   calculate(i, j) {

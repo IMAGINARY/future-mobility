@@ -8,14 +8,14 @@ import ModalImport from './modal-import';
 import ObjectStore from './object-store';
 
 export default class MapEditor {
-  constructor($element, city, config) {
+  constructor($element, city, config, textures) {
     this.$element = $element;
     this.city = city;
     this.config = config;
 
-    this.$element.addClass('map-editor');
+    this.mapView = new MapView(city, config, textures);
+    this.displayObject = this.mapView.displayObject;
 
-    this.mapView = new MapView($('<div></div>').appendTo(this.$element), city, config);
     this.palette = new MapEditorPalette($('<div></div>').appendTo(this.$element), config);
 
     this.tileType = this.palette.tileId;

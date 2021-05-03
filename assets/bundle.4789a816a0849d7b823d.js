@@ -2,6 +2,16 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./cities.json":
+/*!*********************!*\
+  !*** ./cities.json ***!
+  \*********************/
+/***/ ((module) => {
+
+module.exports = JSON.parse('{"cities":[{"map":["3","3","5","3","1","2","2","4","4","2","2","1","3","5","3","3","3","5","3","5","1","2","2","4","4","2","2","1","5","3","5","3","5","3","5","3","1","2","2","4","4","2","2","1","3","5","3","5","3","5","3","1","1","1","2","4","4","2","1","1","1","3","5","3","1","1","1","1","5","1","1","1","1","1","1","5","1","1","1","1","2","2","2","1","1","2","2","4","4","2","2","1","1","2","2","2","5","5","5","5","1","5","5","5","5","5","5","1","5","5","5","5","6","6","6","6","1","6","6","6","6","6","6","1","6","6","6","6","6","6","6","6","1","6","6","6","6","6","6","1","6","6","6","6","5","5","5","5","1","5","5","5","5","5","5","1","5","5","5","5","2","2","2","1","1","2","2","4","4","2","2","1","1","2","2","2","1","1","1","1","5","1","1","1","1","1","1","5","1","1","1","1","3","5","3","1","1","1","2","4","4","2","1","1","1","3","5","3","5","3","5","3","1","2","2","4","4","2","2","1","3","5","3","5","3","5","3","5","1","2","2","4","4","2","2","1","5","3","5","3","3","3","5","3","1","2","2","4","4","2","2","1","3","5","3","3"]},{"map":["3","3","3","1","5","5","5","1","4","4","4","4","4","2","2","2","3","3","3","1","5","5","5","1","4","4","4","4","4","2","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","2","2","2","2","1","2","2","2","1","2","2","2","2","1","2","2","2","2","2","2","1","2","2","2","1","2","2","2","2","1","2","6","6","5","5","5","1","2","2","2","1","5","5","6","6","1","6","6","6","6","6","6","1","6","6","6","1","6","6","6","4","1","5","5","6","6","6","6","1","6","6","6","1","6","6","5","5","1","4","4","5","6","6","6","1","6","6","6","1","6","6","6","6","1","5","5","6","5","5","5","1","5","5","5","1","5","5","5","6","1","6","6","6","4","4","4","1","4","4","4","1","4","4","4","4","1","5","5","5","1","1","1","1","1","1","1","1","1","4","4","4","1","2","2","2","5","5","5","1","4","4","4","4","1","1","1","1","1","1","1","1","3","3","3","1","4","4","4","4","5","5","1","2","2","2","2","2","3","3","3","1","3","3","3","3","3","5","1","2","2","2","2","2","3","3","3","1","3","3","3","3","3","5","1","2","2","2","2","2"]},{"map":["3","3","1","4","4","1","4","4","1","4","4","1","4","4","1","3","3","3","1","4","4","1","4","4","1","4","4","1","4","4","1","3","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","5","5","1","2","2","1","2","2","1","2","2","1","2","2","1","5","5","5","1","2","2","1","2","2","1","2","2","1","2","2","1","5","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","3","3","1","5","5","1","2","2","1","2","2","1","5","5","1","3","3","3","1","5","5","1","2","2","1","2","2","1","5","5","1","3","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","5","5","1","2","2","1","2","2","1","2","2","1","2","2","1","5","5","5","1","2","2","1","2","2","1","2","2","1","2","2","1","5","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","3","3","1","5","5","1","2","2","1","2","2","1","5","5","1","3","3","3","1","5","5","1","2","2","1","2","2","1","5","5","1","3","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","3","3","1","4","4","1","4","4","1","4","4","1","4","4","1","3"]}]}');
+
+/***/ }),
+
 /***/ "./node_modules/events/events.js":
 /*!***************************************!*\
   !*** ./node_modules/events/events.js ***!
@@ -4631,14 +4641,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class MapEditor {
-  constructor($element, city, config) {
+  constructor($element, city, config, textures) {
     this.$element = $element;
     this.city = city;
     this.config = config;
 
-    this.$element.addClass('map-editor');
+    this.mapView = new _map_view__WEBPACK_IMPORTED_MODULE_1__.default(city, config, textures);
+    this.displayObject = this.mapView.displayObject;
 
-    this.mapView = new _map_view__WEBPACK_IMPORTED_MODULE_1__.default($('<div></div>').appendTo(this.$element), city, config);
     this.palette = new _map_editor_palette__WEBPACK_IMPORTED_MODULE_2__.default($('<div></div>').appendTo(this.$element), config);
 
     this.tileType = this.palette.tileId;
@@ -5025,6 +5035,7 @@ class EmissionsVariable {
     this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
 
     this.city.map.events.on('update', this.handleCityUpdate.bind(this));
+    this.handleCityUpdate(this.city.map.allCells());
   }
 
   calculate(i, j) {
@@ -5264,96 +5275,107 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _static_fa_pencil_alt_solid_svg__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../static/fa/pencil-alt-solid.svg */ "./static/fa/pencil-alt-solid.svg");
+/* globals PIXI */
+
 
 
 const ROAD_TILE = '1';
+const TILE_SIZE = 120;
 
 class MapView {
-  constructor($element, city, config) {
-    this.$element = $element;
+  constructor(city, config, textures) {
+    this.displayObject = new PIXI.Container();
     this.city = city;
     this.config = config;
+    this.textures = textures;
     this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
 
-    this.$element.addClass('map-view');
-
-    const mapWidth = 1;
-    const mapHeight = this.city.map.height / this.city.map.width;
-    this.$map = $('<div class="city-map"></div>')
-      .css({
-        width: `${mapWidth * 100}%`,
-        height: 0,
-        paddingBottom: `${mapHeight * 100}%`,
-      })
-      .appendTo(this.$element);
-
-    const tileWidth = mapWidth / this.city.map.width;
-    const tileHeight = mapHeight / this.city.map.height;
-    this.$tiles = Array(this.city.map.width * this.city.map.height);
+    this.bgTiles = Array(this.city.map.width * this.city.map.height);
+    this.textureTiles = Array(this.city.map.width * this.city.map.height);
 
     let pointerActive = false;
     $(window).on('mouseup', () => { pointerActive = false; });
 
     this.city.map.allCells().forEach(([i, j]) => {
-      this.$tiles[this.city.map.offset(i, j)] = $('<div class="city-map-tile"></div>')
-        .attr({
-          'data-x': i,
-          'data-y': j,
-        })
-        .css({
-          width: `${tileWidth * 100}%`,
-          height: `${tileHeight * 100}%`,
-          top: `${j * tileHeight * 100}%`,
-          left: `${i * tileWidth * 100}%`,
-        })
-        .on('mousedown', (ev) => {
-          pointerActive = true;
-          this.events.emit('action', [i, j], {
-            shiftKey: ev.shiftKey,
-          });
-        })
-        .on('mouseenter', (ev) => {
-          if (pointerActive) {
-            this.events.emit('action', [i, j], {
-              shiftKey: ev.shiftKey,
-            });
-          }
+      const bgTile = new PIXI.Graphics();
+      bgTile.x = i * TILE_SIZE;
+      bgTile.y = j * TILE_SIZE;
+      bgTile.interactive = true;
+      bgTile.on('mousedown', (ev) => {
+        pointerActive = true;
+        this.events.emit('action', [i, j], {
+          shiftKey: ev.data.originalEvent.shiftKey,
         });
+      });
+      bgTile.on('mouseover', (ev) => {
+        if (pointerActive) {
+          this.events.emit('action', [i, j], {
+            shiftKey: ev.data.originalEvent.shiftKey,
+          });
+        }
+      });
+      bgTile.cursor = `url(${_static_fa_pencil_alt_solid_svg__WEBPACK_IMPORTED_MODULE_1__}) 0 20, auto`;
+      this.bgTiles[this.city.map.offset(i, j)] = bgTile;
+
+      const textureTile = new PIXI.Sprite();
+      textureTile.x = i * TILE_SIZE;
+      textureTile.y = j * TILE_SIZE;
+      textureTile.width = TILE_SIZE;
+      textureTile.height = TILE_SIZE;
+      textureTile.roundPixels = true;
+      this.textureTiles[this.city.map.offset(i, j)] = textureTile;
       this.renderTile(i, j);
     });
 
-    this.$map.append(this.$tiles);
-
+    this.displayObject.addChild(...this.bgTiles);
+    this.displayObject.addChild(...this.textureTiles);
     this.city.map.events.on('update', this.handleCityUpdate.bind(this));
+    this.handleCityUpdate(this.city.map.allCells());
   }
 
-  getTile(i, j) {
-    return this.$tiles[this.city.map.offset(i, j)];
+  getBgTile(i, j) {
+    return this.bgTiles[this.city.map.offset(i, j)];
+  }
+
+  getTextureTile(i, j) {
+    return this.textureTiles[this.city.map.offset(i, j)];
   }
 
   renderTile(i, j) {
-    const tileType = this.config.tileTypes[this.city.map.get(i, j)] || null;
-    this.getTile(i, j)
-      .css({ backgroundColor: tileType ? tileType.color : null })
-      .removeAttr('data-road-connectivity');
-    this.updateRoadTileConnections(i, j);
-    this.city.map.adjacentCells(i, j)
-      .forEach(([x, y]) => this.updateRoadTileConnections(x, y));
-  }
-
-  updateRoadTileConnections(i, j) {
-    // Todo: This should be optimized so it's not called twice per frame for the same tile.
+    this.renderBasicTile(i, j);
     if (this.city.map.get(i, j) === ROAD_TILE) {
-      this.getTile(i, j).attr('data-road-connectivity',
-        [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]]
-          .map(([x, y]) => (!this.city.map.isValidCoords(x, y)
-            || this.city.map.get(x, y) === ROAD_TILE
-            ? '1' : '0')).join(''));
+      this.renderRoadTile(i, j);
     }
   }
 
+  renderRoadTile(i, j) {
+    const connMask = [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]]
+      .map(([x, y]) => (!this.city.map.isValidCoords(x, y)
+      || this.city.map.get(x, y) === ROAD_TILE
+        ? '1' : '0')).join('');
+    this.getTextureTile(i, j).texture = this.textures[`road${connMask}`];
+    this.getTextureTile(i, j).visible = true;
+  }
+
+  renderBasicTile(i, j) {
+    const tileType = this.config.tileTypes[this.city.map.get(i, j)] || null;
+    this.getBgTile(i, j)
+      .clear()
+      .beginFill(tileType ? Number(`0x${tileType.color.substr(1)}`) : 0, 1)
+      .drawRect(0, 0, TILE_SIZE, TILE_SIZE)
+      .endFill();
+    this.getTextureTile(i, j).visible = false;
+  }
+
   handleCityUpdate(updates) {
-    updates.forEach(([i, j]) => { this.renderTile(i, j); });
+    updates.forEach(([i, j]) => {
+      this.renderTile(i, j);
+      // Todo: This should be optimized so it's not called twice per frame for the same tile.
+      this.city.map.adjacentCells(i, j)
+        .filter(([x, y]) => this.city.map.get(x, y) === ROAD_TILE)
+        .forEach(([x, y]) => this.renderRoadTile(x, y));
+    });
   }
 }
 
@@ -5434,6 +5456,73 @@ class Modal {
 
 /***/ }),
 
+/***/ "./src/js/textures-roads.js":
+/*!**********************************!*\
+  !*** ./src/js/textures-roads.js ***!
+  \**********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _static_tiles_road_0000_png__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../static/tiles/road-0000.png */ "./static/tiles/road-0000.png");
+/* harmony import */ var _static_tiles_road_0001_png__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../static/tiles/road-0001.png */ "./static/tiles/road-0001.png");
+/* harmony import */ var _static_tiles_road_0010_png__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../static/tiles/road-0010.png */ "./static/tiles/road-0010.png");
+/* harmony import */ var _static_tiles_road_0011_png__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../static/tiles/road-0011.png */ "./static/tiles/road-0011.png");
+/* harmony import */ var _static_tiles_road_0100_png__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../static/tiles/road-0100.png */ "./static/tiles/road-0100.png");
+/* harmony import */ var _static_tiles_road_0101_png__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../static/tiles/road-0101.png */ "./static/tiles/road-0101.png");
+/* harmony import */ var _static_tiles_road_0110_png__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../static/tiles/road-0110.png */ "./static/tiles/road-0110.png");
+/* harmony import */ var _static_tiles_road_0111_png__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../static/tiles/road-0111.png */ "./static/tiles/road-0111.png");
+/* harmony import */ var _static_tiles_road_1000_png__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../static/tiles/road-1000.png */ "./static/tiles/road-1000.png");
+/* harmony import */ var _static_tiles_road_1001_png__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../static/tiles/road-1001.png */ "./static/tiles/road-1001.png");
+/* harmony import */ var _static_tiles_road_1010_png__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../static/tiles/road-1010.png */ "./static/tiles/road-1010.png");
+/* harmony import */ var _static_tiles_road_1011_png__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../static/tiles/road-1011.png */ "./static/tiles/road-1011.png");
+/* harmony import */ var _static_tiles_road_1100_png__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../static/tiles/road-1100.png */ "./static/tiles/road-1100.png");
+/* harmony import */ var _static_tiles_road_1101_png__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../static/tiles/road-1101.png */ "./static/tiles/road-1101.png");
+/* harmony import */ var _static_tiles_road_1110_png__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../static/tiles/road-1110.png */ "./static/tiles/road-1110.png");
+/* harmony import */ var _static_tiles_road_1111_png__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../static/tiles/road-1111.png */ "./static/tiles/road-1111.png");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const RoadTextures = {
+  road0000: _static_tiles_road_0000_png__WEBPACK_IMPORTED_MODULE_0__,
+  road0001: _static_tiles_road_0001_png__WEBPACK_IMPORTED_MODULE_1__,
+  road0010: _static_tiles_road_0010_png__WEBPACK_IMPORTED_MODULE_2__,
+  road0011: _static_tiles_road_0011_png__WEBPACK_IMPORTED_MODULE_3__,
+  road0100: _static_tiles_road_0100_png__WEBPACK_IMPORTED_MODULE_4__,
+  road0101: _static_tiles_road_0101_png__WEBPACK_IMPORTED_MODULE_5__,
+  road0110: _static_tiles_road_0110_png__WEBPACK_IMPORTED_MODULE_6__,
+  road0111: _static_tiles_road_0111_png__WEBPACK_IMPORTED_MODULE_7__,
+  road1000: _static_tiles_road_1000_png__WEBPACK_IMPORTED_MODULE_8__,
+  road1001: _static_tiles_road_1001_png__WEBPACK_IMPORTED_MODULE_9__,
+  road1010: _static_tiles_road_1010_png__WEBPACK_IMPORTED_MODULE_10__,
+  road1011: _static_tiles_road_1011_png__WEBPACK_IMPORTED_MODULE_11__,
+  road1100: _static_tiles_road_1100_png__WEBPACK_IMPORTED_MODULE_12__,
+  road1101: _static_tiles_road_1101_png__WEBPACK_IMPORTED_MODULE_13__,
+  road1110: _static_tiles_road_1110_png__WEBPACK_IMPORTED_MODULE_14__,
+  road1111: _static_tiles_road_1111_png__WEBPACK_IMPORTED_MODULE_15__,
+};
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (RoadTextures);
+
+
+/***/ }),
+
 /***/ "./src/js/variable-view.js":
 /*!*********************************!*\
   !*** ./src/js/variable-view.js ***!
@@ -5444,53 +5533,38 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ VariableView)
 /* harmony export */ });
+/* globals PIXI */
+
+const TILE_SIZE = 10;
+
 class VariableView {
-  constructor($element, variable) {
-    this.$element = $element;
+  constructor(variable) {
+    this.displayObject = new PIXI.Container();
     this.variable = variable;
 
-    this.$element.addClass('variable-view');
-
-    const mapWidth = 1;
-    const mapHeight = this.variable.grid.height / this.variable.grid.width;
-    this.$map = $('<div class="variable-map"></div>')
-      .css({
-        width: `${mapWidth * 100}%`,
-        height: 0,
-        paddingBottom: `${mapHeight * 100}%`,
-      })
-      .appendTo(this.$element);
-
-    const tileWidth = mapWidth / this.variable.grid.width;
-    const tileHeight = mapHeight / this.variable.grid.height;
-    this.$tiles = Array(this.variable.grid.width * this.variable.grid.height);
+    this.tiles = Array(this.variable.grid.width * this.variable.grid.height);
     this.variable.grid.allCells().forEach(([i, j]) => {
-      this.$tiles[this.variable.grid.offset(i, j)] = $('<div class="variable-map-tile"></div>')
-        .attr({
-          'data-x': i,
-          'data-y': j,
-        })
-        .css({
-          width: `${tileWidth * 100}%`,
-          height: `${tileHeight * 100}%`,
-          top: `${j * tileHeight * 100}%`,
-          left: `${i * tileWidth * 100}%`,
-        });
-      this.renderTile(i, j);
+      const newTile = new PIXI.Graphics();
+      newTile.x = i * TILE_SIZE;
+      newTile.y = j * TILE_SIZE;
+      this.tiles[this.variable.grid.offset(i, j)] = newTile;
     });
 
-    this.$map.append(this.$tiles);
-
+    this.displayObject.addChild(...this.tiles);
     this.variable.events.on('update', this.handleUpdate.bind(this));
+    this.handleUpdate(this.variable.grid.allCells());
   }
 
   getTile(i, j) {
-    return this.$tiles[this.variable.grid.offset(i, j)];
+    return this.tiles[this.variable.grid.offset(i, j)];
   }
 
   renderTile(i, j) {
     this.getTile(i, j)
-      .css({ backgroundColor: `rgba(95, 32, 2, ${this.variable.grid.get(i, j)})` });
+      .clear()
+      .beginFill(0x953202, this.variable.grid.get(i, j))
+      .drawRect(0, 0, TILE_SIZE, TILE_SIZE)
+      .endFill();
   }
 
   handleUpdate(updates) {
@@ -5500,6 +5574,176 @@ class VariableView {
   }
 }
 
+
+/***/ }),
+
+/***/ "./static/fa/pencil-alt-solid.svg":
+/*!****************************************!*\
+  !*** ./static/fa/pencil-alt-solid.svg ***!
+  \****************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "2174451d87ee3f5a3181.svg";
+
+/***/ }),
+
+/***/ "./static/tiles/road-0000.png":
+/*!************************************!*\
+  !*** ./static/tiles/road-0000.png ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "4aa4f25891341b58ffca.png";
+
+/***/ }),
+
+/***/ "./static/tiles/road-0001.png":
+/*!************************************!*\
+  !*** ./static/tiles/road-0001.png ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "d8c9d80684d9b70837bd.png";
+
+/***/ }),
+
+/***/ "./static/tiles/road-0010.png":
+/*!************************************!*\
+  !*** ./static/tiles/road-0010.png ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "427dec7190ca5f5569db.png";
+
+/***/ }),
+
+/***/ "./static/tiles/road-0011.png":
+/*!************************************!*\
+  !*** ./static/tiles/road-0011.png ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "431f05d9c4221497e658.png";
+
+/***/ }),
+
+/***/ "./static/tiles/road-0100.png":
+/*!************************************!*\
+  !*** ./static/tiles/road-0100.png ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "238783b3fa9bb31ba399.png";
+
+/***/ }),
+
+/***/ "./static/tiles/road-0101.png":
+/*!************************************!*\
+  !*** ./static/tiles/road-0101.png ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "5dae106cac7148a29e2c.png";
+
+/***/ }),
+
+/***/ "./static/tiles/road-0110.png":
+/*!************************************!*\
+  !*** ./static/tiles/road-0110.png ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "819a0d4cc47af95e3ef5.png";
+
+/***/ }),
+
+/***/ "./static/tiles/road-0111.png":
+/*!************************************!*\
+  !*** ./static/tiles/road-0111.png ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "8c568495e8fbd3e955b0.png";
+
+/***/ }),
+
+/***/ "./static/tiles/road-1000.png":
+/*!************************************!*\
+  !*** ./static/tiles/road-1000.png ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "e0ce2c01a53a5ec32afa.png";
+
+/***/ }),
+
+/***/ "./static/tiles/road-1001.png":
+/*!************************************!*\
+  !*** ./static/tiles/road-1001.png ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "bd2b944da40dc1c1c39c.png";
+
+/***/ }),
+
+/***/ "./static/tiles/road-1010.png":
+/*!************************************!*\
+  !*** ./static/tiles/road-1010.png ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "0853f4d2d6a67233e5da.png";
+
+/***/ }),
+
+/***/ "./static/tiles/road-1011.png":
+/*!************************************!*\
+  !*** ./static/tiles/road-1011.png ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "afda18a84686120dad88.png";
+
+/***/ }),
+
+/***/ "./static/tiles/road-1100.png":
+/*!************************************!*\
+  !*** ./static/tiles/road-1100.png ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "0d2e0075fdfd279af035.png";
+
+/***/ }),
+
+/***/ "./static/tiles/road-1101.png":
+/*!************************************!*\
+  !*** ./static/tiles/road-1101.png ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "645522656511640e779d.png";
+
+/***/ }),
+
+/***/ "./static/tiles/road-1110.png":
+/*!************************************!*\
+  !*** ./static/tiles/road-1110.png ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "b4d8af395f5b72230f9c.png";
+
+/***/ }),
+
+/***/ "./static/tiles/road-1111.png":
+/*!************************************!*\
+  !*** ./static/tiles/road-1111.png ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "9dd16a7ec1f9303122cb.png";
 
 /***/ })
 
@@ -5554,6 +5798,18 @@ class VariableView {
 /******/ 		};
 /******/ 	})();
 /******/ 	
+/******/ 	/* webpack/runtime/global */
+/******/ 	(() => {
+/******/ 		__webpack_require__.g = (function() {
+/******/ 			if (typeof globalThis === 'object') return globalThis;
+/******/ 			try {
+/******/ 				return this || new Function('return this')();
+/******/ 			} catch (e) {
+/******/ 				if (typeof window === 'object') return window;
+/******/ 			}
+/******/ 		})();
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
 /******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
@@ -5568,6 +5824,26 @@ class VariableView {
 /******/ 			}
 /******/ 			Object.defineProperty(exports, '__esModule', { value: true });
 /******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/publicPath */
+/******/ 	(() => {
+/******/ 		var scriptUrl;
+/******/ 		if (__webpack_require__.g.importScripts) scriptUrl = __webpack_require__.g.location + "";
+/******/ 		var document = __webpack_require__.g.document;
+/******/ 		if (!scriptUrl && document) {
+/******/ 			if (document.currentScript)
+/******/ 				scriptUrl = document.currentScript.src
+/******/ 			if (!scriptUrl) {
+/******/ 				var scripts = document.getElementsByTagName("script");
+/******/ 				if(scripts.length) scriptUrl = scripts[scripts.length - 1].src
+/******/ 			}
+/******/ 		}
+/******/ 		// When supporting browsers where an automatic publicPath is not supported you must specify an output.publicPath manually via configuration
+/******/ 		// or pass an empty string ("") and set the __webpack_public_path__ variable from your code to use your own logic.
+/******/ 		if (!scriptUrl) throw new Error("Automatic publicPath is not supported in this browser");
+/******/ 		scriptUrl = scriptUrl.replace(/#.*$/, "").replace(/\?.*$/, "").replace(/\/[^\/]+$/, "/");
+/******/ 		__webpack_require__.p = scriptUrl;
 /******/ 	})();
 /******/ 	
 /************************************************************************/
@@ -5585,6 +5861,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _editor_map_editor__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./editor/map-editor */ "./src/js/editor/map-editor.js");
 /* harmony import */ var _variable_view__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./variable-view */ "./src/js/variable-view.js");
 /* harmony import */ var _sass_default_scss__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
+/* harmony import */ var _textures_roads__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./textures-roads */ "./src/js/textures-roads.js");
+/* harmony import */ var _cities_json__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../cities.json */ "./cities.json");
+/* globals PIXI */
+
+
 
 
 
@@ -5601,19 +5882,43 @@ fetch('./config.yml', { cache: 'no-store' })
     console.error(err);
   })
   .then((config) => {
+    // const city = City.fromJSON(Cities.cities[0]);
     const city = new _city__WEBPACK_IMPORTED_MODULE_1__.default(config.cityWidth, config.cityHeight);
     const emissions = new _emissions_variable__WEBPACK_IMPORTED_MODULE_2__.default(city, config);
 
-    $('[data-component=map-view]').each((i, element) => {
-      const mapView = new _map_view__WEBPACK_IMPORTED_MODULE_3__.default($(element), city, config);
+    const app = new PIXI.Application({
+      width: 3840,
+      height: 1920,
+      backgroundColor: 0xf2f2f2,
     });
-
-    $('[data-component=map-editor]').each((i, element) => {
-      const mapEditor = new _editor_map_editor__WEBPACK_IMPORTED_MODULE_4__.default($(element), city, config);
+    Object.entries(_textures_roads__WEBPACK_IMPORTED_MODULE_7__.default).forEach(([id, path]) => {
+      app.loader.add(id, path);
     });
+    app.loader.load((loader, resources) => {
+      $('[data-component="app-container"]').append(app.view);
+      const textures = Object.fromEntries(
+        Object.entries(_textures_roads__WEBPACK_IMPORTED_MODULE_7__.default).map(([id]) => [id, resources[id].texture])
+      );
 
-    $('[data-component=var-view]').each((i, element) => {
-      const varViewer = new _variable_view__WEBPACK_IMPORTED_MODULE_5__.default($(element), emissions);
+      // Change the scaling mode for the road textures
+      Object.keys(textures).forEach((id) => {
+        textures[id].baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
+      });
+
+      // const mapView = new MapView(city, config, textures);
+      const mapView = new _editor_map_editor__WEBPACK_IMPORTED_MODULE_4__.default($('body'), city, config, textures);
+      app.stage.addChild(mapView.displayObject);
+      mapView.displayObject.width = 1920;
+      mapView.displayObject.height = 1920;
+      mapView.displayObject.x = 0;
+      mapView.displayObject.y = 0;
+
+      const varViewer = new _variable_view__WEBPACK_IMPORTED_MODULE_5__.default(emissions);
+      app.stage.addChild(varViewer.displayObject);
+      varViewer.displayObject.width = 960;
+      varViewer.displayObject.height = 960;
+      varViewer.displayObject.x = 1920 + 40;
+      varViewer.displayObject.y = 0;
     });
   });
 
@@ -5621,4 +5926,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=bundle.355f4253c07f76f1c562.js.map
+//# sourceMappingURL=bundle.4789a816a0849d7b823d.js.map

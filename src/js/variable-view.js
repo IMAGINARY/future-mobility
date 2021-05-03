@@ -1,50 +1,35 @@
+/* globals PIXI */
+
+const TILE_SIZE = 10;
+
 export default class VariableView {
-  constructor($element, variable) {
-    this.$element = $element;
+  constructor(variable) {
+    this.displayObject = new PIXI.Container();
     this.variable = variable;
 
-    this.$element.addClass('variable-view');
-
-    const mapWidth = 1;
-    const mapHeight = this.variable.grid.height / this.variable.grid.width;
-    this.$map = $('<div class="variable-map"></div>')
-      .css({
-        width: `${mapWidth * 100}%`,
-        height: 0,
-        paddingBottom: `${mapHeight * 100}%`,
-      })
-      .appendTo(this.$element);
-
-    const tileWidth = mapWidth / this.variable.grid.width;
-    const tileHeight = mapHeight / this.variable.grid.height;
-    this.$tiles = Array(this.variable.grid.width * this.variable.grid.height);
+    this.tiles = Array(this.variable.grid.width * this.variable.grid.height);
     this.variable.grid.allCells().forEach(([i, j]) => {
-      this.$tiles[this.variable.grid.offset(i, j)] = $('<div class="variable-map-tile"></div>')
-        .attr({
-          'data-x': i,
-          'data-y': j,
-        })
-        .css({
-          width: `${tileWidth * 100}%`,
-          height: `${tileHeight * 100}%`,
-          top: `${j * tileHeight * 100}%`,
-          left: `${i * tileWidth * 100}%`,
-        });
-      this.renderTile(i, j);
+      const newTile = new PIXI.Graphics();
+      newTile.x = i * TILE_SIZE;
+      newTile.y = j * TILE_SIZE;
+      this.tiles[this.variable.grid.offset(i, j)] = newTile;
     });
 
-    this.$map.append(this.$tiles);
-
+    this.displayObject.addChild(...this.tiles);
     this.variable.events.on('update', this.handleUpdate.bind(this));
+    this.handleUpdate(this.variable.grid.allCells());
   }
 
   getTile(i, j) {
-    return this.$tiles[this.variable.grid.offset(i, j)];
+    return this.tiles[this.variable.grid.offset(i, j)];
   }
 
   renderTile(i, j) {
     this.getTile(i, j)
-      .css({ backgroundColor: `rgba(95, 32, 2, ${this.variable.grid.get(i, j)})` });
+      .clear()
+      .beginFill(0x953202, this.variable.grid.get(i, j))
+      .drawRect(0, 0, TILE_SIZE, TILE_SIZE)
+      .endFill();
   }
 
   handleUpdate(updates) {

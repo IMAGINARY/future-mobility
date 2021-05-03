@@ -18,6 +18,10 @@ h2 {
   font-size: 1.5rem;
   margin-bottom: 0.75em; }
 
+[data-component="app-container"] canvas {
+  width: 100%;
+  height: auto; }
+
 .map-view, .map-editor {
   width: 100%;
   height: 100%;
@@ -99,15 +103,10 @@ h2 {
     background-color: #4a4a4a;
     border: 1px solid #fff; }
 
-.map-editor {
-  padding: 0 60px; }
-  .map-editor .map-view {
-    cursor: url(2174451d87ee3f5a3181.svg) 0 20, auto; }
-
 .map-editor-palette {
   position: absolute;
-  top: 2px;
-  left: 2px;
+  top: 5px;
+  left: 5px;
   padding: 4px;
   background-color: white; }
   .map-editor-palette .editor-palette-button {
@@ -181,4 +180,4 @@ button.city-browser-item-new {
     border: 3px solid #000; }
 
 
-/*# sourceMappingURL=main.c047b3d10610b606fcc4.css.map*/
+/*# sourceMappingURL=main.e5851fcba4813fee2ca4.css.map*/
