@@ -7,7 +7,9 @@ import MapEditor from './editor/map-editor';
 import VariableView from './variable-view';
 import '../sass/default.scss';
 import RoadTextures from './textures-roads';
+import CarTextures from './textures-cars';
 import Cities from '../../cities.json';
+import CarOverlay from './car-overlay';
 
 fetch('./config.yml', { cache: 'no-store' })
   .then(response => response.text())
@@ -17,8 +19,8 @@ fetch('./config.yml', { cache: 'no-store' })
     console.error(err);
   })
   .then((config) => {
-    // const city = City.fromJSON(Cities.cities[0]);
-    const city = new City(config.cityWidth, config.cityHeight);
+    const city = City.fromJSON(Cities.cities[2]);
+    // const city = new City(config.cityWidth, config.cityHeight);
     const emissions = new EmissionsVariable(city, config);
 
     const app = new PIXI.Application({
@@ -29,10 +31,19 @@ fetch('./config.yml', { cache: 'no-store' })
     Object.entries(RoadTextures).forEach(([id, path]) => {
       app.loader.add(id, path);
     });
+    Object.entries(CarTextures).forEach(([id, path]) => {
+      app.loader.add(id, path);
+    });
     app.loader.load((loader, resources) => {
       $('[data-component="app-container"]').append(app.view);
-      const textures = Object.fromEntries(
-        Object.entries(RoadTextures).map(([id]) => [id, resources[id].texture])
+      const textures = Object.assign(
+        {},
+        Object.fromEntries(
+          Object.entries(RoadTextures).map(([id]) => [id, resources[id].texture])
+        ),
+        Object.fromEntries(
+          Object.entries(CarTextures).map(([id]) => [id, resources[id].texture])
+        )
       );
 
       // Change the scaling mode for the road textures
@@ -47,6 +58,10 @@ fetch('./config.yml', { cache: 'no-store' })
       mapView.displayObject.height = 1920;
       mapView.displayObject.x = 0;
       mapView.displayObject.y = 0;
+
+      const carOverlay = new CarOverlay(city, config, textures);
+      app.stage.addChild(carOverlay.displayObject);
+      app.ticker.add(time => carOverlay.animate(time));
 
       const varViewer = new VariableView(emissions);
       app.stage.addChild(varViewer.displayObject);
