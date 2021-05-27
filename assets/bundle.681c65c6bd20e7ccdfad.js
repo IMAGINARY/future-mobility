@@ -4416,13 +4416,26 @@ class CarOverlay {
     this.textures = textures;
 
     this.cars = [];
-    this.addCar();
+    this.addCar(new _car__WEBPACK_IMPORTED_MODULE_0__.default(this, this.textures.car001, 2, 0, 'N', 1));
+    this.addCar(new _car__WEBPACK_IMPORTED_MODULE_0__.default(this, this.textures.car002, 5, 0, 'N', 2));
+    this.addCar(new _car__WEBPACK_IMPORTED_MODULE_0__.default(this, this.textures.car003, 8, 0, 'N', 1));
+    this.addCar(new _car__WEBPACK_IMPORTED_MODULE_0__.default(this, this.textures.car004, 11, 0, 'N', 2));
+    this.addCar(new _car__WEBPACK_IMPORTED_MODULE_0__.default(this, this.textures.car005, 14, 0, 'N', 1));
   }
 
-  addCar() {
-    const newCar = new _car__WEBPACK_IMPORTED_MODULE_0__.default(this, this.textures.car002);
-    this.cars.push(newCar);
-    this.displayObject.addChild(newCar.sprite);
+  addCar(aCar) {
+    this.cars.push(aCar);
+    this.displayObject.addChild(aCar.sprite);
+  }
+
+  destroyCar(aCar) {
+    this.cars.splice(this.cars.indexOf(aCar), 1);
+    this.displayObject.removeChild(aCar);
+    aCar.destroy();
+  }
+
+  onCarExitMap(aCar) {
+    this.destroyCar(aCar);
   }
 
   animate(time) {
@@ -4536,83 +4549,88 @@ function tileOutCoords(i, j, lane, side) {
 }
 
 class Car {
-  constructor(carOverlay, texture) {
+  constructor(carOverlay, texture, i, j, side, lane) {
     this.overlay = carOverlay;
 
-    this.active = true;
-    this.tile = { i: 5, j: 0 };
-    this.lane = 1; // 0: bike path, 1: outer lane, 2: inner lane
-    this.sideIn = 'N';
-    this.sideOut = 'S';
+    this.tile = { i, j };
+    this.sideIn = side;
+    this.lane = lane; // 0: bike path, 1: outer lane, 2: inner lane
+    this.sideOut = this.getRandomSideOut();
     this.speed = 1;
 
+    // Init the Sprite
     this.sprite = new PIXI.Sprite();
-    [this.sprite.x, this.sprite.y] = tileInCoords(
-      this.tile.i, this.tile.j, this.lane, this.sideIn
-    );
     this.sprite.texture = texture;
     this.sprite.width = texture.baseTexture.width;
     this.sprite.height = texture.baseTexture.height;
     this.sprite.roundPixels = true;
     this.sprite.anchor.set(0.5);
     this.sprite.visible = true;
+
+    [this.sprite.x, this.sprite.y] = tileInCoords(
+      this.tile.i, this.tile.j, this.lane, this.sideIn
+    );
   }
 
-  randomSideOut() {
+  destroy() {
+    this.sprite.destroy();
+    this.sprite = null;
+    this.overlay = null;
+  }
+
+  getRandomSideOut() {
     // Select the direction based on road availability
-    const sideOutChoices = [];
+    const options = [];
     const isRoad = (i, j) => (!this.overlay.city.map.isValidCoords(i, j)
       || this.overlay.city.map.get(i, j) === ROAD_TILE);
 
     // If it's possible to go forward, add the option
     if (isRoad(...adjTile(this.tile.i, this.tile.j, oppositeSide(this.sideIn)))) {
       // Add it three times to make it more likely than turning
-      sideOutChoices.push(oppositeSide(this.sideIn));
-      sideOutChoices.push(oppositeSide(this.sideIn));
-      sideOutChoices.push(oppositeSide(this.sideIn));
+      options.push(oppositeSide(this.sideIn));
+      options.push(oppositeSide(this.sideIn));
+      options.push(oppositeSide(this.sideIn));
     }
     // If it's possible to turn right, add the option
     if (isRoad(...adjTile(this.tile.i, this.tile.j, rightTurn(this.sideIn)))) {
-      sideOutChoices.push(rightTurn(this.sideIn));
+      options.push(rightTurn(this.sideIn));
     }
     // If it's not possible to go forward or turn right,
     // turn left if possible.
-    if (sideOutChoices.length === 0
+    if (options.length === 0
       && isRoad(...adjTile(this.tile.i, this.tile.j, leftTurn(this.sideIn)))) {
-      sideOutChoices.push(leftTurn(this.sideIn));
-    }
-    // There's no way to go
-    if (sideOutChoices.length === 0) {
-      return null;
+      options.push(leftTurn(this.sideIn));
     }
 
     // Randomly select one of the possible directions
-    return sideOutChoices[Math.floor(Math.random() * sideOutChoices.length)];
+    // return null if there's no way to go
+    return options[Math.floor(Math.random() * options.length)] || null;
   }
 
   handleTileExit() {
     // Set next tile
-    const newTile = adjTile(this.tile.i, this.tile.j, this.sideOut);
-    this.tile = { i: newTile[0], j: newTile[1] };
+    const nextTile = adjTile(this.tile.i, this.tile.j, this.sideOut);
+    this.tile = { i: nextTile[0], j: nextTile[1] };
 
     // Check if it's still within the map
     if (!this.overlay.city.map.isValidCoords(this.tile.i, this.tile.j)) {
-      console.log(`CAR OUT OF BOUNDS ${this.tile.i}, ${this.tile.j}`);
-      this.active = false;
+      this.overlay.onCarExitMap(this);
       return;
     }
 
     // Set the new sideIn
     this.sideIn = oppositeSide(this.sideOut);
-    this.sideOut = this.randomSideOut();
+    this.sideOut = this.getRandomSideOut();
     if (this.sideOut === null) {
-      console.log('NOWHERE TO GO');
-      this.active = false;
+      this.overlay.onCarExitMap(this);
     }
   }
 
   animate(time) {
-    if (!this.active) return;
+    if (this.sideOut === null) {
+      this.overlay.onCarExitMap(this);
+      return;
+    }
 
     const [inX, inY] = tileInCoords(
       this.tile.i, this.tile.j, this.lane, this.sideIn,
@@ -4626,9 +4644,9 @@ class Car {
     const currDist = Math.sqrt(((outX - this.sprite.x) ** 2) + ((outY - this.sprite.y) ** 2));
     const distProg = 1 - currDist / fullDist;
 
-    const shortestAngle = (angle) => Math.abs(angle) > Math.PI
+    const shortestAngle = angle => (Math.abs(angle) > Math.PI
       ? (Math.PI * 2 - Math.abs(angle)) * Math.sign(angle) * -1
-      : angle;
+      : angle);
 
     const angleFrom = sideAngle(oppositeSide(this.sideIn));
     const angleTo = sideAngle(this.sideOut);
@@ -6322,4 +6340,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=bundle.b8e769f9d4f516dea256.js.map
+//# sourceMappingURL=bundle.681c65c6bd20e7ccdfad.js.map
