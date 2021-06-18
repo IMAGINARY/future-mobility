@@ -4,9 +4,13 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
-  entry: './src/js/main.js',
+  entry: {
+    default: './src/js/main.js',
+    city: './src/js/main-city.js',
+    editor: './src/js/main-editor.js',
+  },
   output: {
-    filename: 'bundle.[contenthash].js',
+    filename: '[name].[contenthash].js',
     path: path.resolve(__dirname, 'assets'),
   },
   module: {
@@ -46,9 +50,21 @@ module.exports = {
       filename: '[name].[contenthash].css',
     }),
     new HtmlWebpackPlugin({
-      // Load a custom template (lodash by default)
       template: path.resolve(__dirname, 'src/html/index.html'),
       filename: path.resolve(__dirname, 'index.html'),
+      chunks: ['default'],
+      minify: true,
+    }),
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'src/html/city.html'),
+      filename: path.resolve(__dirname, 'city.html'),
+      chunks: ['city'],
+      minify: true,
+    }),
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'src/html/editor.html'),
+      filename: path.resolve(__dirname, 'editor.html'),
+      chunks: ['editor'],
       minify: true,
     }),
     new CleanWebpackPlugin({

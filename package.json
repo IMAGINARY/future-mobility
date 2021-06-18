@@ -12,6 +12,9 @@
   "bugs": {
     "url": "https://github.com/IMAGINARY/future-mobility/issues"
   },
+  "engines": {
+    "node": ">=14.16.0"
+  },
   "scripts": {
     "build": "npx webpack",
     "watch": "npx webpack --watch",
