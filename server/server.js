@@ -43,26 +43,22 @@ app.post('/city/map', (req, res) => {
 const wss = new ws.Server({ noServer: true });
 
 wss.on('connection', (socket) => {
-  socket.on('message', message => console.log(message));
-});
-
-wss.on('connection', (ws) => {
-  console.log("Connected");
+  console.log('Connected');
 
   function sendMapUpdateMessage() {
-    ws.send(JSON.stringify({
+    socket.send(JSON.stringify({
       type: 'map_update',
       cells: city.map.cells,
     }));
   }
 
   function sendPong() {
-    ws.send(JSON.stringify({
-      type: 'pong'
+    socket.send(JSON.stringify({
+      type: 'pong',
     }));
   }
 
-  ws.on('message', (data) => {
+  socket.on('message', (data) => {
     const message = JSON.parse(data);
     if (typeof message === 'object' && typeof message.type === 'string') {
       switch (message.type) {
