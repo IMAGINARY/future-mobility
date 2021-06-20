@@ -43,7 +43,7 @@ fetch('./config.yml', { cache: 'no-store' })
       mapView.displayObject.x = 0;
       mapView.displayObject.y = 0;
 
-      const connector = new ServerSocketConnector('ws://localhost:4848');
+      const connector = new ServerSocketConnector(process.env.SERVER_SOCKET_URI);
       connector.events.on('map_update', (cells) => {
         city.map.replace(cells);
       });

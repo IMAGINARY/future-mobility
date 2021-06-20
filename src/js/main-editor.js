@@ -2,12 +2,10 @@
 import yaml from 'js-yaml';
 import City from './city';
 import EmissionsVariable from './emissions-variable';
-import MapView from './map-view';
 import MapEditor from './editor/map-editor';
 import VariableView from './variable-view';
 import '../sass/default.scss';
 import RoadTextures from './textures-roads';
-import Cities from '../../cities.json';
 import ServerSocketConnector from './server-socket-connector';
 
 fetch('./config.yml', { cache: 'no-store' })
@@ -56,7 +54,7 @@ fetch('./config.yml', { cache: 'no-store' })
       varViewer.displayObject.x = 1920 + 40;
       varViewer.displayObject.y = 0;
 
-      const connector = new ServerSocketConnector('ws://localhost:4848');
+      const connector = new ServerSocketConnector(process.env.SERVER_SOCKET_URI);
       connector.events.once('map_update', (cells) => {
         city.map.replace(cells);
         city.map.events.on('update', () => {
