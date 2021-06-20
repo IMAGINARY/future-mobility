@@ -1,5 +1,4 @@
 /* globals PIXI */
-import yaml from 'js-yaml';
 import City from './city';
 import EmissionsVariable from './emissions-variable';
 import MapEditor from './editor/map-editor';
@@ -8,13 +7,8 @@ import '../sass/default.scss';
 import RoadTextures from './textures-roads';
 import ServerSocketConnector from './server-socket-connector';
 
-fetch('./config.yml', { cache: 'no-store' })
-  .then(response => response.text())
-  .then(data => yaml.load(data))
-  .catch((err) => {
-    console.error('Error loading configuration');
-    console.error(err);
-  })
+fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
+  .then(response => response.json())
   .then((config) => {
     // const city = City.fromJSON(Cities.cities[0]);
     const city = new City(config.cityWidth, config.cityHeight);
@@ -65,4 +59,8 @@ fetch('./config.yml', { cache: 'no-store' })
         connector.getMap();
       });
     });
+  })
+  .catch((err) => {
+    console.error('Error loading configuration');
+    console.error(err);
   });

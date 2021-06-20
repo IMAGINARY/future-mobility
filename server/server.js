@@ -4,6 +4,7 @@ import City from '../src/js/city';
 const fs = require('fs');
 const express = require('express');
 const ws = require('ws');
+const cors = require('cors');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const yaml = require('js-yaml');
@@ -22,6 +23,7 @@ console.log(`Initializing ${config.cityWidth} x ${config.cityHeight} city.`);
 const city = new City(config.cityWidth, config.cityHeight);
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 app.get('/config', (req, res) => {
