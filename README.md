@@ -2,6 +2,27 @@
 
 An exhibit about the Future of Mobility
 
+## Compilation
+
+To install the required dependencies run `npm install` in **both** the root directory and the 
+`server` directory.
+
+You can use `npm run build` or `npm run watch` in the root directory to build the client apps. The 
+server does not require compilation.
+
+The `.env` file in the root directory contains settings that are applied at compilation time.
+
+## Running
+
+Start the server by running `npm run start` in the `server` directory.
+
+The clients, in the root directory, are:
+
+- `city.html`: Presents the city map, to be projected over the exhibition table.
+- `editor.html`: An editor that pushes changes to the server. Note that it doesn't read updates from
+    the server, so it's not possible to use multiple editors simulatenously. It's only meant for 
+    use during development.
+
 ## License
 
 Copyright (c) 2021 IMAGINARY gGmbH
