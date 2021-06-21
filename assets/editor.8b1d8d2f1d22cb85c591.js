@@ -521,6 +521,133 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./src/js/aux/array-2d.js":
+/*!********************************!*\
+  !*** ./src/js/aux/array-2d.js ***!
+  \********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Array2D)
+/* harmony export */ });
+/**
+ * This class provides helper functions to work with 2D arrays.
+ * (arrays of arrays)
+ */
+class Array2D {
+  /**
+   * Create and initialize a 2D Array
+   *
+   * @param width {number} Number of columns (inner arrays size)
+   * @param height {number} Number of rows (outer array size)
+   * @param initValue {any} Initial value for inner array items
+   * @return {any[][]}
+   */
+  static create(width, height, initValue = 0) {
+    const rows = [];
+    for (let i = 0; i < height; i += 1) {
+      const row = [];
+      for (let j = 0; j < width; j += 1) {
+        row[j] = initValue;
+      }
+      rows.push(row);
+    }
+    return rows;
+  }
+
+  /**
+   * Creates a 2D array from a 1D array in cells[y * width + x] format
+   *
+   * @param width {number}
+   * @param height {number}
+   * @param cells {any[]}
+   */
+  static fromFlat(width, height, cells) {
+    const answer = Array2D.create(width, height);
+    for (let x = 0; x < width; x += 1) {
+      for (let y = 0; y < height; y += 1) {
+        answer[y][x] = cells[y * width + x];
+      }
+    }
+    return answer;
+  }
+
+  /**
+   * Returns true if the argument is an array of arrays and every inner
+   * array has the same length.
+   *
+   * @param a {any[][]}
+   * @return {boolean}
+   */
+  static isValid(a) {
+    return Array.isArray(a) && a.length > 0
+      && Array.isArray(a[0]) && a[0].length > 0
+      && a.every(row => row.length === a[0].length);
+  }
+
+  /**
+   * Returns the size of a 2D array as [width, height]
+   *
+   * Assumes the argument is a valid 2D Array.
+   *
+   * @param a {any[][]}
+   * @return {number[]}
+   */
+  static size(a) {
+    return [a[0].length, a.length];
+  }
+
+  /**
+   * Clones the 2D Array.
+   *
+   * Assumes the argument is a valid 2D Array. The items in the 2D
+   * array are not deep copied, only the outer and inner arrays.
+   *
+   * @param a {any[][]}
+   * @return {any[][]}
+   */
+  static clone(a) {
+    return a.map(row => Array.from(row));
+  }
+
+  /**
+   * Copies the contents of a 2D array into another.
+   *
+   * Assumes the arguments are valid 2D arrays with the same size.
+   *
+   * @param src {any[][]}
+   * @param dest {any[][]}
+   */
+  static copy(src, dest) {
+    for (let i = 0; i < src.length; i += 1) {
+      for (let j = 0; j < src[i].length; j += 1) {
+        // eslint-disable-next-line no-param-reassign
+        dest[i][j] = src[i][j];
+      }
+    }
+  }
+
+  /**
+   * Returns all items as a flat array of [x, y, value] arrays.
+   *
+   * @param a {any[][]}
+   * @return {[number, number, any][]}
+   */
+  static items(a) {
+    const items = [];
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        items.push([x, y, a[y][x]]);
+      }
+    }
+    return items;
+  }
+}
+
+
+/***/ }),
+
 /***/ "./src/js/city.js":
 /*!************************!*\
   !*** ./src/js/city.js ***!
@@ -532,6 +659,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (/* binding */ City)
 /* harmony export */ });
 /* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
+/* harmony import */ var _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+
 
 
 class City {
@@ -550,9 +679,14 @@ class City {
     const { map } = jsonObject;
     if (Array.isArray(map)) {
       // Support old serialization format
-      return new City(16, 16, map);
+      return new City(16, 16, _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.fromFlat(16, 16, map.map(v => Number(v))));
     }
-    const { width, height, cells } = map;
+    const { width, height } = map;
+
+    // Support old serialization format
+    const cells = _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.isValid(map.cells)
+      ? _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.clone(map.cells)
+      : _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.fromFlat(width, height, map.cells.map(v => Number(v)));
     return new City(width, height, cells);
   }
 
@@ -686,8 +820,8 @@ class MapEditorPalette {
         }
         this.activeButton = $(ev.target);
         this.activeButton.addClass('active');
-        this.tileId = id;
-        this.events.emit('change', id);
+        this.tileId = Number(id);
+        this.events.emit('change', Number(id));
       }));
 
     this.buttons.push($('<div class="separator"></div>'));
@@ -1212,6 +1346,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+
 
 
 /**
@@ -1223,19 +1359,20 @@ class Grid {
    *
    * @param {number} width
    * @param {number} height
-   * @param {number[]} cells
+   * @param {number[][]} cells
    */
   constructor(width, height, cells = null) {
     this.width = width;
     this.height = height;
-    this.cells = cells ? Array.from(cells) : Array(...Array(width * height)).map(() => 0);
+    this.cells = cells || _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.create(width, height, 0);
     this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
   }
 
   /**
    * Create a new Grid from a JSON string
+   *
+   * @param jsonObject {object} JSON object
    * @return {Grid}
-   * @param {object} JSON object
    */
   static fromJSON(jsonObject) {
     const { width, height, cells } = jsonObject;
@@ -1244,13 +1381,13 @@ class Grid {
 
   /**
    * Serializes to a JSON object
-   * @return {{cells: number[], width: number, height: number}}
+   * @return {{cells: number[][], width: number, height: number}}
    */
   toJSON() {
     return {
       width: this.width,
       height: this.height,
-      cells: Array.from(this.cells),
+      cells: _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.clone(this.cells),
     };
   }
 
@@ -1261,80 +1398,74 @@ class Grid {
   }
 
   /**
-   * Map a 2D coordinate to an offset in the cell array
+   * Retrieves the value at (x,y)
    *
-   * @param {number} i
-   * @param {number} j
+   * @param {number} x
+   * @param {number} y
    * @return {number}
    */
-  offset(i, j) {
-    return j * this.width + i;
+  get(x, y) {
+    return this.cells[y][x];
   }
 
   /**
-   * Retrieves the value at (i,j)
-   *
-   * @param {number} i
-   * @param {number} j
-   * @return {number}
-   */
-  get(i, j) {
-    return this.cells[this.offset(i, j)];
-  }
-
-  /**
-   * Set the value at (i, j)
+   * Set the value at (x, y)
    *
    * @fires Grid.events#update
    *
-   * @param {number} i
-   * @param {number} j
+   * @param {number} x
+   * @param {number} y
    * @param {number} value
    */
-  set(i, j, value) {
-    this.cells[this.offset(i, j)] = value;
+  set(x, y, value) {
+    this.cells[y][x] = value;
 
     /**
      * Update event.
      *
      * Argument is an array of updated cells. Each updated cell is represented
-     * by an array with three elements: [i, j, value]
+     * by an array with three elements: [x, y, value]
      *
      * @event Grid.events#update
      * @type {[[number, number, number]]}
      */
-    this.events.emit('update', [[i, j, value]]);
+    this.events.emit('update', [[x, y, value]]);
+  }
+
+  /**
+   * Backwards compatibility function that maps (x, y) to a single index in a flat array
+   * @deprecated
+   * @param x {number}
+   * @param y {number}
+   * @return {number}
+   */
+  offset(x, y) {
+    return y * this.width + x;
   }
 
   replace(cells) {
-    this.cells = Array.from(cells);
+    _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.copy(cells, this.cells);
     this.events.emit('update', this.allCells());
   }
 
   /**
-   * Returns true if (i, j) are valid coordinates within the grid's bounds.
+   * Returns true if (x, y) are valid coordinates within the grid's bounds.
    *
-   * @param {number} i
-   * @param {number} j
+   * @param {number} x
+   * @param {number} y
    * @return {boolean}
    */
-  isValidCoords(i, j) {
-    return i >= 0 && j >= 0 && i < this.width && j < this.height;
+  isValidCoords(x, y) {
+    return x >= 0 && y >= 0 && x < this.width && y < this.height;
   }
 
   /**
-   * Returns all cells, represented as [i, j, value] arrays.
+   * Returns all cells, represented as [x, y, value] arrays.
    *
    * @return {[[number, number, number]]}
    */
   allCells() {
-    const answer = Array(this.cells.length);
-    for (let i = 0; i < this.width; i += 1) {
-      for (let j = 0; j < this.height; j += 1) {
-        answer.push([i, j, this.cells[j * this.width + i]]);
-      }
-    }
-    return answer;
+    return _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.items(this.cells);
   }
 
   /**
@@ -1411,7 +1542,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const ROAD_TILE = '1';
+const ROAD_TILE = 1;
 const TILE_SIZE = 120;
 
 class MapView {
@@ -2220,4 +2351,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.c0edce832aafb2e4dec8.js.map
+//# sourceMappingURL=editor.8b1d8d2f1d22cb85c591.js.map

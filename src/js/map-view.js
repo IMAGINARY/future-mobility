@@ -2,7 +2,7 @@
 import EventEmitter from 'events';
 import PencilCursor from '../../static/fa/pencil-alt-solid.svg';
 
-const ROAD_TILE = '1';
+const ROAD_TILE = 1;
 const TILE_SIZE = 120;
 
 export default class MapView {

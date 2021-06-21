@@ -1,4 +1,5 @@
 import EventEmitter from 'events';
+import Array2D from './aux/array-2d';
 
 /**
  * Represents a 2D grid map that stores a single Number per cell
@@ -9,19 +10,20 @@ export default class Grid {
    *
    * @param {number} width
    * @param {number} height
-   * @param {number[]} cells
+   * @param {number[][]} cells
    */
   constructor(width, height, cells = null) {
     this.width = width;
     this.height = height;
-    this.cells = cells ? Array.from(cells) : Array(...Array(width * height)).map(() => 0);
+    this.cells = cells || Array2D.create(width, height, 0);
     this.events = new EventEmitter();
   }
 
   /**
    * Create a new Grid from a JSON string
+   *
+   * @param jsonObject {object} JSON object
    * @return {Grid}
-   * @param {object} JSON object
    */
   static fromJSON(jsonObject) {
     const { width, height, cells } = jsonObject;
@@ -30,13 +32,13 @@ export default class Grid {
 
   /**
    * Serializes to a JSON object
-   * @return {{cells: number[], width: number, height: number}}
+   * @return {{cells: number[][], width: number, height: number}}
    */
   toJSON() {
     return {
       width: this.width,
       height: this.height,
-      cells: Array.from(this.cells),
+      cells: Array2D.clone(this.cells),
     };
   }
 
@@ -47,80 +49,74 @@ export default class Grid {
   }
 
   /**
-   * Map a 2D coordinate to an offset in the cell array
+   * Retrieves the value at (x,y)
    *
-   * @param {number} i
-   * @param {number} j
+   * @param {number} x
+   * @param {number} y
    * @return {number}
    */
-  offset(i, j) {
-    return j * this.width + i;
+  get(x, y) {
+    return this.cells[y][x];
   }
 
   /**
-   * Retrieves the value at (i,j)
-   *
-   * @param {number} i
-   * @param {number} j
-   * @return {number}
-   */
-  get(i, j) {
-    return this.cells[this.offset(i, j)];
-  }
-
-  /**
-   * Set the value at (i, j)
+   * Set the value at (x, y)
    *
    * @fires Grid.events#update
    *
-   * @param {number} i
-   * @param {number} j
+   * @param {number} x
+   * @param {number} y
    * @param {number} value
    */
-  set(i, j, value) {
-    this.cells[this.offset(i, j)] = value;
+  set(x, y, value) {
+    this.cells[y][x] = value;
 
     /**
      * Update event.
      *
      * Argument is an array of updated cells. Each updated cell is represented
-     * by an array with three elements: [i, j, value]
+     * by an array with three elements: [x, y, value]
      *
      * @event Grid.events#update
      * @type {[[number, number, number]]}
      */
-    this.events.emit('update', [[i, j, value]]);
+    this.events.emit('update', [[x, y, value]]);
+  }
+
+  /**
+   * Backwards compatibility function that maps (x, y) to a single index in a flat array
+   * @deprecated
+   * @param x {number}
+   * @param y {number}
+   * @return {number}
+   */
+  offset(x, y) {
+    return y * this.width + x;
   }
 
   replace(cells) {
-    this.cells = Array.from(cells);
+    Array2D.copy(cells, this.cells);
     this.events.emit('update', this.allCells());
   }
 
   /**
-   * Returns true if (i, j) are valid coordinates within the grid's bounds.
+   * Returns true if (x, y) are valid coordinates within the grid's bounds.
    *
-   * @param {number} i
-   * @param {number} j
+   * @param {number} x
+   * @param {number} y
    * @return {boolean}
    */
-  isValidCoords(i, j) {
-    return i >= 0 && j >= 0 && i < this.width && j < this.height;
+  isValidCoords(x, y) {
+    return x >= 0 && y >= 0 && x < this.width && y < this.height;
   }
 
   /**
-   * Returns all cells, represented as [i, j, value] arrays.
+   * Returns all cells, represented as [x, y, value] arrays.
    *
    * @return {[[number, number, number]]}
    */
   allCells() {
-    const answer = Array(this.cells.length);
-    for (let i = 0; i < this.width; i += 1) {
-      for (let j = 0; j < this.height; j += 1) {
-        answer.push([i, j, this.cells[j * this.width + i]]);
-      }
-    }
-    return answer;
+    return Array2D.items(this.cells);
   }
 
   /**

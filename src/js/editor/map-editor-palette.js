@@ -30,8 +30,8 @@ export default class MapEditorPalette {
         }
         this.activeButton = $(ev.target);
         this.activeButton.addClass('active');
-        this.tileId = id;
-        this.events.emit('change', id);
+        this.tileId = Number(id);
+        this.events.emit('change', Number(id));
       }));
 
     this.buttons.push($('<div class="separator"></div>'));
