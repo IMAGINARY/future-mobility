@@ -1,0 +1,122 @@
+openapi: 3.0.0
+info:
+  description: HTTP API for Future of Mobility server
+  version: 1.0.0
+  title: Future of Mobility Server HTTP API
+  contact:
+    email: eric.londaits@imaginary.org
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:4848
+    description: Default local server
+
+paths:
+  /config:
+    get:
+      summary: Get exhibit configuration
+      responses:
+        "200":
+          description: Returns the configuration
+          content:
+            application/json:
+              schema:
+                $ref: './config.schema.yaml'
+  /city:
+    get:
+      summary: Get the city state
+      responses:
+        "200":
+          description: Returns the city state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/City"
+  /city/map:
+    post:
+      summary: Update the city map
+      requestBody:
+        description: The updated layout of the city map
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cells:
+                  $ref: "#/components/schemas/Cells"
+              required: [ cells ]
+      responses:
+        "200":
+          description: The city map was updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        "500":
+          description: The city map could not be updated due to an error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    Success:
+      type: object
+      properties:
+        status:
+          type: string
+          title: Operation status.
+          example: ok
+      required: [ status ]
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          title: Operation status.
+          example: error
+        error:
+          type: string
+          title: Error description
+          example: Error description message
+      required: [ status, error ]
+    City:
+      type: object
+      properties:
+        map:
+          "$ref": "#/components/schemas/Map"
+      required: [ map ]
+    Map:
+      type: object
+      title: The city map
+      properties:
+        width:
+          type: integer
+          minimum: 1
+          title: Width (in tiles) of the city map.
+          example: 16
+        height:
+          type: integer
+          minimum: 1
+          title: Height (in tiles) of the city map.
+          example: 16
+        cells:
+          "$ref": "#/components/schemas/Cells"
+      required: [ width, height, cells ]
+    Cells:
+      type: array
+      title: Cells of the city map
+      description: |
+        Content of the cells that make up the city map as an array of arrays.
+        The outer array contains the rows.
+      items:
+        type: array
+        items:
+          type: integer
+          minimum: 0
+          description: Tile type id
+      example: [ [ 1, 2, 3 ], [ 4, 5, 6 ], [ 7, 8 , 9 ] ]

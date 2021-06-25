@@ -1,0 +1,109 @@
+asyncapi: 2.0.0
+id: https://github.com/IMAGINARY/future-mobility
+info:
+  description: WebSocket API for Future of Mobility server
+  version: 1.0.0
+  title: Future of Mobility Server WebSocket API
+  contact:
+    email: eric.londaits@imaginary.org
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  production:
+    url: localhost:4848
+    protocol: ws
+    description: Default local server
+
+channels:
+  /:
+    publish:
+      description: Send messages to the API
+      operationId: processReceivedMessage
+      message:
+        oneOf:
+          - $ref: '#/components/messages/ping'
+          - $ref: '#/components/messages/get_map'
+          - $ref: '#/components/messages/set_map'
+    subscribe:
+      description: Messages that you receive from the API
+      operationId: sendMessage
+      message:
+        oneOf:
+          - $ref: '#/components/messages/pong'
+          - $ref: '#/components/messages/map_update'
+
+components:
+  messages:
+    ping:
+      summary: Ping the server to check if the connection is alive.
+      payload:
+        $ref: "#/components/schemas/ping"
+      x-response:
+        $ref: "#/components/schemas/pong"
+    pong:
+      summary: Response to a ping sent by the client.
+      payload:
+        $ref: "#/components/schemas/pong"
+    get_map:
+      summary: Ask the server to send a map_update with the current map layout.
+      payload:
+        $ref: "#/components/schemas/get_map"
+      x-response:
+        $ref: "#/components/schemas/map_update"
+    set_map:
+      summary: Update the city map
+      payload:
+        $ref: "#/components/schemas/set_map"
+    map_update:
+      summary: Sent by the server when the map layout has changed.
+      payload:
+        $ref: "#/components/schemas/map_update"
+  schemas:
+    ping:
+      type: object
+      properties:
+        type:
+          type: string
+          const: ping
+    pong:
+      type: object
+      properties:
+        type:
+          type: string
+          const: pong
+    get_map:
+      type: object
+      properties:
+        type:
+          type: string
+          const: get_map
+    set_map:
+      type: object
+      properties:
+        type:
+          type: string
+          const: set_map
+        cells:
+          $ref: "#/components/schemas/Cells"
+    map_update:
+      type: object
+      properties:
+        type:
+          type: string
+          const: map_update
+        cells:
+          $ref: "#/components/schemas/Cells"
+    Cells:
+      type: array
+      description: |
+        Content of the cells that make up the city map as an array of arrays.
+        The outer array contains the rows.
+      items:
+        type: array
+        items:
+          type: integer
+          minimum: 0
+          description: Tile type id
+      example: [ [ 1, 2, 3], [4, 5, 6], [7, 8, 9] ]

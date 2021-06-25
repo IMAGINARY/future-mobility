@@ -32,6 +32,7 @@ and so can be used from GitHub Pages.
 - `art`: Source image files (Adobe Illustrator format, etc.)
 - `assets`: Webpack places its compiled files here.
 - `docs`: Documentation
+- `docs/specs`: Specifications and schemas for APIs, configuration files, etc.
 - `server`: Code for the application server. It has its own `package.json` file. It uses some code
   files from the `src` directory, which enables the same code to be used in the server and the 
   clients (including the stand-alone demo client).

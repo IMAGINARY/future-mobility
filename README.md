@@ -23,6 +23,25 @@ The clients, in the root directory, are:
     the server, so it's not possible to use multiple editors simulatenously. It's only meant for 
     use during development.
 
+## Configuration
+
+The main configuration file is `config.yml`. The server has to be reloaded after any changes.
+Clients get the configuration from the server through the http API and have to be reloaded after
+the server to take any changes.
+
+The .env file has other configuration keys that affect the environment.
+
+## Server APIs
+
+The server has both an HTTP and a WebSocket API. Their specifications are:
+
+- http: `docs/specs/openapi.yaml`
+- ws: `docs/specs/asyncapi.yaml`
+
+You can use [Swagger Editor](https://editor.swagger.io/) and the 
+[AsyncAPI Playground](https://playground.asyncapi.io/) to format the respective specifications in
+a friendly format.
+
 ## License
 
 Copyright (c) 2021 IMAGINARY gGmbH
