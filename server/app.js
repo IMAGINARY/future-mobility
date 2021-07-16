@@ -1,12 +1,11 @@
 /* eslint-disable no-console */
-import City from '../src/js/city';
-
-const fs = require('fs');
-const express = require('express');
-const ws = require('ws');
-const cors = require('cors');
-const OpenApiValidator = require('express-openapi-validator');
-const yaml = require('js-yaml');
+import fs from 'fs';
+import express from 'express';
+import ws from 'ws';
+import cors from 'cors';
+import OpenApiValidator from 'express-openapi-validator';
+import yaml from 'js-yaml';
+import City from '../src/js/city.js';
 
 const config = yaml.load(fs.readFileSync('../config.yml'));
 

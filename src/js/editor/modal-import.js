@@ -1,4 +1,4 @@
-import Modal from '../modal';
+import Modal from '../modal.js';
 
 export default class ModalImport extends Modal {
   constructor() {

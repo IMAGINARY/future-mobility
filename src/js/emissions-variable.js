@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import Grid from './grid';
+import Grid from './grid.js';
 
 export default class EmissionsVariable {
   constructor(city, config) {

@@ -525,7 +525,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!********************************!*\
   !*** ./src/js/aux/array-2d.js ***!
   \********************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
@@ -652,20 +652,20 @@ class Array2D {
 /*!************************!*\
   !*** ./src/js/city.js ***!
   \************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ City)
 /* harmony export */ });
-/* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
-/* harmony import */ var _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+/* harmony import */ var _grid_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./grid.js */ "./src/js/grid.js");
+/* harmony import */ var _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./aux/array-2d.js */ "./src/js/aux/array-2d.js");
 
 
 
 class City {
   constructor(width, height, cells = null) {
-    this.map = new _grid__WEBPACK_IMPORTED_MODULE_0__.default(width, height, cells);
+    this.map = new _grid_js__WEBPACK_IMPORTED_MODULE_0__.default(width, height, cells);
   }
 
   toJSON() {
@@ -679,14 +679,14 @@ class City {
     const { map } = jsonObject;
     if (Array.isArray(map)) {
       // Support old serialization format
-      return new City(16, 16, _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.fromFlat(16, 16, map.map(v => Number(v))));
+      return new City(16, 16, _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.fromFlat(16, 16, map.map(v => Number(v))));
     }
     const { width, height } = map;
 
     // Support old serialization format
-    const cells = _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.isValid(map.cells)
-      ? _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.clone(map.cells)
-      : _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.fromFlat(width, height, map.cells.map(v => Number(v)));
+    const cells = _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.isValid(map.cells)
+      ? _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.clone(map.cells)
+      : _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.fromFlat(width, height, map.cells.map(v => Number(v)));
     return new City(width, height, cells);
   }
 
@@ -702,15 +702,14 @@ class City {
 /*!************************!*\
   !*** ./src/js/grid.js ***!
   \************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Grid)
 /* harmony export */ });
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+/* harmony import */ var _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./aux/array-2d.js */ "./src/js/aux/array-2d.js");
 
 
 
@@ -728,8 +727,8 @@ class Grid {
   constructor(width, height, cells = null) {
     this.width = width;
     this.height = height;
-    this.cells = cells || _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.create(width, height, 0);
-    this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
+    this.cells = cells || _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.create(width, height, 0);
+    this.events = new events__WEBPACK_IMPORTED_MODULE_0__();
   }
 
   /**
@@ -751,7 +750,7 @@ class Grid {
     return {
       width: this.width,
       height: this.height,
-      cells: _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.clone(this.cells),
+      cells: _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.clone(this.cells),
     };
   }
 
@@ -808,7 +807,7 @@ class Grid {
   }
 
   replace(cells) {
-    _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.copy(cells, this.cells);
+    _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.copy(cells, this.cells);
     this.events.emit('update', this.allCells());
   }
 
@@ -829,7 +828,7 @@ class Grid {
    * @return {[[number, number, number]]}
    */
   allCells() {
-    return _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.items(this.cells);
+    return _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.items(this.cells);
   }
 
   /**
@@ -893,14 +892,13 @@ class Grid {
 /*!****************************!*\
   !*** ./src/js/map-view.js ***!
   \****************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ MapView)
 /* harmony export */ });
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _static_fa_pencil_alt_solid_svg__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../static/fa/pencil-alt-solid.svg */ "./static/fa/pencil-alt-solid.svg");
 /* globals PIXI */
 
@@ -915,7 +913,7 @@ class MapView {
     this.city = city;
     this.config = config;
     this.textures = textures;
-    this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
+    this.events = new events__WEBPACK_IMPORTED_MODULE_0__();
 
     this.bgTiles = Array(this.city.map.width * this.city.map.height);
     this.textureTiles = Array(this.city.map.width * this.city.map.height);
@@ -1012,14 +1010,13 @@ class MapView {
 /*!*******************************************!*\
   !*** ./src/js/server-socket-connector.js ***!
   \*******************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ ServerSocketConnector)
 /* harmony export */ });
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
 /* eslint-disable no-console */
 
 
@@ -1032,7 +1029,7 @@ class ServerSocketConnector {
     this.uri = uri;
     this.ws = null;
     this.connected = false;
-    this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
+    this.events = new events__WEBPACK_IMPORTED_MODULE_0__();
     this.pingTimeout = null;
     this.pongWaitTimeout = null;
     this.reconnectTimeout = null;
@@ -1169,7 +1166,7 @@ class ServerSocketConnector {
 /*!**********************************!*\
   !*** ./src/js/textures-roads.js ***!
   \**********************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
@@ -1429,18 +1426,6 @@ module.exports = __webpack_require__.p + "b80a83d5c965a0c18254.png";
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/compat get default export */
-/******/ 	(() => {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__webpack_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
-/******/ 				() => (module['default']) :
-/******/ 				() => (module);
-/******/ 			__webpack_require__.d(getter, { a: getter });
-/******/ 			return getter;
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
 /******/ 		// define getter functions for harmony exports
@@ -1509,11 +1494,11 @@ var __webpack_exports__ = {};
   !*** ./src/js/main-city.js ***!
   \*****************************/
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _city__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./city */ "./src/js/city.js");
-/* harmony import */ var _map_view__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./map-view */ "./src/js/map-view.js");
+/* harmony import */ var _city_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./city.js */ "./src/js/city.js");
+/* harmony import */ var _map_view_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./map-view.js */ "./src/js/map-view.js");
 /* harmony import */ var _sass_default_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
-/* harmony import */ var _textures_roads__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./textures-roads */ "./src/js/textures-roads.js");
-/* harmony import */ var _server_socket_connector__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./server-socket-connector */ "./src/js/server-socket-connector.js");
+/* harmony import */ var _textures_roads_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./textures-roads.js */ "./src/js/textures-roads.js");
+/* harmony import */ var _server_socket_connector_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./server-socket-connector.js */ "./src/js/server-socket-connector.js");
 /* globals PIXI */
 
 
@@ -1524,20 +1509,20 @@ __webpack_require__.r(__webpack_exports__);
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
   .then(response => response.json())
   .then((config) => {
-    const city = new _city__WEBPACK_IMPORTED_MODULE_0__.default(config.cityWidth, config.cityHeight);
+    const city = new _city_js__WEBPACK_IMPORTED_MODULE_0__.default(config.cityWidth, config.cityHeight);
 
     const app = new PIXI.Application({
       width: 3840,
       height: 1920,
       backgroundColor: 0xf2f2f2,
     });
-    Object.entries(_textures_roads__WEBPACK_IMPORTED_MODULE_3__.default).forEach(([id, path]) => {
+    Object.entries(_textures_roads_js__WEBPACK_IMPORTED_MODULE_3__.default).forEach(([id, path]) => {
       app.loader.add(id, path);
     });
     app.loader.load((loader, resources) => {
       $('[data-component="app-container"]').append(app.view);
       const textures = Object.fromEntries(
-        Object.entries(_textures_roads__WEBPACK_IMPORTED_MODULE_3__.default).map(([id]) => [id, resources[id].texture])
+        Object.entries(_textures_roads_js__WEBPACK_IMPORTED_MODULE_3__.default).map(([id]) => [id, resources[id].texture])
       );
 
       // Change the scaling mode for the road textures
@@ -1546,14 +1531,14 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
       });
 
       // const mapView = new MapView(city, config, textures);
-      const mapView = new _map_view__WEBPACK_IMPORTED_MODULE_1__.default(city, config, textures);
+      const mapView = new _map_view_js__WEBPACK_IMPORTED_MODULE_1__.default(city, config, textures);
       app.stage.addChild(mapView.displayObject);
       mapView.displayObject.width = 1920;
       mapView.displayObject.height = 1920;
       mapView.displayObject.x = 0;
       mapView.displayObject.y = 0;
 
-      const connector = new _server_socket_connector__WEBPACK_IMPORTED_MODULE_4__.default("ws://localhost:4848");
+      const connector = new _server_socket_connector_js__WEBPACK_IMPORTED_MODULE_4__.default("ws://localhost:4848");
       connector.events.on('map_update', (cells) => {
         city.map.replace(cells);
       });
@@ -1571,4 +1556,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.7040ab694eb4f3f6e29b.js.map
+//# sourceMappingURL=city.b616656b0204a2418470.js.map

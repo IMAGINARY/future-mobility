@@ -1,5 +1,5 @@
-import Modal from '../modal';
-import CityBrowser from './city-browser';
+import Modal from '../modal.js';
+import CityBrowser from './city-browser.js';
 
 export default class ModalSave extends Modal {
   constructor(config, cityStore) {

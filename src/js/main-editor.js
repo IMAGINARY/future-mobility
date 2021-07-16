@@ -1,11 +1,11 @@
 /* globals PIXI */
-import City from './city';
-import EmissionsVariable from './emissions-variable';
-import MapEditor from './editor/map-editor';
-import VariableView from './variable-view';
+import City from './city.js';
+import EmissionsVariable from './emissions-variable.js';
+import MapEditor from './editor/map-editor.js';
+import VariableView from './variable-view.js';
 import '../sass/default.scss';
-import RoadTextures from './textures-roads';
-import ServerSocketConnector from './server-socket-connector';
+import RoadTextures from './textures-roads.js';
+import ServerSocketConnector from './server-socket-connector.js';
 
 fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
   .then(response => response.json())

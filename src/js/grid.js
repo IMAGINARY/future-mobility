@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import Array2D from './aux/array-2d';
+import Array2D from './aux/array-2d.js';
 
 /**
  * Represents a 2D grid map that stores a single Number per cell

@@ -525,7 +525,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!********************************!*\
   !*** ./src/js/aux/array-2d.js ***!
   \********************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
@@ -652,20 +652,20 @@ class Array2D {
 /*!************************!*\
   !*** ./src/js/city.js ***!
   \************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ City)
 /* harmony export */ });
-/* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
-/* harmony import */ var _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+/* harmony import */ var _grid_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./grid.js */ "./src/js/grid.js");
+/* harmony import */ var _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./aux/array-2d.js */ "./src/js/aux/array-2d.js");
 
 
 
 class City {
   constructor(width, height, cells = null) {
-    this.map = new _grid__WEBPACK_IMPORTED_MODULE_0__.default(width, height, cells);
+    this.map = new _grid_js__WEBPACK_IMPORTED_MODULE_0__.default(width, height, cells);
   }
 
   toJSON() {
@@ -679,14 +679,14 @@ class City {
     const { map } = jsonObject;
     if (Array.isArray(map)) {
       // Support old serialization format
-      return new City(16, 16, _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.fromFlat(16, 16, map.map(v => Number(v))));
+      return new City(16, 16, _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.fromFlat(16, 16, map.map(v => Number(v))));
     }
     const { width, height } = map;
 
     // Support old serialization format
-    const cells = _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.isValid(map.cells)
-      ? _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.clone(map.cells)
-      : _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.fromFlat(width, height, map.cells.map(v => Number(v)));
+    const cells = _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.isValid(map.cells)
+      ? _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.clone(map.cells)
+      : _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.fromFlat(width, height, map.cells.map(v => Number(v)));
     return new City(width, height, cells);
   }
 
@@ -702,13 +702,13 @@ class City {
 /*!***************************************!*\
   !*** ./src/js/editor/city-browser.js ***!
   \***************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ CityBrowser)
 /* harmony export */ });
-/* harmony import */ var _city__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../city */ "./src/js/city.js");
+/* harmony import */ var _city_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../city.js */ "./src/js/city.js");
 
 
 class CityBrowser {
@@ -762,7 +762,7 @@ class CityBrowser {
         width: this.config.cityWidth,
         height: this.config.cityHeight,
       });
-    const city = _city__WEBPACK_IMPORTED_MODULE_0__.default.fromJSON(cityJSON);
+    const city = _city_js__WEBPACK_IMPORTED_MODULE_0__.default.fromJSON(cityJSON);
     const ctx = $canvas[0].getContext('2d');
     city.map.allCells().forEach(([i, j, value]) => {
       ctx.fillStyle = (this.config.tileTypes && this.config.tileTypes[value].color) || '#000000';
@@ -780,14 +780,13 @@ class CityBrowser {
 /*!*********************************************!*\
   !*** ./src/js/editor/map-editor-palette.js ***!
   \*********************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ MapEditorPalette)
 /* harmony export */ });
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
 
 
 class MapEditorPalette {
@@ -796,7 +795,7 @@ class MapEditorPalette {
     this.config = config;
     this.activeButton = null;
     this.tileId = null;
-    this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
+    this.events = new events__WEBPACK_IMPORTED_MODULE_0__();
 
     this.$element.addClass('map-editor-palette');
 
@@ -882,20 +881,20 @@ MapEditorPalette.Actions = [
 /*!*************************************!*\
   !*** ./src/js/editor/map-editor.js ***!
   \*************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ MapEditor)
 /* harmony export */ });
-/* harmony import */ var _city__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../city */ "./src/js/city.js");
-/* harmony import */ var _map_view__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
-/* harmony import */ var _map_editor_palette__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./map-editor-palette */ "./src/js/editor/map-editor-palette.js");
-/* harmony import */ var _modal_load__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modal-load */ "./src/js/editor/modal-load.js");
-/* harmony import */ var _modal_save__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modal-save */ "./src/js/editor/modal-save.js");
-/* harmony import */ var _modal_export__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modal-export */ "./src/js/editor/modal-export.js");
-/* harmony import */ var _modal_import__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./modal-import */ "./src/js/editor/modal-import.js");
-/* harmony import */ var _object_store__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./object-store */ "./src/js/editor/object-store.js");
+/* harmony import */ var _city_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../city.js */ "./src/js/city.js");
+/* harmony import */ var _map_view_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../map-view.js */ "./src/js/map-view.js");
+/* harmony import */ var _map_editor_palette_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./map-editor-palette.js */ "./src/js/editor/map-editor-palette.js");
+/* harmony import */ var _modal_load_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modal-load.js */ "./src/js/editor/modal-load.js");
+/* harmony import */ var _modal_save_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modal-save.js */ "./src/js/editor/modal-save.js");
+/* harmony import */ var _modal_export_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modal-export.js */ "./src/js/editor/modal-export.js");
+/* harmony import */ var _modal_import_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./modal-import.js */ "./src/js/editor/modal-import.js");
+/* harmony import */ var _object_store_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./object-store.js */ "./src/js/editor/object-store.js");
 
 
 
@@ -911,10 +910,10 @@ class MapEditor {
     this.city = city;
     this.config = config;
 
-    this.mapView = new _map_view__WEBPACK_IMPORTED_MODULE_1__.default(city, config, textures);
+    this.mapView = new _map_view_js__WEBPACK_IMPORTED_MODULE_1__.default(city, config, textures);
     this.displayObject = this.mapView.displayObject;
 
-    this.palette = new _map_editor_palette__WEBPACK_IMPORTED_MODULE_2__.default($('<div></div>').appendTo(this.$element), config);
+    this.palette = new _map_editor_palette_js__WEBPACK_IMPORTED_MODULE_2__.default($('<div></div>').appendTo(this.$element), config);
 
     this.tileType = this.palette.tileId;
     this.palette.events.on('change', (tileType) => {
@@ -944,19 +943,19 @@ class MapEditor {
       }
     });
 
-    this.objectStore = new _object_store__WEBPACK_IMPORTED_MODULE_7__.default('./cities.json');
+    this.objectStore = new _object_store_js__WEBPACK_IMPORTED_MODULE_7__.default('./cities.json');
     this.actionHandlers = {
       load: () => {
-        const modal = new _modal_load__WEBPACK_IMPORTED_MODULE_3__.default(this.config, this.objectStore);
+        const modal = new _modal_load_js__WEBPACK_IMPORTED_MODULE_3__.default(this.config, this.objectStore);
         modal.show().then((id) => {
           const jsonCity = id && this.objectStore.get(id);
           if (jsonCity) {
-            this.city.copy(_city__WEBPACK_IMPORTED_MODULE_0__.default.fromJSON(jsonCity));
+            this.city.copy(_city_js__WEBPACK_IMPORTED_MODULE_0__.default.fromJSON(jsonCity));
           }
         });
       },
       save: () => {
-        const modal = new _modal_save__WEBPACK_IMPORTED_MODULE_4__.default(this.config, this.objectStore);
+        const modal = new _modal_save_js__WEBPACK_IMPORTED_MODULE_4__.default(this.config, this.objectStore);
         modal.show().then((id) => {
           if (id) {
             this.objectStore.set(id === 'new' ? null : id, this.city.toJSON());
@@ -964,15 +963,15 @@ class MapEditor {
         });
       },
       import: () => {
-        const modal = new _modal_import__WEBPACK_IMPORTED_MODULE_6__.default();
+        const modal = new _modal_import_js__WEBPACK_IMPORTED_MODULE_6__.default();
         modal.show().then((importedData) => {
           if (importedData) {
-            this.city.copy(_city__WEBPACK_IMPORTED_MODULE_0__.default.fromJSON(importedData));
+            this.city.copy(_city_js__WEBPACK_IMPORTED_MODULE_0__.default.fromJSON(importedData));
           }
         });
       },
       export: () => {
-        const modal = new _modal_export__WEBPACK_IMPORTED_MODULE_5__.default(JSON.stringify(this.city));
+        const modal = new _modal_export_js__WEBPACK_IMPORTED_MODULE_5__.default(JSON.stringify(this.city));
         modal.show();
       },
     };
@@ -986,16 +985,16 @@ class MapEditor {
 /*!***************************************!*\
   !*** ./src/js/editor/modal-export.js ***!
   \***************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ ModalExport)
 /* harmony export */ });
-/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../modal */ "./src/js/modal.js");
+/* harmony import */ var _modal_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../modal.js */ "./src/js/modal.js");
 
 
-class ModalExport extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
+class ModalExport extends _modal_js__WEBPACK_IMPORTED_MODULE_0__.default {
   constructor(exportData) {
     super({
       title: 'Export map',
@@ -1027,16 +1026,16 @@ class ModalExport extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
 /*!***************************************!*\
   !*** ./src/js/editor/modal-import.js ***!
   \***************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ ModalImport)
 /* harmony export */ });
-/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../modal */ "./src/js/modal.js");
+/* harmony import */ var _modal_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../modal.js */ "./src/js/modal.js");
 
 
-class ModalImport extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
+class ModalImport extends _modal_js__WEBPACK_IMPORTED_MODULE_0__.default {
   constructor() {
     super({
       title: 'Import map',
@@ -1082,18 +1081,18 @@ class ModalImport extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
 /*!*************************************!*\
   !*** ./src/js/editor/modal-load.js ***!
   \*************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ ModalLoad)
 /* harmony export */ });
-/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../modal */ "./src/js/modal.js");
-/* harmony import */ var _city_browser__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./city-browser */ "./src/js/editor/city-browser.js");
+/* harmony import */ var _modal_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../modal.js */ "./src/js/modal.js");
+/* harmony import */ var _city_browser_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./city-browser.js */ "./src/js/editor/city-browser.js");
 
 
 
-class ModalLoad extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
+class ModalLoad extends _modal_js__WEBPACK_IMPORTED_MODULE_0__.default {
   constructor(config, cityStore) {
     super({
       title: 'Load map',
@@ -1102,7 +1101,7 @@ class ModalLoad extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
 
     this.$browserContainer = $('<div></div>')
       .appendTo(this.$body);
-    this.browser = new _city_browser__WEBPACK_IMPORTED_MODULE_1__.default(this.$browserContainer, config, cityStore);
+    this.browser = new _city_browser_js__WEBPACK_IMPORTED_MODULE_1__.default(this.$browserContainer, config, cityStore);
 
     // noinspection JSUnusedGlobalSymbols
     this.$cancelButton = $('<button></button>')
@@ -1140,18 +1139,18 @@ class ModalLoad extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
 /*!*************************************!*\
   !*** ./src/js/editor/modal-save.js ***!
   \*************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ ModalSave)
 /* harmony export */ });
-/* harmony import */ var _modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../modal */ "./src/js/modal.js");
-/* harmony import */ var _city_browser__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./city-browser */ "./src/js/editor/city-browser.js");
+/* harmony import */ var _modal_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../modal.js */ "./src/js/modal.js");
+/* harmony import */ var _city_browser_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./city-browser.js */ "./src/js/editor/city-browser.js");
 
 
 
-class ModalSave extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
+class ModalSave extends _modal_js__WEBPACK_IMPORTED_MODULE_0__.default {
   constructor(config, cityStore) {
     super({
       title: 'Save map',
@@ -1160,7 +1159,7 @@ class ModalSave extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
 
     this.$browserContainer = $('<div></div>')
       .appendTo(this.$body);
-    this.browser = new _city_browser__WEBPACK_IMPORTED_MODULE_1__.default(this.$browserContainer, config, cityStore, true);
+    this.browser = new _city_browser_js__WEBPACK_IMPORTED_MODULE_1__.default(this.$browserContainer, config, cityStore, true);
 
     // noinspection JSUnusedGlobalSymbols
     this.$cancelButton = $('<button></button>')
@@ -1198,7 +1197,7 @@ class ModalSave extends _modal__WEBPACK_IMPORTED_MODULE_0__.default {
 /*!***************************************!*\
   !*** ./src/js/editor/object-store.js ***!
   \***************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
@@ -1280,15 +1279,14 @@ class ObjectStore {
 /*!**************************************!*\
   !*** ./src/js/emissions-variable.js ***!
   \**************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ EmissionsVariable)
 /* harmony export */ });
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _grid__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
+/* harmony import */ var _grid_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./grid.js */ "./src/js/grid.js");
 
 
 
@@ -1296,8 +1294,8 @@ class EmissionsVariable {
   constructor(city, config) {
     this.city = city;
     this.config = config;
-    this.grid = new _grid__WEBPACK_IMPORTED_MODULE_1__.default(this.city.map.width, this.city.map.height);
-    this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
+    this.grid = new _grid_js__WEBPACK_IMPORTED_MODULE_1__.default(this.city.map.width, this.city.map.height);
+    this.events = new events__WEBPACK_IMPORTED_MODULE_0__();
 
     this.city.map.events.on('update', this.handleCityUpdate.bind(this));
     this.handleCityUpdate(this.city.map.allCells());
@@ -1338,15 +1336,14 @@ class EmissionsVariable {
 /*!************************!*\
   !*** ./src/js/grid.js ***!
   \************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Grid)
 /* harmony export */ });
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+/* harmony import */ var _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./aux/array-2d.js */ "./src/js/aux/array-2d.js");
 
 
 
@@ -1364,8 +1361,8 @@ class Grid {
   constructor(width, height, cells = null) {
     this.width = width;
     this.height = height;
-    this.cells = cells || _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.create(width, height, 0);
-    this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
+    this.cells = cells || _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.create(width, height, 0);
+    this.events = new events__WEBPACK_IMPORTED_MODULE_0__();
   }
 
   /**
@@ -1387,7 +1384,7 @@ class Grid {
     return {
       width: this.width,
       height: this.height,
-      cells: _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.clone(this.cells),
+      cells: _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.clone(this.cells),
     };
   }
 
@@ -1444,7 +1441,7 @@ class Grid {
   }
 
   replace(cells) {
-    _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.copy(cells, this.cells);
+    _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.copy(cells, this.cells);
     this.events.emit('update', this.allCells());
   }
 
@@ -1465,7 +1462,7 @@ class Grid {
    * @return {[[number, number, number]]}
    */
   allCells() {
-    return _aux_array_2d__WEBPACK_IMPORTED_MODULE_1__.default.items(this.cells);
+    return _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.items(this.cells);
   }
 
   /**
@@ -1529,14 +1526,13 @@ class Grid {
 /*!****************************!*\
   !*** ./src/js/map-view.js ***!
   \****************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ MapView)
 /* harmony export */ });
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _static_fa_pencil_alt_solid_svg__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../static/fa/pencil-alt-solid.svg */ "./static/fa/pencil-alt-solid.svg");
 /* globals PIXI */
 
@@ -1551,7 +1547,7 @@ class MapView {
     this.city = city;
     this.config = config;
     this.textures = textures;
-    this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
+    this.events = new events__WEBPACK_IMPORTED_MODULE_0__();
 
     this.bgTiles = Array(this.city.map.width * this.city.map.height);
     this.textureTiles = Array(this.city.map.width * this.city.map.height);
@@ -1648,7 +1644,7 @@ class MapView {
 /*!*************************!*\
   !*** ./src/js/modal.js ***!
   \*************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
@@ -1722,14 +1718,13 @@ class Modal {
 /*!*******************************************!*\
   !*** ./src/js/server-socket-connector.js ***!
   \*******************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ ServerSocketConnector)
 /* harmony export */ });
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
 /* eslint-disable no-console */
 
 
@@ -1742,7 +1737,7 @@ class ServerSocketConnector {
     this.uri = uri;
     this.ws = null;
     this.connected = false;
-    this.events = new (events__WEBPACK_IMPORTED_MODULE_0___default())();
+    this.events = new events__WEBPACK_IMPORTED_MODULE_0__();
     this.pingTimeout = null;
     this.pongWaitTimeout = null;
     this.reconnectTimeout = null;
@@ -1879,7 +1874,7 @@ class ServerSocketConnector {
 /*!**********************************!*\
   !*** ./src/js/textures-roads.js ***!
   \**********************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
@@ -1946,7 +1941,7 @@ const RoadTextures = {
 /*!*********************************!*\
   !*** ./src/js/variable-view.js ***!
   \*********************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
@@ -2193,18 +2188,6 @@ module.exports = __webpack_require__.p + "b80a83d5c965a0c18254.png";
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/compat get default export */
-/******/ 	(() => {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__webpack_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
-/******/ 				() => (module['default']) :
-/******/ 				() => (module);
-/******/ 			__webpack_require__.d(getter, { a: getter });
-/******/ 			return getter;
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
 /******/ 		// define getter functions for harmony exports
@@ -2273,13 +2256,13 @@ var __webpack_exports__ = {};
   !*** ./src/js/main-editor.js ***!
   \*******************************/
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _city__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./city */ "./src/js/city.js");
-/* harmony import */ var _emissions_variable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./emissions-variable */ "./src/js/emissions-variable.js");
-/* harmony import */ var _editor_map_editor__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./editor/map-editor */ "./src/js/editor/map-editor.js");
-/* harmony import */ var _variable_view__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./variable-view */ "./src/js/variable-view.js");
+/* harmony import */ var _city_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./city.js */ "./src/js/city.js");
+/* harmony import */ var _emissions_variable_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./emissions-variable.js */ "./src/js/emissions-variable.js");
+/* harmony import */ var _editor_map_editor_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./editor/map-editor.js */ "./src/js/editor/map-editor.js");
+/* harmony import */ var _variable_view_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./variable-view.js */ "./src/js/variable-view.js");
 /* harmony import */ var _sass_default_scss__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
-/* harmony import */ var _textures_roads__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./textures-roads */ "./src/js/textures-roads.js");
-/* harmony import */ var _server_socket_connector__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./server-socket-connector */ "./src/js/server-socket-connector.js");
+/* harmony import */ var _textures_roads_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./textures-roads.js */ "./src/js/textures-roads.js");
+/* harmony import */ var _server_socket_connector_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./server-socket-connector.js */ "./src/js/server-socket-connector.js");
 /* globals PIXI */
 
 
@@ -2293,21 +2276,21 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
   .then(response => response.json())
   .then((config) => {
     // const city = City.fromJSON(Cities.cities[0]);
-    const city = new _city__WEBPACK_IMPORTED_MODULE_0__.default(config.cityWidth, config.cityHeight);
-    const emissions = new _emissions_variable__WEBPACK_IMPORTED_MODULE_1__.default(city, config);
+    const city = new _city_js__WEBPACK_IMPORTED_MODULE_0__.default(config.cityWidth, config.cityHeight);
+    const emissions = new _emissions_variable_js__WEBPACK_IMPORTED_MODULE_1__.default(city, config);
 
     const app = new PIXI.Application({
       width: 3840,
       height: 1920,
       backgroundColor: 0xf2f2f2,
     });
-    Object.entries(_textures_roads__WEBPACK_IMPORTED_MODULE_5__.default).forEach(([id, path]) => {
+    Object.entries(_textures_roads_js__WEBPACK_IMPORTED_MODULE_5__.default).forEach(([id, path]) => {
       app.loader.add(id, path);
     });
     app.loader.load((loader, resources) => {
       $('[data-component="app-container"]').append(app.view);
       const textures = Object.fromEntries(
-        Object.entries(_textures_roads__WEBPACK_IMPORTED_MODULE_5__.default).map(([id]) => [id, resources[id].texture])
+        Object.entries(_textures_roads_js__WEBPACK_IMPORTED_MODULE_5__.default).map(([id]) => [id, resources[id].texture])
       );
 
       // Change the scaling mode for the road textures
@@ -2316,21 +2299,21 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
       });
 
       // const mapView = new MapView(city, config, textures);
-      const mapView = new _editor_map_editor__WEBPACK_IMPORTED_MODULE_2__.default($('body'), city, config, textures);
+      const mapView = new _editor_map_editor_js__WEBPACK_IMPORTED_MODULE_2__.default($('body'), city, config, textures);
       app.stage.addChild(mapView.displayObject);
       mapView.displayObject.width = 1920;
       mapView.displayObject.height = 1920;
       mapView.displayObject.x = 0;
       mapView.displayObject.y = 0;
 
-      const varViewer = new _variable_view__WEBPACK_IMPORTED_MODULE_3__.default(emissions);
+      const varViewer = new _variable_view_js__WEBPACK_IMPORTED_MODULE_3__.default(emissions);
       app.stage.addChild(varViewer.displayObject);
       varViewer.displayObject.width = 960;
       varViewer.displayObject.height = 960;
       varViewer.displayObject.x = 1920 + 40;
       varViewer.displayObject.y = 0;
 
-      const connector = new _server_socket_connector__WEBPACK_IMPORTED_MODULE_6__.default("ws://localhost:4848");
+      const connector = new _server_socket_connector_js__WEBPACK_IMPORTED_MODULE_6__.default("ws://localhost:4848");
       connector.events.once('map_update', (cells) => {
         city.map.replace(cells);
         city.map.events.on('update', () => {
@@ -2351,4 +2334,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.8b1d8d2f1d22cb85c591.js.map
+//# sourceMappingURL=editor.d66b63e2ac71fea68d09.js.map

@@ -1,5 +1,5 @@
-import Grid from './grid';
-import Array2D from './aux/array-2d';
+import Grid from './grid.js';
+import Array2D from './aux/array-2d.js';
 
 export default class City {
   constructor(width, height, cells = null) {

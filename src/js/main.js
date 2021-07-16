@@ -1,13 +1,11 @@
 /* globals PIXI */
 import yaml from 'js-yaml';
-import City from './city';
-import EmissionsVariable from './emissions-variable';
-import MapView from './map-view';
-import MapEditor from './editor/map-editor';
-import VariableView from './variable-view';
+import City from './city.js';
+import EmissionsVariable from './emissions-variable.js';
+import MapEditor from './editor/map-editor.js';
+import VariableView from './variable-view.js';
 import '../sass/default.scss';
-import RoadTextures from './textures-roads';
-import Cities from '../../cities.json';
+import RoadTextures from './textures-roads.js';
 
 fetch('./config.yml', { cache: 'no-store' })
   .then(response => response.text())

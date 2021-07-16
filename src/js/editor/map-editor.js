@@ -1,11 +1,11 @@
-import City from '../city';
-import MapView from '../map-view';
-import MapEditorPalette from './map-editor-palette';
-import ModalLoad from './modal-load';
-import ModalSave from './modal-save';
-import ModalExport from './modal-export';
-import ModalImport from './modal-import';
-import ObjectStore from './object-store';
+import City from '../city.js';
+import MapView from '../map-view.js';
+import MapEditorPalette from './map-editor-palette.js';
+import ModalLoad from './modal-load.js';
+import ModalSave from './modal-save.js';
+import ModalExport from './modal-export.js';
+import ModalImport from './modal-import.js';
+import ObjectStore from './object-store.js';
 
 export default class MapEditor {
   constructor($element, city, config, textures) {

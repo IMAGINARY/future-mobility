@@ -1,4 +1,4 @@
-import City from '../city';
+import City from '../city.js';
 
 export default class CityBrowser {
   constructor($element, config, cityStore, saveMode = false) {
