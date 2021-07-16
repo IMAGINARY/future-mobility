@@ -23,7 +23,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './config.schema.yaml'
+                $ref: "#/components/schemas/Config"
   /city:
     get:
       summary: Get the city state
@@ -120,3 +120,43 @@ components:
           minimum: 0
           description: Tile type id
       example: [ [ 1, 2, 3 ], [ 4, 5, 6 ], [ 7, 8 , 9 ] ]
+    Config:
+      type: object
+      properties:
+        cityWidth:
+          type: integer
+          title: Width (in tiles) of the city map.
+          minimum: 1
+        cityHeight:
+          type: integer
+          title: Height (in tiles) of the city map.
+          minimum: 1
+        tileTypes:
+          type: object
+          title: Tile type definitions
+          additionalProperties:
+            type: object
+            properties:
+              name:
+                type: string
+                title: Tile type name
+              color:
+                type: string
+                title: Tile type color
+                pattern: "^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$"
+              editorIcon:
+                type: string
+                title: Path to the icon to use in the map editor for this tile type
+              emissions:
+                type: number
+                minimum: -1
+                maximum: 1
+                title: CO2 emission index of tiles of this type
+                description: |
+                  CO2 emission index of tiles of this type
+                  - 0 means no emissons.
+                  - 1 is maximum emissions.
+                  - Negative means the tile absorbs emissions around it.
+            required: [ name, color ]
+      required: [ cityWidth, cityHeight, tileTypes ]
+

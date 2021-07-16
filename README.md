@@ -35,8 +35,8 @@ The .env file has other configuration keys that affect the environment.
 
 The server has both an HTTP and a WebSocket API. Their specifications are:
 
-- http: `docs/specs/openapi.yaml`
-- ws: `docs/specs/asyncapi.yaml`
+- http: `specs/openapi.yaml`
+- ws: `specs/asyncapi.yaml`
 
 You can use [Swagger Editor](https://editor.swagger.io/) and the 
 [AsyncAPI Playground](https://playground.asyncapi.io/) to format the respective specifications in

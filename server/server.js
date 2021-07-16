@@ -5,6 +5,7 @@ const fs = require('fs');
 const express = require('express');
 const ws = require('ws');
 const cors = require('cors');
+const OpenApiValidator = require('express-openapi-validator');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const yaml = require('js-yaml');
@@ -25,6 +26,13 @@ const city = new City(config.cityWidth, config.cityHeight);
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(
+  OpenApiValidator.middleware({
+    apiSpec: '../specs/openapi.yaml',
+    validateRequests: true,
+    validateResponses: true,
+  }),
+);
 
 app.get('/config', (req, res) => {
   res.json(config);
@@ -40,6 +48,14 @@ app.post('/city/map', (req, res) => {
   }
   city.map.replace(req.body.cells);
   res.json({ status: 'ok' });
+});
+
+app.use((err, req, res, next) => {
+  // format error
+  res.status(err.status || 500).json({
+    message: err.message,
+    errors: err.errors,
+  });
 });
 
 const wss = new ws.Server({ noServer: true });
