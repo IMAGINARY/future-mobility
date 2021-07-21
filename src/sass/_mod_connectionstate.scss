@@ -1,0 +1,32 @@
+.connection-state-view {
+  display: none;
+  pointer-events: none;
+  position: absolute;
+  width: 300px;
+  padding-top: 135px;
+  top: 50%;
+  left: 50%;
+  margin-top: -150px;
+  margin-left: -150px;
+  background-image: url('../../static/fa/broadcast-tower-solid.svg');
+  background-repeat: no-repeat;
+  background-size: 100px 100px;
+  background-position: 100px 25px;
+  font-size: 20px;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+
+  &.visible {
+    display: block;
+  }
+
+  .connection-state-view-error {
+    font-weight: bold;
+  }
+
+  .connection-state-view-status {
+    font-size: 0.85em;
+    margin-bottom: 1.2em;
+  }
+}

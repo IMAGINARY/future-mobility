@@ -693,6 +693,70 @@ module.exports = City;
 
 /***/ }),
 
+/***/ "./src/js/connection-state-view.js":
+/*!*****************************************!*\
+  !*** ./src/js/connection-state-view.js ***!
+  \*****************************************/
+/***/ ((module) => {
+
+class ConnectionStateView {
+  constructor(connector) {
+    this.$element = $('<div></div>')
+      .addClass('connection-state-view');
+
+    this.$errorMessage = $('<div></div>')
+      .addClass('connection-state-view-error text-danger')
+      .appendTo(this.$element);
+    this.$errorStatus = $('<div></div>')
+      .addClass('connection-state-view-status')
+      .appendTo(this.$element);
+
+    connector.events.on('disconnect', this.handleDisconnect.bind(this));
+    connector.events.on('connectWait', this.handleConnectWait.bind(this));
+    connector.events.on('connecting', this.handleConnecting.bind(this));
+    connector.events.on('connect', this.handleConnect.bind(this));
+  }
+
+  show() {
+    this.$element.addClass('visible');
+  }
+
+  hide() {
+    this.$element.removeClass('visible');
+  }
+
+  setErrorMessage(message) {
+    this.$errorMessage.html(message);
+  }
+
+  setErrorStatus(status) {
+    this.$errorStatus.html(status);
+  }
+
+  handleDisconnect() {
+    this.setErrorMessage('Disconnected from server');
+    this.setErrorStatus('');
+    this.show();
+  }
+
+  handleConnectWait() {
+    this.setErrorStatus('Waiting to reconnect...');
+  }
+
+  handleConnecting() {
+    this.setErrorStatus('Connecting...');
+  }
+
+  handleConnect() {
+    this.hide();
+  }
+}
+
+module.exports = ConnectionStateView;
+
+
+/***/ }),
+
 /***/ "./src/js/grid.js":
 /*!************************!*\
   !*** ./src/js/grid.js ***!
@@ -1004,7 +1068,7 @@ const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/ev
 
 const PING_TIME = 1000 * 10;
 const PONG_WAIT_TIME = 1000 * 10;
-const RECONNECT_TIME = 1000 * 10;
+const RECONNECT_TIME = 1000 * 5;
 
 class ServerSocketConnector {
   constructor(uri) {
@@ -1022,6 +1086,7 @@ class ServerSocketConnector {
     this.cancelPing();
     this.cancelReconnect();
 
+    this.events.emit('connecting');
     console.log(`Connecting to ${this.uri}...`);
     this.ws = new WebSocket(this.uri);
     this.ws.onopen = this.handleOpen.bind(this);
@@ -1046,6 +1111,7 @@ class ServerSocketConnector {
       this.reconnectTimeout = null;
       this.connect();
     }, RECONNECT_TIME);
+    this.events.emit('connectWait');
     console.log(`Will attempt to reconnect in ${RECONNECT_TIME / 1000} seconds...`);
   }
 
@@ -1063,7 +1129,7 @@ class ServerSocketConnector {
     this.cancelPing();
     // ev.code is defined here https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent
     // but according to people the only code one normally gets is 1006 (Abnormal Closure)
-    console.log(
+    console.error(
       `Disconnected with code ${ev.code}`,
       ev.code === 1006 ? ': Abnormal closure' : '',
       ev.reason ? `(reason: ${ev.reason})` : ''
@@ -1463,6 +1529,7 @@ const MapView = __webpack_require__(/*! ./map-view */ "./src/js/map-view.js");
 __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
 const RoadTextures = __webpack_require__(/*! ./textures-roads */ "./src/js/textures-roads.js");
 const ServerSocketConnector = __webpack_require__(/*! ./server-socket-connector */ "./src/js/server-socket-connector.js");
+const ConnectionStateView = __webpack_require__(/*! ./connection-state-view */ "./src/js/connection-state-view.js");
 
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -1503,6 +1570,8 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
       connector.events.on('connect', () => {
         connector.getMap();
       });
+      const connStateView = new ConnectionStateView(connector);
+      $('body').append(connStateView.$element);
     });
   })
   .catch((err) => {
@@ -1514,4 +1583,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.bf5ac10499170dc6f1ca.js.map
+//# sourceMappingURL=city.6be42fa82121a299d7d5.js.map

@@ -6,6 +6,7 @@ const VariableView = require('./variable-view');
 require('../sass/default.scss');
 const RoadTextures = require('./textures-roads');
 const ServerSocketConnector = require('./server-socket-connector');
+const ConnectionStateView = require('./connection-state-view');
 
 fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -58,6 +59,8 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
       connector.events.on('connect', () => {
         connector.getMap();
       });
+      const connStateView = new ConnectionStateView(connector);
+      $('body').append(connStateView.$element);
     });
   })
   .catch((err) => {

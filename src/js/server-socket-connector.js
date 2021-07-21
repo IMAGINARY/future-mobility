@@ -3,7 +3,7 @@ const EventEmitter = require('events');
 
 const PING_TIME = 1000 * 10;
 const PONG_WAIT_TIME = 1000 * 10;
-const RECONNECT_TIME = 1000 * 10;
+const RECONNECT_TIME = 1000 * 5;
 
 class ServerSocketConnector {
   constructor(uri) {
@@ -21,6 +21,7 @@ class ServerSocketConnector {
     this.cancelPing();
     this.cancelReconnect();
 
+    this.events.emit('connecting');
     console.log(`Connecting to ${this.uri}...`);
     this.ws = new WebSocket(this.uri);
     this.ws.onopen = this.handleOpen.bind(this);
@@ -45,6 +46,7 @@ class ServerSocketConnector {
       this.reconnectTimeout = null;
       this.connect();
     }, RECONNECT_TIME);
+    this.events.emit('connectWait');
     console.log(`Will attempt to reconnect in ${RECONNECT_TIME / 1000} seconds...`);
   }
 
@@ -62,7 +64,7 @@ class ServerSocketConnector {
     this.cancelPing();
     // ev.code is defined here https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent
     // but according to people the only code one normally gets is 1006 (Abnormal Closure)
-    console.log(
+    console.error(
       `Disconnected with code ${ev.code}`,
       ev.code === 1006 ? ': Abnormal closure' : '',
       ev.reason ? `(reason: ${ev.reason})` : ''
