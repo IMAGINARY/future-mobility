@@ -41,6 +41,20 @@ class Array2D {
   }
 
   /**
+   * Returns a 1D array with the flattened contents of the 2D array
+   * @return {*[]}
+   */
+  static flatten(a) {
+    const items = [];
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        items.push(a[y][x]);
+      }
+    }
+    return items;
+  }
+
+  /**
    * Returns true if the argument is an array of arrays and every inner
    * array has the same length.
    *

@@ -15,6 +15,7 @@
   },
   "rules": {
     "comma-dangle": ["error", "always-multiline", { "functions": "never" }],
+    "no-param-reassign": ["error", { "props": false }],
     "import/extensions": false
   }
 }

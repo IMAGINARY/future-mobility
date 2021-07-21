@@ -14,6 +14,7 @@ class MapEditor {
     this.config = config;
 
     this.mapView = new MapView(city, config, textures);
+    this.mapView.enableTileInteractivity();
     this.displayObject = this.mapView.displayObject;
 
     this.palette = new MapEditorPalette($('<div></div>').appendTo(this.$element), config);

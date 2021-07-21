@@ -1,9 +1,9 @@
 /* globals PIXI */
 const EventEmitter = require('events');
+const Array2D = require('./aux/array-2d');
 const PencilCursor = require('../../static/fa/pencil-alt-solid.svg');
 
 const ROAD_TILE = 1;
-const TILE_SIZE = 120;
 
 class MapView {
   constructor(city, config, textures) {
@@ -12,62 +12,67 @@ class MapView {
     this.config = config;
     this.textures = textures;
     this.events = new EventEmitter();
+    this.pointerActive = false;
 
-    this.bgTiles = Array(this.city.map.width * this.city.map.height);
-    this.textureTiles = Array(this.city.map.width * this.city.map.height);
+    this.bgTiles = Array2D.create(this.city.map.width, this.city.map.height, null);
+    this.textureTiles = Array2D.create(this.city.map.width, this.city.map.height, null);
 
-    let pointerActive = false;
-    $(window).on('mouseup', () => { pointerActive = false; });
-
-    this.city.map.allCells().forEach(([i, j]) => {
+    this.city.map.allCells().forEach(([x, y]) => {
       const bgTile = new PIXI.Graphics();
-      bgTile.x = i * TILE_SIZE;
-      bgTile.y = j * TILE_SIZE;
-      bgTile.interactive = true;
-      bgTile.on('mousedown', (ev) => {
-        pointerActive = true;
-        this.events.emit('action', [i, j], {
-          shiftKey: ev.data.originalEvent.shiftKey,
-        });
-      });
-      bgTile.on('mouseover', (ev) => {
-        if (pointerActive) {
-          this.events.emit('action', [i, j], {
-            shiftKey: ev.data.originalEvent.shiftKey,
-          });
-        }
-      });
-      bgTile.cursor = `url(${PencilCursor}) 0 20, auto`;
-      this.bgTiles[this.city.map.offset(i, j)] = bgTile;
+      bgTile.x = x * MapView.TILE_SIZE;
+      bgTile.y = y * MapView.TILE_SIZE;
+      this.bgTiles[y][x] = bgTile;
 
       const textureTile = new PIXI.Sprite();
-      textureTile.x = i * TILE_SIZE;
-      textureTile.y = j * TILE_SIZE;
-      textureTile.width = TILE_SIZE;
-      textureTile.height = TILE_SIZE;
+      textureTile.x = x * MapView.TILE_SIZE;
+      textureTile.y = y * MapView.TILE_SIZE;
+      textureTile.width = MapView.TILE_SIZE;
+      textureTile.height = MapView.TILE_SIZE;
       textureTile.roundPixels = true;
-      this.textureTiles[this.city.map.offset(i, j)] = textureTile;
-      this.renderTile(i, j);
+      this.textureTiles[y][x] = textureTile;
+      this.renderTile(x, y);
     });
 
-    this.displayObject.addChild(...this.bgTiles);
-    this.displayObject.addChild(...this.textureTiles);
+    this.displayObject.addChild(...Array2D.flatten(this.bgTiles));
+    this.displayObject.addChild(...Array2D.flatten(this.textureTiles));
     this.city.map.events.on('update', this.handleCityUpdate.bind(this));
     this.handleCityUpdate(this.city.map.allCells());
   }
 
-  getBgTile(i, j) {
-    return this.bgTiles[this.city.map.offset(i, j)];
+  enableTileInteractivity() {
+    $(window).on('pointerup', () => { this.pointerActive = false; });
+
+    Array2D.items(this.bgTiles).forEach(([x, y, bgTile]) => {
+      bgTile.interactive = true;
+      bgTile.cursor = `url(${PencilCursor}) 0 20, auto`;
+      bgTile.on('pointerdown', (ev) => {
+        this.pointerActive = true;
+        this.events.emit('action', [x, y], {
+          shiftKey: ev.data.originalEvent.shiftKey,
+        });
+      });
+      bgTile.on('pointerover', (ev) => {
+        if (this.pointerActive) {
+          this.events.emit('action', [x, y], {
+            shiftKey: ev.data.originalEvent.shiftKey,
+          });
+        }
+      });
+    });
   }
 
-  getTextureTile(i, j) {
-    return this.textureTiles[this.city.map.offset(i, j)];
+  getBgTile(x, y) {
+    return this.bgTiles[y][x];
   }
 
-  renderTile(i, j) {
-    this.renderBasicTile(i, j);
-    if (this.city.map.get(i, j) === ROAD_TILE) {
-      this.renderRoadTile(i, j);
+  getTextureTile(x, y) {
+    return this.textureTiles[y][x];
+  }
+
+  renderTile(x, y) {
+    this.renderBasicTile(x, y);
+    if (this.city.map.get(x, y) === ROAD_TILE) {
+      this.renderRoadTile(x, y);
     }
   }
 
@@ -85,7 +90,7 @@ class MapView {
     this.getBgTile(i, j)
       .clear()
       .beginFill(tileType ? Number(`0x${tileType.color.substr(1)}`) : 0, 1)
-      .drawRect(0, 0, TILE_SIZE, TILE_SIZE)
+      .drawRect(0, 0, MapView.TILE_SIZE, MapView.TILE_SIZE)
       .endFill();
     this.getTextureTile(i, j).visible = false;
   }
@@ -100,5 +105,7 @@ class MapView {
     });
   }
 }
+
+MapView.TILE_SIZE = 120;
 
 module.exports = MapView;
