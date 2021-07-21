@@ -1,10 +1,12 @@
-/* eslint-disable no-undef */
+/* globals describe, it, expect */
 
 const request = require('supertest');
 const { app } = require('../app');
 
 describe('Test the HTTP API', () => {
   it('It should GET /config', (done) => {
+    console.log(request);
+    console.log(typeof request);
     request(app)
       .get('/config')
       .then((res) => {
