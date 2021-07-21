@@ -647,6 +647,31 @@ module.exports = Array2D;
 
 /***/ }),
 
+/***/ "./src/js/aux/show-fatal-error.js":
+/*!****************************************!*\
+  !*** ./src/js/aux/show-fatal-error.js ***!
+  \****************************************/
+/***/ ((module) => {
+
+function showFatalError(text, error) {
+  $('<div></div>')
+    .addClass('fatal-error')
+    .append($('<div></div>')
+      .addClass('fatal-error-text')
+      .html(text))
+    .append($('<div></div>')
+      .addClass('fatal-error-details')
+      .html(error.message))
+    .appendTo('body');
+
+  $('html').addClass('with-fatal-error');
+}
+
+module.exports = showFatalError;
+
+
+/***/ }),
+
 /***/ "./src/js/city.js":
 /*!************************!*\
   !*** ./src/js/city.js ***!
@@ -2254,6 +2279,7 @@ __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
 const RoadTextures = __webpack_require__(/*! ./textures-roads */ "./src/js/textures-roads.js");
 const ServerSocketConnector = __webpack_require__(/*! ./server-socket-connector */ "./src/js/server-socket-connector.js");
 const ConnectionStateView = __webpack_require__(/*! ./connection-state-view */ "./src/js/connection-state-view.js");
+const showFatalError = __webpack_require__(/*! ./aux/show-fatal-error */ "./src/js/aux/show-fatal-error.js");
 
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -2311,7 +2337,8 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
     });
   })
   .catch((err) => {
-    console.error('Error loading configuration');
+    showFatalError(`Error loading configuration from ${"http://localhost:4848"}`, err);
+    console.error(`Error loading configuration from ${"http://localhost:4848"}`);
     console.error(err);
   });
 
@@ -2319,4 +2346,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.2abf421b3dc8642a377e.js.map
+//# sourceMappingURL=editor.edf7f2b76938087c505a.js.map

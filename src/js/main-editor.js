@@ -7,6 +7,7 @@ require('../sass/default.scss');
 const RoadTextures = require('./textures-roads');
 const ServerSocketConnector = require('./server-socket-connector');
 const ConnectionStateView = require('./connection-state-view');
+const showFatalError = require('./aux/show-fatal-error');
 
 fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -64,6 +65,7 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
     });
   })
   .catch((err) => {
-    console.error('Error loading configuration');
+    showFatalError(`Error loading configuration from ${process.env.SERVER_HTTP_URI}`, err);
+    console.error(`Error loading configuration from ${process.env.SERVER_HTTP_URI}`);
     console.error(err);
   });

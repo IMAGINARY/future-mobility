@@ -6,11 +6,13 @@ const MapEditor = require('./editor/map-editor');
 const VariableView = require('./variable-view');
 require('../sass/default.scss');
 const RoadTextures = require('./textures-roads');
+const showFatalError = require('./aux/show-fatal-error');
 
 fetch('./config.yml', { cache: 'no-store' })
   .then(response => response.text())
   .then(data => yaml.load(data))
   .catch((err) => {
+    showFatalError('Error loading configuration', err);
     console.error('Error loading configuration');
     console.error(err);
   })

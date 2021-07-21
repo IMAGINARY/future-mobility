@@ -4812,6 +4812,31 @@ module.exports = Array2D;
 
 /***/ }),
 
+/***/ "./src/js/aux/show-fatal-error.js":
+/*!****************************************!*\
+  !*** ./src/js/aux/show-fatal-error.js ***!
+  \****************************************/
+/***/ ((module) => {
+
+function showFatalError(text, error) {
+  $('<div></div>')
+    .addClass('fatal-error')
+    .append($('<div></div>')
+      .addClass('fatal-error-text')
+      .html(text))
+    .append($('<div></div>')
+      .addClass('fatal-error-details')
+      .html(error.message))
+    .appendTo('body');
+
+  $('html').addClass('with-fatal-error');
+}
+
+module.exports = showFatalError;
+
+
+/***/ }),
+
 /***/ "./src/js/city.js":
 /*!************************!*\
   !*** ./src/js/city.js ***!
@@ -6199,11 +6224,13 @@ const MapEditor = __webpack_require__(/*! ./editor/map-editor */ "./src/js/edito
 const VariableView = __webpack_require__(/*! ./variable-view */ "./src/js/variable-view.js");
 __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
 const RoadTextures = __webpack_require__(/*! ./textures-roads */ "./src/js/textures-roads.js");
+const showFatalError = __webpack_require__(/*! ./aux/show-fatal-error */ "./src/js/aux/show-fatal-error.js");
 
 fetch('./config.yml', { cache: 'no-store' })
   .then(response => response.text())
   .then(data => yaml.load(data))
   .catch((err) => {
+    showFatalError('Error loading configuration', err);
     console.error('Error loading configuration');
     console.error(err);
   })
@@ -6252,4 +6279,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.9dba12d00488f643e92f.js.map
+//# sourceMappingURL=default.10f9e390d88c09c1cebd.js.map
