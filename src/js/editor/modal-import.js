@@ -1,6 +1,6 @@
-import Modal from '../modal.js';
+const Modal = require('../modal');
 
-export default class ModalImport extends Modal {
+class ModalImport extends Modal {
   constructor() {
     super({
       title: 'Import map',
@@ -38,3 +38,5 @@ export default class ModalImport extends Modal {
     this.$errorText.show();
   }
 }
+
+module.exports = ModalImport;

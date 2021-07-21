@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
-import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
-import { app, wss } from './app.js';
+const yargs = require('yargs');
+const { hideBin } = require('yargs/helpers');
+const { app, wss } = require('./app.js');
 
 const { port } = yargs(hideBin(process.argv))
   .option('p', {

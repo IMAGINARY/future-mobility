@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
-import EventEmitter from 'events';
+const EventEmitter = require('events');
 
 const PING_TIME = 1000 * 10;
 const PONG_WAIT_TIME = 1000 * 10;
 const RECONNECT_TIME = 1000 * 10;
 
-export default class ServerSocketConnector {
+class ServerSocketConnector {
   constructor(uri) {
     this.uri = uri;
     this.ws = null;
@@ -139,3 +139,5 @@ export default class ServerSocketConnector {
     });
   }
 }
+
+module.exports = ServerSocketConnector;

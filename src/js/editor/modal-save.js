@@ -1,7 +1,7 @@
-import Modal from '../modal.js';
-import CityBrowser from './city-browser.js';
+const Modal = require('../modal');
+const CityBrowser = require('./city-browser');
 
-export default class ModalSave extends Modal {
+class ModalSave extends Modal {
   constructor(config, cityStore) {
     super({
       title: 'Save map',
@@ -40,3 +40,5 @@ export default class ModalSave extends Modal {
     this.$errorText.show();
   }
 }
+
+module.exports = ModalSave;

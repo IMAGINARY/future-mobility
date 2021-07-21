@@ -1,5 +1,4 @@
 /******/ (() => { // webpackBootstrap
-/******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
 /***/ "./node_modules/events/events.js":
@@ -8,6 +7,7 @@
   \***************************************/
 /***/ ((module) => {
 
+"use strict";
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -515,6 +515,7 @@ function eventTargetAgnosticAddListener(emitter, name, listener, flags) {
   \*******************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 // extracted by mini-css-extract-plugin
 
@@ -525,12 +526,8 @@ __webpack_require__.r(__webpack_exports__);
 /*!********************************!*\
   !*** ./src/js/aux/array-2d.js ***!
   \********************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+/***/ ((module) => {
 
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ Array2D)
-/* harmony export */ });
 /**
  * This class provides helper functions to work with 2D arrays.
  * (arrays of arrays)
@@ -645,6 +642,8 @@ class Array2D {
   }
 }
 
+module.exports = Array2D;
+
 
 /***/ }),
 
@@ -652,20 +651,14 @@ class Array2D {
 /*!************************!*\
   !*** ./src/js/city.js ***!
   \************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ City)
-/* harmony export */ });
-/* harmony import */ var _grid_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./grid.js */ "./src/js/grid.js");
-/* harmony import */ var _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./aux/array-2d.js */ "./src/js/aux/array-2d.js");
-
-
+const Grid = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
+const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
 
 class City {
   constructor(width, height, cells = null) {
-    this.map = new _grid_js__WEBPACK_IMPORTED_MODULE_0__.default(width, height, cells);
+    this.map = new Grid(width, height, cells);
   }
 
   toJSON() {
@@ -679,14 +672,14 @@ class City {
     const { map } = jsonObject;
     if (Array.isArray(map)) {
       // Support old serialization format
-      return new City(16, 16, _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.fromFlat(16, 16, map.map(v => Number(v))));
+      return new City(16, 16, Array2D.fromFlat(16, 16, map.map(v => Number(v))));
     }
     const { width, height } = map;
 
     // Support old serialization format
-    const cells = _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.isValid(map.cells)
-      ? _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.clone(map.cells)
-      : _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.fromFlat(width, height, map.cells.map(v => Number(v)));
+    const cells = Array2D.isValid(map.cells)
+      ? Array2D.clone(map.cells)
+      : Array2D.fromFlat(width, height, map.cells.map(v => Number(v)));
     return new City(width, height, cells);
   }
 
@@ -695,6 +688,606 @@ class City {
   }
 }
 
+module.exports = City;
+
+
+/***/ }),
+
+/***/ "./src/js/editor/city-browser.js":
+/*!***************************************!*\
+  !*** ./src/js/editor/city-browser.js ***!
+  \***************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const City = __webpack_require__(/*! ../city */ "./src/js/city.js");
+
+class CityBrowser {
+  constructor($element, config, cityStore, saveMode = false) {
+    this.$element = $element;
+    this.config = config;
+    this.$selectedButton = null;
+    this.selectedData = null;
+
+    this.$element.addClass('city-browser');
+
+    const setSelection = (button) => {
+      if (this.$selectedButton) {
+        this.$selectedButton.removeClass('selected');
+      }
+      this.$selectedButton = $(button);
+      this.$selectedButton.addClass('selected');
+    };
+
+    const buttons = Object.entries(
+      saveMode ? cityStore.getAllUserObjects() : cityStore.getAllObjects()
+    ).map(([id, cityJSON]) => $('<div></div>')
+      .addClass(['col-6', 'col-md-2', 'mb-3'])
+      .append(
+        $('<button></button>')
+          .addClass('city-browser-item')
+          .append(this.createPreviewImage(cityJSON))
+          .on('click', (ev) => {
+            setSelection(ev.currentTarget);
+            this.selectedData = id;
+          })
+      ));
+
+    if (saveMode) {
+      buttons.unshift($('<div></div>')
+        .addClass(['col-6', 'col-md-2', 'mb-3'])
+        .append($('<button></button>')
+          .addClass('city-browser-item-new')
+          .on('click', (ev) => {
+            setSelection(ev.currentTarget);
+            this.selectedData = 'new';
+          })));
+    }
+
+    this.$element.append($('<div class="row"></div>').append(buttons));
+  }
+
+  createPreviewImage(cityJSON) {
+    const $canvas = $('<canvas class="city-browser-item-preview"></canvas>')
+      .attr({
+        width: this.config.cityWidth,
+        height: this.config.cityHeight,
+      });
+    const city = City.fromJSON(cityJSON);
+    const ctx = $canvas[0].getContext('2d');
+    city.map.allCells().forEach(([i, j, value]) => {
+      ctx.fillStyle = (this.config.tileTypes && this.config.tileTypes[value].color) || '#000000';
+      ctx.fillRect(i, j, 1, 1);
+    });
+
+    return $canvas;
+  }
+}
+
+module.exports = CityBrowser;
+
+
+/***/ }),
+
+/***/ "./src/js/editor/map-editor-palette.js":
+/*!*********************************************!*\
+  !*** ./src/js/editor/map-editor-palette.js ***!
+  \*********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+
+class MapEditorPalette {
+  constructor($element, config) {
+    this.$element = $element;
+    this.config = config;
+    this.activeButton = null;
+    this.tileId = null;
+    this.events = new EventEmitter();
+
+    this.$element.addClass('map-editor-palette');
+
+    this.buttons = Object.entries(config.tileTypes).map(([id, typeCfg]) => $('<button></button>')
+      .attr({
+        type: 'button',
+        title: typeCfg.name,
+      })
+      .addClass([
+        'editor-palette-button',
+        'editor-palette-button-tile',
+        `editor-palette-button-tile-${id}`,
+      ])
+      .css({
+        backgroundColor: typeCfg.color,
+        backgroundImage: `url(${typeCfg.editorIcon})`,
+      })
+      .on('click', (ev) => {
+        if (this.activeButton) {
+          this.activeButton.removeClass('active');
+        }
+        this.activeButton = $(ev.target);
+        this.activeButton.addClass('active');
+        this.tileId = Number(id);
+        this.events.emit('change', Number(id));
+      }));
+
+    this.buttons.push($('<div class="separator"></div>'));
+
+    const actionButtons = MapEditorPalette.Actions.map(action => $('<button></button>')
+      .attr({
+        type: 'button',
+        title: action.title,
+      })
+      .addClass([
+        'editor-palette-button',
+        'editor-palette-button-action',
+        `editor-palette-button-action-${action.id}`,
+      ])
+      .css({
+        backgroundImage: `url(${action.icon})`,
+      })
+      .on('click', () => {
+        this.events.emit('action', action.id);
+      }));
+
+    this.buttons.push(...actionButtons);
+
+    this.$element.append(this.buttons);
+    if (this.buttons.length) {
+      this.buttons[0].click();
+    }
+  }
+}
+
+MapEditorPalette.Actions = [
+  {
+    id: 'load',
+    title: 'Load map',
+    icon: 'static/fa/folder-open-solid.svg',
+  },
+  {
+    id: 'save',
+    title: 'Save map',
+    icon: 'static/fa/save-solid.svg',
+  },
+  {
+    id: 'import',
+    title: 'Import map',
+    icon: 'static/fa/file-import-solid.svg',
+  },
+  {
+    id: 'export',
+    title: 'Export map',
+    icon: 'static/fa/file-export-solid.svg',
+  },
+];
+
+module.exports = MapEditorPalette;
+
+
+/***/ }),
+
+/***/ "./src/js/editor/map-editor.js":
+/*!*************************************!*\
+  !*** ./src/js/editor/map-editor.js ***!
+  \*************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const City = __webpack_require__(/*! ../city */ "./src/js/city.js");
+const MapView = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
+const MapEditorPalette = __webpack_require__(/*! ./map-editor-palette */ "./src/js/editor/map-editor-palette.js");
+const ModalLoad = __webpack_require__(/*! ./modal-load */ "./src/js/editor/modal-load.js");
+const ModalSave = __webpack_require__(/*! ./modal-save */ "./src/js/editor/modal-save.js");
+const ModalExport = __webpack_require__(/*! ./modal-export */ "./src/js/editor/modal-export.js");
+const ModalImport = __webpack_require__(/*! ./modal-import */ "./src/js/editor/modal-import.js");
+const ObjectStore = __webpack_require__(/*! ./object-store */ "./src/js/editor/object-store.js");
+
+class MapEditor {
+  constructor($element, city, config, textures) {
+    this.$element = $element;
+    this.city = city;
+    this.config = config;
+
+    this.mapView = new MapView(city, config, textures);
+    this.displayObject = this.mapView.displayObject;
+
+    this.palette = new MapEditorPalette($('<div></div>').appendTo(this.$element), config);
+
+    this.tileType = this.palette.tileId;
+    this.palette.events.on('change', (tileType) => {
+      this.tileType = tileType;
+    });
+
+    this.palette.events.on('action', (id) => {
+      if (this.actionHandlers[id]) {
+        this.actionHandlers[id]();
+      }
+    });
+
+    let lastEdit = null;
+    this.mapView.events.on('action', ([x, y], props) => {
+      if (this.tileType) {
+        if (lastEdit && props.shiftKey) {
+          const [lastX, lastY] = lastEdit;
+          for (let i = Math.min(lastX, x); i <= Math.max(lastX, x); i += 1) {
+            for (let j = Math.min(lastY, y); j <= Math.max(lastY, y); j += 1) {
+              this.city.map.set(i, j, this.tileType);
+            }
+          }
+        } else {
+          this.city.map.set(x, y, this.tileType);
+        }
+        lastEdit = [x, y];
+      }
+    });
+
+    this.objectStore = new ObjectStore('./cities.json');
+    this.actionHandlers = {
+      load: () => {
+        const modal = new ModalLoad(this.config, this.objectStore);
+        modal.show().then((id) => {
+          const jsonCity = id && this.objectStore.get(id);
+          if (jsonCity) {
+            this.city.copy(City.fromJSON(jsonCity));
+          }
+        });
+      },
+      save: () => {
+        const modal = new ModalSave(this.config, this.objectStore);
+        modal.show().then((id) => {
+          if (id) {
+            this.objectStore.set(id === 'new' ? null : id, this.city.toJSON());
+          }
+        });
+      },
+      import: () => {
+        const modal = new ModalImport();
+        modal.show().then((importedData) => {
+          if (importedData) {
+            this.city.copy(City.fromJSON(importedData));
+          }
+        });
+      },
+      export: () => {
+        const modal = new ModalExport(JSON.stringify(this.city));
+        modal.show();
+      },
+    };
+  }
+}
+
+module.exports = MapEditor;
+
+
+/***/ }),
+
+/***/ "./src/js/editor/modal-export.js":
+/*!***************************************!*\
+  !*** ./src/js/editor/modal-export.js ***!
+  \***************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Modal = __webpack_require__(/*! ../modal */ "./src/js/modal.js");
+
+class ModalExport extends Modal {
+  constructor(exportData) {
+    super({
+      title: 'Export map',
+    });
+
+    this.$dataContainer = $('<textarea class="form-control"></textarea>')
+      .attr({
+        rows: 10,
+      })
+      .text(exportData)
+      .appendTo(this.$body);
+
+    this.$copyButton = $('<button></button>')
+      .addClass(['btn', 'btn-outline-dark', 'btn-copy', 'mt-2'])
+      .text('Copy to clipboard')
+      .on('click', () => {
+        this.$dataContainer[0].select();
+        document.execCommand('copy');
+        this.hide();
+      })
+      .appendTo(this.$footer);
+  }
+}
+
+module.exports = ModalExport;
+
+
+/***/ }),
+
+/***/ "./src/js/editor/modal-import.js":
+/*!***************************************!*\
+  !*** ./src/js/editor/modal-import.js ***!
+  \***************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Modal = __webpack_require__(/*! ../modal */ "./src/js/modal.js");
+
+class ModalImport extends Modal {
+  constructor() {
+    super({
+      title: 'Import map',
+    });
+
+    this.$dataContainer = $('<textarea class="form-control"></textarea>')
+      .attr({
+        rows: 10,
+        placeholder: 'Paste the JSON object here.',
+      })
+      .appendTo(this.$body);
+
+    // noinspection JSUnusedGlobalSymbols
+    this.$errorText = $('<p class="text-danger"></p>')
+      .appendTo(this.$footer)
+      .hide();
+
+    // noinspection JSUnusedGlobalSymbols
+    this.$copyButton = $('<button></button>')
+      .addClass(['btn', 'btn-primary'])
+      .text('Import')
+      .on('click', () => {
+        try {
+          const imported = JSON.parse(this.$dataContainer.val());
+          this.hide(imported);
+        } catch (err) {
+          this.showError(err.message);
+        }
+      })
+      .appendTo(this.$footer);
+  }
+
+  showError(errorText) {
+    this.$errorText.html(errorText);
+    this.$errorText.show();
+  }
+}
+
+module.exports = ModalImport;
+
+
+/***/ }),
+
+/***/ "./src/js/editor/modal-load.js":
+/*!*************************************!*\
+  !*** ./src/js/editor/modal-load.js ***!
+  \*************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Modal = __webpack_require__(/*! ../modal */ "./src/js/modal.js");
+const CityBrowser = __webpack_require__(/*! ./city-browser */ "./src/js/editor/city-browser.js");
+
+class ModalLoad extends Modal {
+  constructor(config, cityStore) {
+    super({
+      title: 'Load map',
+      size: 'lg',
+    });
+
+    this.$browserContainer = $('<div></div>')
+      .appendTo(this.$body);
+    this.browser = new CityBrowser(this.$browserContainer, config, cityStore);
+
+    // noinspection JSUnusedGlobalSymbols
+    this.$cancelButton = $('<button></button>')
+      .addClass(['btn', 'btn-secondary'])
+      .text('Cancel')
+      .on('click', () => {
+        this.hide(null);
+      })
+      .appendTo(this.$footer);
+
+    // noinspection JSUnusedGlobalSymbols
+    this.$loadButton = $('<button></button>')
+      .addClass(['btn', 'btn-primary'])
+      .text('Load')
+      .on('click', () => {
+        try {
+          this.hide(this.browser.selectedData);
+        } catch (err) {
+          this.showError(err.message);
+        }
+      })
+      .appendTo(this.$footer);
+  }
+
+  showError(errorText) {
+    this.$errorText.html(errorText);
+    this.$errorText.show();
+  }
+}
+
+module.exports = ModalLoad;
+
+
+/***/ }),
+
+/***/ "./src/js/editor/modal-save.js":
+/*!*************************************!*\
+  !*** ./src/js/editor/modal-save.js ***!
+  \*************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Modal = __webpack_require__(/*! ../modal */ "./src/js/modal.js");
+const CityBrowser = __webpack_require__(/*! ./city-browser */ "./src/js/editor/city-browser.js");
+
+class ModalSave extends Modal {
+  constructor(config, cityStore) {
+    super({
+      title: 'Save map',
+      size: 'lg',
+    });
+
+    this.$browserContainer = $('<div></div>')
+      .appendTo(this.$body);
+    this.browser = new CityBrowser(this.$browserContainer, config, cityStore, true);
+
+    // noinspection JSUnusedGlobalSymbols
+    this.$cancelButton = $('<button></button>')
+      .addClass(['btn', 'btn-secondary'])
+      .text('Cancel')
+      .on('click', () => {
+        this.hide(null);
+      })
+      .appendTo(this.$footer);
+
+    // noinspection JSUnusedGlobalSymbols
+    this.$saveButton = $('<button></button>')
+      .addClass(['btn', 'btn-primary'])
+      .text('Save')
+      .on('click', () => {
+        try {
+          this.hide(this.browser.selectedData);
+        } catch (err) {
+          this.showError(err.message);
+        }
+      })
+      .appendTo(this.$footer);
+  }
+
+  showError(errorText) {
+    this.$errorText.html(errorText);
+    this.$errorText.show();
+  }
+}
+
+module.exports = ModalSave;
+
+
+/***/ }),
+
+/***/ "./src/js/editor/object-store.js":
+/*!***************************************!*\
+  !*** ./src/js/editor/object-store.js ***!
+  \***************************************/
+/***/ ((module) => {
+
+class ObjectStore {
+  constructor(fixedObjectsPath = null) {
+    this.fixedObjects = [];
+    this.userObjects = [];
+
+    this.loadUserObjects();
+    if (fixedObjectsPath) {
+      this.loadFixedObjects(fixedObjectsPath);
+    }
+  }
+
+  async loadFixedObjects(path) {
+    fetch(path, { cache: 'no-store' })
+      .then(response => response.json())
+      .then((data) => {
+        this.fixedObjects = data.cities;
+      });
+  }
+
+  loadUserObjects() {
+    const userObjects = JSON.parse(localStorage.getItem('futureMobility.cityStore.cities'));
+    if (userObjects) {
+      this.userObjects = userObjects;
+    }
+  }
+
+  saveLocal() {
+    localStorage.setItem('futureMobility.cityStore.cities', JSON.stringify(this.userObjects));
+  }
+
+  getAllObjects() {
+    return Object.assign(
+      {},
+      this.getAllUserObjects(),
+      this.getAllFixedObjects(),
+    );
+  }
+
+  getAllFixedObjects() {
+    return Object.fromEntries(this.fixedObjects.map((obj, i) => [
+      `F${i}`,
+      obj,
+    ]));
+  }
+
+  getAllUserObjects() {
+    return Object.fromEntries(this.userObjects.map((obj, i) => [
+      `L${i}`,
+      obj,
+    ]).reverse());
+  }
+
+  get(id) {
+    if (id[0] === 'F') {
+      return this.fixedObjects[id.substr(1)];
+    }
+    return this.userObjects[id.substr(1)];
+  }
+
+  set(id, obj) {
+    if (id === null || this.userObjects[id.substr(1)] === undefined) {
+      this.userObjects.push(obj);
+    } else {
+      this.userObjects[id.substr(1)] = obj;
+    }
+    this.saveLocal();
+  }
+}
+
+module.exports = ObjectStore;
+
+
+/***/ }),
+
+/***/ "./src/js/emissions-variable.js":
+/*!**************************************!*\
+  !*** ./src/js/emissions-variable.js ***!
+  \**************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+const Grid = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
+
+class EmissionsVariable {
+  constructor(city, config) {
+    this.city = city;
+    this.config = config;
+    this.grid = new Grid(this.city.map.width, this.city.map.height);
+    this.events = new EventEmitter();
+
+    this.city.map.events.on('update', this.handleCityUpdate.bind(this));
+    this.handleCityUpdate(this.city.map.allCells());
+  }
+
+  calculate(i, j) {
+    const emissions = (x, y) => (this.config.tileTypes[this.city.map.get(x, y)]
+      && this.config.tileTypes[this.city.map.get(x, y)].emissions)
+      || 0;
+
+    return Math.min(1, Math.max(0, emissions(i, j)
+      + this.city.map.nearbyCells(i, j, 1)
+        .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.5, 0)
+      + this.city.map.nearbyCells(i, j, 2)
+        .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.25, 0)));
+  }
+
+  handleCityUpdate(updates) {
+    const coords = [];
+    updates.forEach(([i, j]) => {
+      coords.push([i, j]);
+      coords.push(...this.city.map.nearbyCells(i, j, 1).map(([x, y]) => [x, y]));
+      coords.push(...this.city.map.nearbyCells(i, j, 2).map(([x, y]) => [x, y]));
+    });
+    // Todo: deduplicating coords might be necessary if the way calculations
+    //    and updates are handled is not changed
+    coords.forEach(([i, j]) => {
+      this.grid.set(i, j, this.calculate(i, j));
+    });
+    this.events.emit('update', coords);
+  }
+}
+
+module.exports = EmissionsVariable;
+
 
 /***/ }),
 
@@ -702,16 +1295,10 @@ class City {
 /*!************************!*\
   !*** ./src/js/grid.js ***!
   \************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ Grid)
-/* harmony export */ });
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-/* harmony import */ var _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./aux/array-2d.js */ "./src/js/aux/array-2d.js");
-
-
+const EventEmitter = __webpack_require__ (/*! events */ "./node_modules/events/events.js");
+const Array2D = __webpack_require__ (/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
 
 /**
  * Represents a 2D grid map that stores a single Number per cell
@@ -727,8 +1314,8 @@ class Grid {
   constructor(width, height, cells = null) {
     this.width = width;
     this.height = height;
-    this.cells = cells || _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.create(width, height, 0);
-    this.events = new events__WEBPACK_IMPORTED_MODULE_0__();
+    this.cells = cells || Array2D.create(width, height, 0);
+    this.events = new EventEmitter();
   }
 
   /**
@@ -750,7 +1337,7 @@ class Grid {
     return {
       width: this.width,
       height: this.height,
-      cells: _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.clone(this.cells),
+      cells: Array2D.clone(this.cells),
     };
   }
 
@@ -807,7 +1394,7 @@ class Grid {
   }
 
   replace(cells) {
-    _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.copy(cells, this.cells);
+    Array2D.copy(cells, this.cells);
     this.events.emit('update', this.allCells());
   }
 
@@ -828,7 +1415,7 @@ class Grid {
    * @return {[[number, number, number]]}
    */
   allCells() {
-    return _aux_array_2d_js__WEBPACK_IMPORTED_MODULE_1__.default.items(this.cells);
+    return Array2D.items(this.cells);
   }
 
   /**
@@ -885,6 +1472,8 @@ class Grid {
   }
 }
 
+module.exports = Grid;
+
 
 /***/ }),
 
@@ -892,17 +1481,11 @@ class Grid {
 /*!****************************!*\
   !*** ./src/js/map-view.js ***!
   \****************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ MapView)
-/* harmony export */ });
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-/* harmony import */ var _static_fa_pencil_alt_solid_svg__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../static/fa/pencil-alt-solid.svg */ "./static/fa/pencil-alt-solid.svg");
 /* globals PIXI */
-
-
+const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+const PencilCursor = __webpack_require__(/*! ../../static/fa/pencil-alt-solid.svg */ "./static/fa/pencil-alt-solid.svg");
 
 const ROAD_TILE = 1;
 const TILE_SIZE = 120;
@@ -913,7 +1496,7 @@ class MapView {
     this.city = city;
     this.config = config;
     this.textures = textures;
-    this.events = new events__WEBPACK_IMPORTED_MODULE_0__();
+    this.events = new EventEmitter();
 
     this.bgTiles = Array(this.city.map.width * this.city.map.height);
     this.textureTiles = Array(this.city.map.width * this.city.map.height);
@@ -939,7 +1522,7 @@ class MapView {
           });
         }
       });
-      bgTile.cursor = `url(${_static_fa_pencil_alt_solid_svg__WEBPACK_IMPORTED_MODULE_1__}) 0 20, auto`;
+      bgTile.cursor = `url(${PencilCursor}) 0 20, auto`;
       this.bgTiles[this.city.map.offset(i, j)] = bgTile;
 
       const textureTile = new PIXI.Sprite();
@@ -1003,6 +1586,80 @@ class MapView {
   }
 }
 
+module.exports = MapView;
+
+
+/***/ }),
+
+/***/ "./src/js/modal.js":
+/*!*************************!*\
+  !*** ./src/js/modal.js ***!
+  \*************************/
+/***/ ((module) => {
+
+class Modal {
+  /**
+   * @param {object} options
+   *  Modal dialog options
+   * @param {string} options.title
+   *  Dialog title.
+   * @param {string} options.size
+   *  Modal size (lg or sm).
+   * @param {boolean} options.showCloseButton
+   *  Shows a close button in the dialog if true.
+   * @param {boolean} options.showFooter
+   *  Adds a footer area to the dialog if true.
+   */
+  constructor(options) {
+    this.returnValue = null;
+
+    this.$element = $('<div class="modal fade"></div>');
+    this.$dialog = $('<div class="modal-dialog"></div>').appendTo(this.$element);
+    this.$content = $('<div class="modal-content"></div>').appendTo(this.$dialog);
+    this.$header = $('<div class="modal-header"></div>').appendTo(this.$content);
+    this.$body = $('<div class="modal-body"></div>').appendTo(this.$content);
+    this.$footer = $('<div class="modal-footer"></div>').appendTo(this.$content);
+
+    this.$closeButton = $('<button type="button" class="close" data-dismiss="modal">')
+      .append($('<span>&times;</span>'))
+      .appendTo(this.$header);
+
+    if (options.title) {
+      $('<h5 class="modal-title"></h5>')
+        .html(options.title)
+        .prependTo(this.$header);
+    }
+    if (options.size) {
+      this.$dialog.addClass(`modal-${options.size}`);
+    }
+
+    if (options.showCloseButton === false) {
+      this.$closeButton.remove();
+    }
+    if (options.showFooter === false) {
+      this.$footer.remove();
+    }
+  }
+
+  async show() {
+    return new Promise((resolve) => {
+      $('body').append(this.$element);
+      this.$element.modal();
+      this.$element.on('hidden.bs.modal', () => {
+        this.$element.remove();
+        resolve(this.returnValue);
+      });
+    });
+  }
+
+  hide(returnValue) {
+    this.returnValue = returnValue;
+    this.$element.modal('hide');
+  }
+}
+
+module.exports = Modal;
+
 
 /***/ }),
 
@@ -1010,15 +1667,10 @@ class MapView {
 /*!*******************************************!*\
   !*** ./src/js/server-socket-connector.js ***!
   \*******************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ ServerSocketConnector)
-/* harmony export */ });
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
 /* eslint-disable no-console */
-
+const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
 
 const PING_TIME = 1000 * 10;
 const PONG_WAIT_TIME = 1000 * 10;
@@ -1029,7 +1681,7 @@ class ServerSocketConnector {
     this.uri = uri;
     this.ws = null;
     this.connected = false;
-    this.events = new events__WEBPACK_IMPORTED_MODULE_0__();
+    this.events = new EventEmitter();
     this.pingTimeout = null;
     this.pongWaitTimeout = null;
     this.reconnectTimeout = null;
@@ -1159,6 +1811,8 @@ class ServerSocketConnector {
   }
 }
 
+module.exports = ServerSocketConnector;
+
 
 /***/ }),
 
@@ -1166,65 +1820,97 @@ class ServerSocketConnector {
 /*!**********************************!*\
   !*** ./src/js/textures-roads.js ***!
   \**********************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _static_tiles_road_0000_png__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../static/tiles/road-0000.png */ "./static/tiles/road-0000.png");
-/* harmony import */ var _static_tiles_road_0001_png__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../static/tiles/road-0001.png */ "./static/tiles/road-0001.png");
-/* harmony import */ var _static_tiles_road_0010_png__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../static/tiles/road-0010.png */ "./static/tiles/road-0010.png");
-/* harmony import */ var _static_tiles_road_0011_png__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../static/tiles/road-0011.png */ "./static/tiles/road-0011.png");
-/* harmony import */ var _static_tiles_road_0100_png__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../static/tiles/road-0100.png */ "./static/tiles/road-0100.png");
-/* harmony import */ var _static_tiles_road_0101_png__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../static/tiles/road-0101.png */ "./static/tiles/road-0101.png");
-/* harmony import */ var _static_tiles_road_0110_png__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../static/tiles/road-0110.png */ "./static/tiles/road-0110.png");
-/* harmony import */ var _static_tiles_road_0111_png__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../static/tiles/road-0111.png */ "./static/tiles/road-0111.png");
-/* harmony import */ var _static_tiles_road_1000_png__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../static/tiles/road-1000.png */ "./static/tiles/road-1000.png");
-/* harmony import */ var _static_tiles_road_1001_png__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../static/tiles/road-1001.png */ "./static/tiles/road-1001.png");
-/* harmony import */ var _static_tiles_road_1010_png__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../static/tiles/road-1010.png */ "./static/tiles/road-1010.png");
-/* harmony import */ var _static_tiles_road_1011_png__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../static/tiles/road-1011.png */ "./static/tiles/road-1011.png");
-/* harmony import */ var _static_tiles_road_1100_png__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../static/tiles/road-1100.png */ "./static/tiles/road-1100.png");
-/* harmony import */ var _static_tiles_road_1101_png__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../static/tiles/road-1101.png */ "./static/tiles/road-1101.png");
-/* harmony import */ var _static_tiles_road_1110_png__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../static/tiles/road-1110.png */ "./static/tiles/road-1110.png");
-/* harmony import */ var _static_tiles_road_1111_png__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../static/tiles/road-1111.png */ "./static/tiles/road-1111.png");
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+const road0000 = __webpack_require__(/*! ../../static/tiles/road-0000.png */ "./static/tiles/road-0000.png");
+const road0001 = __webpack_require__(/*! ../../static/tiles/road-0001.png */ "./static/tiles/road-0001.png");
+const road0010 = __webpack_require__(/*! ../../static/tiles/road-0010.png */ "./static/tiles/road-0010.png");
+const road0011 = __webpack_require__(/*! ../../static/tiles/road-0011.png */ "./static/tiles/road-0011.png");
+const road0100 = __webpack_require__(/*! ../../static/tiles/road-0100.png */ "./static/tiles/road-0100.png");
+const road0101 = __webpack_require__(/*! ../../static/tiles/road-0101.png */ "./static/tiles/road-0101.png");
+const road0110 = __webpack_require__(/*! ../../static/tiles/road-0110.png */ "./static/tiles/road-0110.png");
+const road0111 = __webpack_require__(/*! ../../static/tiles/road-0111.png */ "./static/tiles/road-0111.png");
+const road1000 = __webpack_require__(/*! ../../static/tiles/road-1000.png */ "./static/tiles/road-1000.png");
+const road1001 = __webpack_require__(/*! ../../static/tiles/road-1001.png */ "./static/tiles/road-1001.png");
+const road1010 = __webpack_require__(/*! ../../static/tiles/road-1010.png */ "./static/tiles/road-1010.png");
+const road1011 = __webpack_require__(/*! ../../static/tiles/road-1011.png */ "./static/tiles/road-1011.png");
+const road1100 = __webpack_require__(/*! ../../static/tiles/road-1100.png */ "./static/tiles/road-1100.png");
+const road1101 = __webpack_require__(/*! ../../static/tiles/road-1101.png */ "./static/tiles/road-1101.png");
+const road1110 = __webpack_require__(/*! ../../static/tiles/road-1110.png */ "./static/tiles/road-1110.png");
+const road1111 = __webpack_require__(/*! ../../static/tiles/road-1111.png */ "./static/tiles/road-1111.png");
 
 const RoadTextures = {
-  road0000: _static_tiles_road_0000_png__WEBPACK_IMPORTED_MODULE_0__,
-  road0001: _static_tiles_road_0001_png__WEBPACK_IMPORTED_MODULE_1__,
-  road0010: _static_tiles_road_0010_png__WEBPACK_IMPORTED_MODULE_2__,
-  road0011: _static_tiles_road_0011_png__WEBPACK_IMPORTED_MODULE_3__,
-  road0100: _static_tiles_road_0100_png__WEBPACK_IMPORTED_MODULE_4__,
-  road0101: _static_tiles_road_0101_png__WEBPACK_IMPORTED_MODULE_5__,
-  road0110: _static_tiles_road_0110_png__WEBPACK_IMPORTED_MODULE_6__,
-  road0111: _static_tiles_road_0111_png__WEBPACK_IMPORTED_MODULE_7__,
-  road1000: _static_tiles_road_1000_png__WEBPACK_IMPORTED_MODULE_8__,
-  road1001: _static_tiles_road_1001_png__WEBPACK_IMPORTED_MODULE_9__,
-  road1010: _static_tiles_road_1010_png__WEBPACK_IMPORTED_MODULE_10__,
-  road1011: _static_tiles_road_1011_png__WEBPACK_IMPORTED_MODULE_11__,
-  road1100: _static_tiles_road_1100_png__WEBPACK_IMPORTED_MODULE_12__,
-  road1101: _static_tiles_road_1101_png__WEBPACK_IMPORTED_MODULE_13__,
-  road1110: _static_tiles_road_1110_png__WEBPACK_IMPORTED_MODULE_14__,
-  road1111: _static_tiles_road_1111_png__WEBPACK_IMPORTED_MODULE_15__,
+  road0000,
+  road0001,
+  road0010,
+  road0011,
+  road0100,
+  road0101,
+  road0110,
+  road0111,
+  road1000,
+  road1001,
+  road1010,
+  road1011,
+  road1100,
+  road1101,
+  road1110,
+  road1111,
 };
 
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (RoadTextures);
+module.exports = RoadTextures;
+
+
+/***/ }),
+
+/***/ "./src/js/variable-view.js":
+/*!*********************************!*\
+  !*** ./src/js/variable-view.js ***!
+  \*********************************/
+/***/ ((module) => {
+
+/* globals PIXI */
+
+const TILE_SIZE = 10;
+
+class VariableView {
+  constructor(variable) {
+    this.displayObject = new PIXI.Container();
+    this.variable = variable;
+
+    this.tiles = Array(this.variable.grid.width * this.variable.grid.height);
+    this.variable.grid.allCells().forEach(([i, j]) => {
+      const newTile = new PIXI.Graphics();
+      newTile.x = i * TILE_SIZE;
+      newTile.y = j * TILE_SIZE;
+      this.tiles[this.variable.grid.offset(i, j)] = newTile;
+    });
+
+    this.displayObject.addChild(...this.tiles);
+    this.variable.events.on('update', this.handleUpdate.bind(this));
+    this.handleUpdate(this.variable.grid.allCells());
+  }
+
+  getTile(i, j) {
+    return this.tiles[this.variable.grid.offset(i, j)];
+  }
+
+  renderTile(i, j) {
+    this.getTile(i, j)
+      .clear()
+      .beginFill(0x953202, this.variable.grid.get(i, j))
+      .drawRect(0, 0, TILE_SIZE, TILE_SIZE)
+      .endFill();
+  }
+
+  handleUpdate(updates) {
+    updates.forEach(([i, j]) => {
+      this.renderTile(i, j);
+    });
+  }
+}
+
+module.exports = VariableView;
 
 
 /***/ }),
@@ -1235,6 +1921,7 @@ const RoadTextures = {
   \****************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "2174451d87ee3f5a3181.svg";
 
 /***/ }),
@@ -1245,6 +1932,7 @@ module.exports = __webpack_require__.p + "2174451d87ee3f5a3181.svg";
   \************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "1a8456203b87386408d8.png";
 
 /***/ }),
@@ -1255,6 +1943,7 @@ module.exports = __webpack_require__.p + "1a8456203b87386408d8.png";
   \************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "84ec50c0265be4befbfc.png";
 
 /***/ }),
@@ -1265,6 +1954,7 @@ module.exports = __webpack_require__.p + "84ec50c0265be4befbfc.png";
   \************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "80ee4438210070dfc287.png";
 
 /***/ }),
@@ -1275,6 +1965,7 @@ module.exports = __webpack_require__.p + "80ee4438210070dfc287.png";
   \************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "4b03a65970e618f9328e.png";
 
 /***/ }),
@@ -1285,6 +1976,7 @@ module.exports = __webpack_require__.p + "4b03a65970e618f9328e.png";
   \************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "da06ed83a3ce0389b676.png";
 
 /***/ }),
@@ -1295,6 +1987,7 @@ module.exports = __webpack_require__.p + "da06ed83a3ce0389b676.png";
   \************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "b700faa8ced1ba0f3874.png";
 
 /***/ }),
@@ -1305,6 +1998,7 @@ module.exports = __webpack_require__.p + "b700faa8ced1ba0f3874.png";
   \************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "3d8c7cc6d5c792dc81bf.png";
 
 /***/ }),
@@ -1315,6 +2009,7 @@ module.exports = __webpack_require__.p + "3d8c7cc6d5c792dc81bf.png";
   \************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "e8742869d0c8a14848d8.png";
 
 /***/ }),
@@ -1325,6 +2020,7 @@ module.exports = __webpack_require__.p + "e8742869d0c8a14848d8.png";
   \************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "4fa20d3ef133f4e628d8.png";
 
 /***/ }),
@@ -1335,6 +2031,7 @@ module.exports = __webpack_require__.p + "4fa20d3ef133f4e628d8.png";
   \************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "99436b515e0c408ed029.png";
 
 /***/ }),
@@ -1345,6 +2042,7 @@ module.exports = __webpack_require__.p + "99436b515e0c408ed029.png";
   \************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "8d2ad6977fab48071782.png";
 
 /***/ }),
@@ -1355,6 +2053,7 @@ module.exports = __webpack_require__.p + "8d2ad6977fab48071782.png";
   \************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "6c749a80ab22075a538b.png";
 
 /***/ }),
@@ -1365,6 +2064,7 @@ module.exports = __webpack_require__.p + "6c749a80ab22075a538b.png";
   \************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "098caf0e2dfc28b9cd84.png";
 
 /***/ }),
@@ -1375,6 +2075,7 @@ module.exports = __webpack_require__.p + "098caf0e2dfc28b9cd84.png";
   \************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "4856a088fedc150f4e21.png";
 
 /***/ }),
@@ -1385,6 +2086,7 @@ module.exports = __webpack_require__.p + "4856a088fedc150f4e21.png";
   \************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "38dbdfc9a02dd9a47494.png";
 
 /***/ }),
@@ -1395,6 +2097,7 @@ module.exports = __webpack_require__.p + "38dbdfc9a02dd9a47494.png";
   \************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+"use strict";
 module.exports = __webpack_require__.p + "b80a83d5c965a0c18254.png";
 
 /***/ })
@@ -1426,18 +2129,6 @@ module.exports = __webpack_require__.p + "b80a83d5c965a0c18254.png";
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
-/******/ 		__webpack_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 				}
-/******/ 			}
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/global */
 /******/ 	(() => {
 /******/ 		__webpack_require__.g = (function() {
@@ -1448,11 +2139,6 @@ module.exports = __webpack_require__.p + "b80a83d5c965a0c18254.png";
 /******/ 				if (typeof window === 'object') return window;
 /******/ 			}
 /******/ 		})();
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
@@ -1490,39 +2176,37 @@ module.exports = __webpack_require__.p + "b80a83d5c965a0c18254.png";
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
-/*!*****************************!*\
-  !*** ./src/js/main-city.js ***!
-  \*****************************/
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _city_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./city.js */ "./src/js/city.js");
-/* harmony import */ var _map_view_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./map-view.js */ "./src/js/map-view.js");
-/* harmony import */ var _sass_default_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
-/* harmony import */ var _textures_roads_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./textures-roads.js */ "./src/js/textures-roads.js");
-/* harmony import */ var _server_socket_connector_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./server-socket-connector.js */ "./src/js/server-socket-connector.js");
+/*!*******************************!*\
+  !*** ./src/js/main-editor.js ***!
+  \*******************************/
 /* globals PIXI */
-
-
-
-
-
+const City = __webpack_require__(/*! ./city */ "./src/js/city.js");
+const EmissionsVariable = __webpack_require__(/*! ./emissions-variable */ "./src/js/emissions-variable.js");
+const MapEditor = __webpack_require__(/*! ./editor/map-editor */ "./src/js/editor/map-editor.js");
+const VariableView = __webpack_require__(/*! ./variable-view */ "./src/js/variable-view.js");
+__webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
+const RoadTextures = __webpack_require__(/*! ./textures-roads */ "./src/js/textures-roads.js");
+const ServerSocketConnector = __webpack_require__(/*! ./server-socket-connector */ "./src/js/server-socket-connector.js");
 
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
   .then(response => response.json())
   .then((config) => {
-    const city = new _city_js__WEBPACK_IMPORTED_MODULE_0__.default(config.cityWidth, config.cityHeight);
+    // const city = City.fromJSON(Cities.cities[0]);
+    const city = new City(config.cityWidth, config.cityHeight);
+    const emissions = new EmissionsVariable(city, config);
 
     const app = new PIXI.Application({
       width: 3840,
       height: 1920,
       backgroundColor: 0xf2f2f2,
     });
-    Object.entries(_textures_roads_js__WEBPACK_IMPORTED_MODULE_3__.default).forEach(([id, path]) => {
+    Object.entries(RoadTextures).forEach(([id, path]) => {
       app.loader.add(id, path);
     });
     app.loader.load((loader, resources) => {
       $('[data-component="app-container"]').append(app.view);
       const textures = Object.fromEntries(
-        Object.entries(_textures_roads_js__WEBPACK_IMPORTED_MODULE_3__.default).map(([id]) => [id, resources[id].texture])
+        Object.entries(RoadTextures).map(([id]) => [id, resources[id].texture])
       );
 
       // Change the scaling mode for the road textures
@@ -1531,16 +2215,26 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
       });
 
       // const mapView = new MapView(city, config, textures);
-      const mapView = new _map_view_js__WEBPACK_IMPORTED_MODULE_1__.default(city, config, textures);
+      const mapView = new MapEditor($('body'), city, config, textures);
       app.stage.addChild(mapView.displayObject);
       mapView.displayObject.width = 1920;
       mapView.displayObject.height = 1920;
       mapView.displayObject.x = 0;
       mapView.displayObject.y = 0;
 
-      const connector = new _server_socket_connector_js__WEBPACK_IMPORTED_MODULE_4__.default("ws://localhost:4848");
-      connector.events.on('map_update', (cells) => {
+      const varViewer = new VariableView(emissions);
+      app.stage.addChild(varViewer.displayObject);
+      varViewer.displayObject.width = 960;
+      varViewer.displayObject.height = 960;
+      varViewer.displayObject.x = 1920 + 40;
+      varViewer.displayObject.y = 0;
+
+      const connector = new ServerSocketConnector("ws://localhost:4848");
+      connector.events.once('map_update', (cells) => {
         city.map.replace(cells);
+        city.map.events.on('update', () => {
+          connector.setMap(city.map.cells);
+        });
       });
       connector.events.on('connect', () => {
         connector.getMap();
@@ -1548,7 +2242,7 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
     });
   })
   .catch((err) => {
-    console.error(`Error loading configuration from ${"http://localhost:4848"}`);
+    console.error('Error loading configuration');
     console.error(err);
   });
 
@@ -1556,4 +2250,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.b616656b0204a2418470.js.map
+//# sourceMappingURL=editor.988ab5cc428da0b4b0bc.js.map

@@ -1,18 +1,18 @@
 /* eslint-disable no-console */
-import fs from 'fs';
-import express from 'express';
-import ws from 'ws';
-import cors from 'cors';
-import OpenApiValidator from 'express-openapi-validator';
-import yaml from 'js-yaml';
-import City from '../src/js/city.js';
+const fs = require('fs');
+const express = require('express');
+const ws = require('ws');
+const cors = require('cors');
+const OpenApiValidator = require('express-openapi-validator');
+const yaml = require('js-yaml');
+const City = require('../src/js/city');
 
 const config = yaml.load(fs.readFileSync('../config.yml'));
 
 console.log(`Initializing ${config.cityWidth} x ${config.cityHeight} city.`);
 const city = new City(config.cityWidth, config.cityHeight);
 
-export const app = express();
+const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(
@@ -47,7 +47,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-export const wss = new ws.Server({ noServer: true });
+const wss = new ws.Server({ noServer: true });
 
 wss.on('connection', (socket) => {
   console.log('Connected');
@@ -92,3 +92,5 @@ wss.on('connection', (socket) => {
     sendMapUpdateMessage();
   });
 });
+
+module.exports = { app, wss };

@@ -1,7 +1,7 @@
-import Modal from '../modal.js';
-import CityBrowser from './city-browser.js';
+const Modal = require('../modal');
+const CityBrowser = require('./city-browser');
 
-export default class ModalLoad extends Modal {
+class ModalLoad extends Modal {
   constructor(config, cityStore) {
     super({
       title: 'Load map',
@@ -40,3 +40,5 @@ export default class ModalLoad extends Modal {
     this.$errorText.show();
   }
 }
+
+module.exports = ModalLoad;

@@ -1,6 +1,6 @@
-import Modal from '../modal.js';
+const Modal = require('../modal');
 
-export default class ModalExport extends Modal {
+class ModalExport extends Modal {
   constructor(exportData) {
     super({
       title: 'Export map',
@@ -24,3 +24,5 @@ export default class ModalExport extends Modal {
       .appendTo(this.$footer);
   }
 }
+
+module.exports = ModalExport;

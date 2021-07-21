@@ -1,4 +1,4 @@
-export default class ObjectStore {
+class ObjectStore {
   constructor(fixedObjectsPath = null) {
     this.fixedObjects = [];
     this.userObjects = [];
@@ -66,3 +66,5 @@ export default class ObjectStore {
     this.saveLocal();
   }
 }
+
+module.exports = ObjectStore;

@@ -2,7 +2,7 @@
  * This class provides helper functions to work with 2D arrays.
  * (arrays of arrays)
  */
-export default class Array2D {
+class Array2D {
   /**
    * Create and initialize a 2D Array
    *
@@ -111,3 +111,5 @@ export default class Array2D {
     return items;
   }
 }
+
+module.exports = Array2D;

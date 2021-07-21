@@ -1,6 +1,6 @@
-import City from '../city.js';
+const City = require('../city');
 
-export default class CityBrowser {
+class CityBrowser {
   constructor($element, config, cityStore, saveMode = false) {
     this.$element = $element;
     this.config = config;
@@ -61,3 +61,5 @@ export default class CityBrowser {
     return $canvas;
   }
 }
+
+module.exports = CityBrowser;

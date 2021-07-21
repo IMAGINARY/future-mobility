@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 
-import request from 'supertest';
-import { app } from '../app.js';
+const request = require('supertest');
+const { app } = require('../app');
 
 describe('Test the HTTP API', () => {
   it('It should GET /config', (done) => {

@@ -1,7 +1,7 @@
-import EventEmitter from 'events';
-import Grid from './grid.js';
+const EventEmitter = require('events');
+const Grid = require('./grid');
 
-export default class EmissionsVariable {
+class EmissionsVariable {
   constructor(city, config) {
     this.city = city;
     this.config = config;
@@ -39,3 +39,5 @@ export default class EmissionsVariable {
     this.events.emit('update', coords);
   }
 }
+
+module.exports = EmissionsVariable;

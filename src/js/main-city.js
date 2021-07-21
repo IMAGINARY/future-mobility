@@ -1,9 +1,9 @@
 /* globals PIXI */
-import City from './city.js';
-import MapView from './map-view.js';
-import '../sass/default.scss';
-import RoadTextures from './textures-roads.js';
-import ServerSocketConnector from './server-socket-connector.js';
+const City = require('./city');
+const MapView = require('./map-view');
+require('../sass/default.scss');
+const RoadTextures = require('./textures-roads');
+const ServerSocketConnector = require('./server-socket-connector');
 
 fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
   .then(response => response.json())

@@ -42,17 +42,6 @@ You can use [Swagger Editor](https://editor.swagger.io/) and the
 [AsyncAPI Playground](https://playground.asyncapi.io/) to format the respective specifications in
 a friendly format.
 
-## Tests
-
-Right now Jest requires the `--experimental-vm-modules` flag to test ESM modules.
-
-```
-node --experimental-vm-modules node_modules/.bin/jest
-```
-
-You can check [relevant documentation](https://jestjs.io/docs/ecmascript-modules) to see if this
-changes in future versions of Jest or node. 
-
 ## License
 
 Copyright (c) 2021 IMAGINARY gGmbH

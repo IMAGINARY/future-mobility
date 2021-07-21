@@ -1,11 +1,11 @@
 /* globals PIXI */
-import EventEmitter from 'events';
-import PencilCursor from '../../static/fa/pencil-alt-solid.svg';
+const EventEmitter = require('events');
+const PencilCursor = require('../../static/fa/pencil-alt-solid.svg');
 
 const ROAD_TILE = 1;
 const TILE_SIZE = 120;
 
-export default class MapView {
+class MapView {
   constructor(city, config, textures) {
     this.displayObject = new PIXI.Container();
     this.city = city;
@@ -100,3 +100,5 @@ export default class MapView {
     });
   }
 }
+
+module.exports = MapView;

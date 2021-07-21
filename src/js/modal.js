@@ -1,4 +1,4 @@
-export default class Modal {
+class Modal {
   /**
    * @param {object} options
    *  Modal dialog options
@@ -58,3 +58,5 @@ export default class Modal {
     this.$element.modal('hide');
   }
 }
+
+module.exports = Modal;

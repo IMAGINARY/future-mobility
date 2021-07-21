@@ -9,7 +9,6 @@
   },
   "author": "IMAGINARY <info@imaginary.org>",
   "license": "MIT",
-  "type": "module",
   "bugs": {
     "url": "https://github.com/IMAGINARY/future-mobility/issues"
   },

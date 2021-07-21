@@ -2,7 +2,7 @@
 
 const TILE_SIZE = 10;
 
-export default class VariableView {
+class VariableView {
   constructor(variable) {
     this.displayObject = new PIXI.Container();
     this.variable = variable;
@@ -38,3 +38,5 @@ export default class VariableView {
     });
   }
 }
+
+module.exports = VariableView;

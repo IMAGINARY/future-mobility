@@ -1,7 +1,7 @@
-import Grid from './grid.js';
-import Array2D from './aux/array-2d.js';
+const Grid = require('./grid');
+const Array2D = require('./aux/array-2d');
 
-export default class City {
+class City {
   constructor(width, height, cells = null) {
     this.map = new Grid(width, height, cells);
   }
@@ -32,3 +32,5 @@ export default class City {
     this.map.copy(city.map);
   }
 }
+
+module.exports = City;

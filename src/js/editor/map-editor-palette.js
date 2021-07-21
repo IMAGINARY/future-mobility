@@ -1,6 +1,6 @@
-import EventEmitter from 'events';
+const EventEmitter = require('events');
 
-export default class MapEditorPalette {
+class MapEditorPalette {
   constructor($element, config) {
     this.$element = $element;
     this.config = config;
@@ -84,3 +84,5 @@ MapEditorPalette.Actions = [
     icon: 'static/fa/file-export-solid.svg',
   },
 ];
+
+module.exports = MapEditorPalette;

@@ -1,13 +1,13 @@
-import City from '../city.js';
-import MapView from '../map-view.js';
-import MapEditorPalette from './map-editor-palette.js';
-import ModalLoad from './modal-load.js';
-import ModalSave from './modal-save.js';
-import ModalExport from './modal-export.js';
-import ModalImport from './modal-import.js';
-import ObjectStore from './object-store.js';
+const City = require('../city');
+const MapView = require('../map-view');
+const MapEditorPalette = require('./map-editor-palette');
+const ModalLoad = require('./modal-load');
+const ModalSave = require('./modal-save');
+const ModalExport = require('./modal-export');
+const ModalImport = require('./modal-import');
+const ObjectStore = require('./object-store');
 
-export default class MapEditor {
+class MapEditor {
   constructor($element, city, config, textures) {
     this.$element = $element;
     this.city = city;
@@ -80,3 +80,5 @@ export default class MapEditor {
     };
   }
 }
+
+module.exports = MapEditor;

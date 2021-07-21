@@ -1,10 +1,10 @@
-import EventEmitter from 'events';
-import Array2D from './aux/array-2d.js';
+const EventEmitter = require ('events');
+const Array2D = require ('./aux/array-2d');
 
 /**
  * Represents a 2D grid map that stores a single Number per cell
  */
-export default class Grid {
+class Grid {
   /**
    * Create a new grid
    *
@@ -172,3 +172,5 @@ export default class Grid {
       .map(([x, y]) => [x, y, this.get(x, y)]);
   }
 }
+
+module.exports = Grid;
