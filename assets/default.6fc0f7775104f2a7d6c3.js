@@ -1,6 +1,17 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./cities.json":
+/*!*********************!*\
+  !*** ./cities.json ***!
+  \*********************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"cities":[{"map":["3","3","5","3","1","2","2","4","4","2","2","1","3","5","3","3","3","5","3","5","1","2","2","4","4","2","2","1","5","3","5","3","5","3","5","3","1","2","2","4","4","2","2","1","3","5","3","5","3","5","3","1","1","1","2","4","4","2","1","1","1","3","5","3","1","1","1","1","5","1","1","1","1","1","1","5","1","1","1","1","2","2","2","1","1","2","2","4","4","2","2","1","1","2","2","2","5","5","5","5","1","5","5","5","5","5","5","1","5","5","5","5","6","6","6","6","1","6","6","6","6","6","6","1","6","6","6","6","6","6","6","6","1","6","6","6","6","6","6","1","6","6","6","6","5","5","5","5","1","5","5","5","5","5","5","1","5","5","5","5","2","2","2","1","1","2","2","4","4","2","2","1","1","2","2","2","1","1","1","1","5","1","1","1","1","1","1","5","1","1","1","1","3","5","3","1","1","1","2","4","4","2","1","1","1","3","5","3","5","3","5","3","1","2","2","4","4","2","2","1","3","5","3","5","3","5","3","5","1","2","2","4","4","2","2","1","5","3","5","3","3","3","5","3","1","2","2","4","4","2","2","1","3","5","3","3"]},{"map":["3","3","3","1","5","5","5","1","4","4","4","4","4","2","2","2","3","3","3","1","5","5","5","1","4","4","4","4","4","2","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","2","2","2","2","1","2","2","2","1","2","2","2","2","1","2","2","2","2","2","2","1","2","2","2","1","2","2","2","2","1","2","6","6","5","5","5","1","2","2","2","1","5","5","6","6","1","6","6","6","6","6","6","1","6","6","6","1","6","6","6","4","1","5","5","6","6","6","6","1","6","6","6","1","6","6","5","5","1","4","4","5","6","6","6","1","6","6","6","1","6","6","6","6","1","5","5","6","5","5","5","1","5","5","5","1","5","5","5","6","1","6","6","6","4","4","4","1","4","4","4","1","4","4","4","4","1","5","5","5","1","1","1","1","1","1","1","1","1","4","4","4","1","2","2","2","5","5","5","1","4","4","4","4","1","1","1","1","1","1","1","1","3","3","3","1","4","4","4","4","5","5","1","2","2","2","2","2","3","3","3","1","3","3","3","3","3","5","1","2","2","2","2","2","3","3","3","1","3","3","3","3","3","5","1","2","2","2","2","2"]},{"map":["3","3","1","4","4","1","4","4","1","4","4","1","4","4","1","3","3","3","1","4","4","1","4","4","1","4","4","1","4","4","1","3","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","5","5","1","2","2","1","2","2","1","2","2","1","2","2","1","5","5","5","1","2","2","1","2","2","1","2","2","1","2","2","1","5","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","3","3","1","5","5","1","2","2","1","2","2","1","5","5","1","3","3","3","1","5","5","1","2","2","1","2","2","1","5","5","1","3","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","5","5","1","2","2","1","2","2","1","2","2","1","2","2","1","5","5","5","1","2","2","1","2","2","1","2","2","1","2","2","1","5","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","3","3","1","5","5","1","2","2","1","2","2","1","5","5","1","3","3","3","1","5","5","1","2","2","1","2","2","1","5","5","1","3","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","3","3","1","4","4","1","4","4","1","4","4","1","4","4","1","3"]}]}');
+
+/***/ }),
+
 /***/ "./node_modules/events/events.js":
 /*!***************************************!*\
   !*** ./node_modules/events/events.js ***!
@@ -4851,6 +4862,288 @@ module.exports = showFatalError;
 
 /***/ }),
 
+/***/ "./src/js/car-overlay.js":
+/*!*******************************!*\
+  !*** ./src/js/car-overlay.js ***!
+  \*******************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+/* globals PIXI */
+const Car = __webpack_require__(/*! ./car */ "./src/js/car.js");
+
+class CarOverlay {
+  constructor(city, config, textures) {
+    this.displayObject = new PIXI.Container();
+    this.displayObject.width = 1920;
+    this.displayObject.height = 1920;
+    this.displayObject.x = 0;
+    this.displayObject.y = 0;
+    this.city = city;
+    this.config = config;
+    this.textures = textures;
+
+    this.cars = [];
+    this.addCar(new Car(this, this.textures.car001, 2, 0, 'N', 1));
+    this.addCar(new Car(this, this.textures.car002, 5, 0, 'N', 2));
+    this.addCar(new Car(this, this.textures.car003, 8, 0, 'N', 1));
+    this.addCar(new Car(this, this.textures.car004, 11, 0, 'N', 2));
+    this.addCar(new Car(this, this.textures.car005, 14, 0, 'N', 1));
+  }
+
+  addCar(aCar) {
+    this.cars.push(aCar);
+    this.displayObject.addChild(aCar.sprite);
+  }
+
+  destroyCar(aCar) {
+    this.cars.splice(this.cars.indexOf(aCar), 1);
+    this.displayObject.removeChild(aCar);
+    aCar.destroy();
+  }
+
+  onCarExitMap(aCar) {
+    this.destroyCar(aCar);
+  }
+
+  animate(time) {
+    this.cars.forEach(car => car.animate(time));
+  }
+}
+
+module.exports = CarOverlay;
+
+
+/***/ }),
+
+/***/ "./src/js/car.js":
+/*!***********************!*\
+  !*** ./src/js/car.js ***!
+  \***********************/
+/***/ ((module) => {
+
+/* globals PIXI */
+
+const ROAD_TILE = 1;
+const TILE_SIZE = 120;
+
+function oppositeSide(side) {
+  return {
+    N: 'S', E: 'W', S: 'N', W: 'E',
+  }[side];
+}
+
+function rightTurn(side) {
+  return {
+    N: 'W', E: 'N', S: 'E', W: 'S',
+  }[side];
+}
+
+function leftTurn(side) {
+  return {
+    N: 'E', E: 'S', S: 'W', W: 'N',
+  }[side];
+}
+
+function sideOffset(side) {
+  return {
+    N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0],
+  }[side];
+}
+
+function sideAngle(side) {
+  return {
+    N: Math.PI, E: Math.PI * 1.5, S: 0, W: Math.PI * 0.5,
+  }[side];
+}
+
+
+const adjTile = (i, j, side) => [i + sideOffset(side)[0], j + sideOffset(side)[1]];
+
+function tileInCoords(i, j, lane, side) {
+  const offset = [0, 0];
+  switch (side) {
+    case 'W':
+      offset[1] = TILE_SIZE - ((TILE_SIZE / 6) * (lane + 0.5));
+      break;
+    case 'E':
+      offset[0] = TILE_SIZE;
+      offset[1] = (TILE_SIZE / 6) * (lane + 0.5);
+      break;
+    case 'S':
+      offset[0] = TILE_SIZE - ((TILE_SIZE / 6) * (lane + 0.5));
+      offset[1] = TILE_SIZE;
+      break;
+    case 'N':
+      offset[0] = (TILE_SIZE / 6) * (lane + 0.5);
+      break;
+    default:
+      throw new Error(`Invalid direction ${side}`);
+  }
+
+  return [
+    i * TILE_SIZE + offset[0],
+    j * TILE_SIZE + offset[1],
+  ];
+}
+
+function tileOutCoords(i, j, lane, side) {
+  const offset = [0, 0];
+  switch (side) {
+    case 'W':
+      offset[1] = (TILE_SIZE / 6) * (lane + 0.5);
+      break;
+    case 'E':
+      offset[0] = TILE_SIZE;
+      offset[1] = TILE_SIZE - ((TILE_SIZE / 6) * (lane + 0.5));
+      break;
+    case 'S':
+      offset[0] = (TILE_SIZE / 6) * (lane + 0.5);
+      offset[1] = TILE_SIZE;
+      break;
+    case 'N':
+      offset[0] = TILE_SIZE - ((TILE_SIZE / 6) * (lane + 0.5));
+      break;
+    default:
+      throw new Error(`Invalid direction ${side}`);
+  }
+
+  return [
+    i * TILE_SIZE + offset[0],
+    j * TILE_SIZE + offset[1],
+  ];
+}
+
+class Car {
+  constructor(carOverlay, texture, i, j, side, lane) {
+    this.overlay = carOverlay;
+
+    this.tile = { i, j };
+    this.sideIn = side;
+    this.lane = lane; // 0: bike path, 1: outer lane, 2: inner lane
+    this.sideOut = this.getRandomSideOut();
+    this.speed = 1;
+
+    // Init the Sprite
+    this.sprite = new PIXI.Sprite();
+    this.sprite.texture = texture;
+    this.sprite.width = texture.baseTexture.width;
+    this.sprite.height = texture.baseTexture.height;
+    this.sprite.roundPixels = true;
+    this.sprite.anchor.set(0.5);
+    this.sprite.visible = true;
+
+    [this.sprite.x, this.sprite.y] = tileInCoords(
+      this.tile.i, this.tile.j, this.lane, this.sideIn
+    );
+  }
+
+  destroy() {
+    this.sprite.destroy();
+    this.sprite = null;
+    this.overlay = null;
+  }
+
+  getRandomSideOut() {
+    // Select the direction based on road availability
+    const options = [];
+    const isRoad = (i, j) => (!this.overlay.city.map.isValidCoords(i, j)
+      || this.overlay.city.map.get(i, j) === ROAD_TILE);
+
+    // If it's possible to go forward, add the option
+    if (isRoad(...adjTile(this.tile.i, this.tile.j, oppositeSide(this.sideIn)))) {
+      // Add it three times to make it more likely than turning
+      options.push(oppositeSide(this.sideIn));
+      options.push(oppositeSide(this.sideIn));
+      options.push(oppositeSide(this.sideIn));
+    }
+    // If it's possible to turn right, add the option
+    if (isRoad(...adjTile(this.tile.i, this.tile.j, rightTurn(this.sideIn)))) {
+      options.push(rightTurn(this.sideIn));
+    }
+    // If it's not possible to go forward or turn right,
+    // turn left if possible.
+    if (options.length === 0
+      && isRoad(...adjTile(this.tile.i, this.tile.j, leftTurn(this.sideIn)))) {
+      options.push(leftTurn(this.sideIn));
+    }
+
+    // Randomly select one of the possible directions
+    // return null if there's no way to go
+    return options[Math.floor(Math.random() * options.length)] || null;
+  }
+
+  handleTileExit() {
+    // Set next tile
+    const nextTile = adjTile(this.tile.i, this.tile.j, this.sideOut);
+    this.tile = { i: nextTile[0], j: nextTile[1] };
+
+    // Check if it's still within the map
+    if (!this.overlay.city.map.isValidCoords(this.tile.i, this.tile.j)) {
+      this.overlay.onCarExitMap(this);
+      return;
+    }
+
+    // Set the new sideIn
+    this.sideIn = oppositeSide(this.sideOut);
+    this.sideOut = this.getRandomSideOut();
+    if (this.sideOut === null) {
+      this.overlay.onCarExitMap(this);
+    }
+  }
+
+  animate(time) {
+    if (this.sideOut === null) {
+      this.overlay.onCarExitMap(this);
+      return;
+    }
+
+    const [inX, inY] = tileInCoords(
+      this.tile.i, this.tile.j, this.lane, this.sideIn,
+    );
+
+    const [outX, outY] = tileOutCoords(
+      this.tile.i, this.tile.j, this.lane, this.sideOut,
+    );
+
+    const fullDist = Math.sqrt(((outX - inX) ** 2) + ((outY - inY) ** 2));
+    const currDist = Math.sqrt(((outX - this.sprite.x) ** 2) + ((outY - this.sprite.y) ** 2));
+    const distProg = 1 - currDist / fullDist;
+
+    const shortestAngle = angle => (Math.abs(angle) > Math.PI
+      ? (Math.PI * 2 - Math.abs(angle)) * Math.sign(angle) * -1
+      : angle);
+
+    const angleFrom = sideAngle(oppositeSide(this.sideIn));
+    const angleTo = sideAngle(this.sideOut);
+    const uglyAdjustment = 1.05;
+    this.sprite.rotation = angleFrom
+      + shortestAngle(angleTo - angleFrom) * Math.min(distProg * uglyAdjustment, 1);
+
+    this.sprite.x += Math.sin(this.sprite.rotation * -1) * this.speed * time;
+    this.sprite.y += Math.cos(this.sprite.rotation * -1) * this.speed * time;
+
+    // Clamp movement so it doesn't go past the target coordinates
+    const signXMove = Math.sign(outX - inX);
+    const signYMove = Math.sign(outY - inY);
+    if ((signXMove > 0 && this.sprite.x > outX) || (signXMove < 0 && this.sprite.x < outX)) {
+      this.sprite.x = outX;
+    }
+    if ((signYMove > 0 && this.sprite.y > outY) || (signYMove < 0 && this.sprite.y < outY)) {
+      this.sprite.y = outY;
+    }
+
+    // Check if the car exited the tile
+    if (this.sprite.x === outX && this.sprite.y === outY) {
+      this.handleTileExit();
+    }
+  }
+}
+
+module.exports = Car;
+
+
+/***/ }),
+
 /***/ "./src/js/city.js":
 /*!************************!*\
   !*** ./src/js/city.js ***!
@@ -5502,8 +5795,8 @@ module.exports = EmissionsVariable;
   \************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-const EventEmitter = __webpack_require__ (/*! events */ "./node_modules/events/events.js");
-const Array2D = __webpack_require__ (/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
 
 /**
  * Represents a 2D grid map that stores a single Number per cell
@@ -5875,6 +6168,35 @@ module.exports = Modal;
 
 /***/ }),
 
+/***/ "./src/js/textures-cars.js":
+/*!*********************************!*\
+  !*** ./src/js/textures-cars.js ***!
+  \*********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const car001 = __webpack_require__(/*! ../../static/cars/car-001.png */ "./static/cars/car-001.png");
+const car002 = __webpack_require__(/*! ../../static/cars/car-002.png */ "./static/cars/car-002.png");
+const car003 = __webpack_require__(/*! ../../static/cars/car-003.png */ "./static/cars/car-003.png");
+const car004 = __webpack_require__(/*! ../../static/cars/car-004.png */ "./static/cars/car-004.png");
+const car005 = __webpack_require__(/*! ../../static/cars/car-005.png */ "./static/cars/car-005.png");
+const car006 = __webpack_require__(/*! ../../static/cars/car-006.png */ "./static/cars/car-006.png");
+const car007 = __webpack_require__(/*! ../../static/cars/car-007.png */ "./static/cars/car-007.png");
+
+const CarTextures = {
+  car001,
+  car002,
+  car003,
+  car004,
+  car005,
+  car006,
+  car007,
+};
+
+module.exports = CarTextures;
+
+
+/***/ }),
+
 /***/ "./src/js/textures-roads.js":
 /*!**********************************!*\
   !*** ./src/js/textures-roads.js ***!
@@ -5971,6 +6293,83 @@ class VariableView {
 
 module.exports = VariableView;
 
+
+/***/ }),
+
+/***/ "./static/cars/car-001.png":
+/*!*********************************!*\
+  !*** ./static/cars/car-001.png ***!
+  \*********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+module.exports = __webpack_require__.p + "a4c0701079fc0aca77e7.png";
+
+/***/ }),
+
+/***/ "./static/cars/car-002.png":
+/*!*********************************!*\
+  !*** ./static/cars/car-002.png ***!
+  \*********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+module.exports = __webpack_require__.p + "f48a3d2fdf5c9d5cc3b7.png";
+
+/***/ }),
+
+/***/ "./static/cars/car-003.png":
+/*!*********************************!*\
+  !*** ./static/cars/car-003.png ***!
+  \*********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+module.exports = __webpack_require__.p + "aa80c31517f6be990755.png";
+
+/***/ }),
+
+/***/ "./static/cars/car-004.png":
+/*!*********************************!*\
+  !*** ./static/cars/car-004.png ***!
+  \*********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+module.exports = __webpack_require__.p + "79e21fd588c6375c8c6b.png";
+
+/***/ }),
+
+/***/ "./static/cars/car-005.png":
+/*!*********************************!*\
+  !*** ./static/cars/car-005.png ***!
+  \*********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+module.exports = __webpack_require__.p + "161b5d144a21b02db45e.png";
+
+/***/ }),
+
+/***/ "./static/cars/car-006.png":
+/*!*********************************!*\
+  !*** ./static/cars/car-006.png ***!
+  \*********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+module.exports = __webpack_require__.p + "7b7b6c579d330165b643.png";
+
+/***/ }),
+
+/***/ "./static/cars/car-007.png":
+/*!*********************************!*\
+  !*** ./static/cars/car-007.png ***!
+  \*********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+module.exports = __webpack_require__.p + "0ebad70fafafab953e37.png";
 
 /***/ }),
 
@@ -6244,9 +6643,12 @@ const City = __webpack_require__(/*! ./city */ "./src/js/city.js");
 const EmissionsVariable = __webpack_require__(/*! ./emissions-variable */ "./src/js/emissions-variable.js");
 const MapEditor = __webpack_require__(/*! ./editor/map-editor */ "./src/js/editor/map-editor.js");
 const VariableView = __webpack_require__(/*! ./variable-view */ "./src/js/variable-view.js");
-__webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
 const RoadTextures = __webpack_require__(/*! ./textures-roads */ "./src/js/textures-roads.js");
+const CarTextures = __webpack_require__(/*! ./textures-cars */ "./src/js/textures-cars.js");
+const CarOverlay = __webpack_require__(/*! ./car-overlay */ "./src/js/car-overlay.js");
+const Cities = __webpack_require__(/*! ../../cities.json */ "./cities.json");
 const showFatalError = __webpack_require__(/*! ./aux/show-fatal-error */ "./src/js/aux/show-fatal-error.js");
+__webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
 
 fetch('./config.yml', { cache: 'no-store' })
   .then(response => response.text())
@@ -6257,8 +6659,8 @@ fetch('./config.yml', { cache: 'no-store' })
     console.error(err);
   })
   .then((config) => {
-    // const city = City.fromJSON(Cities.cities[0]);
-    const city = new City(config.cityWidth, config.cityHeight);
+    const city = City.fromJSON(Cities.cities[2]);
+    // const city = new City(config.cityWidth, config.cityHeight);
     const emissions = new EmissionsVariable(city, config);
 
     const app = new PIXI.Application({
@@ -6269,10 +6671,19 @@ fetch('./config.yml', { cache: 'no-store' })
     Object.entries(RoadTextures).forEach(([id, path]) => {
       app.loader.add(id, path);
     });
+    Object.entries(CarTextures).forEach(([id, path]) => {
+      app.loader.add(id, path);
+    });
     app.loader.load((loader, resources) => {
       $('[data-component="app-container"]').append(app.view);
-      const textures = Object.fromEntries(
-        Object.entries(RoadTextures).map(([id]) => [id, resources[id].texture])
+      const textures = Object.assign(
+        {},
+        Object.fromEntries(
+          Object.entries(RoadTextures).map(([id]) => [id, resources[id].texture])
+        ),
+        Object.fromEntries(
+          Object.entries(CarTextures).map(([id]) => [id, resources[id].texture])
+        )
       );
 
       // Change the scaling mode for the road textures
@@ -6288,6 +6699,10 @@ fetch('./config.yml', { cache: 'no-store' })
       mapView.displayObject.x = 0;
       mapView.displayObject.y = 0;
 
+      const carOverlay = new CarOverlay(city, config, textures);
+      app.stage.addChild(carOverlay.displayObject);
+      app.ticker.add(time => carOverlay.animate(time));
+
       const varViewer = new VariableView(emissions);
       app.stage.addChild(varViewer.displayObject);
       varViewer.displayObject.width = 960;
@@ -6301,4 +6716,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.169fdff8ca7740061a78.js.map
+//# sourceMappingURL=default.6fc0f7775104f2a7d6c3.js.map

@@ -1401,8 +1401,8 @@ module.exports = EmissionsVariable;
   \************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-const EventEmitter = __webpack_require__ (/*! events */ "./node_modules/events/events.js");
-const Array2D = __webpack_require__ (/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
 
 /**
  * Represents a 2D grid map that stores a single Number per cell
@@ -2368,4 +2368,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.aae84319fad127ea2d61.js.map
+//# sourceMappingURL=editor.cf1b41329aa8fb381973.js.map

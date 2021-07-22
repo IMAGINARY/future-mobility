@@ -802,8 +802,8 @@ module.exports = ConnectionStateView;
   \************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-const EventEmitter = __webpack_require__ (/*! events */ "./node_modules/events/events.js");
-const Array2D = __webpack_require__ (/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
 
 /**
  * Represents a 2D grid map that stores a single Number per cell
@@ -1631,4 +1631,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.2047ad6fb61bc01e6cfe.js.map
+//# sourceMappingURL=city.b83de7b46d1b12766d47.js.map
