@@ -1,0 +1,25 @@
+.tile-counter {
+  background-color: white;
+  padding: 0.5em;
+
+  .label {
+    font-weight: bold;
+  }
+
+  ul {
+    padding: 0;
+    li {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      margin-bottom: 0.2em;
+    }
+  }
+}
+
+body > .tile-counter {
+  position: absolute;
+  width: 250px;
+  right: 5px;
+  top: 5px;
+}

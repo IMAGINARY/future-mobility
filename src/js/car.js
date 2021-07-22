@@ -1,7 +1,6 @@
 /* globals PIXI */
 
-const ROAD_TILE = 1;
-const TILE_SIZE = 120;
+const { TILE_SIZE } = require('./map-view');
 
 function oppositeSide(side) {
   return {
@@ -124,7 +123,7 @@ class Car {
     // Select the direction based on road availability
     const options = [];
     const isRoad = (i, j) => (!this.overlay.city.map.isValidCoords(i, j)
-      || this.overlay.city.map.get(i, j) === ROAD_TILE);
+      || this.overlay.city.map.get(i, j) === this.overlay.roadTileId);
 
     // If it's possible to go forward, add the option
     if (isRoad(...adjTile(this.tile.i, this.tile.j, oppositeSide(this.sideIn)))) {

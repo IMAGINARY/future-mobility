@@ -1,16 +1,22 @@
 /* globals PIXI */
 const Car = require('./car');
+const { getTileTypeId } = require('./aux/config-helpers');
 
 class CarOverlay {
-  constructor(city, config, textures) {
-    this.displayObject = new PIXI.Container();
-    this.displayObject.width = 1920;
-    this.displayObject.height = 1920;
-    this.displayObject.x = 0;
-    this.displayObject.y = 0;
-    this.city = city;
+  constructor(mapView, config, textures) {
+    this.mapView = mapView;
     this.config = config;
     this.textures = textures;
+    this.city = this.mapView.city;
+
+    this.displayObject = new PIXI.Container();
+    this.displayObject.width = this.mapView.width;
+    this.displayObject.height = this.mapView.height;
+    this.displayObject.x = 0;
+    this.displayObject.y = 0;
+    this.mapView.addOverlay(this.displayObject);
+
+    this.roadTileId = getTileTypeId(config, 'road');
 
     this.cars = [];
     this.addCar(new Car(this, this.textures.car001, 2, 0, 'N', 1));

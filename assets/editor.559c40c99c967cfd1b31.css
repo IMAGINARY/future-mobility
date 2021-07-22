@@ -245,5 +245,24 @@ html.with-fatal-error {
     height: 100%;
     overflow: hidden; }
 
+.tile-counter {
+  background-color: white;
+  padding: 0.5em; }
+  .tile-counter .label {
+    font-weight: bold; }
+  .tile-counter ul {
+    padding: 0; }
+    .tile-counter ul li {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      margin-bottom: 0.2em; }
 
-/*# sourceMappingURL=default.e2d154d8954523b2e06d.css.map*/
+body > .tile-counter {
+  position: absolute;
+  width: 250px;
+  right: 5px;
+  top: 5px; }
+
+
+/*# sourceMappingURL=editor.559c40c99c967cfd1b31.css.map*/

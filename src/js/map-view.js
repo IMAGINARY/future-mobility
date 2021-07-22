@@ -1,9 +1,8 @@
 /* globals PIXI */
 const EventEmitter = require('events');
 const Array2D = require('./aux/array-2d');
+const { getTileTypeId } = require('./aux/config-helpers');
 const PencilCursor = require('../../static/fa/pencil-alt-solid.svg');
-
-const ROAD_TILE = 1;
 
 class MapView {
   constructor(city, config, textures) {
@@ -13,6 +12,7 @@ class MapView {
     this.textures = textures;
     this.events = new EventEmitter();
     this.pointerActive = false;
+    this.roadTileId = getTileTypeId(config, 'road');
 
     this.bgTiles = Array2D.create(this.city.map.width, this.city.map.height, null);
     this.textureTiles = Array2D.create(this.city.map.width, this.city.map.height, null);
@@ -37,6 +37,10 @@ class MapView {
     this.displayObject.addChild(...Array2D.flatten(this.textureTiles));
     this.city.map.events.on('update', this.handleCityUpdate.bind(this));
     this.handleCityUpdate(this.city.map.allCells());
+  }
+
+  addOverlay(displayObject) {
+    this.displayObject.addChild(displayObject);
   }
 
   enableTileInteractivity() {
@@ -71,7 +75,7 @@ class MapView {
 
   renderTile(x, y) {
     this.renderBasicTile(x, y);
-    if (this.city.map.get(x, y) === ROAD_TILE) {
+    if (this.city.map.get(x, y) === this.roadTileId) {
       this.renderRoadTile(x, y);
     }
   }
@@ -79,7 +83,7 @@ class MapView {
   renderRoadTile(i, j) {
     const connMask = [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]]
       .map(([x, y]) => (!this.city.map.isValidCoords(x, y)
-      || this.city.map.get(x, y) === ROAD_TILE
+      || this.city.map.get(x, y) === this.roadTileId
         ? '1' : '0')).join('');
     this.getTextureTile(i, j).texture = this.textures[`road${connMask}`];
     this.getTextureTile(i, j).visible = true;
@@ -100,7 +104,7 @@ class MapView {
       this.renderTile(i, j);
       // Todo: This should be optimized so it's not called twice per frame for the same tile.
       this.city.map.adjacentCells(i, j)
-        .filter(([x, y]) => this.city.map.get(x, y) === ROAD_TILE)
+        .filter(([x, y]) => this.city.map.get(x, y) === this.roadTileId)
         .forEach(([x, y]) => this.renderRoadTile(x, y));
     });
   }

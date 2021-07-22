@@ -7,6 +7,7 @@ const VariableView = require('./variable-view');
 const RoadTextures = require('./textures-roads');
 const CarTextures = require('./textures-cars');
 const CarOverlay = require('./car-overlay');
+const TileCounterView = require('./tile-counter-view');
 const Cities = require('../../cities.json');
 const showFatalError = require('./aux/show-fatal-error');
 require('../sass/default.scss');
@@ -52,16 +53,14 @@ fetch('./config.yml', { cache: 'no-store' })
         textures[id].baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
       });
 
-      // const mapView = new MapView(city, config, textures);
-      const mapView = new MapEditor($('body'), city, config, textures);
-      app.stage.addChild(mapView.displayObject);
-      mapView.displayObject.width = 1920;
-      mapView.displayObject.height = 1920;
-      mapView.displayObject.x = 0;
-      mapView.displayObject.y = 0;
+      const mapEditor = new MapEditor($('body'), city, config, textures);
+      app.stage.addChild(mapEditor.displayObject);
+      mapEditor.displayObject.width = 1920;
+      mapEditor.displayObject.height = 1920;
+      mapEditor.displayObject.x = 0;
+      mapEditor.displayObject.y = 0;
 
-      const carOverlay = new CarOverlay(city, config, textures);
-      app.stage.addChild(carOverlay.displayObject);
+      const carOverlay = new CarOverlay(mapEditor.mapView, config, textures);
       app.ticker.add(time => carOverlay.animate(time));
 
       const varViewer = new VariableView(emissions);
@@ -70,5 +69,8 @@ fetch('./config.yml', { cache: 'no-store' })
       varViewer.displayObject.height = 960;
       varViewer.displayObject.x = 1920 + 40;
       varViewer.displayObject.y = 0;
+
+      const counter = new TileCounterView(city, config);
+      $('body').append(counter.$element);
     });
   });

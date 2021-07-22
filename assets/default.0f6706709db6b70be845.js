@@ -4837,6 +4837,22 @@ module.exports = Array2D;
 
 /***/ }),
 
+/***/ "./src/js/aux/config-helpers.js":
+/*!**************************************!*\
+  !*** ./src/js/aux/config-helpers.js ***!
+  \**************************************/
+/***/ ((module) => {
+
+function getTileTypeId(config, type) {
+  const entry = Object.entries(config.tileTypes).find(([, props]) => props.type === type);
+  return entry ? Number(entry[0]) : null;
+}
+
+module.exports = { getTileTypeId };
+
+
+/***/ }),
+
 /***/ "./src/js/aux/show-fatal-error.js":
 /*!****************************************!*\
   !*** ./src/js/aux/show-fatal-error.js ***!
@@ -4870,17 +4886,23 @@ module.exports = showFatalError;
 
 /* globals PIXI */
 const Car = __webpack_require__(/*! ./car */ "./src/js/car.js");
+const { getTileTypeId } = __webpack_require__(/*! ./aux/config-helpers */ "./src/js/aux/config-helpers.js");
 
 class CarOverlay {
-  constructor(city, config, textures) {
-    this.displayObject = new PIXI.Container();
-    this.displayObject.width = 1920;
-    this.displayObject.height = 1920;
-    this.displayObject.x = 0;
-    this.displayObject.y = 0;
-    this.city = city;
+  constructor(mapView, config, textures) {
+    this.mapView = mapView;
     this.config = config;
     this.textures = textures;
+    this.city = this.mapView.city;
+
+    this.displayObject = new PIXI.Container();
+    this.displayObject.width = this.mapView.width;
+    this.displayObject.height = this.mapView.height;
+    this.displayObject.x = 0;
+    this.displayObject.y = 0;
+    this.mapView.addOverlay(this.displayObject);
+
+    this.roadTileId = getTileTypeId(config, 'road');
 
     this.cars = [];
     this.addCar(new Car(this, this.textures.car001, 2, 0, 'N', 1));
@@ -4919,12 +4941,11 @@ module.exports = CarOverlay;
 /*!***********************!*\
   !*** ./src/js/car.js ***!
   \***********************/
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /* globals PIXI */
 
-const ROAD_TILE = 1;
-const TILE_SIZE = 120;
+const { TILE_SIZE } = __webpack_require__(/*! ./map-view */ "./src/js/map-view.js");
 
 function oppositeSide(side) {
   return {
@@ -5047,7 +5068,7 @@ class Car {
     // Select the direction based on road availability
     const options = [];
     const isRoad = (i, j) => (!this.overlay.city.map.isValidCoords(i, j)
-      || this.overlay.city.map.get(i, j) === ROAD_TILE);
+      || this.overlay.city.map.get(i, j) === this.overlay.roadTileId);
 
     // If it's possible to go forward, add the option
     if (isRoad(...adjTile(this.tile.i, this.tile.j, oppositeSide(this.sideIn)))) {
@@ -5403,7 +5424,7 @@ class MapEditor {
 
     let lastEdit = null;
     this.mapView.events.on('action', ([x, y], props) => {
-      if (this.tileType) {
+      if (this.tileType !== null) {
         if (lastEdit && props.shiftKey) {
           const [lastX, lastY] = lastEdit;
           for (let i = Math.min(lastX, x); i <= Math.max(lastX, x); i += 1) {
@@ -5984,9 +6005,8 @@ module.exports = Grid;
 /* globals PIXI */
 const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
 const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+const { getTileTypeId } = __webpack_require__(/*! ./aux/config-helpers */ "./src/js/aux/config-helpers.js");
 const PencilCursor = __webpack_require__(/*! ../../static/fa/pencil-alt-solid.svg */ "./static/fa/pencil-alt-solid.svg");
-
-const ROAD_TILE = 1;
 
 class MapView {
   constructor(city, config, textures) {
@@ -5996,6 +6016,7 @@ class MapView {
     this.textures = textures;
     this.events = new EventEmitter();
     this.pointerActive = false;
+    this.roadTileId = getTileTypeId(config, 'road');
 
     this.bgTiles = Array2D.create(this.city.map.width, this.city.map.height, null);
     this.textureTiles = Array2D.create(this.city.map.width, this.city.map.height, null);
@@ -6020,6 +6041,10 @@ class MapView {
     this.displayObject.addChild(...Array2D.flatten(this.textureTiles));
     this.city.map.events.on('update', this.handleCityUpdate.bind(this));
     this.handleCityUpdate(this.city.map.allCells());
+  }
+
+  addOverlay(displayObject) {
+    this.displayObject.addChild(displayObject);
   }
 
   enableTileInteractivity() {
@@ -6054,7 +6079,7 @@ class MapView {
 
   renderTile(x, y) {
     this.renderBasicTile(x, y);
-    if (this.city.map.get(x, y) === ROAD_TILE) {
+    if (this.city.map.get(x, y) === this.roadTileId) {
       this.renderRoadTile(x, y);
     }
   }
@@ -6062,7 +6087,7 @@ class MapView {
   renderRoadTile(i, j) {
     const connMask = [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]]
       .map(([x, y]) => (!this.city.map.isValidCoords(x, y)
-      || this.city.map.get(x, y) === ROAD_TILE
+      || this.city.map.get(x, y) === this.roadTileId
         ? '1' : '0')).join('');
     this.getTextureTile(i, j).texture = this.textures[`road${connMask}`];
     this.getTextureTile(i, j).visible = true;
@@ -6083,7 +6108,7 @@ class MapView {
       this.renderTile(i, j);
       // Todo: This should be optimized so it's not called twice per frame for the same tile.
       this.city.map.adjacentCells(i, j)
-        .filter(([x, y]) => this.city.map.get(x, y) === ROAD_TILE)
+        .filter(([x, y]) => this.city.map.get(x, y) === this.roadTileId)
         .forEach(([x, y]) => this.renderRoadTile(x, y));
     });
   }
@@ -6240,6 +6265,96 @@ const RoadTextures = {
 };
 
 module.exports = RoadTextures;
+
+
+/***/ }),
+
+/***/ "./src/js/tile-counter-view.js":
+/*!*************************************!*\
+  !*** ./src/js/tile-counter-view.js ***!
+  \*************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const TileCounter = __webpack_require__(/*! ./tile-counter */ "./src/js/tile-counter.js");
+
+class TileCounterView {
+  constructor(city, config) {
+    this.city = city;
+    this.config = config;
+
+    this.counter = new TileCounter(city, config);
+    this.counter.events.on('update', this.handleUpdate.bind(this));
+
+    this.$element = $('<div></div>')
+      .addClass('tile-counter');
+
+    this.fields = Object.fromEntries(
+      Object.keys(config.tileTypes).map(id => [id, $('<span></span>').addClass('field')])
+    );
+
+    this.$element.append(
+      $('<ul></ul>')
+        .addClass('tile-counter-counts')
+        .append(
+          Object.keys(config.tileTypes).map(id => $('<li></li>')
+            .append($('<span></span>')
+              .addClass('label')
+              .html(`${config.tileTypes[id].name || config.tileTypes[id].type || id}: `))
+            .append(this.fields[id]))
+        )
+    );
+
+    this.city.map.events.on('update', this.handleUpdate.bind(this));
+    this.handleUpdate();
+  }
+
+  handleUpdate() {
+    Object.entries(this.counter.numPerType).forEach(([id, count]) => {
+      this.fields[id].text(`${count} (${((count / this.counter.total) * 100).toFixed(1)}%)`);
+    });
+  }
+}
+
+module.exports = TileCounterView;
+
+
+/***/ }),
+
+/***/ "./src/js/tile-counter.js":
+/*!********************************!*\
+  !*** ./src/js/tile-counter.js ***!
+  \********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+
+class TileCounter {
+  constructor(city, config) {
+    this.city = city;
+    this.config = config;
+    this.events = new EventEmitter();
+
+    this.numPerType = Object.fromEntries(
+      Object.keys(config.tileTypes).map(cellType => [cellType, 0])
+    );
+    this.total = this.city.map.width * this.city.map.height;
+
+    this.city.map.events.on('update', this.handleUpdate.bind(this));
+    this.handleUpdate();
+  }
+
+  handleUpdate() {
+    Object.keys(this.numPerType).forEach((cellType) => { this.numPerType[cellType] = 0; });
+    Array2D.flatten(this.city.map.cells).forEach((cellType) => {
+      this.numPerType[cellType] += 1;
+    });
+
+    this.events.emit('update');
+  }
+}
+
+module.exports = TileCounter;
 
 
 /***/ }),
@@ -6646,6 +6761,7 @@ const VariableView = __webpack_require__(/*! ./variable-view */ "./src/js/variab
 const RoadTextures = __webpack_require__(/*! ./textures-roads */ "./src/js/textures-roads.js");
 const CarTextures = __webpack_require__(/*! ./textures-cars */ "./src/js/textures-cars.js");
 const CarOverlay = __webpack_require__(/*! ./car-overlay */ "./src/js/car-overlay.js");
+const TileCounterView = __webpack_require__(/*! ./tile-counter-view */ "./src/js/tile-counter-view.js");
 const Cities = __webpack_require__(/*! ../../cities.json */ "./cities.json");
 const showFatalError = __webpack_require__(/*! ./aux/show-fatal-error */ "./src/js/aux/show-fatal-error.js");
 __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
@@ -6691,16 +6807,14 @@ fetch('./config.yml', { cache: 'no-store' })
         textures[id].baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
       });
 
-      // const mapView = new MapView(city, config, textures);
-      const mapView = new MapEditor($('body'), city, config, textures);
-      app.stage.addChild(mapView.displayObject);
-      mapView.displayObject.width = 1920;
-      mapView.displayObject.height = 1920;
-      mapView.displayObject.x = 0;
-      mapView.displayObject.y = 0;
+      const mapEditor = new MapEditor($('body'), city, config, textures);
+      app.stage.addChild(mapEditor.displayObject);
+      mapEditor.displayObject.width = 1920;
+      mapEditor.displayObject.height = 1920;
+      mapEditor.displayObject.x = 0;
+      mapEditor.displayObject.y = 0;
 
-      const carOverlay = new CarOverlay(city, config, textures);
-      app.stage.addChild(carOverlay.displayObject);
+      const carOverlay = new CarOverlay(mapEditor.mapView, config, textures);
       app.ticker.add(time => carOverlay.animate(time));
 
       const varViewer = new VariableView(emissions);
@@ -6709,6 +6823,9 @@ fetch('./config.yml', { cache: 'no-store' })
       varViewer.displayObject.height = 960;
       varViewer.displayObject.x = 1920 + 40;
       varViewer.displayObject.y = 0;
+
+      const counter = new TileCounterView(city, config);
+      $('body').append(counter.$element);
     });
   });
 
@@ -6716,4 +6833,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.6fc0f7775104f2a7d6c3.js.map
+//# sourceMappingURL=default.0f6706709db6b70be845.js.map

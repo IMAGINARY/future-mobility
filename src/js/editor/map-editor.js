@@ -32,7 +32,7 @@ class MapEditor {
 
     let lastEdit = null;
     this.mapView.events.on('action', ([x, y], props) => {
-      if (this.tileType) {
+      if (this.tileType !== null) {
         if (lastEdit && props.shiftKey) {
           const [lastX, lastY] = lastEdit;
           for (let i = Math.min(lastX, x); i <= Math.max(lastX, x); i += 1) {

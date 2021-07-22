@@ -661,6 +661,22 @@ module.exports = Array2D;
 
 /***/ }),
 
+/***/ "./src/js/aux/config-helpers.js":
+/*!**************************************!*\
+  !*** ./src/js/aux/config-helpers.js ***!
+  \**************************************/
+/***/ ((module) => {
+
+function getTileTypeId(config, type) {
+  const entry = Object.entries(config.tileTypes).find(([, props]) => props.type === type);
+  return entry ? Number(entry[0]) : null;
+}
+
+module.exports = { getTileTypeId };
+
+
+/***/ }),
+
 /***/ "./src/js/aux/show-fatal-error.js":
 /*!****************************************!*\
   !*** ./src/js/aux/show-fatal-error.js ***!
@@ -1009,7 +1025,7 @@ class MapEditor {
 
     let lastEdit = null;
     this.mapView.events.on('action', ([x, y], props) => {
-      if (this.tileType) {
+      if (this.tileType !== null) {
         if (lastEdit && props.shiftKey) {
           const [lastX, lastY] = lastEdit;
           for (let i = Math.min(lastX, x); i <= Math.max(lastX, x); i += 1) {
@@ -1590,9 +1606,8 @@ module.exports = Grid;
 /* globals PIXI */
 const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
 const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+const { getTileTypeId } = __webpack_require__(/*! ./aux/config-helpers */ "./src/js/aux/config-helpers.js");
 const PencilCursor = __webpack_require__(/*! ../../static/fa/pencil-alt-solid.svg */ "./static/fa/pencil-alt-solid.svg");
-
-const ROAD_TILE = 1;
 
 class MapView {
   constructor(city, config, textures) {
@@ -1602,6 +1617,7 @@ class MapView {
     this.textures = textures;
     this.events = new EventEmitter();
     this.pointerActive = false;
+    this.roadTileId = getTileTypeId(config, 'road');
 
     this.bgTiles = Array2D.create(this.city.map.width, this.city.map.height, null);
     this.textureTiles = Array2D.create(this.city.map.width, this.city.map.height, null);
@@ -1626,6 +1642,10 @@ class MapView {
     this.displayObject.addChild(...Array2D.flatten(this.textureTiles));
     this.city.map.events.on('update', this.handleCityUpdate.bind(this));
     this.handleCityUpdate(this.city.map.allCells());
+  }
+
+  addOverlay(displayObject) {
+    this.displayObject.addChild(displayObject);
   }
 
   enableTileInteractivity() {
@@ -1660,7 +1680,7 @@ class MapView {
 
   renderTile(x, y) {
     this.renderBasicTile(x, y);
-    if (this.city.map.get(x, y) === ROAD_TILE) {
+    if (this.city.map.get(x, y) === this.roadTileId) {
       this.renderRoadTile(x, y);
     }
   }
@@ -1668,7 +1688,7 @@ class MapView {
   renderRoadTile(i, j) {
     const connMask = [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]]
       .map(([x, y]) => (!this.city.map.isValidCoords(x, y)
-      || this.city.map.get(x, y) === ROAD_TILE
+      || this.city.map.get(x, y) === this.roadTileId
         ? '1' : '0')).join('');
     this.getTextureTile(i, j).texture = this.textures[`road${connMask}`];
     this.getTextureTile(i, j).visible = true;
@@ -1689,7 +1709,7 @@ class MapView {
       this.renderTile(i, j);
       // Todo: This should be optimized so it's not called twice per frame for the same tile.
       this.city.map.adjacentCells(i, j)
-        .filter(([x, y]) => this.city.map.get(x, y) === ROAD_TILE)
+        .filter(([x, y]) => this.city.map.get(x, y) === this.roadTileId)
         .forEach(([x, y]) => this.renderRoadTile(x, y));
     });
   }
@@ -2368,4 +2388,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.cf1b41329aa8fb381973.js.map
+//# sourceMappingURL=editor.42e2ddb6957ddc5578e1.js.map

@@ -2,33 +2,40 @@ cityWidth: 16
 cityHeight: 16
 tileTypes:
   0:
+    type: empty
     name: Empty
     color: '#4a4a4a'
     editorIcon: 'static/fa/times-solid.svg'
   1:
+    type: road
     name: Road
     color: '#8f8f8f'
     editorIcon: 'static/fa/road-solid.svg'
     emissions: 0.1
   2:
+    type: residential
     name: Residential
     color: '#e27f7f'
     editorIcon: 'static/fa/home-solid.svg'
   3:
+    type: industrial
     name: Industrial
     color: '#e2ce7f'
     editorIcon: 'static/fa/industry-solid.svg'
     emissions: 0.3
   4:
+    type: commercial
     name: Commercial
     color: '#7fb2e2'
     editorIcon: 'static/fa/building-regular.svg'
   5:
+    type: park
     name: Park
     color: '#3bab40'
     editorIcon: 'static/fa/tree-solid.svg'
     emissions: -0.2
   6:
+    type: water
     name: Water
     color: '#32d3c2'
     editorIcon: 'static/fa/water-solid.svg'
