@@ -124,6 +124,26 @@ class Array2D {
     }
     return items;
   }
+
+  /**
+   * @callback coordinateCallback
+   * @param x {number}
+   * @param y {number}
+   * @return {any}
+   */
+  /**
+   * Fills the items in the array with the result of a callback
+   *
+   * @param a {any[][]}
+   * @param callback {coordinateCallback}
+   */
+  static fill(a, callback) {
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        a[y][x] = callback(x, y);
+      }
+    }
+  }
 }
 
 module.exports = Array2D;

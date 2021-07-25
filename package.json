@@ -33,6 +33,7 @@
     "webpack-cli": "^4.5.0"
   },
   "dependencies": {
-    "js-yaml": "^4.0.0"
+    "js-yaml": "^4.0.0",
+    "vec2": "^1.6.1"
   }
 }

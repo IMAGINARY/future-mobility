@@ -6,11 +6,15 @@ const MapEditor = require('./editor/map-editor');
 const VariableView = require('./variable-view');
 const RoadTextures = require('./textures-roads');
 const CarTextures = require('./textures-cars');
-const CarOverlay = require('./car-overlay');
+const CarOverlay = require('./cars/car-overlay');
 const TileCounterView = require('./tile-counter-view');
 const Cities = require('../../cities.json');
+const TestScenarios = require('./test/scenarios');
 const showFatalError = require('./aux/show-fatal-error');
 require('../sass/default.scss');
+
+const qs = new URLSearchParams(window.location.search);
+const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
 
 fetch('./config.yml', { cache: 'no-store' })
   .then(response => response.text())
@@ -21,8 +25,9 @@ fetch('./config.yml', { cache: 'no-store' })
     console.error(err);
   })
   .then((config) => {
-    const city = City.fromJSON(Cities.cities[2]);
-    // const city = new City(config.cityWidth, config.cityHeight);
+    const city = (testScenario && testScenario.city)
+      ? City.fromJSON(testScenario.city)
+      : new City(config.cityWidth, config.cityHeight);
     const emissions = new EmissionsVariable(city, config);
 
     const app = new PIXI.Application({
@@ -72,5 +77,9 @@ fetch('./config.yml', { cache: 'no-store' })
 
       const counter = new TileCounterView(city, config);
       $('body').append(counter.$element);
+
+      if (testScenario) {
+        testScenario(city, carOverlay);
+      }
     });
   });

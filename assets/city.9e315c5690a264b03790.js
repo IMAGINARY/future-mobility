@@ -654,6 +654,26 @@ class Array2D {
     }
     return items;
   }
+
+  /**
+   * @callback coordinateCallback
+   * @param x {number}
+   * @param y {number}
+   * @return {any}
+   */
+  /**
+   * Fills the items in the array with the result of a callback
+   *
+   * @param a {any[][]}
+   * @param callback {coordinateCallback}
+   */
+  static fill(a, callback) {
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        a[y][x] = callback(x, y);
+      }
+    }
+  }
 }
 
 module.exports = Array2D;
@@ -808,605 +828,6 @@ class ConnectionStateView {
 }
 
 module.exports = ConnectionStateView;
-
-
-/***/ }),
-
-/***/ "./src/js/editor/city-browser.js":
-/*!***************************************!*\
-  !*** ./src/js/editor/city-browser.js ***!
-  \***************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const City = __webpack_require__(/*! ../city */ "./src/js/city.js");
-
-class CityBrowser {
-  constructor($element, config, cityStore, saveMode = false) {
-    this.$element = $element;
-    this.config = config;
-    this.$selectedButton = null;
-    this.selectedData = null;
-
-    this.$element.addClass('city-browser');
-
-    const setSelection = (button) => {
-      if (this.$selectedButton) {
-        this.$selectedButton.removeClass('selected');
-      }
-      this.$selectedButton = $(button);
-      this.$selectedButton.addClass('selected');
-    };
-
-    const buttons = Object.entries(
-      saveMode ? cityStore.getAllUserObjects() : cityStore.getAllObjects()
-    ).map(([id, cityJSON]) => $('<div></div>')
-      .addClass(['col-6', 'col-md-2', 'mb-3'])
-      .append(
-        $('<button></button>')
-          .addClass('city-browser-item')
-          .append(this.createPreviewImage(cityJSON))
-          .on('click', (ev) => {
-            setSelection(ev.currentTarget);
-            this.selectedData = id;
-          })
-      ));
-
-    if (saveMode) {
-      buttons.unshift($('<div></div>')
-        .addClass(['col-6', 'col-md-2', 'mb-3'])
-        .append($('<button></button>')
-          .addClass('city-browser-item-new')
-          .on('click', (ev) => {
-            setSelection(ev.currentTarget);
-            this.selectedData = 'new';
-          })));
-    }
-
-    this.$element.append($('<div class="row"></div>').append(buttons));
-  }
-
-  createPreviewImage(cityJSON) {
-    const $canvas = $('<canvas class="city-browser-item-preview"></canvas>')
-      .attr({
-        width: this.config.cityWidth,
-        height: this.config.cityHeight,
-      });
-    const city = City.fromJSON(cityJSON);
-    const ctx = $canvas[0].getContext('2d');
-    city.map.allCells().forEach(([i, j, value]) => {
-      ctx.fillStyle = (this.config.tileTypes && this.config.tileTypes[value].color) || '#000000';
-      ctx.fillRect(i, j, 1, 1);
-    });
-
-    return $canvas;
-  }
-}
-
-module.exports = CityBrowser;
-
-
-/***/ }),
-
-/***/ "./src/js/editor/map-editor-palette.js":
-/*!*********************************************!*\
-  !*** ./src/js/editor/map-editor-palette.js ***!
-  \*********************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-
-class MapEditorPalette {
-  constructor($element, config) {
-    this.$element = $element;
-    this.config = config;
-    this.activeButton = null;
-    this.tileId = null;
-    this.events = new EventEmitter();
-
-    this.$element.addClass('map-editor-palette');
-
-    this.buttons = Object.entries(config.tileTypes).map(([id, typeCfg]) => $('<button></button>')
-      .attr({
-        type: 'button',
-        title: typeCfg.name,
-      })
-      .addClass([
-        'editor-palette-button',
-        'editor-palette-button-tile',
-        `editor-palette-button-tile-${id}`,
-      ])
-      .css({
-        backgroundColor: typeCfg.color,
-        backgroundImage: `url(${typeCfg.editorIcon})`,
-      })
-      .on('click', (ev) => {
-        if (this.activeButton) {
-          this.activeButton.removeClass('active');
-        }
-        this.activeButton = $(ev.target);
-        this.activeButton.addClass('active');
-        this.tileId = Number(id);
-        this.events.emit('change', Number(id));
-      }));
-
-    this.buttons.push($('<div class="separator"></div>'));
-
-    const actionButtons = MapEditorPalette.Actions.map(action => $('<button></button>')
-      .attr({
-        type: 'button',
-        title: action.title,
-      })
-      .addClass([
-        'editor-palette-button',
-        'editor-palette-button-action',
-        `editor-palette-button-action-${action.id}`,
-      ])
-      .css({
-        backgroundImage: `url(${action.icon})`,
-      })
-      .on('click', () => {
-        this.events.emit('action', action.id);
-      }));
-
-    this.buttons.push(...actionButtons);
-
-    this.$element.append(this.buttons);
-    if (this.buttons.length) {
-      this.buttons[0].click();
-    }
-  }
-}
-
-MapEditorPalette.Actions = [
-  {
-    id: 'load',
-    title: 'Load map',
-    icon: 'static/fa/folder-open-solid.svg',
-  },
-  {
-    id: 'save',
-    title: 'Save map',
-    icon: 'static/fa/save-solid.svg',
-  },
-  {
-    id: 'import',
-    title: 'Import map',
-    icon: 'static/fa/file-import-solid.svg',
-  },
-  {
-    id: 'export',
-    title: 'Export map',
-    icon: 'static/fa/file-export-solid.svg',
-  },
-];
-
-module.exports = MapEditorPalette;
-
-
-/***/ }),
-
-/***/ "./src/js/editor/map-editor.js":
-/*!*************************************!*\
-  !*** ./src/js/editor/map-editor.js ***!
-  \*************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const City = __webpack_require__(/*! ../city */ "./src/js/city.js");
-const MapView = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
-const MapEditorPalette = __webpack_require__(/*! ./map-editor-palette */ "./src/js/editor/map-editor-palette.js");
-const ModalLoad = __webpack_require__(/*! ./modal-load */ "./src/js/editor/modal-load.js");
-const ModalSave = __webpack_require__(/*! ./modal-save */ "./src/js/editor/modal-save.js");
-const ModalExport = __webpack_require__(/*! ./modal-export */ "./src/js/editor/modal-export.js");
-const ModalImport = __webpack_require__(/*! ./modal-import */ "./src/js/editor/modal-import.js");
-const ObjectStore = __webpack_require__(/*! ./object-store */ "./src/js/editor/object-store.js");
-
-class MapEditor {
-  constructor($element, city, config, textures) {
-    this.$element = $element;
-    this.city = city;
-    this.config = config;
-
-    this.mapView = new MapView(city, config, textures);
-    this.mapView.enableTileInteractivity();
-    this.displayObject = this.mapView.displayObject;
-
-    this.palette = new MapEditorPalette($('<div></div>').appendTo(this.$element), config);
-
-    this.tileType = this.palette.tileId;
-    this.palette.events.on('change', (tileType) => {
-      this.tileType = tileType;
-    });
-
-    this.palette.events.on('action', (id) => {
-      if (this.actionHandlers[id]) {
-        this.actionHandlers[id]();
-      }
-    });
-
-    let lastEdit = null;
-    this.mapView.events.on('action', ([x, y], props) => {
-      if (this.tileType !== null) {
-        if (lastEdit && props.shiftKey) {
-          const [lastX, lastY] = lastEdit;
-          for (let i = Math.min(lastX, x); i <= Math.max(lastX, x); i += 1) {
-            for (let j = Math.min(lastY, y); j <= Math.max(lastY, y); j += 1) {
-              this.city.map.set(i, j, this.tileType);
-            }
-          }
-        } else {
-          this.city.map.set(x, y, this.tileType);
-        }
-        lastEdit = [x, y];
-      }
-    });
-
-    this.objectStore = new ObjectStore('./cities.json');
-    this.actionHandlers = {
-      load: () => {
-        const modal = new ModalLoad(this.config, this.objectStore);
-        modal.show().then((id) => {
-          const jsonCity = id && this.objectStore.get(id);
-          if (jsonCity) {
-            this.city.copy(City.fromJSON(jsonCity));
-          }
-        });
-      },
-      save: () => {
-        const modal = new ModalSave(this.config, this.objectStore);
-        modal.show().then((id) => {
-          if (id) {
-            this.objectStore.set(id === 'new' ? null : id, this.city.toJSON());
-          }
-        });
-      },
-      import: () => {
-        const modal = new ModalImport();
-        modal.show().then((importedData) => {
-          if (importedData) {
-            this.city.copy(City.fromJSON(importedData));
-          }
-        });
-      },
-      export: () => {
-        const modal = new ModalExport(JSON.stringify(this.city));
-        modal.show();
-      },
-    };
-  }
-}
-
-module.exports = MapEditor;
-
-
-/***/ }),
-
-/***/ "./src/js/editor/modal-export.js":
-/*!***************************************!*\
-  !*** ./src/js/editor/modal-export.js ***!
-  \***************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const Modal = __webpack_require__(/*! ../modal */ "./src/js/modal.js");
-
-class ModalExport extends Modal {
-  constructor(exportData) {
-    super({
-      title: 'Export map',
-    });
-
-    this.$dataContainer = $('<textarea class="form-control"></textarea>')
-      .attr({
-        rows: 10,
-      })
-      .text(exportData)
-      .appendTo(this.$body);
-
-    this.$copyButton = $('<button></button>')
-      .addClass(['btn', 'btn-outline-dark', 'btn-copy', 'mt-2'])
-      .text('Copy to clipboard')
-      .on('click', () => {
-        this.$dataContainer[0].select();
-        document.execCommand('copy');
-        this.hide();
-      })
-      .appendTo(this.$footer);
-  }
-}
-
-module.exports = ModalExport;
-
-
-/***/ }),
-
-/***/ "./src/js/editor/modal-import.js":
-/*!***************************************!*\
-  !*** ./src/js/editor/modal-import.js ***!
-  \***************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const Modal = __webpack_require__(/*! ../modal */ "./src/js/modal.js");
-
-class ModalImport extends Modal {
-  constructor() {
-    super({
-      title: 'Import map',
-    });
-
-    this.$dataContainer = $('<textarea class="form-control"></textarea>')
-      .attr({
-        rows: 10,
-        placeholder: 'Paste the JSON object here.',
-      })
-      .appendTo(this.$body);
-
-    // noinspection JSUnusedGlobalSymbols
-    this.$errorText = $('<p class="text-danger"></p>')
-      .appendTo(this.$footer)
-      .hide();
-
-    // noinspection JSUnusedGlobalSymbols
-    this.$copyButton = $('<button></button>')
-      .addClass(['btn', 'btn-primary'])
-      .text('Import')
-      .on('click', () => {
-        try {
-          const imported = JSON.parse(this.$dataContainer.val());
-          this.hide(imported);
-        } catch (err) {
-          this.showError(err.message);
-        }
-      })
-      .appendTo(this.$footer);
-  }
-
-  showError(errorText) {
-    this.$errorText.html(errorText);
-    this.$errorText.show();
-  }
-}
-
-module.exports = ModalImport;
-
-
-/***/ }),
-
-/***/ "./src/js/editor/modal-load.js":
-/*!*************************************!*\
-  !*** ./src/js/editor/modal-load.js ***!
-  \*************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const Modal = __webpack_require__(/*! ../modal */ "./src/js/modal.js");
-const CityBrowser = __webpack_require__(/*! ./city-browser */ "./src/js/editor/city-browser.js");
-
-class ModalLoad extends Modal {
-  constructor(config, cityStore) {
-    super({
-      title: 'Load map',
-      size: 'lg',
-    });
-
-    this.$browserContainer = $('<div></div>')
-      .appendTo(this.$body);
-    this.browser = new CityBrowser(this.$browserContainer, config, cityStore);
-
-    // noinspection JSUnusedGlobalSymbols
-    this.$cancelButton = $('<button></button>')
-      .addClass(['btn', 'btn-secondary'])
-      .text('Cancel')
-      .on('click', () => {
-        this.hide(null);
-      })
-      .appendTo(this.$footer);
-
-    // noinspection JSUnusedGlobalSymbols
-    this.$loadButton = $('<button></button>')
-      .addClass(['btn', 'btn-primary'])
-      .text('Load')
-      .on('click', () => {
-        try {
-          this.hide(this.browser.selectedData);
-        } catch (err) {
-          this.showError(err.message);
-        }
-      })
-      .appendTo(this.$footer);
-  }
-
-  showError(errorText) {
-    this.$errorText.html(errorText);
-    this.$errorText.show();
-  }
-}
-
-module.exports = ModalLoad;
-
-
-/***/ }),
-
-/***/ "./src/js/editor/modal-save.js":
-/*!*************************************!*\
-  !*** ./src/js/editor/modal-save.js ***!
-  \*************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const Modal = __webpack_require__(/*! ../modal */ "./src/js/modal.js");
-const CityBrowser = __webpack_require__(/*! ./city-browser */ "./src/js/editor/city-browser.js");
-
-class ModalSave extends Modal {
-  constructor(config, cityStore) {
-    super({
-      title: 'Save map',
-      size: 'lg',
-    });
-
-    this.$browserContainer = $('<div></div>')
-      .appendTo(this.$body);
-    this.browser = new CityBrowser(this.$browserContainer, config, cityStore, true);
-
-    // noinspection JSUnusedGlobalSymbols
-    this.$cancelButton = $('<button></button>')
-      .addClass(['btn', 'btn-secondary'])
-      .text('Cancel')
-      .on('click', () => {
-        this.hide(null);
-      })
-      .appendTo(this.$footer);
-
-    // noinspection JSUnusedGlobalSymbols
-    this.$saveButton = $('<button></button>')
-      .addClass(['btn', 'btn-primary'])
-      .text('Save')
-      .on('click', () => {
-        try {
-          this.hide(this.browser.selectedData);
-        } catch (err) {
-          this.showError(err.message);
-        }
-      })
-      .appendTo(this.$footer);
-  }
-
-  showError(errorText) {
-    this.$errorText.html(errorText);
-    this.$errorText.show();
-  }
-}
-
-module.exports = ModalSave;
-
-
-/***/ }),
-
-/***/ "./src/js/editor/object-store.js":
-/*!***************************************!*\
-  !*** ./src/js/editor/object-store.js ***!
-  \***************************************/
-/***/ ((module) => {
-
-class ObjectStore {
-  constructor(fixedObjectsPath = null) {
-    this.fixedObjects = [];
-    this.userObjects = [];
-
-    this.loadUserObjects();
-    if (fixedObjectsPath) {
-      this.loadFixedObjects(fixedObjectsPath);
-    }
-  }
-
-  async loadFixedObjects(path) {
-    fetch(path, { cache: 'no-store' })
-      .then(response => response.json())
-      .then((data) => {
-        this.fixedObjects = data.cities;
-      });
-  }
-
-  loadUserObjects() {
-    const userObjects = JSON.parse(localStorage.getItem('futureMobility.cityStore.cities'));
-    if (userObjects) {
-      this.userObjects = userObjects;
-    }
-  }
-
-  saveLocal() {
-    localStorage.setItem('futureMobility.cityStore.cities', JSON.stringify(this.userObjects));
-  }
-
-  getAllObjects() {
-    return Object.assign(
-      {},
-      this.getAllUserObjects(),
-      this.getAllFixedObjects(),
-    );
-  }
-
-  getAllFixedObjects() {
-    return Object.fromEntries(this.fixedObjects.map((obj, i) => [
-      `F${i}`,
-      obj,
-    ]));
-  }
-
-  getAllUserObjects() {
-    return Object.fromEntries(this.userObjects.map((obj, i) => [
-      `L${i}`,
-      obj,
-    ]).reverse());
-  }
-
-  get(id) {
-    if (id[0] === 'F') {
-      return this.fixedObjects[id.substr(1)];
-    }
-    return this.userObjects[id.substr(1)];
-  }
-
-  set(id, obj) {
-    if (id === null || this.userObjects[id.substr(1)] === undefined) {
-      this.userObjects.push(obj);
-    } else {
-      this.userObjects[id.substr(1)] = obj;
-    }
-    this.saveLocal();
-  }
-}
-
-module.exports = ObjectStore;
-
-
-/***/ }),
-
-/***/ "./src/js/emissions-variable.js":
-/*!**************************************!*\
-  !*** ./src/js/emissions-variable.js ***!
-  \**************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-const Grid = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
-
-class EmissionsVariable {
-  constructor(city, config) {
-    this.city = city;
-    this.config = config;
-    this.grid = new Grid(this.city.map.width, this.city.map.height);
-    this.events = new EventEmitter();
-
-    this.city.map.events.on('update', this.handleCityUpdate.bind(this));
-    this.handleCityUpdate(this.city.map.allCells());
-  }
-
-  calculate(i, j) {
-    const emissions = (x, y) => (this.config.tileTypes[this.city.map.get(x, y)]
-      && this.config.tileTypes[this.city.map.get(x, y)].emissions)
-      || 0;
-
-    return Math.min(1, Math.max(0, emissions(i, j)
-      + this.city.map.nearbyCells(i, j, 1)
-        .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.5, 0)
-      + this.city.map.nearbyCells(i, j, 2)
-        .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.25, 0)));
-  }
-
-  handleCityUpdate(updates) {
-    const coords = [];
-    updates.forEach(([i, j]) => {
-      coords.push([i, j]);
-      coords.push(...this.city.map.nearbyCells(i, j, 1).map(([x, y]) => [x, y]));
-      coords.push(...this.city.map.nearbyCells(i, j, 2).map(([x, y]) => [x, y]));
-    });
-    // Todo: deduplicating coords might be necessary if the way calculations
-    //    and updates are handled is not changed
-    coords.forEach(([i, j]) => {
-      this.grid.set(i, j, this.calculate(i, j));
-    });
-    this.events.emit('update', coords);
-  }
-}
-
-module.exports = EmissionsVariable;
 
 
 /***/ }),
@@ -1722,78 +1143,6 @@ module.exports = MapView;
 
 /***/ }),
 
-/***/ "./src/js/modal.js":
-/*!*************************!*\
-  !*** ./src/js/modal.js ***!
-  \*************************/
-/***/ ((module) => {
-
-class Modal {
-  /**
-   * @param {object} options
-   *  Modal dialog options
-   * @param {string} options.title
-   *  Dialog title.
-   * @param {string} options.size
-   *  Modal size (lg or sm).
-   * @param {boolean} options.showCloseButton
-   *  Shows a close button in the dialog if true.
-   * @param {boolean} options.showFooter
-   *  Adds a footer area to the dialog if true.
-   */
-  constructor(options) {
-    this.returnValue = null;
-
-    this.$element = $('<div class="modal fade"></div>');
-    this.$dialog = $('<div class="modal-dialog"></div>').appendTo(this.$element);
-    this.$content = $('<div class="modal-content"></div>').appendTo(this.$dialog);
-    this.$header = $('<div class="modal-header"></div>').appendTo(this.$content);
-    this.$body = $('<div class="modal-body"></div>').appendTo(this.$content);
-    this.$footer = $('<div class="modal-footer"></div>').appendTo(this.$content);
-
-    this.$closeButton = $('<button type="button" class="close" data-dismiss="modal">')
-      .append($('<span>&times;</span>'))
-      .appendTo(this.$header);
-
-    if (options.title) {
-      $('<h5 class="modal-title"></h5>')
-        .html(options.title)
-        .prependTo(this.$header);
-    }
-    if (options.size) {
-      this.$dialog.addClass(`modal-${options.size}`);
-    }
-
-    if (options.showCloseButton === false) {
-      this.$closeButton.remove();
-    }
-    if (options.showFooter === false) {
-      this.$footer.remove();
-    }
-  }
-
-  async show() {
-    return new Promise((resolve) => {
-      $('body').append(this.$element);
-      this.$element.modal();
-      this.$element.on('hidden.bs.modal', () => {
-        this.$element.remove();
-        resolve(this.returnValue);
-      });
-    });
-  }
-
-  hide(returnValue) {
-    this.returnValue = returnValue;
-    this.$element.modal('hide');
-  }
-}
-
-module.exports = Modal;
-
-
-/***/ }),
-
 /***/ "./src/js/server-socket-connector.js":
 /*!*******************************************!*\
   !*** ./src/js/server-socket-connector.js ***!
@@ -1992,58 +1341,6 @@ const RoadTextures = {
 };
 
 module.exports = RoadTextures;
-
-
-/***/ }),
-
-/***/ "./src/js/variable-view.js":
-/*!*********************************!*\
-  !*** ./src/js/variable-view.js ***!
-  \*********************************/
-/***/ ((module) => {
-
-/* globals PIXI */
-
-const TILE_SIZE = 10;
-
-class VariableView {
-  constructor(variable) {
-    this.displayObject = new PIXI.Container();
-    this.variable = variable;
-
-    this.tiles = Array(this.variable.grid.width * this.variable.grid.height);
-    this.variable.grid.allCells().forEach(([i, j]) => {
-      const newTile = new PIXI.Graphics();
-      newTile.x = i * TILE_SIZE;
-      newTile.y = j * TILE_SIZE;
-      this.tiles[this.variable.grid.offset(i, j)] = newTile;
-    });
-
-    this.displayObject.addChild(...this.tiles);
-    this.variable.events.on('update', this.handleUpdate.bind(this));
-    this.handleUpdate(this.variable.grid.allCells());
-  }
-
-  getTile(i, j) {
-    return this.tiles[this.variable.grid.offset(i, j)];
-  }
-
-  renderTile(i, j) {
-    this.getTile(i, j)
-      .clear()
-      .beginFill(0x953202, this.variable.grid.get(i, j))
-      .drawRect(0, 0, TILE_SIZE, TILE_SIZE)
-      .endFill();
-  }
-
-  handleUpdate(updates) {
-    updates.forEach(([i, j]) => {
-      this.renderTile(i, j);
-    });
-  }
-}
-
-module.exports = VariableView;
 
 
 /***/ }),
@@ -2309,14 +1606,12 @@ module.exports = __webpack_require__.p + "b80a83d5c965a0c18254.png";
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
-/*!*******************************!*\
-  !*** ./src/js/main-editor.js ***!
-  \*******************************/
+/*!*****************************!*\
+  !*** ./src/js/main-city.js ***!
+  \*****************************/
 /* globals PIXI */
 const City = __webpack_require__(/*! ./city */ "./src/js/city.js");
-const EmissionsVariable = __webpack_require__(/*! ./emissions-variable */ "./src/js/emissions-variable.js");
-const MapEditor = __webpack_require__(/*! ./editor/map-editor */ "./src/js/editor/map-editor.js");
-const VariableView = __webpack_require__(/*! ./variable-view */ "./src/js/variable-view.js");
+const MapView = __webpack_require__(/*! ./map-view */ "./src/js/map-view.js");
 __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
 const RoadTextures = __webpack_require__(/*! ./textures-roads */ "./src/js/textures-roads.js");
 const ServerSocketConnector = __webpack_require__(/*! ./server-socket-connector */ "./src/js/server-socket-connector.js");
@@ -2326,9 +1621,7 @@ const showFatalError = __webpack_require__(/*! ./aux/show-fatal-error */ "./src/
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
   .then(response => response.json())
   .then((config) => {
-    // const city = City.fromJSON(Cities.cities[0]);
     const city = new City(config.cityWidth, config.cityHeight);
-    const emissions = new EmissionsVariable(city, config);
 
     const app = new PIXI.Application({
       width: 3840,
@@ -2350,26 +1643,16 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
       });
 
       // const mapView = new MapView(city, config, textures);
-      const mapView = new MapEditor($('body'), city, config, textures);
+      const mapView = new MapView(city, config, textures);
       app.stage.addChild(mapView.displayObject);
       mapView.displayObject.width = 1920;
       mapView.displayObject.height = 1920;
       mapView.displayObject.x = 0;
       mapView.displayObject.y = 0;
 
-      const varViewer = new VariableView(emissions);
-      app.stage.addChild(varViewer.displayObject);
-      varViewer.displayObject.width = 960;
-      varViewer.displayObject.height = 960;
-      varViewer.displayObject.x = 1920 + 40;
-      varViewer.displayObject.y = 0;
-
       const connector = new ServerSocketConnector("ws://localhost:4848");
-      connector.events.once('map_update', (cells) => {
+      connector.events.on('map_update', (cells) => {
         city.map.replace(cells);
-        city.map.events.on('update', () => {
-          connector.setMap(city.map.cells);
-        });
       });
       connector.events.on('connect', () => {
         connector.getMap();
@@ -2388,4 +1671,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.42e2ddb6957ddc5578e1.js.map
+//# sourceMappingURL=city.9e315c5690a264b03790.js.map

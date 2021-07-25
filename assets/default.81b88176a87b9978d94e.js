@@ -4698,6 +4698,489 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./node_modules/vec2/vec2.js":
+/*!***********************************!*\
+  !*** ./node_modules/vec2/vec2.js ***!
+  \***********************************/
+/***/ ((module) => {
+
+;(function inject(clean, precision, undef) {
+
+  var isArray = function (a) {
+    return Object.prototype.toString.call(a) === "[object Array]";
+  };
+
+  var defined = function(a) {
+    return a !== undef;
+  };
+
+  function Vec2(x, y) {
+    if (!(this instanceof Vec2)) {
+      return new Vec2(x, y);
+    }
+
+    if (isArray(x)) {
+      y = x[1];
+      x = x[0];
+    } else if('object' === typeof x && x) {
+      y = x.y;
+      x = x.x;
+    }
+
+    this.x = Vec2.clean(x || 0);
+    this.y = Vec2.clean(y || 0);
+  }
+
+  Vec2.prototype = {
+    change : function(fn) {
+      if (typeof fn === 'function') {
+        if (this.observers) {
+          this.observers.push(fn);
+        } else {
+          this.observers = [fn];
+        }
+      } else if (this.observers && this.observers.length) {
+        for (var i=this.observers.length-1; i>=0; i--) {
+          this.observers[i](this, fn);
+        }
+      }
+
+      return this;
+    },
+
+    ignore : function(fn) {
+      if (this.observers) {
+        if (!fn) {
+          this.observers = [];
+        } else {
+          var o = this.observers, l = o.length;
+          while(l--) {
+            o[l] === fn && o.splice(l, 1);
+          }
+        }
+      }
+      return this;
+    },
+
+    // set x and y
+    set: function(x, y, notify) {
+      if('number' != typeof x) {
+        notify = y;
+        y = x.y;
+        x = x.x;
+      }
+
+      if(this.x === x && this.y === y) {
+        return this;
+      }
+
+      var orig = null;
+      if (notify !== false && this.observers && this.observers.length) {
+        orig = this.clone();
+      }
+
+      this.x = Vec2.clean(x);
+      this.y = Vec2.clean(y);
+
+      if(notify !== false) {
+        return this.change(orig);
+      }
+    },
+
+    // reset x and y to zero
+    zero : function() {
+      return this.set(0, 0);
+    },
+
+    // return a new vector with the same component values
+    // as this one
+    clone : function() {
+      return new (this.constructor)(this.x, this.y);
+    },
+
+    // negate the values of this vector
+    negate : function(returnNew) {
+      if (returnNew) {
+        return new (this.constructor)(-this.x, -this.y);
+      } else {
+        return this.set(-this.x, -this.y);
+      }
+    },
+
+    // Add the incoming `vec2` vector to this vector
+    add : function(x, y, returnNew) {
+
+      if (typeof x != 'number') {
+        returnNew = y;
+        if (isArray(x)) {
+          y = x[1];
+          x = x[0];
+        } else {
+          y = x.y;
+          x = x.x;
+        }
+      }
+
+      x += this.x;
+      y += this.y;
+
+
+      if (!returnNew) {
+        return this.set(x, y);
+      } else {
+        // Return a new vector if `returnNew` is truthy
+        return new (this.constructor)(x, y);
+      }
+    },
+
+    // Subtract the incoming `vec2` from this vector
+    subtract : function(x, y, returnNew) {
+      if (typeof x != 'number') {
+        returnNew = y;
+        if (isArray(x)) {
+          y = x[1];
+          x = x[0];
+        } else {
+          y = x.y;
+          x = x.x;
+        }
+      }
+
+      x = this.x - x;
+      y = this.y - y;
+
+      if (!returnNew) {
+        return this.set(x, y);
+      } else {
+        // Return a new vector if `returnNew` is truthy
+        return new (this.constructor)(x, y);
+      }
+    },
+
+    // Multiply this vector by the incoming `vec2`
+    multiply : function(x, y, returnNew) {
+      if (typeof x != 'number') {
+        returnNew = y;
+        if (isArray(x)) {
+          y = x[1];
+          x = x[0];
+        } else {
+          y = x.y;
+          x = x.x;
+        }
+      } else if (typeof y != 'number') {
+        returnNew = y;
+        y = x;
+      }
+
+      x *= this.x;
+      y *= this.y;
+
+      if (!returnNew) {
+        return this.set(x, y);
+      } else {
+        return new (this.constructor)(x, y);
+      }
+    },
+
+    // Rotate this vector. Accepts a `Rotation` or angle in radians.
+    //
+    // Passing a truthy `inverse` will cause the rotation to
+    // be reversed.
+    //
+    // If `returnNew` is truthy, a new
+    // `Vec2` will be created with the values resulting from
+    // the rotation. Otherwise the rotation will be applied
+    // to this vector directly, and this vector will be returned.
+    rotate : function(r, inverse, returnNew) {
+      var
+      x = this.x,
+      y = this.y,
+      cos = Math.cos(r),
+      sin = Math.sin(r),
+      rx, ry;
+
+      inverse = (inverse) ? -1 : 1;
+
+      rx = cos * x - (inverse * sin) * y;
+      ry = (inverse * sin) * x + cos * y;
+
+      if (returnNew) {
+        return new (this.constructor)(rx, ry);
+      } else {
+        return this.set(rx, ry);
+      }
+    },
+
+    // Calculate the length of this vector
+    length : function() {
+      var x = this.x, y = this.y;
+      return Math.sqrt(x * x + y * y);
+    },
+
+    // Get the length squared. For performance, use this instead of `Vec2#length` (if possible).
+    lengthSquared : function() {
+      var x = this.x, y = this.y;
+      return x*x+y*y;
+    },
+
+    // Return the distance betwen this `Vec2` and the incoming vec2 vector
+    // and return a scalar
+    distance : function(vec2) {
+      var x = this.x - vec2.x;
+      var y = this.y - vec2.y;
+      return Math.sqrt(x*x + y*y);
+    },
+
+    // Given Array of Vec2, find closest to this Vec2.
+    nearest : function(others) {
+      var
+      shortestDistance = Number.MAX_VALUE,
+      nearest = null,
+      currentDistance;
+
+      for (var i = others.length - 1; i >= 0; i--) {
+        currentDistance = this.distance(others[i]);
+        if (currentDistance <= shortestDistance) {
+          shortestDistance = currentDistance;
+          nearest = others[i];
+        }
+      }
+
+      return nearest;
+    },
+
+    // Convert this vector into a unit vector.
+    // Returns the length.
+    normalize : function(returnNew) {
+      var length = this.length();
+
+      // Collect a ratio to shrink the x and y coords
+      var invertedLength = (length < Number.MIN_VALUE) ? 0 : 1/length;
+
+      if (!returnNew) {
+        // Convert the coords to be greater than zero
+        // but smaller than or equal to 1.0
+        return this.set(this.x * invertedLength, this.y * invertedLength);
+      } else {
+        return new (this.constructor)(this.x * invertedLength, this.y * invertedLength);
+      }
+    },
+
+    // Determine if another `Vec2`'s components match this one's
+    // also accepts 2 scalars
+    equal : function(v, w) {
+      if (typeof v != 'number') {
+        if (isArray(v)) {
+          w = v[1];
+          v = v[0];
+        } else {
+          w = v.y;
+          v = v.x;
+        }
+      }
+
+      return (Vec2.clean(v) === this.x && Vec2.clean(w) === this.y);
+    },
+
+    // Return a new `Vec2` that contains the absolute value of
+    // each of this vector's parts
+    abs : function(returnNew) {
+      var x = Math.abs(this.x), y = Math.abs(this.y);
+
+      if (returnNew) {
+        return new (this.constructor)(x, y);
+      } else {
+        return this.set(x, y);
+      }
+    },
+
+    // Return a new `Vec2` consisting of the smallest values
+    // from this vector and the incoming
+    //
+    // When returnNew is truthy, a new `Vec2` will be returned
+    // otherwise the minimum values in either this or `v` will
+    // be applied to this vector.
+    min : function(v, returnNew) {
+      var
+      tx = this.x,
+      ty = this.y,
+      vx = v.x,
+      vy = v.y,
+      x = tx < vx ? tx : vx,
+      y = ty < vy ? ty : vy;
+
+      if (returnNew) {
+        return new (this.constructor)(x, y);
+      } else {
+        return this.set(x, y);
+      }
+    },
+
+    // Return a new `Vec2` consisting of the largest values
+    // from this vector and the incoming
+    //
+    // When returnNew is truthy, a new `Vec2` will be returned
+    // otherwise the minimum values in either this or `v` will
+    // be applied to this vector.
+    max : function(v, returnNew) {
+      var
+      tx = this.x,
+      ty = this.y,
+      vx = v.x,
+      vy = v.y,
+      x = tx > vx ? tx : vx,
+      y = ty > vy ? ty : vy;
+
+      if (returnNew) {
+        return new (this.constructor)(x, y);
+      } else {
+        return this.set(x, y);
+      }
+    },
+
+    // Clamp values into a range.
+    // If this vector's values are lower than the `low`'s
+    // values, then raise them.  If they are higher than
+    // `high`'s then lower them.
+    //
+    // Passing returnNew as true will cause a new Vec2 to be
+    // returned.  Otherwise, this vector's values will be clamped
+    clamp : function(low, high, returnNew) {
+      var ret = this.min(high, true).max(low);
+      if (returnNew) {
+        return ret;
+      } else {
+        return this.set(ret.x, ret.y);
+      }
+    },
+
+    // Perform linear interpolation between two vectors
+    // amount is a decimal between 0 and 1
+    lerp : function(vec, amount, returnNew) {
+      return this.add(vec.subtract(this, true).multiply(amount), returnNew);
+    },
+
+    // Get the skew vector such that dot(skew_vec, other) == cross(vec, other)
+    skew : function(returnNew) {
+      if (!returnNew) {
+        return this.set(-this.y, this.x)
+      } else {
+        return new (this.constructor)(-this.y, this.x);
+      }
+    },
+
+    // calculate the dot product between
+    // this vector and the incoming
+    dot : function(b) {
+      return Vec2.clean(this.x * b.x + b.y * this.y);
+    },
+
+    // calculate the perpendicular dot product between
+    // this vector and the incoming
+    perpDot : function(b) {
+      return Vec2.clean(this.x * b.y - this.y * b.x);
+    },
+
+    // Determine the angle between two vec2s
+    angleTo : function(vec) {
+      return Math.atan2(this.perpDot(vec), this.dot(vec));
+    },
+
+    // Divide this vector's components by a scalar
+    divide : function(x, y, returnNew) {
+      if (typeof x != 'number') {
+        returnNew = y;
+        if (isArray(x)) {
+          y = x[1];
+          x = x[0];
+        } else {
+          y = x.y;
+          x = x.x;
+        }
+      } else if (typeof y != 'number') {
+        returnNew = y;
+        y = x;
+      }
+
+      if (x === 0 || y === 0) {
+        throw new Error('division by zero')
+      }
+
+      if (isNaN(x) || isNaN(y)) {
+        throw new Error('NaN detected');
+      }
+
+      if (returnNew) {
+        return new (this.constructor)(this.x / x, this.y / y);
+      }
+
+      return this.set(this.x / x, this.y / y);
+    },
+
+    isPointOnLine : function(start, end) {
+      return (start.y - this.y) * (start.x - end.x) ===
+             (start.y - end.y) * (start.x - this.x);
+    },
+
+    toArray: function() {
+      return [this.x, this.y];
+    },
+
+    fromArray: function(array) {
+      return this.set(array[0], array[1]);
+    },
+    toJSON: function () {
+      return {x: this.x, y: this.y};
+    },
+    toString: function() {
+      return '(' + this.x + ', ' + this.y + ')';
+    },
+    constructor : Vec2
+  };
+
+  Vec2.fromArray = function(array, ctor) {
+    return new (ctor || Vec2)(array[0], array[1]);
+  };
+
+  // Floating point stability
+  Vec2.precision = precision || 8;
+  var p = Math.pow(10, Vec2.precision);
+
+  Vec2.clean = clean || function(val) {
+    if (isNaN(val)) {
+      throw new Error('NaN detected');
+    }
+
+    if (!isFinite(val)) {
+      throw new Error('Infinity detected');
+    }
+
+    if(Math.round(val) === val) {
+      return val;
+    }
+
+    return Math.round(val * p)/p;
+  };
+
+  Vec2.inject = inject;
+
+  if(!clean) {
+    Vec2.fast = inject(function (k) { return k; });
+
+    // Expose, but also allow creating a fresh Vec2 subclass.
+    if ( true && typeof module.exports == 'object') {
+      module.exports = Vec2;
+    } else {
+      window.Vec2 = window.Vec2 || Vec2;
+    }
+  }
+  return Vec2;
+})();
+
+
+/***/ }),
+
 /***/ "./src/js/aux/array-2d.js":
 /*!********************************!*\
   !*** ./src/js/aux/array-2d.js ***!
@@ -4830,9 +5313,77 @@ class Array2D {
     }
     return items;
   }
+
+  /**
+   * @callback coordinateCallback
+   * @param x {number}
+   * @param y {number}
+   * @return {any}
+   */
+  /**
+   * Fills the items in the array with the result of a callback
+   *
+   * @param a {any[][]}
+   * @param callback {coordinateCallback}
+   */
+  static fill(a, callback) {
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        a[y][x] = callback(x, y);
+      }
+    }
+  }
 }
 
 module.exports = Array2D;
+
+
+/***/ }),
+
+/***/ "./src/js/aux/cardinal-directions.js":
+/*!*******************************************!*\
+  !*** ./src/js/aux/cardinal-directions.js ***!
+  \*******************************************/
+/***/ ((module) => {
+
+
+function opposite(direction) {
+  return {
+    N: 'S', E: 'W', S: 'N', W: 'E',
+  }[direction];
+}
+
+function ccw(direction) {
+  return {
+    N: 'W', E: 'N', S: 'E', W: 'S',
+  }[direction];
+}
+
+function cw(direction) {
+  return {
+    N: 'E', E: 'S', S: 'W', W: 'N',
+  }[direction];
+}
+
+function asVector(direction) {
+  return {
+    N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0],
+  }[direction];
+}
+
+function asAngle(direction) {
+  return {
+    N: Math.PI, E: Math.PI * 1.5, S: 0, W: Math.PI * 0.5,
+  }[direction];
+}
+
+module.exports = {
+  opposite,
+  ccw,
+  cw,
+  asVector,
+  asAngle,
+};
 
 
 /***/ }),
@@ -4878,15 +5429,15 @@ module.exports = showFatalError;
 
 /***/ }),
 
-/***/ "./src/js/car-overlay.js":
-/*!*******************************!*\
-  !*** ./src/js/car-overlay.js ***!
-  \*******************************/
+/***/ "./src/js/cars/car-overlay.js":
+/*!************************************!*\
+  !*** ./src/js/cars/car-overlay.js ***!
+  \************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /* globals PIXI */
-const Car = __webpack_require__(/*! ./car */ "./src/js/car.js");
-const { getTileTypeId } = __webpack_require__(/*! ./aux/config-helpers */ "./src/js/aux/config-helpers.js");
+const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
+const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
 
 class CarOverlay {
   constructor(mapView, config, textures) {
@@ -4905,11 +5456,8 @@ class CarOverlay {
     this.roadTileId = getTileTypeId(config, 'road');
 
     this.cars = [];
-    this.addCar(new Car(this, this.textures.car001, 2, 0, 'N', 1));
-    this.addCar(new Car(this, this.textures.car002, 5, 0, 'N', 2));
-    this.addCar(new Car(this, this.textures.car003, 8, 0, 'N', 1));
-    this.addCar(new Car(this, this.textures.car004, 11, 0, 'N', 2));
-    this.addCar(new Car(this, this.textures.car005, 14, 0, 'N', 1));
+    this.carsByTile = Array2D.create(this.city.map.width, this.city.map.height, null);
+    Array2D.fill(this.carsByTile, () => []);
   }
 
   addCar(aCar) {
@@ -4923,12 +5471,42 @@ class CarOverlay {
     aCar.destroy();
   }
 
+  onCarEnterTile(aCar, tileX, tileY) {
+    this.carsByTile[tileY][tileX].push(aCar);
+  }
+
+  onCarExitTile(aCar, tileX, tileY) {
+    this.carsByTile[tileY][tileX].splice(this.carsByTile[tileY][tileX].indexOf(aCar), 1);
+  }
+
   onCarExitMap(aCar) {
     this.destroyCar(aCar);
   }
 
   animate(time) {
     this.cars.forEach(car => car.animate(time));
+  }
+
+  getCarsInTile(x, y) {
+    return this.city.map.isValidCoords(x, y) ? this.carsByTile[y][x] : [];
+  }
+
+  getCarInFront(car) {
+    // The car in front can be a car on the same tile,
+    // with the same lane and entrySide,
+    // but the minimum *larger* progress...
+    return this.getCarsInTile(car.tile.x, car.tile.y)
+      .filter(other => car !== other && other.lane === car.lane
+        && other.entrySide === car.entrySide && other.progress > car.progress)
+      .sort((a, b) => a.progress - b.progress)
+      .shift()
+    // ... or a car in the next tile, with the same lane and
+    // entry side, and the minimum progress
+      || this.getCarsInTile(...car.getNextTile())
+        .filter(other => car !== other && other.lane === car.lane
+          && other.entrySide === car.getNextEntry())
+        .sort((a, b) => a.progress - b.progress)
+        .shift();
   }
 }
 
@@ -4937,125 +5515,91 @@ module.exports = CarOverlay;
 
 /***/ }),
 
-/***/ "./src/js/car.js":
-/*!***********************!*\
-  !*** ./src/js/car.js ***!
-  \***********************/
+/***/ "./src/js/cars/car.js":
+/*!****************************!*\
+  !*** ./src/js/cars/car.js ***!
+  \****************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /* globals PIXI */
+const Vec2 = __webpack_require__(/*! vec2 */ "./node_modules/vec2/vec2.js");
+const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+const RoadTile = __webpack_require__(/*! ./road-tile */ "./src/js/cars/road-tile.js");
+const { TILE_SIZE } = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
 
-const { TILE_SIZE } = __webpack_require__(/*! ./map-view */ "./src/js/map-view.js");
-
-function oppositeSide(side) {
-  return {
-    N: 'S', E: 'W', S: 'N', W: 'E',
-  }[side];
-}
-
-function rightTurn(side) {
-  return {
-    N: 'W', E: 'N', S: 'E', W: 'S',
-  }[side];
-}
-
-function leftTurn(side) {
-  return {
-    N: 'E', E: 'S', S: 'W', W: 'N',
-  }[side];
-}
-
-function sideOffset(side) {
-  return {
-    N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0],
-  }[side];
-}
-
-function sideAngle(side) {
-  return {
-    N: Math.PI, E: Math.PI * 1.5, S: 0, W: Math.PI * 0.5,
-  }[side];
-}
-
-
-const adjTile = (i, j, side) => [i + sideOffset(side)[0], j + sideOffset(side)[1]];
-
-function tileInCoords(i, j, lane, side) {
-  const offset = [0, 0];
-  switch (side) {
-    case 'W':
-      offset[1] = TILE_SIZE - ((TILE_SIZE / 6) * (lane + 0.5));
-      break;
-    case 'E':
-      offset[0] = TILE_SIZE;
-      offset[1] = (TILE_SIZE / 6) * (lane + 0.5);
-      break;
-    case 'S':
-      offset[0] = TILE_SIZE - ((TILE_SIZE / 6) * (lane + 0.5));
-      offset[1] = TILE_SIZE;
-      break;
-    case 'N':
-      offset[0] = (TILE_SIZE / 6) * (lane + 0.5);
-      break;
-    default:
-      throw new Error(`Invalid direction ${side}`);
-  }
-
-  return [
-    i * TILE_SIZE + offset[0],
-    j * TILE_SIZE + offset[1],
-  ];
-}
-
-function tileOutCoords(i, j, lane, side) {
-  const offset = [0, 0];
-  switch (side) {
-    case 'W':
-      offset[1] = (TILE_SIZE / 6) * (lane + 0.5);
-      break;
-    case 'E':
-      offset[0] = TILE_SIZE;
-      offset[1] = TILE_SIZE - ((TILE_SIZE / 6) * (lane + 0.5));
-      break;
-    case 'S':
-      offset[0] = (TILE_SIZE / 6) * (lane + 0.5);
-      offset[1] = TILE_SIZE;
-      break;
-    case 'N':
-      offset[0] = TILE_SIZE - ((TILE_SIZE / 6) * (lane + 0.5));
-      break;
-    default:
-      throw new Error(`Invalid direction ${side}`);
-  }
-
-  return [
-    i * TILE_SIZE + offset[0],
-    j * TILE_SIZE + offset[1],
-  ];
-}
+const adjTile = (x, y, side) => [x + Dir.asVector(side)[0], y + Dir.asVector(side)[1]];
+// The closest a car can get to another
+const SAFE_DISTANCE = TILE_SIZE / 20;
+// Distance at which a car begins to slow down when there's another in front
+const SLOWDOWN_DISTANCE = TILE_SIZE / 3;
 
 class Car {
-  constructor(carOverlay, texture, i, j, side, lane) {
+  constructor(carOverlay, texture, tileX, tileY, entrySide, lane) {
     this.overlay = carOverlay;
-
-    this.tile = { i, j };
-    this.sideIn = side;
-    this.lane = lane; // 0: bike path, 1: outer lane, 2: inner lane
-    this.sideOut = this.getRandomSideOut();
+    this.lane = lane;
     this.speed = 1;
+    this.maxSpeed = 1;
+    this.sprite = Car.createSprite(texture);
 
-    // Init the Sprite
-    this.sprite = new PIXI.Sprite();
-    this.sprite.texture = texture;
-    this.sprite.width = texture.baseTexture.width;
-    this.sprite.height = texture.baseTexture.height;
-    this.sprite.roundPixels = true;
-    this.sprite.anchor.set(0.5);
-    this.sprite.visible = true;
+    this.setTile(tileX, tileY, entrySide);
 
-    [this.sprite.x, this.sprite.y] = tileInCoords(
-      this.tile.i, this.tile.j, this.lane, this.sideIn
-    );
+    this.setPosition(this.tilePosition().add(RoadTile.entryPoint(this.lane, this.entrySide)));
+  }
+
+  static createSprite(texture) {
+    const sprite = new PIXI.Sprite();
+    sprite.texture = texture;
+    sprite.width = texture.baseTexture.width;
+    sprite.height = texture.baseTexture.height;
+    sprite.roundPixels = true;
+    sprite.anchor.set(0.5);
+    sprite.visible = true;
+
+    return sprite;
+  }
+
+  setTile(x, y, entrySide) {
+    // Check if the coordinates are valid
+    if (!this.overlay.city.map.isValidCoords(x, y)) {
+      this.kill();
+      return;
+    }
+
+    // Check if the tile has an exit
+    const exitSide = this.getRandomExitSide(x, y, entrySide);
+    if (exitSide === null) {
+      this.kill();
+      return;
+    }
+
+    this.tile = { x, y };
+    this.entrySide = entrySide;
+    this.exitSide = exitSide;
+
+    this.entryPoint = this.tilePosition().add(RoadTile.entryPoint(this.lane, this.entrySide));
+    this.exitPoint = this.tilePosition().add(RoadTile.exitPoint(this.lane, this.exitSide));
+    this.progress = 0;
+
+    this.onEnterTile();
+  }
+
+  kill() {
+    this.overlay.onCarExitMap(this);
+  }
+
+  tilePosition() {
+    return Vec2(this.tile.x * TILE_SIZE, this.tile.y * TILE_SIZE);
+  }
+
+  setPosition(v) {
+    this.sprite.x = v.x;
+    this.sprite.y = v.y;
+    // to do: this calculation below maybe can be made faster without sqrt
+    this.progress = 1 - (v.distance(this.exitPoint) / this.entryPoint.distance(this.exitPoint));
+  }
+
+  getPosition() {
+    return Vec2(this.sprite.x, this.sprite.y);
   }
 
   destroy() {
@@ -5064,28 +5608,28 @@ class Car {
     this.overlay = null;
   }
 
-  getRandomSideOut() {
+  getRandomExitSide(tileX, tileY, entrySide) {
     // Select the direction based on road availability
     const options = [];
-    const isRoad = (i, j) => (!this.overlay.city.map.isValidCoords(i, j)
-      || this.overlay.city.map.get(i, j) === this.overlay.roadTileId);
+    const isRoad = (x, y) => (!this.overlay.city.map.isValidCoords(x, y)
+      || this.overlay.city.map.get(x, y) === this.overlay.roadTileId);
 
     // If it's possible to go forward, add the option
-    if (isRoad(...adjTile(this.tile.i, this.tile.j, oppositeSide(this.sideIn)))) {
+    if (isRoad(...adjTile(tileX, tileY, Dir.opposite(entrySide)))) {
       // Add it three times to make it more likely than turning
-      options.push(oppositeSide(this.sideIn));
-      options.push(oppositeSide(this.sideIn));
-      options.push(oppositeSide(this.sideIn));
+      options.push(Dir.opposite(entrySide));
+      options.push(Dir.opposite(entrySide));
+      options.push(Dir.opposite(entrySide));
     }
     // If it's possible to turn right, add the option
-    if (isRoad(...adjTile(this.tile.i, this.tile.j, rightTurn(this.sideIn)))) {
-      options.push(rightTurn(this.sideIn));
+    if (isRoad(...adjTile(tileX, tileY, Dir.ccw(entrySide)))) {
+      options.push(Dir.ccw(entrySide));
     }
     // If it's not possible to go forward or turn right,
     // turn left if possible.
     if (options.length === 0
-      && isRoad(...adjTile(this.tile.i, this.tile.j, leftTurn(this.sideIn)))) {
-      options.push(leftTurn(this.sideIn));
+      && isRoad(...adjTile(tileX, tileY, Dir.cw(entrySide)))) {
+      options.push(Dir.cw(entrySide));
     }
 
     // Randomly select one of the possible directions
@@ -5093,74 +5637,128 @@ class Car {
     return options[Math.floor(Math.random() * options.length)] || null;
   }
 
-  handleTileExit() {
-    // Set next tile
-    const nextTile = adjTile(this.tile.i, this.tile.j, this.sideOut);
-    this.tile = { i: nextTile[0], j: nextTile[1] };
+  onEnterTile() {
+    this.overlay.onCarEnterTile(this, this.tile.x, this.tile.y);
+  }
 
-    // Check if it's still within the map
-    if (!this.overlay.city.map.isValidCoords(this.tile.i, this.tile.j)) {
-      this.overlay.onCarExitMap(this);
-      return;
-    }
+  getNextTile() {
+    return adjTile(this.tile.x, this.tile.y, this.exitSide);
+  }
 
-    // Set the new sideIn
-    this.sideIn = oppositeSide(this.sideOut);
-    this.sideOut = this.getRandomSideOut();
-    if (this.sideOut === null) {
-      this.overlay.onCarExitMap(this);
-    }
+  getNextEntry() {
+    return Dir.opposite(this.exitSide);
+  }
+
+  onExitTile() {
+    this.overlay.onCarExitTile(this, this.tile.x, this.tile.y);
+
+    // Transfer the car to the next tile
+    this.setTile(...this.getNextTile(), this.getNextEntry());
   }
 
   animate(time) {
-    if (this.sideOut === null) {
-      this.overlay.onCarExitMap(this);
-      return;
-    }
-
-    const [inX, inY] = tileInCoords(
-      this.tile.i, this.tile.j, this.lane, this.sideIn,
-    );
-
-    const [outX, outY] = tileOutCoords(
-      this.tile.i, this.tile.j, this.lane, this.sideOut,
-    );
-
-    const fullDist = Math.sqrt(((outX - inX) ** 2) + ((outY - inY) ** 2));
-    const currDist = Math.sqrt(((outX - this.sprite.x) ** 2) + ((outY - this.sprite.y) ** 2));
-    const distProg = 1 - currDist / fullDist;
-
+    const position = this.getPosition();
     const shortestAngle = angle => (Math.abs(angle) > Math.PI
       ? (Math.PI * 2 - Math.abs(angle)) * Math.sign(angle) * -1
       : angle);
 
-    const angleFrom = sideAngle(oppositeSide(this.sideIn));
-    const angleTo = sideAngle(this.sideOut);
+    const angleFrom = Dir.asAngle(Dir.opposite(this.entrySide));
+    const angleTo = Dir.asAngle(this.exitSide);
     const uglyAdjustment = 1.05;
     this.sprite.rotation = angleFrom
-      + shortestAngle(angleTo - angleFrom) * Math.min(distProg * uglyAdjustment, 1);
+      + shortestAngle(angleTo - angleFrom) * Math.min(this.progress * uglyAdjustment, 1);
 
-    this.sprite.x += Math.sin(this.sprite.rotation * -1) * this.speed * time;
-    this.sprite.y += Math.cos(this.sprite.rotation * -1) * this.speed * time;
-
-    // Clamp movement so it doesn't go past the target coordinates
-    const signXMove = Math.sign(outX - inX);
-    const signYMove = Math.sign(outY - inY);
-    if ((signXMove > 0 && this.sprite.x > outX) || (signXMove < 0 && this.sprite.x < outX)) {
-      this.sprite.x = outX;
+    const carInFront = this.overlay.getCarInFront(this);
+    if (carInFront) {
+      const distanceToCarInFront = this.overlay.getCarInFront(this)
+        .getPosition()
+        .distance(position) - (this.sprite.height / 2 + carInFront.sprite.height / 2);
+      if (distanceToCarInFront <= SLOWDOWN_DISTANCE) {
+        this.speed = this.maxSpeed * (1 - SAFE_DISTANCE / distanceToCarInFront);
+      } else if (distanceToCarInFront <= SAFE_DISTANCE) {
+        this.speed = 0;
+      } else if (this.speed < this.maxSpeed) {
+        this.speed += this.maxSpeed / 5;
+      }
+    } else if (this.speed < this.maxSpeed) {
+      this.speed += this.maxSpeed / 5;
     }
-    if ((signYMove > 0 && this.sprite.y > outY) || (signYMove < 0 && this.sprite.y < outY)) {
-      this.sprite.y = outY;
-    }
 
-    // Check if the car exited the tile
-    if (this.sprite.x === outX && this.sprite.y === outY) {
-      this.handleTileExit();
+    if (this.speed > 0) {
+      const newPosition = Vec2(0, this.speed * time).rotate(this.sprite.rotation).add(position);
+
+      // Clamp movement so it doesn't go past the target coordinates
+      const signXMove = Math.sign(this.exitPoint.x - this.entryPoint.x);
+      const signYMove = Math.sign(this.exitPoint.y - this.entryPoint.y);
+      if ((signXMove > 0 && newPosition.x > this.exitPoint.x) || (signXMove < 0 && newPosition.x < this.exitPoint.x)) {
+        newPosition.x = this.exitPoint.x;
+      }
+      if ((signYMove > 0 && newPosition.y > this.exitPoint.y) || (signYMove < 0 && newPosition.y < this.exitPoint.y)) {
+        newPosition.y = this.exitPoint.y;
+      }
+
+      this.setPosition(newPosition);
+
+      if (newPosition.equal(this.exitPoint)) {
+        this.onExitTile();
+      }
     }
   }
 }
 
 module.exports = Car;
+
+
+/***/ }),
+
+/***/ "./src/js/cars/road-tile.js":
+/*!**********************************!*\
+  !*** ./src/js/cars/road-tile.js ***!
+  \**********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Vec2 = __webpack_require__(/*! vec2 */ "./node_modules/vec2/vec2.js");
+const { TILE_SIZE } = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
+
+const LANE_WIDTH = TILE_SIZE / 6;
+
+function entryPoint(lane, side) {
+  switch (side) {
+    case 'W':
+      return Vec2(0, TILE_SIZE - (LANE_WIDTH * (lane + 0.5)));
+    case 'E':
+      return Vec2(TILE_SIZE, LANE_WIDTH * (lane + 0.5));
+    case 'S':
+      return Vec2(TILE_SIZE - (LANE_WIDTH * (lane + 0.5)), TILE_SIZE);
+    case 'N':
+      return Vec2(LANE_WIDTH * (lane + 0.5), 0);
+    default:
+      throw new Error(`Invalid direction ${side}`);
+  }
+}
+
+function exitPoint(lane, side) {
+  switch (side) {
+    case 'W':
+      return Vec2(0, LANE_WIDTH * (lane + 0.5));
+    case 'E':
+      return Vec2(TILE_SIZE, TILE_SIZE - (LANE_WIDTH * (lane + 0.5)));
+    case 'S':
+      return Vec2(LANE_WIDTH * (lane + 0.5), TILE_SIZE);
+    case 'N':
+      return Vec2(TILE_SIZE - (LANE_WIDTH * (lane + 0.5)), 0);
+    default:
+      throw new Error(`Invalid direction ${side}`);
+  }
+}
+
+module.exports = {
+  BIKE_LANE: 0,
+  OUTER_LANE: 1,
+  INNER_LANE: 2,
+  entryPoint,
+  exitPoint,
+};
 
 
 /***/ }),
@@ -6193,6 +6791,65 @@ module.exports = Modal;
 
 /***/ }),
 
+/***/ "./src/js/test/cities.json":
+/*!*********************************!*\
+  !*** ./src/js/test/cities.json ***!
+  \*********************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"cities":[{"map":{"width":16,"height":16,"cells":[[3,3,1,4,4,1,4,4,1,4,4,1,4,4,1,3],[3,3,1,4,4,1,4,4,1,4,4,1,4,4,1,3],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[3,3,1,4,4,1,4,4,1,4,4,1,4,4,1,3]]}},{"map":{"width":16,"height":16,"cells":[[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5]]}}]}');
+
+/***/ }),
+
+/***/ "./src/js/test/scenarios.js":
+/*!**********************************!*\
+  !*** ./src/js/test/scenarios.js ***!
+  \**********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+/* eslint-disable prefer-destructuring */
+const Car = __webpack_require__(/*! ../cars/car */ "./src/js/cars/car.js");
+const RoadTile = __webpack_require__(/*! ../cars/road-tile */ "./src/js/cars/road-tile.js");
+const Cities = __webpack_require__(/*! ./cities.json */ "./src/js/test/cities.json");
+
+function fiveCars(city, carOverlay) {
+  carOverlay.addCar(new Car(carOverlay, carOverlay.textures.car001, 2, 0, 'N', RoadTile.INNER_LANE));
+  carOverlay.addCar(new Car(carOverlay, carOverlay.textures.car002, 5, 0, 'N', RoadTile.OUTER_LANE));
+  carOverlay.addCar(new Car(carOverlay, carOverlay.textures.car003, 8, 0, 'N', RoadTile.INNER_LANE));
+  carOverlay.addCar(new Car(carOverlay, carOverlay.textures.car004, 11, 0, 'N', RoadTile.OUTER_LANE));
+  carOverlay.addCar(new Car(carOverlay, carOverlay.textures.car005, 14, 0, 'N', RoadTile.INNER_LANE));
+}
+
+fiveCars.city = Cities.cities[0];
+
+function carInFront(city, carOverlay) {
+  carOverlay.addCar(new Car(carOverlay, carOverlay.textures.car004, 8, 0, 'N', RoadTile.OUTER_LANE));
+  const obstacle = new Car(carOverlay, carOverlay.textures.car001, 8, 2, 'N', RoadTile.OUTER_LANE);
+  window.car = obstacle;
+  obstacle.maxSpeed = 0;
+  obstacle.speed = 0;
+  carOverlay.addCar(obstacle);
+
+  carOverlay.addCar(new Car(carOverlay, carOverlay.textures.car004, 11, 0, 'N', RoadTile.OUTER_LANE));
+  const obstacle2 = new Car(carOverlay, carOverlay.textures.car001, 11, 2, 'N', RoadTile.OUTER_LANE);
+  obstacle2.onExitTile = () => {
+    obstacle2.maxSpeed = 0;
+    obstacle2.speed = 0;
+  };
+  carOverlay.addCar(obstacle2);
+}
+
+carInFront.city = Cities.cities[1];
+
+module.exports = {
+  fiveCars,
+  carInFront,
+};
+
+
+/***/ }),
+
 /***/ "./src/js/textures-cars.js":
 /*!*********************************!*\
   !*** ./src/js/textures-cars.js ***!
@@ -6760,11 +7417,15 @@ const MapEditor = __webpack_require__(/*! ./editor/map-editor */ "./src/js/edito
 const VariableView = __webpack_require__(/*! ./variable-view */ "./src/js/variable-view.js");
 const RoadTextures = __webpack_require__(/*! ./textures-roads */ "./src/js/textures-roads.js");
 const CarTextures = __webpack_require__(/*! ./textures-cars */ "./src/js/textures-cars.js");
-const CarOverlay = __webpack_require__(/*! ./car-overlay */ "./src/js/car-overlay.js");
+const CarOverlay = __webpack_require__(/*! ./cars/car-overlay */ "./src/js/cars/car-overlay.js");
 const TileCounterView = __webpack_require__(/*! ./tile-counter-view */ "./src/js/tile-counter-view.js");
 const Cities = __webpack_require__(/*! ../../cities.json */ "./cities.json");
+const TestScenarios = __webpack_require__(/*! ./test/scenarios */ "./src/js/test/scenarios.js");
 const showFatalError = __webpack_require__(/*! ./aux/show-fatal-error */ "./src/js/aux/show-fatal-error.js");
 __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
+
+const qs = new URLSearchParams(window.location.search);
+const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
 
 fetch('./config.yml', { cache: 'no-store' })
   .then(response => response.text())
@@ -6775,8 +7436,9 @@ fetch('./config.yml', { cache: 'no-store' })
     console.error(err);
   })
   .then((config) => {
-    const city = City.fromJSON(Cities.cities[2]);
-    // const city = new City(config.cityWidth, config.cityHeight);
+    const city = (testScenario && testScenario.city)
+      ? City.fromJSON(testScenario.city)
+      : new City(config.cityWidth, config.cityHeight);
     const emissions = new EmissionsVariable(city, config);
 
     const app = new PIXI.Application({
@@ -6826,6 +7488,10 @@ fetch('./config.yml', { cache: 'no-store' })
 
       const counter = new TileCounterView(city, config);
       $('body').append(counter.$element);
+
+      if (testScenario) {
+        testScenario(city, carOverlay);
+      }
     });
   });
 
@@ -6833,4 +7499,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.0f6706709db6b70be845.js.map
+//# sourceMappingURL=default.81b88176a87b9978d94e.js.map
