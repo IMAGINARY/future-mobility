@@ -3,6 +3,7 @@ const Vec2 = require('vec2');
 const Dir = require('../aux/cardinal-directions');
 const RoadTile = require('./road-tile');
 const { TILE_SIZE } = require('../map-view');
+const SpriteFader = require('../aux/sprite-fader');
 
 const adjTile = (x, y, side) => [x + Dir.asVector(side)[0], y + Dir.asVector(side)[1]];
 // The closest a car can get to another
@@ -19,6 +20,9 @@ class Car {
     this.speed = 1;
     this.inRedLight = false;
     this.sprite = Car.createSprite(texture);
+    this.fader = new SpriteFader(this.sprite);
+    this.fader.fadeIn();
+    this.killed = false;
 
     this.setTile(tileX, tileY, entrySide);
 
@@ -33,6 +37,7 @@ class Car {
     sprite.roundPixels = true;
     sprite.anchor.set(0.5, 0.75);
     sprite.visible = true;
+    sprite.alpha = 0;
 
     return sprite;
   }
@@ -63,7 +68,12 @@ class Car {
   }
 
   kill() {
-    this.overlay.onCarExitMap(this);
+    if (!this.killed) {
+      this.killed = true;
+      this.fader.fadeOut(() => {
+        this.overlay.onCarExitMap(this);
+      });
+    }
   }
 
   tilePosition() {
@@ -163,6 +173,7 @@ class Car {
   }
 
   animate(time) {
+    let shouldFade = false;
     const position = this.getPosition();
     const shortestAngle = angle => (Math.abs(angle) > Math.PI
       ? (Math.PI * 2 - Math.abs(angle)) * Math.sign(angle) * -1
@@ -176,9 +187,13 @@ class Car {
 
     const carInFront = this.overlay.getCarInFront(this);
     if (carInFront) {
+      const overlapDistance = this.sprite.height / 2 + carInFront.sprite.height / 2;
       const distanceToCarInFront = this.overlay.getCarInFront(this)
         .getPosition()
-        .distance(position) - (this.sprite.height / 2 + carInFront.sprite.height / 2);
+        .distance(position) - overlapDistance;
+      if (distanceToCarInFront < 0) {
+        shouldFade = true;
+      }
       if (distanceToCarInFront <= SAFE_DISTANCE) {
         this.speed = 0;
       } else if (distanceToCarInFront <= SLOWDOWN_DISTANCE) {
@@ -213,6 +228,20 @@ class Car {
         this.onExitTile();
       }
     }
+
+    // This initial check to see if the car was killed is only needed because the car
+    // might be destroyed on the onExitTile above. Refactor.
+    if (this.killed || this.overlay.city.map.get(this.tile.x, this.tile.y) !== this.overlay.roadTileId) {
+      shouldFade = true;
+    }
+
+    if (shouldFade) {
+      this.fader.fadeOut();
+    } else {
+      this.fader.fadeIn();
+    }
+
+    this.fader.animate(time);
   }
 }
 

@@ -5429,6 +5429,84 @@ module.exports = showFatalError;
 
 /***/ }),
 
+/***/ "./src/js/aux/sprite-fader.js":
+/*!************************************!*\
+  !*** ./src/js/aux/sprite-fader.js ***!
+  \************************************/
+/***/ ((module) => {
+
+class SpriteFader {
+  constructor(sprite) {
+    this.sprite = sprite;
+    this.callback = null;
+    this.duration = null;
+    this.startAlpha = null;
+    this.endAlpha = null;
+  }
+
+  fadeIn(callback = null, duration = SpriteFader.DEFAULT_DURATION) {
+    if (this.endAlpha === 0 || (this.endAlpha === null && this.sprite.alpha !== 1)) {
+      this.fade(0, 1, duration, callback);
+    }
+    if (callback) {
+      if (this.endAlpha !== null) {
+        this.callback = callback;
+      } else {
+        callback();
+      }
+    }
+  }
+
+  fadeOut(callback = null, duration = SpriteFader.DEFAULT_DURATION) {
+    if (this.endAlpha === 1 || (this.endAlpha === null && this.sprite.alpha !== 0)) {
+      this.fade(1, 0, duration, callback);
+    }
+    if (callback) {
+      if (this.endAlpha !== null) {
+        this.callback = callback;
+      } else {
+        callback();
+      }
+    }
+  }
+
+  fade(startAlpha, endAlpha, duration = SpriteFader.DEFAULT_DURATION, callback = null) {
+    this.callback = callback;
+    this.startAlpha = startAlpha;
+    this.endAlpha = endAlpha;
+    this.duration = duration;
+    this.timer = 0;
+  }
+
+  onFadeEnd() {
+    if (this.callback) {
+      this.callback();
+    }
+    this.startAlpha = null;
+    this.endAlpha = null;
+    this.duration = null;
+    this.timer = 0;
+  }
+
+  animate(time) {
+    if (this.endAlpha !== null) {
+      this.timer = Math.min(this.duration, this.timer + time);
+      this.sprite.alpha = this.startAlpha
+        + (this.endAlpha - this.startAlpha) * (this.timer / this.duration);
+      if (this.timer === this.duration) {
+        this.onFadeEnd();
+      }
+    }
+  }
+}
+
+SpriteFader.DEFAULT_DURATION = 20;
+
+module.exports = SpriteFader;
+
+
+/***/ }),
+
 /***/ "./src/js/cars/car-overlay.js":
 /*!************************************!*\
   !*** ./src/js/cars/car-overlay.js ***!
@@ -5532,6 +5610,7 @@ const Vec2 = __webpack_require__(/*! vec2 */ "./node_modules/vec2/vec2.js");
 const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
 const RoadTile = __webpack_require__(/*! ./road-tile */ "./src/js/cars/road-tile.js");
 const { TILE_SIZE } = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
+const SpriteFader = __webpack_require__(/*! ../aux/sprite-fader */ "./src/js/aux/sprite-fader.js");
 
 const adjTile = (x, y, side) => [x + Dir.asVector(side)[0], y + Dir.asVector(side)[1]];
 // The closest a car can get to another
@@ -5548,6 +5627,9 @@ class Car {
     this.speed = 1;
     this.inRedLight = false;
     this.sprite = Car.createSprite(texture);
+    this.fader = new SpriteFader(this.sprite);
+    this.fader.fadeIn();
+    this.killed = false;
 
     this.setTile(tileX, tileY, entrySide);
 
@@ -5562,6 +5644,7 @@ class Car {
     sprite.roundPixels = true;
     sprite.anchor.set(0.5, 0.75);
     sprite.visible = true;
+    sprite.alpha = 0;
 
     return sprite;
   }
@@ -5592,7 +5675,12 @@ class Car {
   }
 
   kill() {
-    this.overlay.onCarExitMap(this);
+    if (!this.killed) {
+      this.killed = true;
+      this.fader.fadeOut(() => {
+        this.overlay.onCarExitMap(this);
+      });
+    }
   }
 
   tilePosition() {
@@ -5692,6 +5780,7 @@ class Car {
   }
 
   animate(time) {
+    let shouldFade = false;
     const position = this.getPosition();
     const shortestAngle = angle => (Math.abs(angle) > Math.PI
       ? (Math.PI * 2 - Math.abs(angle)) * Math.sign(angle) * -1
@@ -5705,9 +5794,13 @@ class Car {
 
     const carInFront = this.overlay.getCarInFront(this);
     if (carInFront) {
+      const overlapDistance = this.sprite.height / 2 + carInFront.sprite.height / 2;
       const distanceToCarInFront = this.overlay.getCarInFront(this)
         .getPosition()
-        .distance(position) - (this.sprite.height / 2 + carInFront.sprite.height / 2);
+        .distance(position) - overlapDistance;
+      if (distanceToCarInFront < 0) {
+        shouldFade = true;
+      }
       if (distanceToCarInFront <= SAFE_DISTANCE) {
         this.speed = 0;
       } else if (distanceToCarInFront <= SLOWDOWN_DISTANCE) {
@@ -5742,6 +5835,20 @@ class Car {
         this.onExitTile();
       }
     }
+
+    // This initial check to see if the car was killed is only needed because the car
+    // might be destroyed on the onExitTile above. Refactor.
+    if (this.killed || this.overlay.city.map.get(this.tile.x, this.tile.y) !== this.overlay.roadTileId) {
+      shouldFade = true;
+    }
+
+    if (shouldFade) {
+      this.fader.fadeOut();
+    } else {
+      this.fader.fadeIn();
+    }
+
+    this.fader.animate(time);
   }
 }
 
@@ -7639,4 +7746,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.f72b72c42e05f5869eb6.js.map
+//# sourceMappingURL=default.501a4239c40e4d6be0b4.js.map
