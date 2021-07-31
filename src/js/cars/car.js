@@ -9,6 +9,7 @@ const adjTile = (x, y, side) => [x + Dir.asVector(side)[0], y + Dir.asVector(sid
 const SAFE_DISTANCE = TILE_SIZE / 20;
 // Distance at which a car begins to slow down when there's another in front
 const SLOWDOWN_DISTANCE = TILE_SIZE / 3;
+const LIGHT_CHANGE_DELAY = [300, 800];
 
 class Car {
   constructor(carOverlay, texture, tileX, tileY, entrySide, lane) {
@@ -100,7 +101,8 @@ class Car {
       options.push(Dir.opposite(entrySide));
     }
     // If it's possible to turn right, add the option
-    if (isRoad(...adjTile(tileX, tileY, Dir.ccw(entrySide)))) {
+    if ((options.length === 0 || this.lane === RoadTile.OUTER_LANE)
+      && isRoad(...adjTile(tileX, tileY, Dir.ccw(entrySide)))) {
       options.push(Dir.ccw(entrySide));
     }
     // If it's not possible to go forward or turn right,
@@ -120,7 +122,10 @@ class Car {
   }
 
   onGreenLight() {
-    this.inRedLight = false;
+    const [minDelay, maxDelay] = LIGHT_CHANGE_DELAY;
+    setTimeout(() => {
+      this.inRedLight = false;
+    }, minDelay + Math.random() * (maxDelay - minDelay));
   }
 
   onRedLight() {

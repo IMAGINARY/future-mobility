@@ -1,14 +1,18 @@
 const Dir = require('../aux/cardinal-directions');
 
+const MIN_LIGHT_CHANGE_DELAY = 500;
+const MAX_LIGHT_CHANGE_DELAY = 1200;
+
 class TrafficLights {
   constructor() {
     this.carsCrossing = [];
     this.carsWaiting = [];
     this.greenDirections = [];
+    this.lightsChanging = false;
   }
 
   onCarRequestToCross(car) {
-    if (this.greenDirections.length === 0) {
+    if (!this.lightsChanging && this.greenDirections.length === 0) {
       // This criteria to turn on green lights could be different
       // or more complex. It could be based on the number of
       // connections the tile has to roads, and the allowed
@@ -30,7 +34,6 @@ class TrafficLights {
   onCarEnter(car) {
     if (this.onCarRequestToCross(car)) {
       this.carsCrossing.push(car);
-      car.onGreenLight();
     } else {
       this.carsWaiting.push(car);
       car.onRedLight();
@@ -41,19 +44,28 @@ class TrafficLights {
     this.carsCrossing = this.carsCrossing.filter(c => c !== car);
     this.carsWaiting = this.carsWaiting.filter(c => c !== car);
     if (this.carsCrossing.length === 0) {
-      this.greenDirections = [];
-      this.processWaitingQueue();
+      this.switchLights();
     }
   }
 
-  processWaitingQueue() {
-    this.carsWaiting.forEach((car) => {
-      if (this.onCarRequestToCross(car)) {
-        this.carsWaiting = this.carsWaiting.filter(c => c !== car);
-        this.carsCrossing.push(car);
-        setTimeout(() => { car.onGreenLight(); }, 500);
-      }
-    });
+  getRandomLightChangeDelay() {
+    return MIN_LIGHT_CHANGE_DELAY
+      + Math.random() * (MAX_LIGHT_CHANGE_DELAY - MIN_LIGHT_CHANGE_DELAY);
+  }
+
+  switchLights() {
+    this.lightsChanging = true;
+    setTimeout(() => {
+      this.lightsChanging = false;
+      this.greenDirections = [];
+      this.carsWaiting.forEach((car) => {
+        if (this.onCarRequestToCross(car)) {
+          this.carsWaiting = this.carsWaiting.filter(c => c !== car);
+          this.carsCrossing.push(car);
+          car.onGreenLight();
+        }
+      });
+    }, this.getRandomLightChangeDelay());
   }
 }
 

@@ -5538,6 +5538,7 @@ const adjTile = (x, y, side) => [x + Dir.asVector(side)[0], y + Dir.asVector(sid
 const SAFE_DISTANCE = TILE_SIZE / 20;
 // Distance at which a car begins to slow down when there's another in front
 const SLOWDOWN_DISTANCE = TILE_SIZE / 3;
+const LIGHT_CHANGE_DELAY = [300, 800];
 
 class Car {
   constructor(carOverlay, texture, tileX, tileY, entrySide, lane) {
@@ -5629,7 +5630,8 @@ class Car {
       options.push(Dir.opposite(entrySide));
     }
     // If it's possible to turn right, add the option
-    if (isRoad(...adjTile(tileX, tileY, Dir.ccw(entrySide)))) {
+    if ((options.length === 0 || this.lane === RoadTile.OUTER_LANE)
+      && isRoad(...adjTile(tileX, tileY, Dir.ccw(entrySide)))) {
       options.push(Dir.ccw(entrySide));
     }
     // If it's not possible to go forward or turn right,
@@ -5649,7 +5651,10 @@ class Car {
   }
 
   onGreenLight() {
-    this.inRedLight = false;
+    const [minDelay, maxDelay] = LIGHT_CHANGE_DELAY;
+    setTimeout(() => {
+      this.inRedLight = false;
+    }, minDelay + Math.random() * (maxDelay - minDelay));
   }
 
   onRedLight() {
@@ -5806,15 +5811,19 @@ module.exports = {
 
 const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
 
+const MIN_LIGHT_CHANGE_DELAY = 500;
+const MAX_LIGHT_CHANGE_DELAY = 1200;
+
 class TrafficLights {
   constructor() {
     this.carsCrossing = [];
     this.carsWaiting = [];
     this.greenDirections = [];
+    this.lightsChanging = false;
   }
 
   onCarRequestToCross(car) {
-    if (this.greenDirections.length === 0) {
+    if (!this.lightsChanging && this.greenDirections.length === 0) {
       // This criteria to turn on green lights could be different
       // or more complex. It could be based on the number of
       // connections the tile has to roads, and the allowed
@@ -5836,7 +5845,6 @@ class TrafficLights {
   onCarEnter(car) {
     if (this.onCarRequestToCross(car)) {
       this.carsCrossing.push(car);
-      car.onGreenLight();
     } else {
       this.carsWaiting.push(car);
       car.onRedLight();
@@ -5847,19 +5855,28 @@ class TrafficLights {
     this.carsCrossing = this.carsCrossing.filter(c => c !== car);
     this.carsWaiting = this.carsWaiting.filter(c => c !== car);
     if (this.carsCrossing.length === 0) {
-      this.greenDirections = [];
-      this.processWaitingQueue();
+      this.switchLights();
     }
   }
 
-  processWaitingQueue() {
-    this.carsWaiting.forEach((car) => {
-      if (this.onCarRequestToCross(car)) {
-        this.carsWaiting = this.carsWaiting.filter(c => c !== car);
-        this.carsCrossing.push(car);
-        setTimeout(() => { car.onGreenLight(); }, 500);
-      }
-    });
+  getRandomLightChangeDelay() {
+    return MIN_LIGHT_CHANGE_DELAY
+      + Math.random() * (MAX_LIGHT_CHANGE_DELAY - MIN_LIGHT_CHANGE_DELAY);
+  }
+
+  switchLights() {
+    this.lightsChanging = true;
+    setTimeout(() => {
+      this.lightsChanging = false;
+      this.greenDirections = [];
+      this.carsWaiting.forEach((car) => {
+        if (this.onCarRequestToCross(car)) {
+          this.carsWaiting = this.carsWaiting.filter(c => c !== car);
+          this.carsCrossing.push(car);
+          car.onGreenLight();
+        }
+      });
+    }, this.getRandomLightChangeDelay());
   }
 }
 
@@ -7622,4 +7639,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.75b6b522dad85b0233a9.js.map
+//# sourceMappingURL=default.f72b72c42e05f5869eb6.js.map
