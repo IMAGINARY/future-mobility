@@ -37,6 +37,7 @@ module.exports = {
   BIKE_LANE: 0,
   OUTER_LANE: 1,
   INNER_LANE: 2,
+  LANE_WIDTH,
   entryPoint,
   exitPoint,
 };

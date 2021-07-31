@@ -32,7 +32,19 @@ function carInFront(city, carOverlay) {
 
 carInFront.city = Cities.cities[1];
 
+function trafficLight(city, carOverlay) {
+  const carNorth = new Car(carOverlay, carOverlay.textures.car004, 6, 4, 'N', RoadTile.OUTER_LANE);
+  carOverlay.addCar(carNorth);
+  const carWest = new Car(carOverlay, carOverlay.textures.car003, 4, 6, 'W', RoadTile.OUTER_LANE);
+  carWest.maxSpeed = 0.85;
+  carWest.speed = 0.85;
+  carOverlay.addCar(carWest);
+}
+
+trafficLight.city = Cities.cities[2];
+
 module.exports = {
   fiveCars,
   carInFront,
+  trafficLight,
 };

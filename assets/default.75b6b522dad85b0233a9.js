@@ -5437,6 +5437,7 @@ module.exports = showFatalError;
 
 /* globals PIXI */
 const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
+const TrafficLights = __webpack_require__(/*! ./traffic-lights */ "./src/js/cars/traffic-lights.js");
 const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
 
 class CarOverlay {
@@ -5458,6 +5459,9 @@ class CarOverlay {
     this.cars = [];
     this.carsByTile = Array2D.create(this.city.map.width, this.city.map.height, null);
     Array2D.fill(this.carsByTile, () => []);
+
+    this.trafficLights = Array2D.create(this.city.map.width, this.city.map.height, null);
+    Array2D.fill(this.trafficLights, () => new TrafficLights());
   }
 
   addCar(aCar) {
@@ -5471,12 +5475,14 @@ class CarOverlay {
     aCar.destroy();
   }
 
-  onCarEnterTile(aCar, tileX, tileY) {
-    this.carsByTile[tileY][tileX].push(aCar);
+  onCarEnterTile(car, tileX, tileY) {
+    this.carsByTile[tileY][tileX].push(car);
+    this.trafficLights[tileY][tileX].onCarEnter(car);
   }
 
-  onCarExitTile(aCar, tileX, tileY) {
-    this.carsByTile[tileY][tileX].splice(this.carsByTile[tileY][tileX].indexOf(aCar), 1);
+  onCarExitTile(car, tileX, tileY) {
+    this.carsByTile[tileY][tileX].splice(this.carsByTile[tileY][tileX].indexOf(car), 1);
+    this.trafficLights[tileY][tileX].onCarExit(car);
   }
 
   onCarExitMap(aCar) {
@@ -5537,8 +5543,9 @@ class Car {
   constructor(carOverlay, texture, tileX, tileY, entrySide, lane) {
     this.overlay = carOverlay;
     this.lane = lane;
-    this.speed = 1;
     this.maxSpeed = 1;
+    this.speed = 1;
+    this.inRedLight = false;
     this.sprite = Car.createSprite(texture);
 
     this.setTile(tileX, tileY, entrySide);
@@ -5552,7 +5559,7 @@ class Car {
     sprite.width = texture.baseTexture.width;
     sprite.height = texture.baseTexture.height;
     sprite.roundPixels = true;
-    sprite.anchor.set(0.5);
+    sprite.anchor.set(0.5, 0.75);
     sprite.visible = true;
 
     return sprite;
@@ -5641,6 +5648,14 @@ class Car {
     this.overlay.onCarEnterTile(this, this.tile.x, this.tile.y);
   }
 
+  onGreenLight() {
+    this.inRedLight = false;
+  }
+
+  onRedLight() {
+    this.inRedLight = true;
+  }
+
   getNextTile() {
     return adjTile(this.tile.x, this.tile.y, this.exitSide);
   }
@@ -5654,6 +5669,21 @@ class Car {
 
     // Transfer the car to the next tile
     this.setTile(...this.getNextTile(), this.getNextEntry());
+  }
+
+  getDistanceFromEntry() {
+    switch (this.entrySide) {
+      case 'N':
+        return this.getPosition().y - this.tilePosition().y;
+      case 'E':
+        return this.tilePosition().x + TILE_SIZE - this.getPosition().x;
+      case 'W':
+        return this.getPosition().x - this.tilePosition().x;
+      case 'S':
+        return this.tilePosition().y + TILE_SIZE - this.getPosition().y;
+      default:
+        return 0;
+    }
   }
 
   animate(time) {
@@ -5673,15 +5703,19 @@ class Car {
       const distanceToCarInFront = this.overlay.getCarInFront(this)
         .getPosition()
         .distance(position) - (this.sprite.height / 2 + carInFront.sprite.height / 2);
-      if (distanceToCarInFront <= SLOWDOWN_DISTANCE) {
-        this.speed = this.maxSpeed * (1 - SAFE_DISTANCE / distanceToCarInFront);
-      } else if (distanceToCarInFront <= SAFE_DISTANCE) {
+      if (distanceToCarInFront <= SAFE_DISTANCE) {
         this.speed = 0;
+      } else if (distanceToCarInFront <= SLOWDOWN_DISTANCE) {
+        this.speed = this.maxSpeed * (1 - SAFE_DISTANCE / distanceToCarInFront);
       } else if (this.speed < this.maxSpeed) {
-        this.speed += this.maxSpeed / 5;
+        this.speed = Math.min(this.speed + this.maxSpeed / 5, this.maxSpeed);
       }
     } else if (this.speed < this.maxSpeed) {
-      this.speed += this.maxSpeed / 5;
+      this.speed = Math.min(this.speed + this.maxSpeed / 5, this.maxSpeed);
+    }
+
+    if (this.inRedLight && this.speed > 0) {
+      this.speed = 0;
     }
 
     if (this.speed > 0) {
@@ -5756,9 +5790,80 @@ module.exports = {
   BIKE_LANE: 0,
   OUTER_LANE: 1,
   INNER_LANE: 2,
+  LANE_WIDTH,
   entryPoint,
   exitPoint,
 };
+
+
+/***/ }),
+
+/***/ "./src/js/cars/traffic-lights.js":
+/*!***************************************!*\
+  !*** ./src/js/cars/traffic-lights.js ***!
+  \***************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+
+class TrafficLights {
+  constructor() {
+    this.carsCrossing = [];
+    this.carsWaiting = [];
+    this.greenDirections = [];
+  }
+
+  onCarRequestToCross(car) {
+    if (this.greenDirections.length === 0) {
+      // This criteria to turn on green lights could be different
+      // or more complex. It could be based on the number of
+      // connections the tile has to roads, and the allowed
+      // directions of turns. But maybe this will be enough for now...
+      if (Dir.opposite(car.entrySide) === car.exitSide) {
+        this.greenDirections = [`${car.entrySide}-${car.exitSide}`,
+          `${Dir.opposite(car.entrySide)}-${Dir.opposite(car.exitSide)}`];
+      } else {
+        this.greenDirections = [`${car.entrySide}-${car.exitSide}`,
+          `${car.exitSide}-${car.entrySide}`];
+      }
+    }
+    if (this.greenDirections.includes(`${car.entrySide}-${car.exitSide}`)) {
+      return true;
+    }
+    return false;
+  }
+
+  onCarEnter(car) {
+    if (this.onCarRequestToCross(car)) {
+      this.carsCrossing.push(car);
+      car.onGreenLight();
+    } else {
+      this.carsWaiting.push(car);
+      car.onRedLight();
+    }
+  }
+
+  onCarExit(car) {
+    this.carsCrossing = this.carsCrossing.filter(c => c !== car);
+    this.carsWaiting = this.carsWaiting.filter(c => c !== car);
+    if (this.carsCrossing.length === 0) {
+      this.greenDirections = [];
+      this.processWaitingQueue();
+    }
+  }
+
+  processWaitingQueue() {
+    this.carsWaiting.forEach((car) => {
+      if (this.onCarRequestToCross(car)) {
+        this.carsWaiting = this.carsWaiting.filter(c => c !== car);
+        this.carsCrossing.push(car);
+        setTimeout(() => { car.onGreenLight(); }, 500);
+      }
+    });
+  }
+}
+
+module.exports = TrafficLights;
 
 
 /***/ }),
@@ -6798,7 +6903,7 @@ module.exports = Modal;
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"cities":[{"map":{"width":16,"height":16,"cells":[[3,3,1,4,4,1,4,4,1,4,4,1,4,4,1,3],[3,3,1,4,4,1,4,4,1,4,4,1,4,4,1,3],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[3,3,1,4,4,1,4,4,1,4,4,1,4,4,1,3]]}},{"map":{"width":16,"height":16,"cells":[[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5]]}}]}');
+module.exports = JSON.parse('{"cities":[{"map":{"width":16,"height":16,"cells":[[3,3,1,4,4,1,4,4,1,4,4,1,4,4,1,3],[3,3,1,4,4,1,4,4,1,4,4,1,4,4,1,3],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[3,3,1,4,4,1,4,4,1,4,4,1,4,4,1,3]]}},{"map":{"width":16,"height":16,"cells":[[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5]]}},{"map":{"width":16,"height":16,"cells":[[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,1,1,1,1,1,1,5,5,5,5,5,5,5,5,5],[5,1,5,5,5,5,1,5,5,5,5,5,5,5,5,5],[5,1,5,5,5,5,1,5,5,5,5,5,5,5,5,5],[5,1,5,5,5,5,1,5,5,5,5,5,5,5,5,5],[5,1,5,5,5,5,1,5,5,5,5,5,5,5,5,5],[5,1,1,1,1,1,1,1,1,5,5,5,5,5,5,5],[5,5,5,5,5,5,1,5,1,5,5,5,5,5,5,5],[5,5,5,5,5,5,1,1,1,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5]]}}]}');
 
 /***/ }),
 
@@ -6842,9 +6947,21 @@ function carInFront(city, carOverlay) {
 
 carInFront.city = Cities.cities[1];
 
+function trafficLight(city, carOverlay) {
+  const carNorth = new Car(carOverlay, carOverlay.textures.car004, 6, 4, 'N', RoadTile.OUTER_LANE);
+  carOverlay.addCar(carNorth);
+  const carWest = new Car(carOverlay, carOverlay.textures.car003, 4, 6, 'W', RoadTile.OUTER_LANE);
+  carWest.maxSpeed = 0.85;
+  carWest.speed = 0.85;
+  carOverlay.addCar(carWest);
+}
+
+trafficLight.city = Cities.cities[2];
+
 module.exports = {
   fiveCars,
   carInFront,
+  trafficLight,
 };
 
 
@@ -7491,6 +7608,12 @@ fetch('./config.yml', { cache: 'no-store' })
 
       if (testScenario) {
         testScenario(city, carOverlay);
+        if (!window.test) {
+          window.test = {};
+        }
+        window.test.city = city;
+        window.test.carOverlay = carOverlay;
+        window.test.cars = carOverlay.cars;
       }
     });
   });
@@ -7499,4 +7622,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.81b88176a87b9978d94e.js.map
+//# sourceMappingURL=default.75b6b522dad85b0233a9.js.map

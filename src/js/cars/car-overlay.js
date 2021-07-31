@@ -1,5 +1,6 @@
 /* globals PIXI */
 const Array2D = require('../aux/array-2d');
+const TrafficLights = require('./traffic-lights');
 const { getTileTypeId } = require('../aux/config-helpers');
 
 class CarOverlay {
@@ -21,6 +22,9 @@ class CarOverlay {
     this.cars = [];
     this.carsByTile = Array2D.create(this.city.map.width, this.city.map.height, null);
     Array2D.fill(this.carsByTile, () => []);
+
+    this.trafficLights = Array2D.create(this.city.map.width, this.city.map.height, null);
+    Array2D.fill(this.trafficLights, () => new TrafficLights());
   }
 
   addCar(aCar) {
@@ -34,12 +38,14 @@ class CarOverlay {
     aCar.destroy();
   }
 
-  onCarEnterTile(aCar, tileX, tileY) {
-    this.carsByTile[tileY][tileX].push(aCar);
+  onCarEnterTile(car, tileX, tileY) {
+    this.carsByTile[tileY][tileX].push(car);
+    this.trafficLights[tileY][tileX].onCarEnter(car);
   }
 
-  onCarExitTile(aCar, tileX, tileY) {
-    this.carsByTile[tileY][tileX].splice(this.carsByTile[tileY][tileX].indexOf(aCar), 1);
+  onCarExitTile(car, tileX, tileY) {
+    this.carsByTile[tileY][tileX].splice(this.carsByTile[tileY][tileX].indexOf(car), 1);
+    this.trafficLights[tileY][tileX].onCarExit(car);
   }
 
   onCarExitMap(aCar) {

@@ -14,8 +14,9 @@ class Car {
   constructor(carOverlay, texture, tileX, tileY, entrySide, lane) {
     this.overlay = carOverlay;
     this.lane = lane;
-    this.speed = 1;
     this.maxSpeed = 1;
+    this.speed = 1;
+    this.inRedLight = false;
     this.sprite = Car.createSprite(texture);
 
     this.setTile(tileX, tileY, entrySide);
@@ -29,7 +30,7 @@ class Car {
     sprite.width = texture.baseTexture.width;
     sprite.height = texture.baseTexture.height;
     sprite.roundPixels = true;
-    sprite.anchor.set(0.5);
+    sprite.anchor.set(0.5, 0.75);
     sprite.visible = true;
 
     return sprite;
@@ -118,6 +119,14 @@ class Car {
     this.overlay.onCarEnterTile(this, this.tile.x, this.tile.y);
   }
 
+  onGreenLight() {
+    this.inRedLight = false;
+  }
+
+  onRedLight() {
+    this.inRedLight = true;
+  }
+
   getNextTile() {
     return adjTile(this.tile.x, this.tile.y, this.exitSide);
   }
@@ -131,6 +140,21 @@ class Car {
 
     // Transfer the car to the next tile
     this.setTile(...this.getNextTile(), this.getNextEntry());
+  }
+
+  getDistanceFromEntry() {
+    switch (this.entrySide) {
+      case 'N':
+        return this.getPosition().y - this.tilePosition().y;
+      case 'E':
+        return this.tilePosition().x + TILE_SIZE - this.getPosition().x;
+      case 'W':
+        return this.getPosition().x - this.tilePosition().x;
+      case 'S':
+        return this.tilePosition().y + TILE_SIZE - this.getPosition().y;
+      default:
+        return 0;
+    }
   }
 
   animate(time) {
@@ -150,15 +174,19 @@ class Car {
       const distanceToCarInFront = this.overlay.getCarInFront(this)
         .getPosition()
         .distance(position) - (this.sprite.height / 2 + carInFront.sprite.height / 2);
-      if (distanceToCarInFront <= SLOWDOWN_DISTANCE) {
-        this.speed = this.maxSpeed * (1 - SAFE_DISTANCE / distanceToCarInFront);
-      } else if (distanceToCarInFront <= SAFE_DISTANCE) {
+      if (distanceToCarInFront <= SAFE_DISTANCE) {
         this.speed = 0;
+      } else if (distanceToCarInFront <= SLOWDOWN_DISTANCE) {
+        this.speed = this.maxSpeed * (1 - SAFE_DISTANCE / distanceToCarInFront);
       } else if (this.speed < this.maxSpeed) {
-        this.speed += this.maxSpeed / 5;
+        this.speed = Math.min(this.speed + this.maxSpeed / 5, this.maxSpeed);
       }
     } else if (this.speed < this.maxSpeed) {
-      this.speed += this.maxSpeed / 5;
+      this.speed = Math.min(this.speed + this.maxSpeed / 5, this.maxSpeed);
+    }
+
+    if (this.inRedLight && this.speed > 0) {
+      this.speed = 0;
     }
 
     if (this.speed > 0) {

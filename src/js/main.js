@@ -80,6 +80,12 @@ fetch('./config.yml', { cache: 'no-store' })
 
       if (testScenario) {
         testScenario(city, carOverlay);
+        if (!window.test) {
+          window.test = {};
+        }
+        window.test.city = city;
+        window.test.carOverlay = carOverlay;
+        window.test.cars = carOverlay.cars;
       }
     });
   });
