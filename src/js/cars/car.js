@@ -5,7 +5,6 @@ const RoadTile = require('./road-tile');
 const { TILE_SIZE } = require('../map-view');
 const SpriteFader = require('../aux/sprite-fader');
 
-const adjTile = (x, y, side) => [x + Dir.asVector(side)[0], y + Dir.asVector(side)[1]];
 // The closest a car can get to another
 const SAFE_DISTANCE = TILE_SIZE / 20;
 // Distance at which a car begins to slow down when there's another in front
@@ -100,11 +99,9 @@ class Car {
   getRandomExitSide(tileX, tileY, entrySide) {
     // Select the direction based on road availability
     const options = [];
-    const isRoad = (x, y) => (!this.overlay.city.map.isValidCoords(x, y)
-      || this.overlay.city.map.get(x, y) === this.overlay.roadTileId);
 
     // If it's possible to go forward, add the option
-    if (isRoad(...adjTile(tileX, tileY, Dir.opposite(entrySide)))) {
+    if (this.overlay.roads.hasAdjRoad(tileX, tileY, Dir.opposite(entrySide))) {
       // Add it three times to make it more likely than turning
       options.push(Dir.opposite(entrySide));
       options.push(Dir.opposite(entrySide));
@@ -112,13 +109,13 @@ class Car {
     }
     // If it's possible to turn right, add the option
     if ((options.length === 0 || this.lane === RoadTile.OUTER_LANE)
-      && isRoad(...adjTile(tileX, tileY, Dir.ccw(entrySide)))) {
+      && this.overlay.roads.hasAdjRoad(tileX, tileY, Dir.ccw(entrySide))) {
       options.push(Dir.ccw(entrySide));
     }
     // If it's not possible to go forward or turn right,
     // turn left if possible.
     if (options.length === 0
-      && isRoad(...adjTile(tileX, tileY, Dir.cw(entrySide)))) {
+      && this.overlay.roads.hasAdjRoad(tileX, tileY, Dir.cw(entrySide))) {
       options.push(Dir.cw(entrySide));
     }
 
@@ -143,7 +140,7 @@ class Car {
   }
 
   getNextTile() {
-    return adjTile(this.tile.x, this.tile.y, this.exitSide);
+    return Dir.adjCoords(this.tile.x, this.tile.y, this.exitSide);
   }
 
   getNextEntry() {
@@ -231,7 +228,7 @@ class Car {
 
     // This initial check to see if the car was killed is only needed because the car
     // might be destroyed on the onExitTile above. Refactor.
-    if (this.killed || this.overlay.city.map.get(this.tile.x, this.tile.y) !== this.overlay.roadTileId) {
+    if (this.killed || !this.overlay.roads.isRoad(this.tile.x, this.tile.y)) {
       shouldFade = true;
     }
 

@@ -5370,6 +5370,7 @@ module.exports = Array2D;
   \*******************************************/
 /***/ ((module) => {
 
+const all = ['N', 'E', 'S', 'W'];
 
 function opposite(direction) {
   return {
@@ -5401,12 +5402,19 @@ function asAngle(direction) {
   }[direction];
 }
 
+function adjCoords(x, y, direction) {
+  const [dx, dy] = asVector(direction);
+  return [x + dx, y + dy];
+}
+
 module.exports = {
+  all,
   opposite,
   ccw,
   cw,
   asVector,
   asAngle,
+  adjCoords,
 };
 
 
@@ -5542,6 +5550,7 @@ const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2
 const TrafficLights = __webpack_require__(/*! ./traffic-lights */ "./src/js/cars/traffic-lights.js");
 const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
 const CarSpawner = __webpack_require__(/*! ./car-spawner */ "./src/js/cars/car-spawner.js");
+const RoadMap = __webpack_require__(/*! ./road-map */ "./src/js/cars/road-map.js");
 
 class CarOverlay {
   constructor(mapView, config, textures, options = {}) {
@@ -5549,6 +5558,7 @@ class CarOverlay {
     this.config = config;
     this.textures = textures;
     this.city = this.mapView.city;
+    this.roads = new RoadMap(this.city.map, getTileTypeId(config, 'road'));
 
     this.options = Object.assign({}, CarOverlay.defaultOptions, options);
 
@@ -5641,10 +5651,8 @@ module.exports = CarOverlay;
   \************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
 const Car = __webpack_require__(/*! ../cars/car */ "./src/js/cars/car.js");
 const RoadTile = __webpack_require__(/*! ../cars/road-tile */ "./src/js/cars/road-tile.js");
-const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
 
 const THROTTLE_TIME = 57; // Number of frames it waits before running the maybeSpawn function
 const SPAWN_PROBABILITY = 0.5;
@@ -5659,10 +5667,7 @@ class CarSpawner {
   }
 
   maybeSpawn() {
-    const { roadTileId } = this.overlay;
-    const roadCount = Array2D.reduce(this.city.map.cells,
-      (total, cell) => total + (cell === roadTileId ? 1 : 0), 0);
-    const maxCars = roadCount * CARS_PER_ROAD;
+    const maxCars = this.overlay.roads.roadCount() * CARS_PER_ROAD;
     if (this.overlay.cars.length < maxCars) {
       if (Math.random() < SPAWN_PROBABILITY) {
         this.spawn();
@@ -5671,19 +5676,7 @@ class CarSpawner {
   }
 
   getRandomTile() {
-    const { roadTileId } = this.overlay;
-    const isRoad = (x, y) => (this.overlay.city.map.isValidCoords(x, y)
-      && this.overlay.city.map.get(x, y) === this.overlay.roadTileId);
-    const adjTile = (x, y, side) => [x + Dir.asVector(side)[0], y + Dir.asVector(side)[1]];
-
-    const roadTiles = Array2D.items(this.city.map.cells)
-      .filter(([x, y]) => isRoad(x, y) && (
-        isRoad(...adjTile(x, y, 'N'))
-        || isRoad(...adjTile(x, y, 'S'))
-        || isRoad(...adjTile(x, y, 'E'))
-        || isRoad(...adjTile(x, y, 'W'))
-      ));
-
+    const roadTiles = this.overlay.roads.connectedRoadTiles();
     if (roadTiles.length === 0) {
       return null;
     }
@@ -5706,13 +5699,8 @@ class CarSpawner {
   }
 
   getRandomEntrySide(tileX, tileY) {
-    // Refactor!
-    const { roadTileId } = this.overlay;
-    const adjTile = (x, y, side) => [x + Dir.asVector(side)[0], y + Dir.asVector(side)[1]];
-    const isRoad = (x, y) => this.overlay.city.map.get(x, y) === roadTileId;
-
-    const directions = this.getPreferredDirections(tileX, tileY);
-    return directions.find(d => isRoad(...adjTile(tileX, tileY, Dir.opposite(d))));
+    const validDirections = this.overlay.roads.adjRoadDirs(tileX, tileY);
+    return this.getPreferredDirections(tileX, tileY).find(d => validDirections.includes(d));
   }
 
   getRandomTexture(tileX, tileY) {
@@ -5772,7 +5760,6 @@ const RoadTile = __webpack_require__(/*! ./road-tile */ "./src/js/cars/road-tile
 const { TILE_SIZE } = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
 const SpriteFader = __webpack_require__(/*! ../aux/sprite-fader */ "./src/js/aux/sprite-fader.js");
 
-const adjTile = (x, y, side) => [x + Dir.asVector(side)[0], y + Dir.asVector(side)[1]];
 // The closest a car can get to another
 const SAFE_DISTANCE = TILE_SIZE / 20;
 // Distance at which a car begins to slow down when there's another in front
@@ -5867,11 +5854,9 @@ class Car {
   getRandomExitSide(tileX, tileY, entrySide) {
     // Select the direction based on road availability
     const options = [];
-    const isRoad = (x, y) => (!this.overlay.city.map.isValidCoords(x, y)
-      || this.overlay.city.map.get(x, y) === this.overlay.roadTileId);
 
     // If it's possible to go forward, add the option
-    if (isRoad(...adjTile(tileX, tileY, Dir.opposite(entrySide)))) {
+    if (this.overlay.roads.hasAdjRoad(tileX, tileY, Dir.opposite(entrySide))) {
       // Add it three times to make it more likely than turning
       options.push(Dir.opposite(entrySide));
       options.push(Dir.opposite(entrySide));
@@ -5879,13 +5864,13 @@ class Car {
     }
     // If it's possible to turn right, add the option
     if ((options.length === 0 || this.lane === RoadTile.OUTER_LANE)
-      && isRoad(...adjTile(tileX, tileY, Dir.ccw(entrySide)))) {
+      && this.overlay.roads.hasAdjRoad(tileX, tileY, Dir.ccw(entrySide))) {
       options.push(Dir.ccw(entrySide));
     }
     // If it's not possible to go forward or turn right,
     // turn left if possible.
     if (options.length === 0
-      && isRoad(...adjTile(tileX, tileY, Dir.cw(entrySide)))) {
+      && this.overlay.roads.hasAdjRoad(tileX, tileY, Dir.cw(entrySide))) {
       options.push(Dir.cw(entrySide));
     }
 
@@ -5910,7 +5895,7 @@ class Car {
   }
 
   getNextTile() {
-    return adjTile(this.tile.x, this.tile.y, this.exitSide);
+    return Dir.adjCoords(this.tile.x, this.tile.y, this.exitSide);
   }
 
   getNextEntry() {
@@ -5998,7 +5983,7 @@ class Car {
 
     // This initial check to see if the car was killed is only needed because the car
     // might be destroyed on the onExitTile above. Refactor.
-    if (this.killed || this.overlay.city.map.get(this.tile.x, this.tile.y) !== this.overlay.roadTileId) {
+    if (this.killed || !this.overlay.roads.isRoad(this.tile.x, this.tile.y)) {
       shouldFade = true;
     }
 
@@ -6013,6 +5998,56 @@ class Car {
 }
 
 module.exports = Car;
+
+
+/***/ }),
+
+/***/ "./src/js/cars/road-map.js":
+/*!*********************************!*\
+  !*** ./src/js/cars/road-map.js ***!
+  \*********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
+
+class RoadMap {
+  constructor(map, roadTileId) {
+    this.map = map;
+    this.roadTileId = roadTileId;
+  }
+
+  isRoad(x, y) {
+    return !this.map.isValidCoords(x, y)
+      || this.map.get(x, y) === this.roadTileId;
+  }
+
+  hasAdjRoad(x, y, direction) {
+    return this.isRoad(...Dir.adjCoords(x, y, direction));
+  }
+
+  adjRoadDirs(x, y) {
+    return Dir.all.filter(d => this.hasAdjRoad(x, y, d));
+  }
+
+  roadCount() {
+    return Array2D.reduce(this.map.cells,
+      (total, cell) => total + (cell === this.roadTileId ? 1 : 0), 0);
+  }
+
+  roadTiles() {
+    return Array2D.items(this.map.cells).filter(([x, y]) => this.map.get(x, y) === this.roadTileId);
+  }
+
+  connectedRoadTiles() {
+    return this.roadTiles().filter(([x, y]) => this.hasAdjRoad(x, y, 'N')
+      || this.hasAdjRoad(x, y, 'E')
+      || this.hasAdjRoad(x, y, 'S')
+      || this.hasAdjRoad(x, y, 'W'));
+  }
+}
+
+module.exports = RoadMap;
 
 
 /***/ }),
@@ -7908,4 +7943,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.d89ea344fc75c247e6ac.js.map
+//# sourceMappingURL=default.2dc355718477599c9a5f.js.map

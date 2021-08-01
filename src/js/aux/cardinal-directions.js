@@ -1,3 +1,4 @@
+const all = ['N', 'E', 'S', 'W'];
 
 function opposite(direction) {
   return {
@@ -29,10 +30,17 @@ function asAngle(direction) {
   }[direction];
 }
 
+function adjCoords(x, y, direction) {
+  const [dx, dy] = asVector(direction);
+  return [x + dx, y + dy];
+}
+
 module.exports = {
+  all,
   opposite,
   ccw,
   cw,
   asVector,
   asAngle,
+  adjCoords,
 };

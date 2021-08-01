@@ -1,7 +1,5 @@
-const Array2D = require('../aux/array-2d');
 const Car = require('../cars/car');
 const RoadTile = require('../cars/road-tile');
-const Dir = require('../aux/cardinal-directions');
 
 const THROTTLE_TIME = 57; // Number of frames it waits before running the maybeSpawn function
 const SPAWN_PROBABILITY = 0.5;
@@ -16,10 +14,7 @@ class CarSpawner {
   }
 
   maybeSpawn() {
-    const { roadTileId } = this.overlay;
-    const roadCount = Array2D.reduce(this.city.map.cells,
-      (total, cell) => total + (cell === roadTileId ? 1 : 0), 0);
-    const maxCars = roadCount * CARS_PER_ROAD;
+    const maxCars = this.overlay.roads.roadCount() * CARS_PER_ROAD;
     if (this.overlay.cars.length < maxCars) {
       if (Math.random() < SPAWN_PROBABILITY) {
         this.spawn();
@@ -28,19 +23,7 @@ class CarSpawner {
   }
 
   getRandomTile() {
-    const { roadTileId } = this.overlay;
-    const isRoad = (x, y) => (this.overlay.city.map.isValidCoords(x, y)
-      && this.overlay.city.map.get(x, y) === this.overlay.roadTileId);
-    const adjTile = (x, y, side) => [x + Dir.asVector(side)[0], y + Dir.asVector(side)[1]];
-
-    const roadTiles = Array2D.items(this.city.map.cells)
-      .filter(([x, y]) => isRoad(x, y) && (
-        isRoad(...adjTile(x, y, 'N'))
-        || isRoad(...adjTile(x, y, 'S'))
-        || isRoad(...adjTile(x, y, 'E'))
-        || isRoad(...adjTile(x, y, 'W'))
-      ));
-
+    const roadTiles = this.overlay.roads.connectedRoadTiles();
     if (roadTiles.length === 0) {
       return null;
     }
@@ -63,13 +46,8 @@ class CarSpawner {
   }
 
   getRandomEntrySide(tileX, tileY) {
-    // Refactor!
-    const { roadTileId } = this.overlay;
-    const adjTile = (x, y, side) => [x + Dir.asVector(side)[0], y + Dir.asVector(side)[1]];
-    const isRoad = (x, y) => this.overlay.city.map.get(x, y) === roadTileId;
-
-    const directions = this.getPreferredDirections(tileX, tileY);
-    return directions.find(d => isRoad(...adjTile(tileX, tileY, Dir.opposite(d))));
+    const validDirections = this.overlay.roads.adjRoadDirs(tileX, tileY);
+    return this.getPreferredDirections(tileX, tileY).find(d => validDirections.includes(d));
   }
 
   getRandomTexture(tileX, tileY) {

@@ -3,6 +3,7 @@ const Array2D = require('../aux/array-2d');
 const TrafficLights = require('./traffic-lights');
 const { getTileTypeId } = require('../aux/config-helpers');
 const CarSpawner = require('./car-spawner');
+const RoadMap = require('./road-map');
 
 class CarOverlay {
   constructor(mapView, config, textures, options = {}) {
@@ -10,6 +11,7 @@ class CarOverlay {
     this.config = config;
     this.textures = textures;
     this.city = this.mapView.city;
+    this.roads = new RoadMap(this.city.map, getTileTypeId(config, 'road'));
 
     this.options = Object.assign({}, CarOverlay.defaultOptions, options);
 
