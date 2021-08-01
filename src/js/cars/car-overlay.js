@@ -2,13 +2,16 @@
 const Array2D = require('../aux/array-2d');
 const TrafficLights = require('./traffic-lights');
 const { getTileTypeId } = require('../aux/config-helpers');
+const CarSpawner = require('./car-spawner');
 
 class CarOverlay {
-  constructor(mapView, config, textures) {
+  constructor(mapView, config, textures, options = {}) {
     this.mapView = mapView;
     this.config = config;
     this.textures = textures;
     this.city = this.mapView.city;
+
+    this.options = Object.assign({}, CarOverlay.defaultOptions, options);
 
     this.displayObject = new PIXI.Container();
     this.displayObject.width = this.mapView.width;
@@ -25,6 +28,8 @@ class CarOverlay {
 
     this.trafficLights = Array2D.create(this.city.map.width, this.city.map.height, null);
     Array2D.fill(this.trafficLights, () => new TrafficLights());
+
+    this.spawner = this.options.spawn ? new CarSpawner(this) : null;
   }
 
   addCar(aCar) {
@@ -53,6 +58,9 @@ class CarOverlay {
   }
 
   animate(time) {
+    if (this.spawner) {
+      this.spawner.animate(time);
+    }
     this.cars.forEach(car => car.animate(time));
   }
 
@@ -78,5 +86,9 @@ class CarOverlay {
         .shift();
   }
 }
+
+CarOverlay.defaultOptions = {
+  spawn: true,
+};
 
 module.exports = CarOverlay;

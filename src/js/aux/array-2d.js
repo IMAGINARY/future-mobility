@@ -144,6 +144,30 @@ class Array2D {
       }
     }
   }
+
+  /**
+   * @callback reduceCallback
+   * @param accumulator {any}
+   * @param currentValue {any}
+   * @param x {number}
+   * @param y {number}
+   */
+  /**
+   *
+   * @param a {any[][]}
+   * @param callback {reduceCallback}
+   * @param initialValue {any}
+   * @return {any}
+   */
+  static reduce(a, callback, initialValue) {
+    let accumulator = initialValue;
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        accumulator = callback(accumulator, a[y][x], x, y);
+      }
+    }
+    return accumulator;
+  }
 }
 
 module.exports = Array2D;

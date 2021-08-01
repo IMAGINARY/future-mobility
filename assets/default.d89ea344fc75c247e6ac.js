@@ -5333,6 +5333,30 @@ class Array2D {
       }
     }
   }
+
+  /**
+   * @callback reduceCallback
+   * @param accumulator {any}
+   * @param currentValue {any}
+   * @param x {number}
+   * @param y {number}
+   */
+  /**
+   *
+   * @param a {any[][]}
+   * @param callback {reduceCallback}
+   * @param initialValue {any}
+   * @return {any}
+   */
+  static reduce(a, callback, initialValue) {
+    let accumulator = initialValue;
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        accumulator = callback(accumulator, a[y][x], x, y);
+      }
+    }
+    return accumulator;
+  }
 }
 
 module.exports = Array2D;
@@ -5517,13 +5541,16 @@ module.exports = SpriteFader;
 const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
 const TrafficLights = __webpack_require__(/*! ./traffic-lights */ "./src/js/cars/traffic-lights.js");
 const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
+const CarSpawner = __webpack_require__(/*! ./car-spawner */ "./src/js/cars/car-spawner.js");
 
 class CarOverlay {
-  constructor(mapView, config, textures) {
+  constructor(mapView, config, textures, options = {}) {
     this.mapView = mapView;
     this.config = config;
     this.textures = textures;
     this.city = this.mapView.city;
+
+    this.options = Object.assign({}, CarOverlay.defaultOptions, options);
 
     this.displayObject = new PIXI.Container();
     this.displayObject.width = this.mapView.width;
@@ -5540,6 +5567,8 @@ class CarOverlay {
 
     this.trafficLights = Array2D.create(this.city.map.width, this.city.map.height, null);
     Array2D.fill(this.trafficLights, () => new TrafficLights());
+
+    this.spawner = this.options.spawn ? new CarSpawner(this) : null;
   }
 
   addCar(aCar) {
@@ -5568,6 +5597,9 @@ class CarOverlay {
   }
 
   animate(time) {
+    if (this.spawner) {
+      this.spawner.animate(time);
+    }
     this.cars.forEach(car => car.animate(time));
   }
 
@@ -5594,7 +5626,135 @@ class CarOverlay {
   }
 }
 
+CarOverlay.defaultOptions = {
+  spawn: true,
+};
+
 module.exports = CarOverlay;
+
+
+/***/ }),
+
+/***/ "./src/js/cars/car-spawner.js":
+/*!************************************!*\
+  !*** ./src/js/cars/car-spawner.js ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
+const Car = __webpack_require__(/*! ../cars/car */ "./src/js/cars/car.js");
+const RoadTile = __webpack_require__(/*! ../cars/road-tile */ "./src/js/cars/road-tile.js");
+const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+
+const THROTTLE_TIME = 57; // Number of frames it waits before running the maybeSpawn function
+const SPAWN_PROBABILITY = 0.5;
+const CARS_PER_ROAD = 0.5;
+
+class CarSpawner {
+  constructor(carOverlay) {
+    this.overlay = carOverlay;
+    this.city = carOverlay.city;
+
+    this.throttleTimer = Math.random() * THROTTLE_TIME;
+  }
+
+  maybeSpawn() {
+    const { roadTileId } = this.overlay;
+    const roadCount = Array2D.reduce(this.city.map.cells,
+      (total, cell) => total + (cell === roadTileId ? 1 : 0), 0);
+    const maxCars = roadCount * CARS_PER_ROAD;
+    if (this.overlay.cars.length < maxCars) {
+      if (Math.random() < SPAWN_PROBABILITY) {
+        this.spawn();
+      }
+    }
+  }
+
+  getRandomTile() {
+    const { roadTileId } = this.overlay;
+    const isRoad = (x, y) => (this.overlay.city.map.isValidCoords(x, y)
+      && this.overlay.city.map.get(x, y) === this.overlay.roadTileId);
+    const adjTile = (x, y, side) => [x + Dir.asVector(side)[0], y + Dir.asVector(side)[1]];
+
+    const roadTiles = Array2D.items(this.city.map.cells)
+      .filter(([x, y]) => isRoad(x, y) && (
+        isRoad(...adjTile(x, y, 'N'))
+        || isRoad(...adjTile(x, y, 'S'))
+        || isRoad(...adjTile(x, y, 'E'))
+        || isRoad(...adjTile(x, y, 'W'))
+      ));
+
+    if (roadTiles.length === 0) {
+      return null;
+    }
+    const [x, y] = roadTiles[Math.floor(Math.random() * roadTiles.length)];
+    return { x, y };
+  }
+
+  getPreferredDirections(tileX, tileY) {
+    const maxY = (this.city.map.height - 1);
+    const maxX = (this.city.map.width - 1);
+    const distanceFromBorder = [
+      ['N', tileY / maxY],
+      ['E', (maxX - tileX) / maxX],
+      ['S', (maxY - tileY) / maxY],
+      ['W', tileX / maxX],
+    ];
+    return distanceFromBorder
+      .sort((a, b) => a[1] - b[1])
+      .map(a => a[0]);
+  }
+
+  getRandomEntrySide(tileX, tileY) {
+    // Refactor!
+    const { roadTileId } = this.overlay;
+    const adjTile = (x, y, side) => [x + Dir.asVector(side)[0], y + Dir.asVector(side)[1]];
+    const isRoad = (x, y) => this.overlay.city.map.get(x, y) === roadTileId;
+
+    const directions = this.getPreferredDirections(tileX, tileY);
+    return directions.find(d => isRoad(...adjTile(tileX, tileY, Dir.opposite(d))));
+  }
+
+  getRandomTexture(tileX, tileY) {
+    // Improve
+    const textures = [
+      this.overlay.textures.car001,
+      this.overlay.textures.car002,
+      this.overlay.textures.car003,
+      this.overlay.textures.car003,
+      this.overlay.textures.car004,
+      this.overlay.textures.car006,
+      this.overlay.textures.car007,
+    ];
+
+    return textures[Math.floor(Math.random() * textures.length)];
+  }
+
+  getRandomLane() {
+    return (Math.random() < 0.5) ? RoadTile.OUTER_LANE : RoadTile.INNER_LANE;
+  }
+
+  spawn() {
+    const tile = this.getRandomTile();
+    if (tile) {
+      const entrySide = this.getRandomEntrySide(tile.x, tile.y);
+      const texture = this.getRandomTexture(tile.x, tile.y);
+      const lane = this.getRandomLane();
+
+      this.overlay.addCar(new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane));
+    }
+  }
+
+  animate(time) {
+    this.throttleTimer += time;
+    if (this.throttleTimer > THROTTLE_TIME) {
+      this.throttleTimer %= THROTTLE_TIME;
+      this.maybeSpawn();
+    }
+  }
+}
+
+module.exports = CarSpawner;
 
 
 /***/ }),
@@ -7717,7 +7877,9 @@ fetch('./config.yml', { cache: 'no-store' })
       mapEditor.displayObject.x = 0;
       mapEditor.displayObject.y = 0;
 
-      const carOverlay = new CarOverlay(mapEditor.mapView, config, textures);
+      const carOverlay = new CarOverlay(mapEditor.mapView, config, textures, {
+        spawn: !testScenario,
+      });
       app.ticker.add(time => carOverlay.animate(time));
 
       const varViewer = new VariableView(emissions);
@@ -7746,4 +7908,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.501a4239c40e4d6be0b4.js.map
+//# sourceMappingURL=default.d89ea344fc75c247e6ac.js.map

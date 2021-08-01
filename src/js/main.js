@@ -65,7 +65,9 @@ fetch('./config.yml', { cache: 'no-store' })
       mapEditor.displayObject.x = 0;
       mapEditor.displayObject.y = 0;
 
-      const carOverlay = new CarOverlay(mapEditor.mapView, config, textures);
+      const carOverlay = new CarOverlay(mapEditor.mapView, config, textures, {
+        spawn: !testScenario,
+      });
       app.ticker.add(time => carOverlay.animate(time));
 
       const varViewer = new VariableView(emissions);
