@@ -198,6 +198,9 @@ class Car {
         .getPosition()
         .distance(position) - overlapDistance;
       if (distanceToCarInFront < 0) {
+        // Using just the distance generates false positives when the cars are ortogonal to each
+        // other. The test can be improved by testing sprite overlap through PIXI.Sprite.getBounds
+        // ... but maybe it should be done after moving the sprite.
         shouldFade = true;
       }
       if (distanceToCarInFront <= this.safeDistance) {
