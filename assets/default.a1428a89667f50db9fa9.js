@@ -5653,6 +5653,7 @@ module.exports = CarOverlay;
 
 const Car = __webpack_require__(/*! ../cars/car */ "./src/js/cars/car.js");
 const RoadTile = __webpack_require__(/*! ../cars/road-tile */ "./src/js/cars/road-tile.js");
+const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
 
 const THROTTLE_TIME = 57; // Number of frames it waits before running the maybeSpawn function
 const SPAWN_PROBABILITY = 0.5;
@@ -5700,7 +5701,9 @@ class CarSpawner {
 
   getRandomEntrySide(tileX, tileY) {
     const validDirections = this.overlay.roads.adjRoadDirs(tileX, tileY);
-    return this.getPreferredDirections(tileX, tileY).find(d => validDirections.includes(d));
+    return validDirections.length === 1
+      ? Dir.opposite(validDirections[0])
+      : this.getPreferredDirections(tileX, tileY).find(d => validDirections.includes(d));
   }
 
   getRandomTexture(tileX, tileY) {
@@ -5729,6 +5732,7 @@ class CarSpawner {
       const texture = this.getRandomTexture(tile.x, tile.y);
       const lane = this.getRandomLane();
 
+      console.log(`Spawning at ${tile.x}, ${tile.y}`);
       this.overlay.addCar(new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane));
     }
   }
@@ -7943,4 +7947,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.2dc355718477599c9a5f.js.map
+//# sourceMappingURL=default.a1428a89667f50db9fa9.js.map
