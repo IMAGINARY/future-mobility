@@ -68,6 +68,12 @@ class CarSpawner {
     return textures[Math.floor(Math.random() * textures.length)];
   }
 
+  getRandomMaxSpeed(lane) {
+    return lane === RoadTile.OUTER_LANE
+      ? 0.6 + Math.random() * 0.6
+      : 0.8 + Math.random() * 0.6;
+  }
+
   getRandomLane() {
     return (Math.random() < 0.5) ? RoadTile.OUTER_LANE : RoadTile.INNER_LANE;
   }
@@ -78,8 +84,9 @@ class CarSpawner {
       const entrySide = this.getRandomEntrySide(tile.x, tile.y);
       const texture = this.getRandomTexture(tile.x, tile.y);
       const lane = this.getRandomLane();
+      const maxSpeed = this.getRandomMaxSpeed(lane);
 
-      this.overlay.addCar(new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane));
+      this.overlay.addCar(new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed));
     }
   }
 

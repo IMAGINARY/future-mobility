@@ -5722,6 +5722,12 @@ class CarSpawner {
     return textures[Math.floor(Math.random() * textures.length)];
   }
 
+  getRandomMaxSpeed(lane) {
+    return lane === RoadTile.OUTER_LANE
+      ? 0.6 + Math.random() * 0.6
+      : 0.8 + Math.random() * 0.6;
+  }
+
   getRandomLane() {
     return (Math.random() < 0.5) ? RoadTile.OUTER_LANE : RoadTile.INNER_LANE;
   }
@@ -5732,8 +5738,9 @@ class CarSpawner {
       const entrySide = this.getRandomEntrySide(tile.x, tile.y);
       const texture = this.getRandomTexture(tile.x, tile.y);
       const lane = this.getRandomLane();
+      const maxSpeed = this.getRandomMaxSpeed(lane);
 
-      this.overlay.addCar(new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane));
+      this.overlay.addCar(new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed));
     }
   }
 
@@ -5773,17 +5780,20 @@ const LIGHT_CHANGE_DELAY = [300, 800];
 const MAX_LIFETIME = 2 * 60 * 60; // Approx. 2 minutes
 
 class Car {
-  constructor(carOverlay, texture, tileX, tileY, entrySide, lane) {
+  constructor(carOverlay, texture, tileX, tileY, entrySide, lane, maxSpeed = 1) {
     this.overlay = carOverlay;
     this.lane = lane;
-    this.maxSpeed = 1;
-    this.speed = 1;
+    this.maxSpeed = maxSpeed;
+    this.speed = maxSpeed;
     this.inRedLight = false;
     this.sprite = Car.createSprite(texture);
     this.fader = new SpriteFader(this.sprite);
     this.fader.fadeIn();
     this.lifetime = 0;
     this.killed = false;
+    this.carDistanceFactor = 1 + Math.random() * 0.6;
+    this.safeDistance = SAFE_DISTANCE * this.carDistanceFactor;
+    this.slowdownDistance = SLOWDOWN_DISTANCE * this.carDistanceFactor;
 
     this.setTile(tileX, tileY, entrySide);
 
@@ -5956,10 +5966,10 @@ class Car {
       if (distanceToCarInFront < 0) {
         shouldFade = true;
       }
-      if (distanceToCarInFront <= SAFE_DISTANCE) {
+      if (distanceToCarInFront <= this.safeDistance) {
         this.speed = 0;
-      } else if (distanceToCarInFront <= SLOWDOWN_DISTANCE) {
-        this.speed = this.maxSpeed * (1 - SAFE_DISTANCE / distanceToCarInFront);
+      } else if (distanceToCarInFront <= this.slowdownDistance) {
+        this.speed = this.maxSpeed * (1 - this.safeDistance / distanceToCarInFront);
       } else if (this.speed < this.maxSpeed) {
         this.speed = Math.min(this.speed + this.maxSpeed / 5, this.maxSpeed);
       }
@@ -7958,4 +7968,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.04eb6cda112134c15051.js.map
+//# sourceMappingURL=default.7a1e727c0e1cfd65d784.js.map
