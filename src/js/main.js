@@ -67,6 +67,7 @@ fetch('./config.yml', { cache: 'no-store' })
 
       const carOverlay = new CarOverlay(mapEditor.mapView, config, textures, {
         spawn: !testScenario,
+        maxLifetime: !testScenario,
       });
       app.ticker.add(time => carOverlay.animate(time));
 

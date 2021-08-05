@@ -28,7 +28,7 @@ class SpriteFader {
       if (this.endAlpha !== null) {
         this.callback = callback;
       } else {
-        callback();
+        setTimeout(() => { callback(); }, 0);
       }
     }
   }
@@ -43,7 +43,7 @@ class SpriteFader {
 
   onFadeEnd() {
     if (this.callback) {
-      this.callback();
+      setTimeout(() => { this.callback(); }, 0);
     }
     this.startAlpha = null;
     this.endAlpha = null;

@@ -10,6 +10,8 @@ const SAFE_DISTANCE = TILE_SIZE / 20;
 // Distance at which a car begins to slow down when there's another in front
 const SLOWDOWN_DISTANCE = TILE_SIZE / 3;
 const LIGHT_CHANGE_DELAY = [300, 800];
+// Max lifetime of cars
+const MAX_LIFETIME = 2 * 60 * 60; // Approx. 2 minutes
 
 class Car {
   constructor(carOverlay, texture, tileX, tileY, entrySide, lane) {
@@ -21,6 +23,7 @@ class Car {
     this.sprite = Car.createSprite(texture);
     this.fader = new SpriteFader(this.sprite);
     this.fader.fadeIn();
+    this.lifetime = 0;
     this.killed = false;
 
     this.setTile(tileX, tileY, entrySide);
@@ -70,6 +73,7 @@ class Car {
     if (!this.killed) {
       this.killed = true;
       this.fader.fadeOut(() => {
+        this.overlay.onCarExitTile(this, this.tile.x, this.tile.y);
         this.overlay.onCarExitMap(this);
       });
     }
@@ -170,6 +174,8 @@ class Car {
   }
 
   animate(time) {
+    this.lifetime += time;
+
     let shouldFade = false;
     const position = this.getPosition();
     const shortestAngle = angle => (Math.abs(angle) > Math.PI
@@ -224,6 +230,10 @@ class Car {
       if (newPosition.equal(this.exitPoint)) {
         this.onExitTile();
       }
+    }
+
+    if (this.lifetime > MAX_LIFETIME && this.overlay.options.maxLifetime) {
+      this.kill();
     }
 
     // This initial check to see if the car was killed is only needed because the car

@@ -5497,7 +5497,7 @@ class SpriteFader {
       if (this.endAlpha !== null) {
         this.callback = callback;
       } else {
-        callback();
+        setTimeout(() => { callback(); }, 0);
       }
     }
   }
@@ -5512,7 +5512,7 @@ class SpriteFader {
 
   onFadeEnd() {
     if (this.callback) {
-      this.callback();
+      setTimeout(() => { this.callback(); }, 0);
     }
     this.startAlpha = null;
     this.endAlpha = null;
@@ -5637,7 +5637,8 @@ class CarOverlay {
 }
 
 CarOverlay.defaultOptions = {
-  spawn: true,
+  spawn: true, // If true cars will spawn automatically
+  maxLifetime: true, // If true cars will be killed after some time
 };
 
 module.exports = CarOverlay;
@@ -5732,7 +5733,6 @@ class CarSpawner {
       const texture = this.getRandomTexture(tile.x, tile.y);
       const lane = this.getRandomLane();
 
-      console.log(`Spawning at ${tile.x}, ${tile.y}`);
       this.overlay.addCar(new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane));
     }
   }
@@ -5769,6 +5769,8 @@ const SAFE_DISTANCE = TILE_SIZE / 20;
 // Distance at which a car begins to slow down when there's another in front
 const SLOWDOWN_DISTANCE = TILE_SIZE / 3;
 const LIGHT_CHANGE_DELAY = [300, 800];
+// Max lifetime of cars
+const MAX_LIFETIME = 2 * 60 * 60; // Approx. 2 minutes
 
 class Car {
   constructor(carOverlay, texture, tileX, tileY, entrySide, lane) {
@@ -5780,6 +5782,7 @@ class Car {
     this.sprite = Car.createSprite(texture);
     this.fader = new SpriteFader(this.sprite);
     this.fader.fadeIn();
+    this.lifetime = 0;
     this.killed = false;
 
     this.setTile(tileX, tileY, entrySide);
@@ -5829,6 +5832,7 @@ class Car {
     if (!this.killed) {
       this.killed = true;
       this.fader.fadeOut(() => {
+        this.overlay.onCarExitTile(this, this.tile.x, this.tile.y);
         this.overlay.onCarExitMap(this);
       });
     }
@@ -5929,6 +5933,8 @@ class Car {
   }
 
   animate(time) {
+    this.lifetime += time;
+
     let shouldFade = false;
     const position = this.getPosition();
     const shortestAngle = angle => (Math.abs(angle) > Math.PI
@@ -5983,6 +5989,10 @@ class Car {
       if (newPosition.equal(this.exitPoint)) {
         this.onExitTile();
       }
+    }
+
+    if (this.lifetime > MAX_LIFETIME && this.overlay.options.maxLifetime) {
+      this.kill();
     }
 
     // This initial check to see if the car was killed is only needed because the car
@@ -7918,6 +7928,7 @@ fetch('./config.yml', { cache: 'no-store' })
 
       const carOverlay = new CarOverlay(mapEditor.mapView, config, textures, {
         spawn: !testScenario,
+        maxLifetime: !testScenario,
       });
       app.ticker.add(time => carOverlay.animate(time));
 
@@ -7947,4 +7958,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.a1428a89667f50db9fa9.js.map
+//# sourceMappingURL=default.04eb6cda112134c15051.js.map

@@ -79,7 +79,6 @@ class CarSpawner {
       const texture = this.getRandomTexture(tile.x, tile.y);
       const lane = this.getRandomLane();
 
-      console.log(`Spawning at ${tile.x}, ${tile.y}`);
       this.overlay.addCar(new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane));
     }
   }

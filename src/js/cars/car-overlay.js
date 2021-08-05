@@ -90,7 +90,8 @@ class CarOverlay {
 }
 
 CarOverlay.defaultOptions = {
-  spawn: true,
+  spawn: true, // If true cars will spawn automatically
+  maxLifetime: true, // If true cars will be killed after some time
 };
 
 module.exports = CarOverlay;
