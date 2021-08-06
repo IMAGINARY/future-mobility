@@ -36,59 +36,6 @@ h2 {
     background-color: #4a4a4a;
     border: 1px solid #fff; }
 
-[data-road-connectivity] {
-  background-position: center center;
-  background-size: cover;
-  background-repeat: no-repeat; }
-
-[data-road-connectivity='0000'] {
-  background-image: url(1a8456203b87386408d8.png); }
-
-[data-road-connectivity='0001'] {
-  background-image: url(84ec50c0265be4befbfc.png); }
-
-[data-road-connectivity='0010'] {
-  background-image: url(80ee4438210070dfc287.png); }
-
-[data-road-connectivity='0011'] {
-  background-image: url(4b03a65970e618f9328e.png); }
-
-[data-road-connectivity='0100'] {
-  background-image: url(da06ed83a3ce0389b676.png); }
-
-[data-road-connectivity='0101'] {
-  background-image: url(b700faa8ced1ba0f3874.png); }
-
-[data-road-connectivity='0110'] {
-  background-image: url(3d8c7cc6d5c792dc81bf.png); }
-
-[data-road-connectivity='0111'] {
-  background-image: url(e8742869d0c8a14848d8.png); }
-
-[data-road-connectivity='1000'] {
-  background-image: url(4fa20d3ef133f4e628d8.png); }
-
-[data-road-connectivity='1001'] {
-  background-image: url(99436b515e0c408ed029.png); }
-
-[data-road-connectivity='1010'] {
-  background-image: url(8d2ad6977fab48071782.png); }
-
-[data-road-connectivity='1011'] {
-  background-image: url(6c749a80ab22075a538b.png); }
-
-[data-road-connectivity='1100'] {
-  background-image: url(098caf0e2dfc28b9cd84.png); }
-
-[data-road-connectivity='1101'] {
-  background-image: url(4856a088fedc150f4e21.png); }
-
-[data-road-connectivity='1110'] {
-  background-image: url(38dbdfc9a02dd9a47494.png); }
-
-[data-road-connectivity='1111'] {
-  background-image: url(b80a83d5c965a0c18254.png); }
-
 .variable-view {
   width: 100%;
   height: 100%;
@@ -265,4 +212,4 @@ body > .tile-counter {
   top: 5px; }
 
 
-/*# sourceMappingURL=city.559c40c99c967cfd1b31.css.map*/
+/*# sourceMappingURL=editor.5cc5cd435ade56fc41dd.css.map*/

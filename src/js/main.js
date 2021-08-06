@@ -4,7 +4,6 @@ const City = require('./city');
 const EmissionsVariable = require('./emissions-variable');
 const MapEditor = require('./editor/map-editor');
 const VariableView = require('./variable-view');
-const RoadTextures = require('./textures-roads');
 const CarTextures = require('./textures-cars');
 const CarOverlay = require('./cars/car-overlay');
 const TileCounterView = require('./tile-counter-view');
@@ -35,9 +34,9 @@ fetch('./config.yml', { cache: 'no-store' })
       height: 1920,
       backgroundColor: 0xf2f2f2,
     });
-    Object.entries(RoadTextures).forEach(([id, path]) => {
-      app.loader.add(id, path);
-    });
+    // Add a pre-load middleware that does cache-busting
+    app.loader.pre((resource, next) => { resource.url += `?t=${Date.now()}`; next(); });
+    app.loader.add('./textures/road-textures.json');
     Object.entries(CarTextures).forEach(([id, path]) => {
       app.loader.add(id, path);
     });
@@ -45,9 +44,7 @@ fetch('./config.yml', { cache: 'no-store' })
       $('[data-component="app-container"]').append(app.view);
       const textures = Object.assign(
         {},
-        Object.fromEntries(
-          Object.entries(RoadTextures).map(([id]) => [id, resources[id].texture])
-        ),
+        resources['./textures/road-textures.json'].textures,
         Object.fromEntries(
           Object.entries(CarTextures).map(([id]) => [id, resources[id].texture])
         )

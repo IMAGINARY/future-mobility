@@ -15,26 +15,3 @@
     border: 1px solid #fff;
   }
 }
-
-[data-road-connectivity] {
-  background-position: center center;
-  background-size: cover;
-  background-repeat: no-repeat;
-}
-
-[data-road-connectivity='0000'] { background-image: url('../../static/tiles/road-0000.png'); }
-[data-road-connectivity='0001'] { background-image: url('../../static/tiles/road-0001.png'); }
-[data-road-connectivity='0010'] { background-image: url('../../static/tiles/road-0010.png'); }
-[data-road-connectivity='0011'] { background-image: url('../../static/tiles/road-0011.png'); }
-[data-road-connectivity='0100'] { background-image: url('../../static/tiles/road-0100.png'); }
-[data-road-connectivity='0101'] { background-image: url('../../static/tiles/road-0101.png'); }
-[data-road-connectivity='0110'] { background-image: url('../../static/tiles/road-0110.png'); }
-[data-road-connectivity='0111'] { background-image: url('../../static/tiles/road-0111.png'); }
-[data-road-connectivity='1000'] { background-image: url('../../static/tiles/road-1000.png'); }
-[data-road-connectivity='1001'] { background-image: url('../../static/tiles/road-1001.png'); }
-[data-road-connectivity='1010'] { background-image: url('../../static/tiles/road-1010.png'); }
-[data-road-connectivity='1011'] { background-image: url('../../static/tiles/road-1011.png'); }
-[data-road-connectivity='1100'] { background-image: url('../../static/tiles/road-1100.png'); }
-[data-road-connectivity='1101'] { background-image: url('../../static/tiles/road-1101.png'); }
-[data-road-connectivity='1110'] { background-image: url('../../static/tiles/road-1110.png'); }
-[data-road-connectivity='1111'] { background-image: url('../../static/tiles/road-1111.png'); }

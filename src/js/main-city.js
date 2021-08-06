@@ -2,7 +2,6 @@
 const City = require('./city');
 const MapView = require('./map-view');
 require('../sass/default.scss');
-const RoadTextures = require('./textures-roads');
 const ServerSocketConnector = require('./server-socket-connector');
 const ConnectionStateView = require('./connection-state-view');
 const showFatalError = require('./aux/show-fatal-error');
@@ -17,13 +16,15 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
       height: 1920,
       backgroundColor: 0xf2f2f2,
     });
-    Object.entries(RoadTextures).forEach(([id, path]) => {
-      app.loader.add(id, path);
-    });
+    const roadTextureAtlas = './textures/road-textures.json';
+    // Add a pre-load middleware that does cache-busting
+    app.loader.pre((resource, next) => { resource.url += `?t=${Date.now()}`; next(); });
+    app.loader.add(roadTextureAtlas);
     app.loader.load((loader, resources) => {
       $('[data-component="app-container"]').append(app.view);
-      const textures = Object.fromEntries(
-        Object.entries(RoadTextures).map(([id]) => [id, resources[id].texture])
+      const textures = Object.assign(
+        {},
+        resources[roadTextureAtlas].textures,
       );
 
       // Change the scaling mode for the road textures

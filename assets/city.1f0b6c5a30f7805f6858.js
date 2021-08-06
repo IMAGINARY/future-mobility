@@ -1322,53 +1322,6 @@ module.exports = ServerSocketConnector;
 
 /***/ }),
 
-/***/ "./src/js/textures-roads.js":
-/*!**********************************!*\
-  !*** ./src/js/textures-roads.js ***!
-  \**********************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const road0000 = __webpack_require__(/*! ../../static/tiles/road-0000.png */ "./static/tiles/road-0000.png");
-const road0001 = __webpack_require__(/*! ../../static/tiles/road-0001.png */ "./static/tiles/road-0001.png");
-const road0010 = __webpack_require__(/*! ../../static/tiles/road-0010.png */ "./static/tiles/road-0010.png");
-const road0011 = __webpack_require__(/*! ../../static/tiles/road-0011.png */ "./static/tiles/road-0011.png");
-const road0100 = __webpack_require__(/*! ../../static/tiles/road-0100.png */ "./static/tiles/road-0100.png");
-const road0101 = __webpack_require__(/*! ../../static/tiles/road-0101.png */ "./static/tiles/road-0101.png");
-const road0110 = __webpack_require__(/*! ../../static/tiles/road-0110.png */ "./static/tiles/road-0110.png");
-const road0111 = __webpack_require__(/*! ../../static/tiles/road-0111.png */ "./static/tiles/road-0111.png");
-const road1000 = __webpack_require__(/*! ../../static/tiles/road-1000.png */ "./static/tiles/road-1000.png");
-const road1001 = __webpack_require__(/*! ../../static/tiles/road-1001.png */ "./static/tiles/road-1001.png");
-const road1010 = __webpack_require__(/*! ../../static/tiles/road-1010.png */ "./static/tiles/road-1010.png");
-const road1011 = __webpack_require__(/*! ../../static/tiles/road-1011.png */ "./static/tiles/road-1011.png");
-const road1100 = __webpack_require__(/*! ../../static/tiles/road-1100.png */ "./static/tiles/road-1100.png");
-const road1101 = __webpack_require__(/*! ../../static/tiles/road-1101.png */ "./static/tiles/road-1101.png");
-const road1110 = __webpack_require__(/*! ../../static/tiles/road-1110.png */ "./static/tiles/road-1110.png");
-const road1111 = __webpack_require__(/*! ../../static/tiles/road-1111.png */ "./static/tiles/road-1111.png");
-
-const RoadTextures = {
-  road0000,
-  road0001,
-  road0010,
-  road0011,
-  road0100,
-  road0101,
-  road0110,
-  road0111,
-  road1000,
-  road1001,
-  road1010,
-  road1011,
-  road1100,
-  road1101,
-  road1110,
-  road1111,
-};
-
-module.exports = RoadTextures;
-
-
-/***/ }),
-
 /***/ "./static/fa/pencil-alt-solid.svg":
 /*!****************************************!*\
   !*** ./static/fa/pencil-alt-solid.svg ***!
@@ -1377,182 +1330,6 @@ module.exports = RoadTextures;
 
 "use strict";
 module.exports = __webpack_require__.p + "2174451d87ee3f5a3181.svg";
-
-/***/ }),
-
-/***/ "./static/tiles/road-0000.png":
-/*!************************************!*\
-  !*** ./static/tiles/road-0000.png ***!
-  \************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "1a8456203b87386408d8.png";
-
-/***/ }),
-
-/***/ "./static/tiles/road-0001.png":
-/*!************************************!*\
-  !*** ./static/tiles/road-0001.png ***!
-  \************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "84ec50c0265be4befbfc.png";
-
-/***/ }),
-
-/***/ "./static/tiles/road-0010.png":
-/*!************************************!*\
-  !*** ./static/tiles/road-0010.png ***!
-  \************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "80ee4438210070dfc287.png";
-
-/***/ }),
-
-/***/ "./static/tiles/road-0011.png":
-/*!************************************!*\
-  !*** ./static/tiles/road-0011.png ***!
-  \************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "4b03a65970e618f9328e.png";
-
-/***/ }),
-
-/***/ "./static/tiles/road-0100.png":
-/*!************************************!*\
-  !*** ./static/tiles/road-0100.png ***!
-  \************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "da06ed83a3ce0389b676.png";
-
-/***/ }),
-
-/***/ "./static/tiles/road-0101.png":
-/*!************************************!*\
-  !*** ./static/tiles/road-0101.png ***!
-  \************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "b700faa8ced1ba0f3874.png";
-
-/***/ }),
-
-/***/ "./static/tiles/road-0110.png":
-/*!************************************!*\
-  !*** ./static/tiles/road-0110.png ***!
-  \************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "3d8c7cc6d5c792dc81bf.png";
-
-/***/ }),
-
-/***/ "./static/tiles/road-0111.png":
-/*!************************************!*\
-  !*** ./static/tiles/road-0111.png ***!
-  \************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "e8742869d0c8a14848d8.png";
-
-/***/ }),
-
-/***/ "./static/tiles/road-1000.png":
-/*!************************************!*\
-  !*** ./static/tiles/road-1000.png ***!
-  \************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "4fa20d3ef133f4e628d8.png";
-
-/***/ }),
-
-/***/ "./static/tiles/road-1001.png":
-/*!************************************!*\
-  !*** ./static/tiles/road-1001.png ***!
-  \************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "99436b515e0c408ed029.png";
-
-/***/ }),
-
-/***/ "./static/tiles/road-1010.png":
-/*!************************************!*\
-  !*** ./static/tiles/road-1010.png ***!
-  \************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "8d2ad6977fab48071782.png";
-
-/***/ }),
-
-/***/ "./static/tiles/road-1011.png":
-/*!************************************!*\
-  !*** ./static/tiles/road-1011.png ***!
-  \************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "6c749a80ab22075a538b.png";
-
-/***/ }),
-
-/***/ "./static/tiles/road-1100.png":
-/*!************************************!*\
-  !*** ./static/tiles/road-1100.png ***!
-  \************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "098caf0e2dfc28b9cd84.png";
-
-/***/ }),
-
-/***/ "./static/tiles/road-1101.png":
-/*!************************************!*\
-  !*** ./static/tiles/road-1101.png ***!
-  \************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "4856a088fedc150f4e21.png";
-
-/***/ }),
-
-/***/ "./static/tiles/road-1110.png":
-/*!************************************!*\
-  !*** ./static/tiles/road-1110.png ***!
-  \************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "38dbdfc9a02dd9a47494.png";
-
-/***/ }),
-
-/***/ "./static/tiles/road-1111.png":
-/*!************************************!*\
-  !*** ./static/tiles/road-1111.png ***!
-  \************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "b80a83d5c965a0c18254.png";
 
 /***/ })
 
@@ -1637,7 +1414,6 @@ var __webpack_exports__ = {};
 const City = __webpack_require__(/*! ./city */ "./src/js/city.js");
 const MapView = __webpack_require__(/*! ./map-view */ "./src/js/map-view.js");
 __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
-const RoadTextures = __webpack_require__(/*! ./textures-roads */ "./src/js/textures-roads.js");
 const ServerSocketConnector = __webpack_require__(/*! ./server-socket-connector */ "./src/js/server-socket-connector.js");
 const ConnectionStateView = __webpack_require__(/*! ./connection-state-view */ "./src/js/connection-state-view.js");
 const showFatalError = __webpack_require__(/*! ./aux/show-fatal-error */ "./src/js/aux/show-fatal-error.js");
@@ -1652,13 +1428,15 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
       height: 1920,
       backgroundColor: 0xf2f2f2,
     });
-    Object.entries(RoadTextures).forEach(([id, path]) => {
-      app.loader.add(id, path);
-    });
+    const roadTextureAtlas = './textures/road-textures.json';
+    // Add a pre-load middleware that does cache-busting
+    app.loader.pre((resource, next) => { resource.url += `?t=${Date.now()}`; next(); });
+    app.loader.add(roadTextureAtlas);
     app.loader.load((loader, resources) => {
       $('[data-component="app-container"]').append(app.view);
-      const textures = Object.fromEntries(
-        Object.entries(RoadTextures).map(([id]) => [id, resources[id].texture])
+      const textures = Object.assign(
+        {},
+        resources[roadTextureAtlas].textures,
       );
 
       // Change the scaling mode for the road textures
@@ -1695,4 +1473,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.ddc713be59a23beeaa80.js.map
+//# sourceMappingURL=city.1f0b6c5a30f7805f6858.js.map
