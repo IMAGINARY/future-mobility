@@ -31,7 +31,7 @@ class CarOverlay {
     this.trafficLights = Array2D.create(this.city.map.width, this.city.map.height, null);
     Array2D.fill(this.trafficLights, () => new TrafficLights());
 
-    this.spawner = this.options.spawn ? new CarSpawner(this) : null;
+    this.spawner = this.options.spawn ? new CarSpawner(this, this.config) : null;
   }
 
   addCar(aCar) {

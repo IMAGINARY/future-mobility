@@ -1,15 +1,20 @@
 const Car = require('../cars/car');
 const RoadTile = require('../cars/road-tile');
 const Dir = require('../aux/cardinal-directions');
+const { weightedRandomizer } = require('../aux/random');
 
 const THROTTLE_TIME = 57; // Number of frames it waits before running the maybeSpawn function
 const SPAWN_PROBABILITY = 0.5;
 const CARS_PER_ROAD = 0.5;
 
 class CarSpawner {
-  constructor(carOverlay) {
+  constructor(carOverlay, config) {
     this.overlay = carOverlay;
+    this.config = config;
     this.city = carOverlay.city;
+    this.carRandomizer = weightedRandomizer(
+      Object.entries(this.config.carTypes).map(([id, props]) => [id, props.frequency || 1])
+    );
 
     this.throttleTimer = Math.random() * THROTTLE_TIME;
   }
@@ -53,25 +58,12 @@ class CarSpawner {
       : this.getPreferredDirections(tileX, tileY).find(d => validDirections.includes(d));
   }
 
-  getRandomTexture(tileX, tileY) {
-    // Improve
-    const textures = [
-      this.overlay.textures.car001,
-      this.overlay.textures.car002,
-      this.overlay.textures.car003,
-      this.overlay.textures.car003,
-      this.overlay.textures.car004,
-      this.overlay.textures.car006,
-      this.overlay.textures.car007,
-    ];
-
-    return textures[Math.floor(Math.random() * textures.length)];
-  }
-
-  getRandomMaxSpeed(lane) {
+  getRandomMaxSpeed(carType, lane) {
+    const base = this.config.carTypes[carType].maxSpeed || 1;
+    const deviation = Math.random() * 0.4 - 0.2;
     return lane === RoadTile.OUTER_LANE
-      ? 0.6 + Math.random() * 0.6
-      : 0.8 + Math.random() * 0.6;
+      ? base * 0.8 + deviation
+      : base + deviation;
   }
 
   getRandomLane() {
@@ -82,9 +74,10 @@ class CarSpawner {
     const tile = this.getRandomTile();
     if (tile) {
       const entrySide = this.getRandomEntrySide(tile.x, tile.y);
-      const texture = this.getRandomTexture(tile.x, tile.y);
+      const carType = this.carRandomizer();
+      const texture = this.overlay.textures[carType];
       const lane = this.getRandomLane();
-      const maxSpeed = this.getRandomMaxSpeed(lane);
+      const maxSpeed = this.getRandomMaxSpeed(carType, lane);
 
       this.overlay.addCar(new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed));
     }

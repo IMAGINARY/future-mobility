@@ -39,3 +39,26 @@ tileTypes:
     name: Water
     color: '#32d3c2'
     editorIcon: 'static/fa/water-solid.svg'
+carTypes:
+  car-blue:
+    maxSpeed: 1
+    frequency: 1
+  car-white:
+    maxSpeed: 1.2
+    frequency: 0.5
+  car-red:
+    maxSpeed: 1.1
+    frequency: 1
+  truck-white:
+    maxSpeed: 0.85
+    frequency: 0.2
+  pickup-aqua:
+    maxSpeed: 1
+    frequency: 0.5
+  van-white:
+    maxSpeed: 1
+    frequency: 0.7
+  bus-yellow:
+    maxSpeed: 0.9
+    frequency: 0.3
+

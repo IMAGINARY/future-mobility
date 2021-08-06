@@ -4,10 +4,8 @@ const City = require('./city');
 const EmissionsVariable = require('./emissions-variable');
 const MapEditor = require('./editor/map-editor');
 const VariableView = require('./variable-view');
-const CarTextures = require('./textures-cars');
 const CarOverlay = require('./cars/car-overlay');
 const TileCounterView = require('./tile-counter-view');
-const Cities = require('../../cities.json');
 const TestScenarios = require('./test/scenarios');
 const showFatalError = require('./aux/show-fatal-error');
 require('../sass/default.scss');
@@ -37,17 +35,13 @@ fetch('./config.yml', { cache: 'no-store' })
     // Add a pre-load middleware that does cache-busting
     app.loader.pre((resource, next) => { resource.url += `?t=${Date.now()}`; next(); });
     app.loader.add('./textures/road-textures.json');
-    Object.entries(CarTextures).forEach(([id, path]) => {
-      app.loader.add(id, path);
-    });
+    app.loader.add('./textures/car-textures.json');
     app.loader.load((loader, resources) => {
       $('[data-component="app-container"]').append(app.view);
       const textures = Object.assign(
         {},
         resources['./textures/road-textures.json'].textures,
-        Object.fromEntries(
-          Object.entries(CarTextures).map(([id]) => [id, resources[id].texture])
-        )
+        resources['./textures/car-textures.json'].textures,
       );
 
       // Change the scaling mode for the road textures

@@ -1,17 +1,6 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./cities.json":
-/*!*********************!*\
-  !*** ./cities.json ***!
-  \*********************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = JSON.parse('{"cities":[{"map":["3","3","5","3","1","2","2","4","4","2","2","1","3","5","3","3","3","5","3","5","1","2","2","4","4","2","2","1","5","3","5","3","5","3","5","3","1","2","2","4","4","2","2","1","3","5","3","5","3","5","3","1","1","1","2","4","4","2","1","1","1","3","5","3","1","1","1","1","5","1","1","1","1","1","1","5","1","1","1","1","2","2","2","1","1","2","2","4","4","2","2","1","1","2","2","2","5","5","5","5","1","5","5","5","5","5","5","1","5","5","5","5","6","6","6","6","1","6","6","6","6","6","6","1","6","6","6","6","6","6","6","6","1","6","6","6","6","6","6","1","6","6","6","6","5","5","5","5","1","5","5","5","5","5","5","1","5","5","5","5","2","2","2","1","1","2","2","4","4","2","2","1","1","2","2","2","1","1","1","1","5","1","1","1","1","1","1","5","1","1","1","1","3","5","3","1","1","1","2","4","4","2","1","1","1","3","5","3","5","3","5","3","1","2","2","4","4","2","2","1","3","5","3","5","3","5","3","5","1","2","2","4","4","2","2","1","5","3","5","3","3","3","5","3","1","2","2","4","4","2","2","1","3","5","3","3"]},{"map":["3","3","3","1","5","5","5","1","4","4","4","4","4","2","2","2","3","3","3","1","5","5","5","1","4","4","4","4","4","2","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","2","2","2","2","1","2","2","2","1","2","2","2","2","1","2","2","2","2","2","2","1","2","2","2","1","2","2","2","2","1","2","6","6","5","5","5","1","2","2","2","1","5","5","6","6","1","6","6","6","6","6","6","1","6","6","6","1","6","6","6","4","1","5","5","6","6","6","6","1","6","6","6","1","6","6","5","5","1","4","4","5","6","6","6","1","6","6","6","1","6","6","6","6","1","5","5","6","5","5","5","1","5","5","5","1","5","5","5","6","1","6","6","6","4","4","4","1","4","4","4","1","4","4","4","4","1","5","5","5","1","1","1","1","1","1","1","1","1","4","4","4","1","2","2","2","5","5","5","1","4","4","4","4","1","1","1","1","1","1","1","1","3","3","3","1","4","4","4","4","5","5","1","2","2","2","2","2","3","3","3","1","3","3","3","3","3","5","1","2","2","2","2","2","3","3","3","1","3","3","3","3","3","5","1","2","2","2","2","2"]},{"map":["3","3","1","4","4","1","4","4","1","4","4","1","4","4","1","3","3","3","1","4","4","1","4","4","1","4","4","1","4","4","1","3","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","5","5","1","2","2","1","2","2","1","2","2","1","2","2","1","5","5","5","1","2","2","1","2","2","1","2","2","1","2","2","1","5","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","3","3","1","5","5","1","2","2","1","2","2","1","5","5","1","3","3","3","1","5","5","1","2","2","1","2","2","1","5","5","1","3","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","5","5","1","2","2","1","2","2","1","2","2","1","2","2","1","5","5","5","1","2","2","1","2","2","1","2","2","1","2","2","1","5","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","3","3","1","5","5","1","2","2","1","2","2","1","5","5","1","3","3","3","1","5","5","1","2","2","1","2","2","1","5","5","1","3","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","3","3","1","4","4","1","4","4","1","4","4","1","4","4","1","3"]}]}');
-
-/***/ }),
-
 /***/ "./node_modules/events/events.js":
 /*!***************************************!*\
   !*** ./node_modules/events/events.js ***!
@@ -5436,6 +5425,45 @@ module.exports = { getTileTypeId };
 
 /***/ }),
 
+/***/ "./src/js/aux/random.js":
+/*!******************************!*\
+  !*** ./src/js/aux/random.js ***!
+  \******************************/
+/***/ ((module) => {
+
+/**
+ * Create a function that picks an element from a set where each has a probability weight.
+ *
+ * The returned function can be called repeatedly to pick random elements.
+ *
+ * @param {[any, number]} weightedOptions
+ *  An array of options. Each option is an array where the first
+ *  item is the element, and the second is the weight.
+ * @return {function(): any}
+ *  Returns a function that returns a random element.
+ */
+function weightedRandomizer(weightedOptions) {
+  let last = 0;
+  const ranges = new Array(weightedOptions.length);
+  // ranges = [from, to, value]
+  weightedOptions.forEach(([value, weight], i) => {
+    ranges[i] = [last, last + weight, value];
+    last += weight;
+  });
+
+  return () => {
+    const rndP = Math.random() * last;
+    return ranges.find(([min, max]) => rndP > min && rndP < max)[2];
+  };
+}
+
+module.exports = {
+  weightedRandomizer,
+};
+
+
+/***/ }),
+
 /***/ "./src/js/aux/show-fatal-error.js":
 /*!****************************************!*\
   !*** ./src/js/aux/show-fatal-error.js ***!
@@ -5588,7 +5616,7 @@ class CarOverlay {
     this.trafficLights = Array2D.create(this.city.map.width, this.city.map.height, null);
     Array2D.fill(this.trafficLights, () => new TrafficLights());
 
-    this.spawner = this.options.spawn ? new CarSpawner(this) : null;
+    this.spawner = this.options.spawn ? new CarSpawner(this, this.config) : null;
   }
 
   addCar(aCar) {
@@ -5665,15 +5693,20 @@ module.exports = CarOverlay;
 const Car = __webpack_require__(/*! ../cars/car */ "./src/js/cars/car.js");
 const RoadTile = __webpack_require__(/*! ../cars/road-tile */ "./src/js/cars/road-tile.js");
 const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+const { weightedRandomizer } = __webpack_require__(/*! ../aux/random */ "./src/js/aux/random.js");
 
 const THROTTLE_TIME = 57; // Number of frames it waits before running the maybeSpawn function
 const SPAWN_PROBABILITY = 0.5;
 const CARS_PER_ROAD = 0.5;
 
 class CarSpawner {
-  constructor(carOverlay) {
+  constructor(carOverlay, config) {
     this.overlay = carOverlay;
+    this.config = config;
     this.city = carOverlay.city;
+    this.carRandomizer = weightedRandomizer(
+      Object.entries(this.config.carTypes).map(([id, props]) => [id, props.frequency || 1])
+    );
 
     this.throttleTimer = Math.random() * THROTTLE_TIME;
   }
@@ -5717,25 +5750,12 @@ class CarSpawner {
       : this.getPreferredDirections(tileX, tileY).find(d => validDirections.includes(d));
   }
 
-  getRandomTexture(tileX, tileY) {
-    // Improve
-    const textures = [
-      this.overlay.textures.car001,
-      this.overlay.textures.car002,
-      this.overlay.textures.car003,
-      this.overlay.textures.car003,
-      this.overlay.textures.car004,
-      this.overlay.textures.car006,
-      this.overlay.textures.car007,
-    ];
-
-    return textures[Math.floor(Math.random() * textures.length)];
-  }
-
-  getRandomMaxSpeed(lane) {
+  getRandomMaxSpeed(carType, lane) {
+    const base = this.config.carTypes[carType].maxSpeed || 1;
+    const deviation = Math.random() * 0.4 - 0.2;
     return lane === RoadTile.OUTER_LANE
-      ? 0.6 + Math.random() * 0.6
-      : 0.8 + Math.random() * 0.6;
+      ? base * 0.8 + deviation
+      : base + deviation;
   }
 
   getRandomLane() {
@@ -5746,9 +5766,10 @@ class CarSpawner {
     const tile = this.getRandomTile();
     if (tile) {
       const entrySide = this.getRandomEntrySide(tile.x, tile.y);
-      const texture = this.getRandomTexture(tile.x, tile.y);
+      const carType = this.carRandomizer();
+      const texture = this.overlay.textures[carType];
       const lane = this.getRandomLane();
-      const maxSpeed = this.getRandomMaxSpeed(lane);
+      const maxSpeed = this.getRandomMaxSpeed(carType, lane);
 
       this.overlay.addCar(new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed));
     }
@@ -5813,9 +5834,9 @@ class Car {
   static createSprite(texture) {
     const sprite = new PIXI.Sprite();
     sprite.texture = texture;
-    sprite.width = texture.baseTexture.width;
-    sprite.height = texture.baseTexture.height;
-    sprite.roundPixels = true;
+    sprite.width = texture.width;
+    sprite.height = texture.height;
+    // sprite.roundPixels = true;
     sprite.anchor.set(0.5, 0.75);
     sprite.visible = true;
     sprite.alpha = 0;
@@ -7275,25 +7296,25 @@ const RoadTile = __webpack_require__(/*! ../cars/road-tile */ "./src/js/cars/roa
 const Cities = __webpack_require__(/*! ./cities.json */ "./src/js/test/cities.json");
 
 function fiveCars(city, carOverlay) {
-  carOverlay.addCar(new Car(carOverlay, carOverlay.textures.car001, 2, 0, 'N', RoadTile.INNER_LANE));
-  carOverlay.addCar(new Car(carOverlay, carOverlay.textures.car002, 5, 0, 'N', RoadTile.OUTER_LANE));
-  carOverlay.addCar(new Car(carOverlay, carOverlay.textures.car003, 8, 0, 'N', RoadTile.INNER_LANE));
-  carOverlay.addCar(new Car(carOverlay, carOverlay.textures.car004, 11, 0, 'N', RoadTile.OUTER_LANE));
-  carOverlay.addCar(new Car(carOverlay, carOverlay.textures.car005, 14, 0, 'N', RoadTile.INNER_LANE));
+  carOverlay.addCar(new Car(carOverlay, carOverlay.textures['car-white'], 2, 0, 'N', RoadTile.INNER_LANE));
+  carOverlay.addCar(new Car(carOverlay, carOverlay.textures['car-red'], 5, 0, 'N', RoadTile.OUTER_LANE));
+  carOverlay.addCar(new Car(carOverlay, carOverlay.textures['car-blue'], 8, 0, 'N', RoadTile.INNER_LANE));
+  carOverlay.addCar(new Car(carOverlay, carOverlay.textures['van-white'], 11, 0, 'N', RoadTile.OUTER_LANE));
+  carOverlay.addCar(new Car(carOverlay, carOverlay.textures['bus-yellow'], 14, 0, 'N', RoadTile.INNER_LANE));
 }
 
 fiveCars.city = Cities.cities[0];
 
 function carInFront(city, carOverlay) {
-  carOverlay.addCar(new Car(carOverlay, carOverlay.textures.car004, 8, 0, 'N', RoadTile.OUTER_LANE));
-  const obstacle = new Car(carOverlay, carOverlay.textures.car001, 8, 2, 'N', RoadTile.OUTER_LANE);
+  carOverlay.addCar(new Car(carOverlay, carOverlay.textures['car-white'], 8, 0, 'N', RoadTile.OUTER_LANE));
+  const obstacle = new Car(carOverlay, carOverlay.textures['car-red'], 8, 2, 'N', RoadTile.OUTER_LANE);
   window.car = obstacle;
   obstacle.maxSpeed = 0;
   obstacle.speed = 0;
   carOverlay.addCar(obstacle);
 
-  carOverlay.addCar(new Car(carOverlay, carOverlay.textures.car004, 11, 0, 'N', RoadTile.OUTER_LANE));
-  const obstacle2 = new Car(carOverlay, carOverlay.textures.car001, 11, 2, 'N', RoadTile.OUTER_LANE);
+  carOverlay.addCar(new Car(carOverlay, carOverlay.textures['car-white'], 11, 0, 'N', RoadTile.OUTER_LANE));
+  const obstacle2 = new Car(carOverlay, carOverlay.textures['car-red'], 11, 2, 'N', RoadTile.OUTER_LANE);
   obstacle2.onExitTile = () => {
     obstacle2.maxSpeed = 0;
     obstacle2.speed = 0;
@@ -7304,9 +7325,9 @@ function carInFront(city, carOverlay) {
 carInFront.city = Cities.cities[1];
 
 function trafficLight(city, carOverlay) {
-  const carNorth = new Car(carOverlay, carOverlay.textures.car004, 6, 4, 'N', RoadTile.OUTER_LANE);
+  const carNorth = new Car(carOverlay, carOverlay.textures['car-white'], 6, 4, 'N', RoadTile.OUTER_LANE);
   carOverlay.addCar(carNorth);
-  const carWest = new Car(carOverlay, carOverlay.textures.car003, 4, 6, 'W', RoadTile.OUTER_LANE, 0.85);
+  const carWest = new Car(carOverlay, carOverlay.textures['car-red'], 4, 6, 'W', RoadTile.OUTER_LANE, 0.85);
   carOverlay.addCar(carWest);
 }
 
@@ -7314,9 +7335,9 @@ trafficLight.city = Cities.cities[2];
 
 function trafficLightTimeout(city, carOverlay) {
   for (let i = 0; i !== 10; i += 1) {
-    const carNorth = new Car(carOverlay, carOverlay.textures.car004, 6, 4, 'N', RoadTile.OUTER_LANE);
+    const carNorth = new Car(carOverlay, carOverlay.textures['car-white'], 6, 4, 'N', RoadTile.OUTER_LANE);
     carOverlay.addCar(carNorth);
-    const carWest = new Car(carOverlay, carOverlay.textures.car003, 4, 6, 'W', RoadTile.OUTER_LANE, 0.85);
+    const carWest = new Car(carOverlay, carOverlay.textures['car-red'], 4, 6, 'W', RoadTile.OUTER_LANE, 0.85);
     carOverlay.addCar(carWest);
   }
 }
@@ -7329,35 +7350,6 @@ module.exports = {
   trafficLight,
   trafficLightTimeout,
 };
-
-
-/***/ }),
-
-/***/ "./src/js/textures-cars.js":
-/*!*********************************!*\
-  !*** ./src/js/textures-cars.js ***!
-  \*********************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const car001 = __webpack_require__(/*! ../../static/cars/car-001.png */ "./static/cars/car-001.png");
-const car002 = __webpack_require__(/*! ../../static/cars/car-002.png */ "./static/cars/car-002.png");
-const car003 = __webpack_require__(/*! ../../static/cars/car-003.png */ "./static/cars/car-003.png");
-const car004 = __webpack_require__(/*! ../../static/cars/car-004.png */ "./static/cars/car-004.png");
-const car005 = __webpack_require__(/*! ../../static/cars/car-005.png */ "./static/cars/car-005.png");
-const car006 = __webpack_require__(/*! ../../static/cars/car-006.png */ "./static/cars/car-006.png");
-const car007 = __webpack_require__(/*! ../../static/cars/car-007.png */ "./static/cars/car-007.png");
-
-const CarTextures = {
-  car001,
-  car002,
-  car003,
-  car004,
-  car005,
-  car006,
-  car007,
-};
-
-module.exports = CarTextures;
 
 
 /***/ }),
@@ -7504,83 +7496,6 @@ module.exports = VariableView;
 
 /***/ }),
 
-/***/ "./static/cars/car-001.png":
-/*!*********************************!*\
-  !*** ./static/cars/car-001.png ***!
-  \*********************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "a4c0701079fc0aca77e7.png";
-
-/***/ }),
-
-/***/ "./static/cars/car-002.png":
-/*!*********************************!*\
-  !*** ./static/cars/car-002.png ***!
-  \*********************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "f48a3d2fdf5c9d5cc3b7.png";
-
-/***/ }),
-
-/***/ "./static/cars/car-003.png":
-/*!*********************************!*\
-  !*** ./static/cars/car-003.png ***!
-  \*********************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "aa80c31517f6be990755.png";
-
-/***/ }),
-
-/***/ "./static/cars/car-004.png":
-/*!*********************************!*\
-  !*** ./static/cars/car-004.png ***!
-  \*********************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "79e21fd588c6375c8c6b.png";
-
-/***/ }),
-
-/***/ "./static/cars/car-005.png":
-/*!*********************************!*\
-  !*** ./static/cars/car-005.png ***!
-  \*********************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "161b5d144a21b02db45e.png";
-
-/***/ }),
-
-/***/ "./static/cars/car-006.png":
-/*!*********************************!*\
-  !*** ./static/cars/car-006.png ***!
-  \*********************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "7b7b6c579d330165b643.png";
-
-/***/ }),
-
-/***/ "./static/cars/car-007.png":
-/*!*********************************!*\
-  !*** ./static/cars/car-007.png ***!
-  \*********************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-module.exports = __webpack_require__.p + "0ebad70fafafab953e37.png";
-
-/***/ }),
-
 /***/ "./static/fa/pencil-alt-solid.svg":
 /*!****************************************!*\
   !*** ./static/fa/pencil-alt-solid.svg ***!
@@ -7675,10 +7590,8 @@ const City = __webpack_require__(/*! ./city */ "./src/js/city.js");
 const EmissionsVariable = __webpack_require__(/*! ./emissions-variable */ "./src/js/emissions-variable.js");
 const MapEditor = __webpack_require__(/*! ./editor/map-editor */ "./src/js/editor/map-editor.js");
 const VariableView = __webpack_require__(/*! ./variable-view */ "./src/js/variable-view.js");
-const CarTextures = __webpack_require__(/*! ./textures-cars */ "./src/js/textures-cars.js");
 const CarOverlay = __webpack_require__(/*! ./cars/car-overlay */ "./src/js/cars/car-overlay.js");
 const TileCounterView = __webpack_require__(/*! ./tile-counter-view */ "./src/js/tile-counter-view.js");
-const Cities = __webpack_require__(/*! ../../cities.json */ "./cities.json");
 const TestScenarios = __webpack_require__(/*! ./test/scenarios */ "./src/js/test/scenarios.js");
 const showFatalError = __webpack_require__(/*! ./aux/show-fatal-error */ "./src/js/aux/show-fatal-error.js");
 __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
@@ -7708,17 +7621,13 @@ fetch('./config.yml', { cache: 'no-store' })
     // Add a pre-load middleware that does cache-busting
     app.loader.pre((resource, next) => { resource.url += `?t=${Date.now()}`; next(); });
     app.loader.add('./textures/road-textures.json');
-    Object.entries(CarTextures).forEach(([id, path]) => {
-      app.loader.add(id, path);
-    });
+    app.loader.add('./textures/car-textures.json');
     app.loader.load((loader, resources) => {
       $('[data-component="app-container"]').append(app.view);
       const textures = Object.assign(
         {},
         resources['./textures/road-textures.json'].textures,
-        Object.fromEntries(
-          Object.entries(CarTextures).map(([id]) => [id, resources[id].texture])
-        )
+        resources['./textures/car-textures.json'].textures,
       );
 
       // Change the scaling mode for the road textures
@@ -7765,4 +7674,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.a86a679cb578e290973d.js.map
+//# sourceMappingURL=default.b533da98860a106560a2.js.map
