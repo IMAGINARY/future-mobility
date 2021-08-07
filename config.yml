@@ -52,6 +52,7 @@ carTypes:
   truck-white:
     maxSpeed: 0.85
     frequency: 0.2
+    lanes: inner
   pickup-aqua:
     maxSpeed: 1
     frequency: 0.5
@@ -61,4 +62,5 @@ carTypes:
   bus-yellow:
     maxSpeed: 0.9
     frequency: 0.3
+    lanes: outer
 

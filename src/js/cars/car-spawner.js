@@ -1,7 +1,7 @@
 const Car = require('../cars/car');
 const RoadTile = require('../cars/road-tile');
 const Dir = require('../aux/cardinal-directions');
-const { weightedRandomizer } = require('../aux/random');
+const { randomItem, weightedRandomizer } = require('../aux/random');
 
 const THROTTLE_TIME = 57; // Number of frames it waits before running the maybeSpawn function
 const SPAWN_PROBABILITY = 0.5;
@@ -66,8 +66,12 @@ class CarSpawner {
       : base + deviation;
   }
 
-  getRandomLane() {
-    return (Math.random() < 0.5) ? RoadTile.OUTER_LANE : RoadTile.INNER_LANE;
+  getRandomLane(carType) {
+    const options = (this.config.carTypes[carType].lanes || 'inner, outer')
+      .split(',')
+      .map(s => RoadTile.laneNames[s.trim().toLowerCase()]);
+
+    return options.length === 1 ? options[0] : randomItem(options);
   }
 
   spawn() {
@@ -76,7 +80,7 @@ class CarSpawner {
       const entrySide = this.getRandomEntrySide(tile.x, tile.y);
       const carType = this.carRandomizer();
       const texture = this.overlay.textures[carType];
-      const lane = this.getRandomLane();
+      const lane = this.getRandomLane(carType);
       const maxSpeed = this.getRandomMaxSpeed(carType, lane);
 
       this.overlay.addCar(new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed));

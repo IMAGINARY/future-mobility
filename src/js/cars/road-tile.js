@@ -33,11 +33,22 @@ function exitPoint(lane, side) {
   }
 }
 
+const INNER_LANE = 2;
+const OUTER_LANE = 1;
+const BIKE_LANE = 0;
+
+const laneNames = {
+  inner: INNER_LANE,
+  outer: OUTER_LANE,
+  bike: BIKE_LANE,
+};
+
 module.exports = {
-  BIKE_LANE: 0,
-  OUTER_LANE: 1,
-  INNER_LANE: 2,
+  BIKE_LANE,
+  OUTER_LANE,
+  INNER_LANE,
   LANE_WIDTH,
+  laneNames,
   entryPoint,
   exitPoint,
 };

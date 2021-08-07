@@ -5457,8 +5457,13 @@ function weightedRandomizer(weightedOptions) {
   };
 }
 
+function randomItem(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
 module.exports = {
   weightedRandomizer,
+  randomItem,
 };
 
 
@@ -5693,7 +5698,7 @@ module.exports = CarOverlay;
 const Car = __webpack_require__(/*! ../cars/car */ "./src/js/cars/car.js");
 const RoadTile = __webpack_require__(/*! ../cars/road-tile */ "./src/js/cars/road-tile.js");
 const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
-const { weightedRandomizer } = __webpack_require__(/*! ../aux/random */ "./src/js/aux/random.js");
+const { randomItem, weightedRandomizer } = __webpack_require__(/*! ../aux/random */ "./src/js/aux/random.js");
 
 const THROTTLE_TIME = 57; // Number of frames it waits before running the maybeSpawn function
 const SPAWN_PROBABILITY = 0.5;
@@ -5758,8 +5763,12 @@ class CarSpawner {
       : base + deviation;
   }
 
-  getRandomLane() {
-    return (Math.random() < 0.5) ? RoadTile.OUTER_LANE : RoadTile.INNER_LANE;
+  getRandomLane(carType) {
+    const options = (this.config.carTypes[carType].lanes || 'inner, outer')
+      .split(',')
+      .map(s => RoadTile.laneNames[s.trim().toLowerCase()]);
+
+    return options.length === 1 ? options[0] : randomItem(options);
   }
 
   spawn() {
@@ -5768,7 +5777,7 @@ class CarSpawner {
       const entrySide = this.getRandomEntrySide(tile.x, tile.y);
       const carType = this.carRandomizer();
       const texture = this.overlay.textures[carType];
-      const lane = this.getRandomLane();
+      const lane = this.getRandomLane(carType);
       const maxSpeed = this.getRandomMaxSpeed(carType, lane);
 
       this.overlay.addCar(new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed));
@@ -6151,11 +6160,22 @@ function exitPoint(lane, side) {
   }
 }
 
+const INNER_LANE = 2;
+const OUTER_LANE = 1;
+const BIKE_LANE = 0;
+
+const laneNames = {
+  inner: INNER_LANE,
+  outer: OUTER_LANE,
+  bike: BIKE_LANE,
+};
+
 module.exports = {
-  BIKE_LANE: 0,
-  OUTER_LANE: 1,
-  INNER_LANE: 2,
+  BIKE_LANE,
+  OUTER_LANE,
+  INNER_LANE,
   LANE_WIDTH,
+  laneNames,
   entryPoint,
   exitPoint,
 };
@@ -7674,4 +7694,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.b533da98860a106560a2.js.map
+//# sourceMappingURL=default.d0f9cba6e39623a8cb90.js.map

@@ -24,6 +24,11 @@ function weightedRandomizer(weightedOptions) {
   };
 }
 
+function randomItem(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
 module.exports = {
   weightedRandomizer,
+  randomItem,
 };
