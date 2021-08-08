@@ -31,7 +31,7 @@ class Car {
 
     this.setTile(tileX, tileY, entrySide);
 
-    this.setPosition(this.tilePosition().add(RoadTile.entryPoint(this.lane, this.entrySide)));
+    this.setSpritePosition(this.tilePosition().add(RoadTile.entryPoint(this.lane, this.entrySide)));
   }
 
   static createSprite(texture) {
@@ -45,6 +45,22 @@ class Car {
     sprite.alpha = 0;
 
     return sprite;
+  }
+
+  destroy() {
+    this.sprite.destroy();
+    this.sprite = null;
+    this.overlay = null;
+  }
+
+  kill() {
+    if (!this.killed) {
+      this.killed = true;
+      this.fader.fadeOut(() => {
+        this.overlay.onCarExitTile(this, this.tile.x, this.tile.y);
+        this.overlay.onCarExitMap(this);
+      });
+    }
   }
 
   setTile(x, y, entrySide) {
@@ -72,35 +88,27 @@ class Car {
     this.onEnterTile();
   }
 
-  kill() {
-    if (!this.killed) {
-      this.killed = true;
-      this.fader.fadeOut(() => {
-        this.overlay.onCarExitTile(this, this.tile.x, this.tile.y);
-        this.overlay.onCarExitMap(this);
-      });
-    }
+  getNextTile() {
+    return Dir.adjCoords(this.tile.x, this.tile.y, this.exitSide);
+  }
+
+  getNextEntry() {
+    return Dir.opposite(this.exitSide);
   }
 
   tilePosition() {
     return Vec2(this.tile.x * TILE_SIZE, this.tile.y * TILE_SIZE);
   }
 
-  setPosition(v) {
+  setSpritePosition(v) {
     this.sprite.x = v.x;
     this.sprite.y = v.y;
     // to do: this calculation below maybe can be made faster without sqrt
     this.progress = 1 - (v.distance(this.exitPoint) / this.entryPoint.distance(this.exitPoint));
   }
 
-  getPosition() {
+  getSpritePosition() {
     return Vec2(this.sprite.x, this.sprite.y);
-  }
-
-  destroy() {
-    this.sprite.destroy();
-    this.sprite = null;
-    this.overlay = null;
   }
 
   getRandomExitSide(tileX, tileY, entrySide) {
@@ -131,6 +139,21 @@ class Car {
     return options[Math.floor(Math.random() * options.length)] || null;
   }
 
+  getDistanceFromEntry() {
+    switch (this.entrySide) {
+      case 'N':
+        return this.getSpritePosition().y - this.tilePosition().y;
+      case 'E':
+        return this.tilePosition().x + TILE_SIZE - this.getSpritePosition().x;
+      case 'W':
+        return this.getSpritePosition().x - this.tilePosition().x;
+      case 'S':
+        return this.tilePosition().y + TILE_SIZE - this.getSpritePosition().y;
+      default:
+        return 0;
+    }
+  }
+
   onEnterTile() {
     this.overlay.onCarEnterTile(this, this.tile.x, this.tile.y);
   }
@@ -146,14 +169,6 @@ class Car {
     this.inRedLight = true;
   }
 
-  getNextTile() {
-    return Dir.adjCoords(this.tile.x, this.tile.y, this.exitSide);
-  }
-
-  getNextEntry() {
-    return Dir.opposite(this.exitSide);
-  }
-
   onExitTile() {
     this.overlay.onCarExitTile(this, this.tile.x, this.tile.y);
 
@@ -161,44 +176,34 @@ class Car {
     this.setTile(...this.getNextTile(), this.getNextEntry());
   }
 
-  getDistanceFromEntry() {
-    switch (this.entrySide) {
-      case 'N':
-        return this.getPosition().y - this.tilePosition().y;
-      case 'E':
-        return this.tilePosition().x + TILE_SIZE - this.getPosition().x;
-      case 'W':
-        return this.getPosition().x - this.tilePosition().x;
-      case 'S':
-        return this.tilePosition().y + TILE_SIZE - this.getPosition().y;
-      default:
-        return 0;
-    }
+  adjustSpriteRotation() {
+    const angleFrom = Dir.asAngle(Dir.opposite(this.entrySide));
+    const angleTo = Dir.asAngle(this.exitSide);
+    const angleDelta = angleTo - angleFrom;
+
+    const smallestAngle = Math.abs(angleDelta) > Math.PI
+      ? (Math.PI * 2 - Math.abs(angleDelta)) * Math.sign(angleDelta) * -1
+      : angleDelta;
+    const uglyAdjustment = 1.05;
+
+    this.sprite.rotation = angleFrom
+      + smallestAngle * Math.min(this.progress * uglyAdjustment, 1);
   }
 
   animate(time) {
     this.lifetime += time;
 
     let shouldFade = false;
-    const position = this.getPosition();
-    const shortestAngle = angle => (Math.abs(angle) > Math.PI
-      ? (Math.PI * 2 - Math.abs(angle)) * Math.sign(angle) * -1
-      : angle);
-
-    const angleFrom = Dir.asAngle(Dir.opposite(this.entrySide));
-    const angleTo = Dir.asAngle(this.exitSide);
-    const uglyAdjustment = 1.05;
-    this.sprite.rotation = angleFrom
-      + shortestAngle(angleTo - angleFrom) * Math.min(this.progress * uglyAdjustment, 1);
+    const position = this.getSpritePosition();
 
     const carInFront = this.overlay.getCarInFront(this);
     if (carInFront) {
       const overlapDistance = this.sprite.height / 2 + carInFront.sprite.height / 2;
       const distanceToCarInFront = this.overlay.getCarInFront(this)
-        .getPosition()
+        .getSpritePosition()
         .distance(position) - overlapDistance;
       if (distanceToCarInFront < 0) {
-        // Using just the distance generates false positives when the cars are ortogonal to each
+        // Using just the distance generates false positives when the cars are orthogonal to each
         // other. The test can be improved by testing sprite overlap through PIXI.Sprite.getBounds
         // ... but maybe it should be done after moving the sprite.
         shouldFade = true;
@@ -219,19 +224,22 @@ class Car {
     }
 
     if (this.speed > 0) {
+      this.adjustSpriteRotation();
       const newPosition = Vec2(0, this.speed * time).rotate(this.sprite.rotation).add(position);
 
       // Clamp movement so it doesn't go past the target coordinates
       const signXMove = Math.sign(this.exitPoint.x - this.entryPoint.x);
       const signYMove = Math.sign(this.exitPoint.y - this.entryPoint.y);
-      if ((signXMove > 0 && newPosition.x > this.exitPoint.x) || (signXMove < 0 && newPosition.x < this.exitPoint.x)) {
+      if ((signXMove > 0 && newPosition.x > this.exitPoint.x)
+        || (signXMove < 0 && newPosition.x < this.exitPoint.x)) {
         newPosition.x = this.exitPoint.x;
       }
-      if ((signYMove > 0 && newPosition.y > this.exitPoint.y) || (signYMove < 0 && newPosition.y < this.exitPoint.y)) {
+      if ((signYMove > 0 && newPosition.y > this.exitPoint.y)
+        || (signYMove < 0 && newPosition.y < this.exitPoint.y)) {
         newPosition.y = this.exitPoint.y;
       }
 
-      this.setPosition(newPosition);
+      this.setSpritePosition(newPosition);
 
       if (newPosition.equal(this.exitPoint)) {
         this.onExitTile();
