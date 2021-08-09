@@ -15,7 +15,7 @@ const SLOWDOWN_DISTANCE = TILE_SIZE / 3;
 const LIGHT_CHANGE_DELAY = [300, 800];
 // Max lifetime of cars
 const MAX_LIFETIME = 2 * 60 * 60; // Approx. 2 minutes
-const MAX_TIMESTOPPED = 1 * 60 * 60; // Approx. 1 minute
+const MAX_TIME_STOPPED = 60 * 60; // Approx. 1 minute
 
 class Car {
   constructor(carOverlay, texture, tileX, tileY, entrySide, lane, maxSpeed = 1) {
@@ -224,7 +224,7 @@ class Car {
     }
 
     this.lifetime += time;
-    if ((this.lifetime > MAX_LIFETIME || this.timeStopped > MAX_TIMESTOPPED)
+    if ((this.lifetime > MAX_LIFETIME || this.timeStopped > MAX_TIME_STOPPED)
       && this.overlay.options.maxLifetime) {
       this.despawn();
     }
