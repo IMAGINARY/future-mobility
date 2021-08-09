@@ -70,6 +70,14 @@ class CarOverlay {
     return this.city.map.isValidCoords(x, y) ? this.carsByTile[y][x] : [];
   }
 
+  getCarsAround(car) {
+    const tiles = [[car.tile.x, car.tile.y]].concat(
+      this.city.map.adjacentCells(car.tile.x, car.tile.y)
+    );
+    return [].concat(...tiles.map(([x, y]) => this.getCarsInTile(x, y)))
+      .filter(other => car !== other);
+  }
+
   getCarInFront(car) {
     // The car in front can be a car on the same tile,
     // with the same lane and entrySide,
