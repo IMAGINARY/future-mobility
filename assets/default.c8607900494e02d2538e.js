@@ -5666,15 +5666,15 @@ class CarOverlay {
     // but the minimum *larger* progress...
     return this.getCarsInTile(car.tile.x, car.tile.y)
       .filter(other => car !== other && other.lane === car.lane
-        && other.entrySide === car.entrySide && other.progress > car.progress)
-      .sort((a, b) => a.progress - b.progress)
+        && other.entrySide === car.entrySide && other.path.progress > car.path.progress)
+      .sort((a, b) => a.path.progress - b.path.progress)
       .shift()
     // ... or a car in the next tile, with the same lane and
     // entry side, and the minimum progress
       || this.getCarsInTile(...car.getNextTile())
         .filter(other => car !== other && other.lane === car.lane
           && other.entrySide === car.getNextEntry())
-        .sort((a, b) => a.progress - b.progress)
+        .sort((a, b) => a.path.progress - b.path.progress)
         .shift();
   }
 }
@@ -5810,6 +5810,9 @@ const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/
 const RoadTile = __webpack_require__(/*! ./road-tile */ "./src/js/cars/road-tile.js");
 const { TILE_SIZE } = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
 const SpriteFader = __webpack_require__(/*! ../aux/sprite-fader */ "./src/js/aux/sprite-fader.js");
+const PathStraight = __webpack_require__(/*! ./path-straight */ "./src/js/cars/path-straight.js");
+const PathArc = __webpack_require__(/*! ./path-arc */ "./src/js/cars/path-arc.js");
+const { randomItem } = __webpack_require__(/*! ../aux/random */ "./src/js/aux/random.js");
 
 // The closest a car can get to another
 const SAFE_DISTANCE = TILE_SIZE / 20;
@@ -5835,6 +5838,7 @@ class Car {
     this.safeDistance = SAFE_DISTANCE * this.carDistanceFactor;
     this.slowdownDistance = SLOWDOWN_DISTANCE * this.carDistanceFactor;
 
+    this.path = null;
     this.setTile(tileX, tileY, entrySide);
 
     this.setSpritePosition(this.tilePosition().add(RoadTile.entryPoint(this.lane, this.entrySide)));
@@ -5887,9 +5891,11 @@ class Car {
     this.entrySide = entrySide;
     this.exitSide = exitSide;
 
-    this.entryPoint = this.tilePosition().add(RoadTile.entryPoint(this.lane, this.entrySide));
-    this.exitPoint = this.tilePosition().add(RoadTile.exitPoint(this.lane, this.exitSide));
-    this.progress = 0;
+    const remainder = this.path !== null ? this.path.remainder : 0;
+    this.path = this.exitSide === Dir.opposite(this.entrySide)
+      ? new PathStraight(this.lane, this.entrySide)
+      : new PathArc(this.lane, this.entrySide, this.exitSide);
+    this.path.advance(remainder);
 
     this.onEnterTile();
   }
@@ -5909,8 +5915,6 @@ class Car {
   setSpritePosition(v) {
     this.sprite.x = v.x;
     this.sprite.y = v.y;
-    // to do: this calculation below maybe can be made faster without sqrt
-    this.progress = 1 - (v.distance(this.exitPoint) / this.entryPoint.distance(this.exitPoint));
   }
 
   getSpritePosition() {
@@ -5942,22 +5946,7 @@ class Car {
 
     // Randomly select one of the possible directions
     // return null if there's no way to go
-    return options[Math.floor(Math.random() * options.length)] || null;
-  }
-
-  getDistanceFromEntry() {
-    switch (this.entrySide) {
-      case 'N':
-        return this.getSpritePosition().y - this.tilePosition().y;
-      case 'E':
-        return this.tilePosition().x + TILE_SIZE - this.getSpritePosition().x;
-      case 'W':
-        return this.getSpritePosition().x - this.tilePosition().x;
-      case 'S':
-        return this.tilePosition().y + TILE_SIZE - this.getSpritePosition().y;
-      default:
-        return 0;
-    }
+    return randomItem(options) || null;
   }
 
   onEnterTile() {
@@ -5980,20 +5969,6 @@ class Car {
 
     // Transfer the car to the next tile
     this.setTile(...this.getNextTile(), this.getNextEntry());
-  }
-
-  adjustSpriteRotation() {
-    const angleFrom = Dir.asAngle(Dir.opposite(this.entrySide));
-    const angleTo = Dir.asAngle(this.exitSide);
-    const angleDelta = angleTo - angleFrom;
-
-    const smallestAngle = Math.abs(angleDelta) > Math.PI
-      ? (Math.PI * 2 - Math.abs(angleDelta)) * Math.sign(angleDelta) * -1
-      : angleDelta;
-    const uglyAdjustment = 1.05;
-
-    this.sprite.rotation = angleFrom
-      + smallestAngle * Math.min(this.progress * uglyAdjustment, 1);
   }
 
   animate(time) {
@@ -6030,24 +6005,10 @@ class Car {
     }
 
     if (this.speed > 0) {
-      this.adjustSpriteRotation();
-      const newPosition = Vec2(0, this.speed * time).rotate(this.sprite.rotation).add(position);
-
-      // Clamp movement so it doesn't go past the target coordinates
-      const signXMove = Math.sign(this.exitPoint.x - this.entryPoint.x);
-      const signYMove = Math.sign(this.exitPoint.y - this.entryPoint.y);
-      if ((signXMove > 0 && newPosition.x > this.exitPoint.x)
-        || (signXMove < 0 && newPosition.x < this.exitPoint.x)) {
-        newPosition.x = this.exitPoint.x;
-      }
-      if ((signYMove > 0 && newPosition.y > this.exitPoint.y)
-        || (signYMove < 0 && newPosition.y < this.exitPoint.y)) {
-        newPosition.y = this.exitPoint.y;
-      }
-
-      this.setSpritePosition(newPosition);
-
-      if (newPosition.equal(this.exitPoint)) {
+      this.path.advance(this.speed * time);
+      this.setSpritePosition(this.tilePosition().add(this.path.position));
+      this.sprite.rotation = this.path.rotation;
+      if (this.path.progress === 1) {
         this.onExitTile();
       }
     }
@@ -6073,6 +6034,91 @@ class Car {
 }
 
 module.exports = Car;
+
+
+/***/ }),
+
+/***/ "./src/js/cars/path-arc.js":
+/*!*********************************!*\
+  !*** ./src/js/cars/path-arc.js ***!
+  \*********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Vec2 = __webpack_require__(/*! vec2 */ "./node_modules/vec2/vec2.js");
+const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+const RoadTile = __webpack_require__(/*! ./road-tile */ "./src/js/cars/road-tile.js");
+
+class PathArc {
+  constructor(lane, entrySide, exitSide) {
+    this.arcRotation = RoadTile.curveRotation(entrySide, exitSide);
+
+    const rotationDir = RoadTile.curveRotDir(entrySide, exitSide);
+    this.rotationSign = rotationDir === 'cw' ? 1 : -1;
+    this.arcRadius = RoadTile.curveRadius[rotationDir][lane];
+    this.arcLength = Math.PI * this.arcRadius / 2;
+    this.rotCenter = RoadTile.curveCenter(entrySide, exitSide);
+
+    this.distance = 0;
+    this.progress = 0;
+    this.remainder = 0;
+    this.position = RoadTile.entryPoint(lane, entrySide);
+  }
+
+  advance(distance) {
+    this.distance += distance;
+    if (this.distance > this.arcLength) {
+      this.remainder = this.distance - this.arcLength;
+      this.distance = this.arcLength;
+    }
+    this.progress = this.distance / this.arcLength;
+    const angle = this.arcRotation + this.progress * (Math.PI / 2) * this.rotationSign;
+    this.position = Vec2(0, this.arcRadius)
+      .rotate(angle)
+      .add(this.rotCenter);
+    this.rotation = angle + Math.PI / 2 * this.rotationSign;
+  }
+}
+
+module.exports = PathArc;
+
+
+/***/ }),
+
+/***/ "./src/js/cars/path-straight.js":
+/*!**************************************!*\
+  !*** ./src/js/cars/path-straight.js ***!
+  \**************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Vec2 = __webpack_require__(/*! vec2 */ "./node_modules/vec2/vec2.js");
+const RoadTile = __webpack_require__(/*! ./road-tile */ "./src/js/cars/road-tile.js");
+const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+const MapView = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
+
+class PathStraight {
+  constructor(lane, entrySide) {
+    this.entryPoint = RoadTile.entryPoint(lane, entrySide);
+    this.rotation = Dir.asAngle(Dir.opposite(entrySide));
+
+    this.distance = 0;
+    this.progress = 0;
+    this.remainder = 0;
+    this.position = this.entryPoint;
+  }
+
+  advance(distance) {
+    this.distance += distance;
+    if (this.distance > MapView.TILE_SIZE) {
+      this.remainder = this.distance - MapView.TILE_SIZE;
+      this.distance = MapView.TILE_SIZE;
+    }
+    this.progress = this.distance / MapView.TILE_SIZE;
+
+    this.position = Vec2(0, this.distance).rotate(this.rotation).add(this.entryPoint);
+  }
+}
+
+module.exports = PathStraight;
 
 
 /***/ }),
@@ -6138,6 +6184,16 @@ const { TILE_SIZE } = __webpack_require__(/*! ../map-view */ "./src/js/map-view.
 
 const LANE_WIDTH = TILE_SIZE / 6;
 
+const INNER_LANE = 2;
+const OUTER_LANE = 1;
+const BIKE_LANE = 0;
+
+const laneNames = {
+  inner: INNER_LANE,
+  outer: OUTER_LANE,
+  bike: BIKE_LANE,
+};
+
 function entryPoint(lane, side) {
   switch (side) {
     case 'W':
@@ -6168,15 +6224,55 @@ function exitPoint(lane, side) {
   }
 }
 
-const INNER_LANE = 2;
-const OUTER_LANE = 1;
-const BIKE_LANE = 0;
-
-const laneNames = {
-  inner: INNER_LANE,
-  outer: OUTER_LANE,
-  bike: BIKE_LANE,
+const curveRadius = {
+  cw: [],
+  ccw: [],
 };
+curveRadius.cw[BIKE_LANE] = LANE_WIDTH * 0.5;
+curveRadius.cw[OUTER_LANE] = LANE_WIDTH * 1.5;
+curveRadius.cw[INNER_LANE] = LANE_WIDTH * 2.5;
+curveRadius.ccw[INNER_LANE] = LANE_WIDTH * 3.5;
+curveRadius.ccw[OUTER_LANE] = LANE_WIDTH * 4.5;
+curveRadius.ccw[BIKE_LANE] = LANE_WIDTH * 5.5;
+
+function curveRotDir(entryDir, exitDir) {
+  const table = {
+    N: { W: 'cw', E: 'ccw' },
+    E: { N: 'cw', S: 'ccw' },
+    S: { E: 'cw', W: 'ccw' },
+    W: { S: 'cw', N: 'ccw' },
+  };
+
+  return table[entryDir][exitDir];
+}
+
+function curveCenter(entryDir, exitDir) {
+  const ne = Vec2(TILE_SIZE, 0);
+  const se = Vec2(TILE_SIZE, TILE_SIZE);
+  const sw = Vec2(0, TILE_SIZE);
+  const nw = Vec2(0, 0);
+
+  const table = {
+    N: { W: nw, E: ne },
+    E: { N: ne, S: se },
+    S: { E: se, W: sw },
+    W: { S: sw, N: nw },
+  };
+
+  return table[entryDir][exitDir];
+}
+
+function curveRotation(entryDir, exitDir) {
+
+  const table = {
+    N: { W: Math.PI * 1.5, E: Math.PI * 0.5 },
+    E: { N: 0, S: Math.PI },
+    S: { E: Math.PI * 0.5, W: Math.PI * 1.5 },
+    W: { S: Math.PI, N: 0 },
+  };
+
+  return table[entryDir][exitDir];
+}
 
 module.exports = {
   BIKE_LANE,
@@ -6186,6 +6282,10 @@ module.exports = {
   laneNames,
   entryPoint,
   exitPoint,
+  curveRadius,
+  curveRotDir,
+  curveCenter,
+  curveRotation,
 };
 
 
@@ -7702,4 +7802,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.5158c7b83683fcabb64a.js.map
+//# sourceMappingURL=default.c8607900494e02d2538e.js.map

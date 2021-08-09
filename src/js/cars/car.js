@@ -4,6 +4,9 @@ const Dir = require('../aux/cardinal-directions');
 const RoadTile = require('./road-tile');
 const { TILE_SIZE } = require('../map-view');
 const SpriteFader = require('../aux/sprite-fader');
+const PathStraight = require('./path-straight');
+const PathArc = require('./path-arc');
+const { randomItem } = require('../aux/random');
 
 // The closest a car can get to another
 const SAFE_DISTANCE = TILE_SIZE / 20;
@@ -29,6 +32,7 @@ class Car {
     this.safeDistance = SAFE_DISTANCE * this.carDistanceFactor;
     this.slowdownDistance = SLOWDOWN_DISTANCE * this.carDistanceFactor;
 
+    this.path = null;
     this.setTile(tileX, tileY, entrySide);
 
     this.setSpritePosition(this.tilePosition().add(RoadTile.entryPoint(this.lane, this.entrySide)));
@@ -81,9 +85,11 @@ class Car {
     this.entrySide = entrySide;
     this.exitSide = exitSide;
 
-    this.entryPoint = this.tilePosition().add(RoadTile.entryPoint(this.lane, this.entrySide));
-    this.exitPoint = this.tilePosition().add(RoadTile.exitPoint(this.lane, this.exitSide));
-    this.progress = 0;
+    const remainder = this.path !== null ? this.path.remainder : 0;
+    this.path = this.exitSide === Dir.opposite(this.entrySide)
+      ? new PathStraight(this.lane, this.entrySide)
+      : new PathArc(this.lane, this.entrySide, this.exitSide);
+    this.path.advance(remainder);
 
     this.onEnterTile();
   }
@@ -103,8 +109,6 @@ class Car {
   setSpritePosition(v) {
     this.sprite.x = v.x;
     this.sprite.y = v.y;
-    // to do: this calculation below maybe can be made faster without sqrt
-    this.progress = 1 - (v.distance(this.exitPoint) / this.entryPoint.distance(this.exitPoint));
   }
 
   getSpritePosition() {
@@ -136,22 +140,7 @@ class Car {
 
     // Randomly select one of the possible directions
     // return null if there's no way to go
-    return options[Math.floor(Math.random() * options.length)] || null;
-  }
-
-  getDistanceFromEntry() {
-    switch (this.entrySide) {
-      case 'N':
-        return this.getSpritePosition().y - this.tilePosition().y;
-      case 'E':
-        return this.tilePosition().x + TILE_SIZE - this.getSpritePosition().x;
-      case 'W':
-        return this.getSpritePosition().x - this.tilePosition().x;
-      case 'S':
-        return this.tilePosition().y + TILE_SIZE - this.getSpritePosition().y;
-      default:
-        return 0;
-    }
+    return randomItem(options) || null;
   }
 
   onEnterTile() {
@@ -174,20 +163,6 @@ class Car {
 
     // Transfer the car to the next tile
     this.setTile(...this.getNextTile(), this.getNextEntry());
-  }
-
-  adjustSpriteRotation() {
-    const angleFrom = Dir.asAngle(Dir.opposite(this.entrySide));
-    const angleTo = Dir.asAngle(this.exitSide);
-    const angleDelta = angleTo - angleFrom;
-
-    const smallestAngle = Math.abs(angleDelta) > Math.PI
-      ? (Math.PI * 2 - Math.abs(angleDelta)) * Math.sign(angleDelta) * -1
-      : angleDelta;
-    const uglyAdjustment = 1.05;
-
-    this.sprite.rotation = angleFrom
-      + smallestAngle * Math.min(this.progress * uglyAdjustment, 1);
   }
 
   animate(time) {
@@ -224,24 +199,10 @@ class Car {
     }
 
     if (this.speed > 0) {
-      this.adjustSpriteRotation();
-      const newPosition = Vec2(0, this.speed * time).rotate(this.sprite.rotation).add(position);
-
-      // Clamp movement so it doesn't go past the target coordinates
-      const signXMove = Math.sign(this.exitPoint.x - this.entryPoint.x);
-      const signYMove = Math.sign(this.exitPoint.y - this.entryPoint.y);
-      if ((signXMove > 0 && newPosition.x > this.exitPoint.x)
-        || (signXMove < 0 && newPosition.x < this.exitPoint.x)) {
-        newPosition.x = this.exitPoint.x;
-      }
-      if ((signYMove > 0 && newPosition.y > this.exitPoint.y)
-        || (signYMove < 0 && newPosition.y < this.exitPoint.y)) {
-        newPosition.y = this.exitPoint.y;
-      }
-
-      this.setSpritePosition(newPosition);
-
-      if (newPosition.equal(this.exitPoint)) {
+      this.path.advance(this.speed * time);
+      this.setSpritePosition(this.tilePosition().add(this.path.position));
+      this.sprite.rotation = this.path.rotation;
+      if (this.path.progress === 1) {
         this.onExitTile();
       }
     }

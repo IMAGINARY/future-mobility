@@ -76,15 +76,15 @@ class CarOverlay {
     // but the minimum *larger* progress...
     return this.getCarsInTile(car.tile.x, car.tile.y)
       .filter(other => car !== other && other.lane === car.lane
-        && other.entrySide === car.entrySide && other.progress > car.progress)
-      .sort((a, b) => a.progress - b.progress)
+        && other.entrySide === car.entrySide && other.path.progress > car.path.progress)
+      .sort((a, b) => a.path.progress - b.path.progress)
       .shift()
     // ... or a car in the next tile, with the same lane and
     // entry side, and the minimum progress
       || this.getCarsInTile(...car.getNextTile())
         .filter(other => car !== other && other.lane === car.lane
           && other.entrySide === car.getNextEntry())
-        .sort((a, b) => a.progress - b.progress)
+        .sort((a, b) => a.path.progress - b.path.progress)
         .shift();
   }
 }
