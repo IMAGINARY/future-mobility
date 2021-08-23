@@ -27,7 +27,6 @@ class TileCounterView {
         )
     );
 
-    this.city.map.events.on('update', this.handleUpdate.bind(this));
     this.handleUpdate();
   }
 

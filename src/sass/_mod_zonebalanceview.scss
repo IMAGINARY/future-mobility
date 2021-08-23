@@ -1,0 +1,108 @@
+$bar-block-height: 0.75em;
+$bar-block-width: 2em;
+
+.zone-balance {
+  background-color: white;
+  padding: 0.5em;
+  .bar {
+    display: inline-block;
+    width: $bar-block-width * 2;
+    position: relative;
+
+    .label {
+      font-weight: bold;
+      position: absolute;
+      left: 0.8em;
+      top: 2.3em;
+    }
+
+    .status {
+      width: $bar-block-width;
+      height: $bar-block-height * 2;
+      border: 2px solid white;
+      margin-left: $bar-block-width;
+    }
+
+    .over, .under {
+      margin-left: $bar-block-width;
+      & > div {
+        width: $bar-block-width;
+        height: $bar-block-height;
+        border: 2px solid white;
+        visibility: hidden;
+      }
+    }
+
+    .over {
+      & > div {
+        border-bottom: none;
+      }
+    }
+
+    .under {
+      & > div {
+        border-top: none;
+      }
+    }
+
+    .status, .over > div, .under > div { background-color: $c-green; }
+    &.p1, &.m1  { .status, .over > div, .under > div  { background-color: $c-yellow; } }
+    &.p2, &.m2  { .status, .over > div, .under > div  { background-color: $c-orange; } }
+    &.p3, &.m3  { .status, .over > div, .under > div  { background-color: $c-red; } }
+
+    &.p1 {
+      .over {
+        & > div:nth-child(3) {
+          visibility: visible;
+        }
+      }
+    }
+
+    &.p2 {
+      .over {
+        & > div:nth-child(3), & > div:nth-child(2) {
+          visibility: visible;
+        }
+      }
+    }
+
+    &.p3 {
+      .over {
+        & > div:nth-child(3), & > div:nth-child(2), & > div:nth-child(1) {
+          visibility: visible;
+        }
+      }
+    }
+
+    &.m1 {
+      .under {
+        & > div:nth-child(1) {
+          visibility: visible;
+        }
+      }
+    }
+
+    &.m2 {
+      .under {
+        & > div:nth-child(1), & > div:nth-child(2) {
+          visibility: visible;
+        }
+      }
+    }
+
+    &.m3 {
+      .under {
+        & > div:nth-child(1), & > div:nth-child(2), & > div:nth-child(3) {
+          visibility: visible;
+        }
+      }
+    }
+  }
+}
+
+body > .tile-counter {
+  position: absolute;
+  width: 250px;
+  right: 5px;
+  top: 5px;
+}

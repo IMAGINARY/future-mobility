@@ -7540,7 +7540,6 @@ class TileCounterView {
         )
     );
 
-    this.city.map.events.on('update', this.handleUpdate.bind(this));
     this.handleUpdate();
   }
 
@@ -7647,6 +7646,139 @@ module.exports = VariableView;
 
 /***/ }),
 
+/***/ "./src/js/zone-balance-view.js":
+/*!*************************************!*\
+  !*** ./src/js/zone-balance-view.js ***!
+  \*************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const ZoneBalance = __webpack_require__(/*! ./zone-balance */ "./src/js/zone-balance.js");
+
+class ZoneBalanceView {
+  constructor(counter, config) {
+    this.config = config;
+    this.zoneBalance = new ZoneBalance(counter, config);
+    this.zoneBalance.events.on('update', this.handleUpdate.bind(this));
+
+    this.$element = $('<div></div>')
+      .addClass('zone-balance');
+
+    this.levels = {
+      residential: 0,
+      commercial: 0,
+      industrial: 0,
+    };
+
+    const tileTypes = Object.keys(this.levels);
+
+    this.ui = Object.fromEntries(tileTypes.map(type => [type,
+      $('<div></div>').addClass(['bar', `bar-${type}`]).append([
+        $('<div></div>').addClass('label').text(type[0].toUpperCase()),
+        $('<div></div>').addClass('over')
+          .append($('<div></div><div></div><div></div>')),
+        $('<div></div>').addClass('status'),
+        $('<div></div>').addClass('under')
+          .append($('<div></div><div></div><div></div>')),
+      ])]));
+
+    this.$element.append(Object.values(this.ui));
+    this.handleUpdate();
+  }
+
+  static levelAsClass(level) {
+    return `${Math.sign(level) >= 0 ? 'p' : 'm'}${Math.abs(level)}`;
+  }
+
+  handleUpdate() {
+    Object.entries(this.levels).forEach(([type, level]) => {
+      const diff = this.zoneBalance.difference[type];
+      const currLevel = Math.sign(diff) * (Math.ceil(Math.abs(diff) / 0.25) - 1);
+      if (currLevel !== level) {
+        const oldClass = ZoneBalanceView.levelAsClass(level);
+        const newClass = ZoneBalanceView.levelAsClass(currLevel);
+        this.ui[type]
+          .removeClass(oldClass)
+          .addClass(newClass);
+
+        this.levels[type] = currLevel;
+      }
+    });
+  }
+}
+
+module.exports = ZoneBalanceView;
+
+
+/***/ }),
+
+/***/ "./src/js/zone-balance.js":
+/*!********************************!*\
+  !*** ./src/js/zone-balance.js ***!
+  \********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+
+class ZoneBalance {
+  constructor(counter, config) {
+    this.counter = counter;
+    this.config = config;
+    this.events = new EventEmitter();
+
+    const tileTypeId = (type) => Object.keys(this.config.tileTypes)
+      .find(k => this.config.tileTypes[k].type === type);
+
+    this.tileTypeIds = {
+      residential: tileTypeId('residential'),
+      commercial: tileTypeId('commercial'),
+      industrial: tileTypeId('industrial'),
+    };
+
+    this.percentage = {
+      residential: 0,
+      commercial: 0,
+      industrial: 0,
+    };
+
+    this.difference = {
+      residential: 0,
+      commercial: 0,
+      industrial: 0,
+    };
+
+    this.counter.events.on('update', this.handleUpdate.bind(this));
+    this.handleUpdate();
+  }
+
+  handleUpdate() {
+    const total = Object.keys(this.difference)
+      .reduce((sum, type) => sum
+        + this.counter.numPerType[this.tileTypeIds[type]], 0);
+
+    Object.keys(this.difference).forEach((type) => {
+      this.percentage[type] = total === 0 ? ZoneBalance.IdealPercentage[type]
+        : (this.counter.numPerType[this.tileTypeIds[type]] / total);
+
+      this.difference[type] = Math.min((
+        this.percentage[type] - ZoneBalance.IdealPercentage[type])
+          / ZoneBalance.IdealPercentage[type],
+      1);
+    });
+    this.events.emit('update');
+  }
+}
+
+ZoneBalance.IdealPercentage = {
+  residential: 0.5,
+  commercial: 0.25,
+  industrial: 0.25,
+};
+
+module.exports = ZoneBalance;
+
+
+/***/ }),
+
 /***/ "./static/fa/pencil-alt-solid.svg":
 /*!****************************************!*\
   !*** ./static/fa/pencil-alt-solid.svg ***!
@@ -7746,6 +7878,7 @@ const TileCounterView = __webpack_require__(/*! ./tile-counter-view */ "./src/js
 const TestScenarios = __webpack_require__(/*! ./test/scenarios */ "./src/js/test/scenarios.js");
 const showFatalError = __webpack_require__(/*! ./aux/show-fatal-error */ "./src/js/aux/show-fatal-error.js");
 __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
+const ZoneBalanceView = __webpack_require__(/*! ./zone-balance-view */ "./src/js/zone-balance-view.js");
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -7806,8 +7939,14 @@ fetch('./config.yml', { cache: 'no-store' })
       varViewer.displayObject.x = 1920 + 40;
       varViewer.displayObject.y = 0;
 
-      const counter = new TileCounterView(city, config);
-      $('body').append(counter.$element);
+      const counterPane = $('<div></div>').addClass('counters');
+      $('body').append(counterPane);
+
+      const counterView = new TileCounterView(city, config);
+      counterPane.append(counterView.$element);
+
+      const zoneBalanceView = new ZoneBalanceView(counterView.counter, config);
+      counterPane.append(zoneBalanceView.$element);
 
       if (testScenario) {
         testScenario(city, carOverlay);
@@ -7825,4 +7964,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.fe17054828177f48ca46.js.map
+//# sourceMappingURL=default.0c16fe626996da8ecd77.js.map

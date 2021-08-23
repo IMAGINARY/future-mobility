@@ -9,6 +9,7 @@ const TileCounterView = require('./tile-counter-view');
 const TestScenarios = require('./test/scenarios');
 const showFatalError = require('./aux/show-fatal-error');
 require('../sass/default.scss');
+const ZoneBalanceView = require('./zone-balance-view');
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -69,8 +70,14 @@ fetch('./config.yml', { cache: 'no-store' })
       varViewer.displayObject.x = 1920 + 40;
       varViewer.displayObject.y = 0;
 
-      const counter = new TileCounterView(city, config);
-      $('body').append(counter.$element);
+      const counterPane = $('<div></div>').addClass('counters');
+      $('body').append(counterPane);
+
+      const counterView = new TileCounterView(city, config);
+      counterPane.append(counterView.$element);
+
+      const zoneBalanceView = new ZoneBalanceView(counterView.counter, config);
+      counterPane.append(zoneBalanceView.$element);
 
       if (testScenario) {
         testScenario(city, carOverlay);

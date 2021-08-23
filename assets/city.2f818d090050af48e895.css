@@ -205,6 +205,61 @@ html.with-fatal-error {
       margin: 0;
       margin-bottom: 0.2em; }
 
+body > .counters {
+  position: absolute;
+  width: 250px;
+  right: 5px;
+  top: 5px; }
+
+.zone-balance {
+  background-color: white;
+  padding: 0.5em; }
+  .zone-balance .bar {
+    display: inline-block;
+    width: 4em;
+    position: relative; }
+    .zone-balance .bar .label {
+      font-weight: bold;
+      position: absolute;
+      left: 0.8em;
+      top: 2.3em; }
+    .zone-balance .bar .status {
+      width: 2em;
+      height: 1.5em;
+      border: 2px solid white;
+      margin-left: 2em; }
+    .zone-balance .bar .over, .zone-balance .bar .under {
+      margin-left: 2em; }
+      .zone-balance .bar .over > div, .zone-balance .bar .under > div {
+        width: 2em;
+        height: 0.75em;
+        border: 2px solid white;
+        visibility: hidden; }
+    .zone-balance .bar .over > div {
+      border-bottom: none; }
+    .zone-balance .bar .under > div {
+      border-top: none; }
+    .zone-balance .bar .status, .zone-balance .bar .over > div, .zone-balance .bar .under > div {
+      background-color: #1cea34; }
+    .zone-balance .bar.p1 .status, .zone-balance .bar.p1 .over > div, .zone-balance .bar.p1 .under > div, .zone-balance .bar.m1 .status, .zone-balance .bar.m1 .over > div, .zone-balance .bar.m1 .under > div {
+      background-color: #e7ea13; }
+    .zone-balance .bar.p2 .status, .zone-balance .bar.p2 .over > div, .zone-balance .bar.p2 .under > div, .zone-balance .bar.m2 .status, .zone-balance .bar.m2 .over > div, .zone-balance .bar.m2 .under > div {
+      background-color: #ea9510; }
+    .zone-balance .bar.p3 .status, .zone-balance .bar.p3 .over > div, .zone-balance .bar.p3 .under > div, .zone-balance .bar.m3 .status, .zone-balance .bar.m3 .over > div, .zone-balance .bar.m3 .under > div {
+      background-color: #ea2d08; }
+    .zone-balance .bar.p1 .over > div:nth-child(3) {
+      visibility: visible; }
+    .zone-balance .bar.p2 .over > div:nth-child(3), .zone-balance .bar.p2 .over > div:nth-child(2) {
+      visibility: visible; }
+    .zone-balance .bar.p3 .over > div:nth-child(3), .zone-balance .bar.p3 .over > div:nth-child(2), .zone-balance .bar.p3 .over > div:nth-child(1) {
+      visibility: visible; }
+    .zone-balance .bar.m1 .under > div:nth-child(1) {
+      visibility: visible; }
+    .zone-balance .bar.m2 .under > div:nth-child(1), .zone-balance .bar.m2 .under > div:nth-child(2) {
+      visibility: visible; }
+    .zone-balance .bar.m3 .under > div:nth-child(1), .zone-balance .bar.m3 .under > div:nth-child(2), .zone-balance .bar.m3 .under > div:nth-child(3) {
+      visibility: visible; }
+
 body > .tile-counter {
   position: absolute;
   width: 250px;
@@ -212,4 +267,4 @@ body > .tile-counter {
   top: 5px; }
 
 
-/*# sourceMappingURL=city.5cc5cd435ade56fc41dd.css.map*/
+/*# sourceMappingURL=city.2f818d090050af48e895.css.map*/
