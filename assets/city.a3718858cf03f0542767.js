@@ -522,6 +522,489 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./node_modules/vec2/vec2.js":
+/*!***********************************!*\
+  !*** ./node_modules/vec2/vec2.js ***!
+  \***********************************/
+/***/ ((module) => {
+
+;(function inject(clean, precision, undef) {
+
+  var isArray = function (a) {
+    return Object.prototype.toString.call(a) === "[object Array]";
+  };
+
+  var defined = function(a) {
+    return a !== undef;
+  };
+
+  function Vec2(x, y) {
+    if (!(this instanceof Vec2)) {
+      return new Vec2(x, y);
+    }
+
+    if (isArray(x)) {
+      y = x[1];
+      x = x[0];
+    } else if('object' === typeof x && x) {
+      y = x.y;
+      x = x.x;
+    }
+
+    this.x = Vec2.clean(x || 0);
+    this.y = Vec2.clean(y || 0);
+  }
+
+  Vec2.prototype = {
+    change : function(fn) {
+      if (typeof fn === 'function') {
+        if (this.observers) {
+          this.observers.push(fn);
+        } else {
+          this.observers = [fn];
+        }
+      } else if (this.observers && this.observers.length) {
+        for (var i=this.observers.length-1; i>=0; i--) {
+          this.observers[i](this, fn);
+        }
+      }
+
+      return this;
+    },
+
+    ignore : function(fn) {
+      if (this.observers) {
+        if (!fn) {
+          this.observers = [];
+        } else {
+          var o = this.observers, l = o.length;
+          while(l--) {
+            o[l] === fn && o.splice(l, 1);
+          }
+        }
+      }
+      return this;
+    },
+
+    // set x and y
+    set: function(x, y, notify) {
+      if('number' != typeof x) {
+        notify = y;
+        y = x.y;
+        x = x.x;
+      }
+
+      if(this.x === x && this.y === y) {
+        return this;
+      }
+
+      var orig = null;
+      if (notify !== false && this.observers && this.observers.length) {
+        orig = this.clone();
+      }
+
+      this.x = Vec2.clean(x);
+      this.y = Vec2.clean(y);
+
+      if(notify !== false) {
+        return this.change(orig);
+      }
+    },
+
+    // reset x and y to zero
+    zero : function() {
+      return this.set(0, 0);
+    },
+
+    // return a new vector with the same component values
+    // as this one
+    clone : function() {
+      return new (this.constructor)(this.x, this.y);
+    },
+
+    // negate the values of this vector
+    negate : function(returnNew) {
+      if (returnNew) {
+        return new (this.constructor)(-this.x, -this.y);
+      } else {
+        return this.set(-this.x, -this.y);
+      }
+    },
+
+    // Add the incoming `vec2` vector to this vector
+    add : function(x, y, returnNew) {
+
+      if (typeof x != 'number') {
+        returnNew = y;
+        if (isArray(x)) {
+          y = x[1];
+          x = x[0];
+        } else {
+          y = x.y;
+          x = x.x;
+        }
+      }
+
+      x += this.x;
+      y += this.y;
+
+
+      if (!returnNew) {
+        return this.set(x, y);
+      } else {
+        // Return a new vector if `returnNew` is truthy
+        return new (this.constructor)(x, y);
+      }
+    },
+
+    // Subtract the incoming `vec2` from this vector
+    subtract : function(x, y, returnNew) {
+      if (typeof x != 'number') {
+        returnNew = y;
+        if (isArray(x)) {
+          y = x[1];
+          x = x[0];
+        } else {
+          y = x.y;
+          x = x.x;
+        }
+      }
+
+      x = this.x - x;
+      y = this.y - y;
+
+      if (!returnNew) {
+        return this.set(x, y);
+      } else {
+        // Return a new vector if `returnNew` is truthy
+        return new (this.constructor)(x, y);
+      }
+    },
+
+    // Multiply this vector by the incoming `vec2`
+    multiply : function(x, y, returnNew) {
+      if (typeof x != 'number') {
+        returnNew = y;
+        if (isArray(x)) {
+          y = x[1];
+          x = x[0];
+        } else {
+          y = x.y;
+          x = x.x;
+        }
+      } else if (typeof y != 'number') {
+        returnNew = y;
+        y = x;
+      }
+
+      x *= this.x;
+      y *= this.y;
+
+      if (!returnNew) {
+        return this.set(x, y);
+      } else {
+        return new (this.constructor)(x, y);
+      }
+    },
+
+    // Rotate this vector. Accepts a `Rotation` or angle in radians.
+    //
+    // Passing a truthy `inverse` will cause the rotation to
+    // be reversed.
+    //
+    // If `returnNew` is truthy, a new
+    // `Vec2` will be created with the values resulting from
+    // the rotation. Otherwise the rotation will be applied
+    // to this vector directly, and this vector will be returned.
+    rotate : function(r, inverse, returnNew) {
+      var
+      x = this.x,
+      y = this.y,
+      cos = Math.cos(r),
+      sin = Math.sin(r),
+      rx, ry;
+
+      inverse = (inverse) ? -1 : 1;
+
+      rx = cos * x - (inverse * sin) * y;
+      ry = (inverse * sin) * x + cos * y;
+
+      if (returnNew) {
+        return new (this.constructor)(rx, ry);
+      } else {
+        return this.set(rx, ry);
+      }
+    },
+
+    // Calculate the length of this vector
+    length : function() {
+      var x = this.x, y = this.y;
+      return Math.sqrt(x * x + y * y);
+    },
+
+    // Get the length squared. For performance, use this instead of `Vec2#length` (if possible).
+    lengthSquared : function() {
+      var x = this.x, y = this.y;
+      return x*x+y*y;
+    },
+
+    // Return the distance betwen this `Vec2` and the incoming vec2 vector
+    // and return a scalar
+    distance : function(vec2) {
+      var x = this.x - vec2.x;
+      var y = this.y - vec2.y;
+      return Math.sqrt(x*x + y*y);
+    },
+
+    // Given Array of Vec2, find closest to this Vec2.
+    nearest : function(others) {
+      var
+      shortestDistance = Number.MAX_VALUE,
+      nearest = null,
+      currentDistance;
+
+      for (var i = others.length - 1; i >= 0; i--) {
+        currentDistance = this.distance(others[i]);
+        if (currentDistance <= shortestDistance) {
+          shortestDistance = currentDistance;
+          nearest = others[i];
+        }
+      }
+
+      return nearest;
+    },
+
+    // Convert this vector into a unit vector.
+    // Returns the length.
+    normalize : function(returnNew) {
+      var length = this.length();
+
+      // Collect a ratio to shrink the x and y coords
+      var invertedLength = (length < Number.MIN_VALUE) ? 0 : 1/length;
+
+      if (!returnNew) {
+        // Convert the coords to be greater than zero
+        // but smaller than or equal to 1.0
+        return this.set(this.x * invertedLength, this.y * invertedLength);
+      } else {
+        return new (this.constructor)(this.x * invertedLength, this.y * invertedLength);
+      }
+    },
+
+    // Determine if another `Vec2`'s components match this one's
+    // also accepts 2 scalars
+    equal : function(v, w) {
+      if (typeof v != 'number') {
+        if (isArray(v)) {
+          w = v[1];
+          v = v[0];
+        } else {
+          w = v.y;
+          v = v.x;
+        }
+      }
+
+      return (Vec2.clean(v) === this.x && Vec2.clean(w) === this.y);
+    },
+
+    // Return a new `Vec2` that contains the absolute value of
+    // each of this vector's parts
+    abs : function(returnNew) {
+      var x = Math.abs(this.x), y = Math.abs(this.y);
+
+      if (returnNew) {
+        return new (this.constructor)(x, y);
+      } else {
+        return this.set(x, y);
+      }
+    },
+
+    // Return a new `Vec2` consisting of the smallest values
+    // from this vector and the incoming
+    //
+    // When returnNew is truthy, a new `Vec2` will be returned
+    // otherwise the minimum values in either this or `v` will
+    // be applied to this vector.
+    min : function(v, returnNew) {
+      var
+      tx = this.x,
+      ty = this.y,
+      vx = v.x,
+      vy = v.y,
+      x = tx < vx ? tx : vx,
+      y = ty < vy ? ty : vy;
+
+      if (returnNew) {
+        return new (this.constructor)(x, y);
+      } else {
+        return this.set(x, y);
+      }
+    },
+
+    // Return a new `Vec2` consisting of the largest values
+    // from this vector and the incoming
+    //
+    // When returnNew is truthy, a new `Vec2` will be returned
+    // otherwise the minimum values in either this or `v` will
+    // be applied to this vector.
+    max : function(v, returnNew) {
+      var
+      tx = this.x,
+      ty = this.y,
+      vx = v.x,
+      vy = v.y,
+      x = tx > vx ? tx : vx,
+      y = ty > vy ? ty : vy;
+
+      if (returnNew) {
+        return new (this.constructor)(x, y);
+      } else {
+        return this.set(x, y);
+      }
+    },
+
+    // Clamp values into a range.
+    // If this vector's values are lower than the `low`'s
+    // values, then raise them.  If they are higher than
+    // `high`'s then lower them.
+    //
+    // Passing returnNew as true will cause a new Vec2 to be
+    // returned.  Otherwise, this vector's values will be clamped
+    clamp : function(low, high, returnNew) {
+      var ret = this.min(high, true).max(low);
+      if (returnNew) {
+        return ret;
+      } else {
+        return this.set(ret.x, ret.y);
+      }
+    },
+
+    // Perform linear interpolation between two vectors
+    // amount is a decimal between 0 and 1
+    lerp : function(vec, amount, returnNew) {
+      return this.add(vec.subtract(this, true).multiply(amount), returnNew);
+    },
+
+    // Get the skew vector such that dot(skew_vec, other) == cross(vec, other)
+    skew : function(returnNew) {
+      if (!returnNew) {
+        return this.set(-this.y, this.x)
+      } else {
+        return new (this.constructor)(-this.y, this.x);
+      }
+    },
+
+    // calculate the dot product between
+    // this vector and the incoming
+    dot : function(b) {
+      return Vec2.clean(this.x * b.x + b.y * this.y);
+    },
+
+    // calculate the perpendicular dot product between
+    // this vector and the incoming
+    perpDot : function(b) {
+      return Vec2.clean(this.x * b.y - this.y * b.x);
+    },
+
+    // Determine the angle between two vec2s
+    angleTo : function(vec) {
+      return Math.atan2(this.perpDot(vec), this.dot(vec));
+    },
+
+    // Divide this vector's components by a scalar
+    divide : function(x, y, returnNew) {
+      if (typeof x != 'number') {
+        returnNew = y;
+        if (isArray(x)) {
+          y = x[1];
+          x = x[0];
+        } else {
+          y = x.y;
+          x = x.x;
+        }
+      } else if (typeof y != 'number') {
+        returnNew = y;
+        y = x;
+      }
+
+      if (x === 0 || y === 0) {
+        throw new Error('division by zero')
+      }
+
+      if (isNaN(x) || isNaN(y)) {
+        throw new Error('NaN detected');
+      }
+
+      if (returnNew) {
+        return new (this.constructor)(this.x / x, this.y / y);
+      }
+
+      return this.set(this.x / x, this.y / y);
+    },
+
+    isPointOnLine : function(start, end) {
+      return (start.y - this.y) * (start.x - end.x) ===
+             (start.y - end.y) * (start.x - this.x);
+    },
+
+    toArray: function() {
+      return [this.x, this.y];
+    },
+
+    fromArray: function(array) {
+      return this.set(array[0], array[1]);
+    },
+    toJSON: function () {
+      return {x: this.x, y: this.y};
+    },
+    toString: function() {
+      return '(' + this.x + ', ' + this.y + ')';
+    },
+    constructor : Vec2
+  };
+
+  Vec2.fromArray = function(array, ctor) {
+    return new (ctor || Vec2)(array[0], array[1]);
+  };
+
+  // Floating point stability
+  Vec2.precision = precision || 8;
+  var p = Math.pow(10, Vec2.precision);
+
+  Vec2.clean = clean || function(val) {
+    if (isNaN(val)) {
+      throw new Error('NaN detected');
+    }
+
+    if (!isFinite(val)) {
+      throw new Error('Infinity detected');
+    }
+
+    if(Math.round(val) === val) {
+      return val;
+    }
+
+    return Math.round(val * p)/p;
+  };
+
+  Vec2.inject = inject;
+
+  if(!clean) {
+    Vec2.fast = inject(function (k) { return k; });
+
+    // Expose, but also allow creating a fresh Vec2 subclass.
+    if ( true && typeof module.exports == 'object') {
+      module.exports = Vec2;
+    } else {
+      window.Vec2 = window.Vec2 || Vec2;
+    }
+  }
+  return Vec2;
+})();
+
+
+/***/ }),
+
 /***/ "./src/js/aux/array-2d.js":
 /*!********************************!*\
   !*** ./src/js/aux/array-2d.js ***!
@@ -705,6 +1188,62 @@ module.exports = Array2D;
 
 /***/ }),
 
+/***/ "./src/js/aux/cardinal-directions.js":
+/*!*******************************************!*\
+  !*** ./src/js/aux/cardinal-directions.js ***!
+  \*******************************************/
+/***/ ((module) => {
+
+const all = ['N', 'E', 'S', 'W'];
+
+function opposite(direction) {
+  return {
+    N: 'S', E: 'W', S: 'N', W: 'E',
+  }[direction];
+}
+
+function ccw(direction) {
+  return {
+    N: 'W', E: 'N', S: 'E', W: 'S',
+  }[direction];
+}
+
+function cw(direction) {
+  return {
+    N: 'E', E: 'S', S: 'W', W: 'N',
+  }[direction];
+}
+
+function asVector(direction) {
+  return {
+    N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0],
+  }[direction];
+}
+
+function asAngle(direction) {
+  return {
+    N: Math.PI, E: Math.PI * 1.5, S: 0, W: Math.PI * 0.5,
+  }[direction];
+}
+
+function adjCoords(x, y, direction) {
+  const [dx, dy] = asVector(direction);
+  return [x + dx, y + dy];
+}
+
+module.exports = {
+  all,
+  opposite,
+  ccw,
+  cw,
+  asVector,
+  asAngle,
+  adjCoords,
+};
+
+
+/***/ }),
+
 /***/ "./src/js/aux/config-helpers.js":
 /*!**************************************!*\
   !*** ./src/js/aux/config-helpers.js ***!
@@ -717,6 +1256,50 @@ function getTileTypeId(config, type) {
 }
 
 module.exports = { getTileTypeId };
+
+
+/***/ }),
+
+/***/ "./src/js/aux/random.js":
+/*!******************************!*\
+  !*** ./src/js/aux/random.js ***!
+  \******************************/
+/***/ ((module) => {
+
+/**
+ * Create a function that picks an element from a set where each has a probability weight.
+ *
+ * The returned function can be called repeatedly to pick random elements.
+ *
+ * @param {[any, number]} weightedOptions
+ *  An array of options. Each option is an array where the first
+ *  item is the element, and the second is the weight.
+ * @return {function(): any}
+ *  Returns a function that returns a random element.
+ */
+function weightedRandomizer(weightedOptions) {
+  let last = 0;
+  const ranges = new Array(weightedOptions.length);
+  // ranges = [from, to, value]
+  weightedOptions.forEach(([value, weight], i) => {
+    ranges[i] = [last, last + weight, value];
+    last += weight;
+  });
+
+  return () => {
+    const rndP = Math.random() * last;
+    return ranges.find(([min, max]) => rndP > min && rndP < max)[2];
+  };
+}
+
+function randomItem(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+module.exports = {
+  weightedRandomizer,
+  randomItem,
+};
 
 
 /***/ }),
@@ -742,6 +1325,908 @@ function showFatalError(text, error) {
 }
 
 module.exports = showFatalError;
+
+
+/***/ }),
+
+/***/ "./src/js/aux/sprite-fader.js":
+/*!************************************!*\
+  !*** ./src/js/aux/sprite-fader.js ***!
+  \************************************/
+/***/ ((module) => {
+
+class SpriteFader {
+  constructor(sprite) {
+    this.sprite = sprite;
+    this.callback = null;
+    this.duration = null;
+    this.startAlpha = null;
+    this.endAlpha = null;
+
+    this.visible = this.sprite.alpha !== 0;
+    this.isFading = false;
+  }
+
+  fadeIn(callback = null, duration = SpriteFader.DEFAULT_DURATION) {
+    if (!this.visible) {
+      this.visible = true;
+      this.startFade(0, 1, duration, callback);
+    }
+    if (callback) {
+      this.setCallback(callback);
+    }
+  }
+
+  fadeOut(callback = null, duration = SpriteFader.DEFAULT_DURATION) {
+    if (this.visible) {
+      this.visible = false;
+      this.startFade(1, 0, duration, callback);
+    }
+    if (callback) {
+      this.setCallback(callback);
+    }
+  }
+
+  setCallback(callback) {
+    if (this.isFading) {
+      this.callback = callback;
+    } else {
+      setTimeout(() => { callback(); }, 0);
+    }
+  }
+
+  startFade(startAlpha, endAlpha, duration = SpriteFader.DEFAULT_DURATION, callback = null) {
+    this.callback = callback;
+    this.startAlpha = startAlpha;
+    this.endAlpha = endAlpha;
+    this.duration = duration;
+    this.isFading = true;
+    this.timer = 0;
+  }
+
+  onFadeEnd() {
+    if (this.callback) {
+      setTimeout(() => {
+        this.callback();
+        this.callback = null;
+      }, 0);
+    }
+    this.isFading = false;
+    this.startAlpha = null;
+    this.endAlpha = null;
+    this.duration = null;
+    this.timer = 0;
+  }
+
+  animate(time) {
+    if (this.isFading) {
+      this.timer = Math.min(this.duration, this.timer + time);
+      this.sprite.alpha = this.startAlpha
+        + (this.endAlpha - this.startAlpha) * (this.timer / this.duration);
+      if (this.timer === this.duration) {
+        this.onFadeEnd();
+      }
+    }
+  }
+}
+
+SpriteFader.DEFAULT_DURATION = 20;
+
+module.exports = SpriteFader;
+
+
+/***/ }),
+
+/***/ "./src/js/cars/car-overlay.js":
+/*!************************************!*\
+  !*** ./src/js/cars/car-overlay.js ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+/* globals PIXI */
+const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
+const TrafficLights = __webpack_require__(/*! ./traffic-lights */ "./src/js/cars/traffic-lights.js");
+const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
+const CarSpawner = __webpack_require__(/*! ./car-spawner */ "./src/js/cars/car-spawner.js");
+const RoadMap = __webpack_require__(/*! ./road-map */ "./src/js/cars/road-map.js");
+
+class CarOverlay {
+  constructor(mapView, config, textures, options = {}) {
+    this.mapView = mapView;
+    this.config = config;
+    this.textures = textures;
+    this.city = this.mapView.city;
+    this.roads = new RoadMap(this.city.map, getTileTypeId(config, 'road'));
+
+    this.options = Object.assign({}, CarOverlay.defaultOptions, options);
+
+    this.displayObject = new PIXI.Container();
+    this.displayObject.width = this.mapView.width;
+    this.displayObject.height = this.mapView.height;
+    this.displayObject.x = 0;
+    this.displayObject.y = 0;
+    this.mapView.addOverlay(this.displayObject);
+
+    this.roadTileId = getTileTypeId(config, 'road');
+
+    this.cars = [];
+    this.carsByTile = Array2D.create(this.city.map.width, this.city.map.height, null);
+    Array2D.fill(this.carsByTile, () => []);
+
+    this.trafficLights = Array2D.create(this.city.map.width, this.city.map.height, null);
+    Array2D.fill(this.trafficLights, () => new TrafficLights());
+
+    this.spawner = this.options.spawn ? new CarSpawner(this, this.config) : null;
+  }
+
+  addCar(aCar) {
+    this.cars.push(aCar);
+    this.displayObject.addChild(aCar.sprite);
+  }
+
+  destroyCar(aCar) {
+    this.cars.splice(this.cars.indexOf(aCar), 1);
+    this.displayObject.removeChild(aCar);
+    aCar.destroy();
+  }
+
+  onCarEnterTile(car, tileX, tileY) {
+    this.carsByTile[tileY][tileX].push(car);
+    this.trafficLights[tileY][tileX].onCarEnter(car);
+  }
+
+  onCarExitTile(car, tileX, tileY) {
+    this.carsByTile[tileY][tileX].splice(this.carsByTile[tileY][tileX].indexOf(car), 1);
+    this.trafficLights[tileY][tileX].onCarExit(car);
+  }
+
+  onCarExitMap(aCar) {
+    this.destroyCar(aCar);
+  }
+
+  animate(time) {
+    if (this.spawner) {
+      this.spawner.animate(time);
+    }
+    this.cars.forEach(car => car.animate(time));
+  }
+
+  getCarsInTile(x, y) {
+    return this.city.map.isValidCoords(x, y) ? this.carsByTile[y][x] : [];
+  }
+
+  getCarsAround(car) {
+    const tiles = [[car.tile.x, car.tile.y]].concat(
+      this.city.map.adjacentCells(car.tile.x, car.tile.y)
+    );
+    return [].concat(...tiles.map(([x, y]) => this.getCarsInTile(x, y)))
+      .filter(other => car !== other);
+  }
+
+  getCarInFront(car) {
+    // The car in front can be a car on the same tile,
+    // with the same lane and entrySide,
+    // but the minimum *larger* progress...
+    return this.getCarsInTile(car.tile.x, car.tile.y)
+      .filter(other => car !== other && other.lane === car.lane
+        && other.entrySide === car.entrySide && other.path.progress > car.path.progress)
+      .sort((a, b) => a.path.progress - b.path.progress)
+      .shift()
+    // ... or a car in the next tile, with the same lane and
+    // entry side, and the minimum progress
+      || this.getCarsInTile(...car.getNextTile())
+        .filter(other => car !== other && other.lane === car.lane
+          && other.entrySide === car.getNextEntry())
+        .sort((a, b) => a.path.progress - b.path.progress)
+        .shift();
+  }
+}
+
+CarOverlay.defaultOptions = {
+  spawn: true, // If true cars will spawn automatically
+  maxLifetime: true, // If true cars will be killed after some time
+};
+
+module.exports = CarOverlay;
+
+
+/***/ }),
+
+/***/ "./src/js/cars/car-spawner.js":
+/*!************************************!*\
+  !*** ./src/js/cars/car-spawner.js ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Car = __webpack_require__(/*! ../cars/car */ "./src/js/cars/car.js");
+const RoadTile = __webpack_require__(/*! ../cars/road-tile */ "./src/js/cars/road-tile.js");
+const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+const { randomItem, weightedRandomizer } = __webpack_require__(/*! ../aux/random */ "./src/js/aux/random.js");
+
+const THROTTLE_TIME = 57; // Number of frames it waits before running the maybeSpawn function
+const SPAWN_PROBABILITY = 0.5;
+const CARS_PER_ROAD = 0.5;
+
+class CarSpawner {
+  constructor(carOverlay, config) {
+    this.overlay = carOverlay;
+    this.config = config;
+    this.city = carOverlay.city;
+    this.carRandomizer = weightedRandomizer(
+      Object.entries(this.config.carTypes).map(([id, props]) => [id, props.frequency || 1])
+    );
+
+    this.throttleTimer = Math.random() * THROTTLE_TIME;
+  }
+
+  maybeSpawn() {
+    const maxCars = this.overlay.roads.roadCount() * CARS_PER_ROAD;
+    if (this.overlay.cars.length < maxCars) {
+      if (Math.random() < SPAWN_PROBABILITY) {
+        this.spawn();
+      }
+    }
+  }
+
+  getRandomTile() {
+    const roadTiles = this.overlay.roads.connectedRoadTiles();
+    if (roadTiles.length === 0) {
+      return null;
+    }
+    const [x, y] = roadTiles[Math.floor(Math.random() * roadTiles.length)];
+    return { x, y };
+  }
+
+  getPreferredDirections(tileX, tileY) {
+    const maxY = (this.city.map.height - 1);
+    const maxX = (this.city.map.width - 1);
+    const distanceFromBorder = [
+      ['N', tileY / maxY],
+      ['E', (maxX - tileX) / maxX],
+      ['S', (maxY - tileY) / maxY],
+      ['W', tileX / maxX],
+    ];
+    return distanceFromBorder
+      .sort((a, b) => a[1] - b[1])
+      .map(a => a[0]);
+  }
+
+  getRandomEntrySide(tileX, tileY) {
+    const validDirections = this.overlay.roads.adjRoadDirs(tileX, tileY);
+    return validDirections.length === 1
+      ? Dir.opposite(validDirections[0])
+      : this.getPreferredDirections(tileX, tileY).find(d => validDirections.includes(d));
+  }
+
+  getRandomMaxSpeed(carType, lane) {
+    const base = this.config.carTypes[carType].maxSpeed || 1;
+    const deviation = Math.random() * 0.4 - 0.2;
+    return lane === RoadTile.OUTER_LANE
+      ? base * 0.8 + deviation
+      : base + deviation;
+  }
+
+  getRandomLane(carType) {
+    const options = (this.config.carTypes[carType].lanes || 'inner, outer')
+      .split(',')
+      .map(s => RoadTile.laneNames[s.trim().toLowerCase()]);
+
+    return options.length === 1 ? options[0] : randomItem(options);
+  }
+
+  spawn() {
+    const tile = this.getRandomTile();
+    if (tile) {
+      const entrySide = this.getRandomEntrySide(tile.x, tile.y);
+      const carType = this.carRandomizer();
+      const texture = this.overlay.textures[carType];
+      const lane = this.getRandomLane(carType);
+      const maxSpeed = this.getRandomMaxSpeed(carType, lane);
+
+      this.overlay.addCar(new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed));
+    }
+  }
+
+  animate(time) {
+    this.throttleTimer += time;
+    if (this.throttleTimer > THROTTLE_TIME) {
+      this.throttleTimer %= THROTTLE_TIME;
+      this.maybeSpawn();
+    }
+  }
+}
+
+module.exports = CarSpawner;
+
+
+/***/ }),
+
+/***/ "./src/js/cars/car.js":
+/*!****************************!*\
+  !*** ./src/js/cars/car.js ***!
+  \****************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+/* globals PIXI */
+const Vec2 = __webpack_require__(/*! vec2 */ "./node_modules/vec2/vec2.js");
+const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+const RoadTile = __webpack_require__(/*! ./road-tile */ "./src/js/cars/road-tile.js");
+const { TILE_SIZE } = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
+const SpriteFader = __webpack_require__(/*! ../aux/sprite-fader */ "./src/js/aux/sprite-fader.js");
+const PathStraight = __webpack_require__(/*! ./path-straight */ "./src/js/cars/path-straight.js");
+const PathArc = __webpack_require__(/*! ./path-arc */ "./src/js/cars/path-arc.js");
+const { randomItem } = __webpack_require__(/*! ../aux/random */ "./src/js/aux/random.js");
+
+// The closest a car can get to another
+const SAFE_DISTANCE = TILE_SIZE / 20;
+// Distance at which a car begins to slow down when there's another in front
+const SLOWDOWN_DISTANCE = TILE_SIZE / 3;
+const LIGHT_CHANGE_DELAY = [300, 800];
+// Max lifetime of cars
+const MAX_LIFETIME = 2 * 60 * 60; // Approx. 2 minutes
+const MAX_TIME_STOPPED = 60 * 60; // Approx. 1 minute
+
+class Car {
+  constructor(carOverlay, texture, tileX, tileY, entrySide, lane, maxSpeed = 1) {
+    this.overlay = carOverlay;
+    this.lane = lane;
+    this.maxSpeed = maxSpeed;
+    this.speed = maxSpeed;
+    this.inRedLight = false;
+    this.sprite = Car.createSprite(texture);
+    this.fader = new SpriteFader(this.sprite);
+    this.lifetime = 0;
+    this.timeStopped = 0;
+    this.isSpawning = true;
+    this.isDespawning = false;
+    this.carDistanceFactor = 1 + Math.random() * 0.6;
+    this.safeDistance = SAFE_DISTANCE * this.carDistanceFactor;
+    this.slowdownDistance = SLOWDOWN_DISTANCE * this.carDistanceFactor;
+
+    this.path = null;
+    this.setTile(tileX, tileY, entrySide);
+
+    this.setSpritePosition(this.tilePosition().add(RoadTile.entryPoint(this.lane, this.entrySide)));
+    this.sprite.rotation = Dir.asAngle(Dir.opposite(this.entrySide));
+  }
+
+  static createSprite(texture) {
+    const sprite = new PIXI.Sprite();
+    sprite.texture = texture;
+    sprite.width = texture.width;
+    sprite.height = texture.height;
+    // sprite.roundPixels = true;
+    sprite.anchor.set(0.5, 0.75);
+    sprite.visible = true;
+    sprite.alpha = 0;
+
+    return sprite;
+  }
+
+  destroy() {
+    this.sprite.destroy();
+    this.sprite = null;
+    this.overlay = null;
+  }
+
+  despawn() {
+    if (!this.isDespawning) {
+      this.isDespawning = true;
+      this.fader.fadeOut(() => {
+        this.overlay.onCarExitTile(this, this.tile.x, this.tile.y);
+        this.overlay.onCarExitMap(this);
+      });
+    }
+  }
+
+  setTile(x, y, entrySide) {
+    // Check if the coordinates are valid
+    if (!this.overlay.city.map.isValidCoords(x, y)) {
+      this.despawn();
+      return;
+    }
+
+    // Check if the tile has an exit
+    const exitSide = this.getRandomExitSide(x, y, entrySide);
+    if (exitSide === null) {
+      this.despawn();
+      return;
+    }
+
+    this.tile = { x, y };
+    this.entrySide = entrySide;
+    this.exitSide = exitSide;
+
+    const remainder = this.path !== null ? this.path.remainder : 0;
+    this.path = this.exitSide === Dir.opposite(this.entrySide)
+      ? new PathStraight(this.lane, this.entrySide)
+      : new PathArc(this.lane, this.entrySide, this.exitSide);
+    this.path.advance(remainder);
+
+    this.onEnterTile();
+  }
+
+  getNextTile() {
+    return Dir.adjCoords(this.tile.x, this.tile.y, this.exitSide);
+  }
+
+  getNextEntry() {
+    return Dir.opposite(this.exitSide);
+  }
+
+  tilePosition() {
+    return Vec2(this.tile.x * TILE_SIZE, this.tile.y * TILE_SIZE);
+  }
+
+  setSpritePosition(v) {
+    this.sprite.x = v.x;
+    this.sprite.y = v.y;
+  }
+
+  getSpritePosition() {
+    return Vec2(this.sprite.x, this.sprite.y);
+  }
+
+  getRandomExitSide(tileX, tileY, entrySide) {
+    // Select the direction based on road availability
+    const options = [];
+
+    // If it's possible to go forward, add the option
+    if (this.overlay.roads.hasAdjRoad(tileX, tileY, Dir.opposite(entrySide))) {
+      // Add it three times to make it more likely than turning
+      options.push(Dir.opposite(entrySide));
+      options.push(Dir.opposite(entrySide));
+      options.push(Dir.opposite(entrySide));
+    }
+    // If it's possible to turn right, add the option
+    if ((options.length === 0 || this.lane === RoadTile.OUTER_LANE)
+      && this.overlay.roads.hasAdjRoad(tileX, tileY, Dir.ccw(entrySide))) {
+      options.push(Dir.ccw(entrySide));
+    }
+    // If it's not possible to go forward or turn right,
+    // turn left if possible.
+    if (options.length === 0
+      && this.overlay.roads.hasAdjRoad(tileX, tileY, Dir.cw(entrySide))) {
+      options.push(Dir.cw(entrySide));
+    }
+
+    // Randomly select one of the possible directions
+    // return null if there's no way to go
+    return randomItem(options) || null;
+  }
+
+  onEnterTile() {
+    this.overlay.onCarEnterTile(this, this.tile.x, this.tile.y);
+  }
+
+  onGreenLight() {
+    const [minDelay, maxDelay] = LIGHT_CHANGE_DELAY;
+    setTimeout(() => {
+      this.inRedLight = false;
+    }, minDelay + Math.random() * (maxDelay - minDelay));
+  }
+
+  onRedLight() {
+    this.inRedLight = true;
+  }
+
+  onExitTile() {
+    this.overlay.onCarExitTile(this, this.tile.x, this.tile.y);
+
+    // Transfer the car to the next tile
+    this.setTile(...this.getNextTile(), this.getNextEntry());
+  }
+
+  adjustSpeed() {
+    const position = this.getSpritePosition();
+    const carInFront = this.overlay.getCarInFront(this);
+    if (carInFront) {
+      const overlapDistance = this.sprite.height / 2 + carInFront.sprite.height / 2;
+      const distanceToCarInFront = carInFront
+        .getSpritePosition()
+        .distance(position) - overlapDistance;
+      if (distanceToCarInFront <= this.safeDistance) {
+        this.speed = 0;
+      } else if (distanceToCarInFront <= this.slowdownDistance) {
+        // Deaccelerate to maintain the safe distance
+        this.speed = this.maxSpeed * (1 - this.safeDistance / distanceToCarInFront);
+      } else if (this.speed < this.maxSpeed) {
+        // Accelerate up to the maxSpeed
+        this.speed = Math.min(this.speed + this.maxSpeed / 5, this.maxSpeed);
+      }
+    } else if (this.speed < this.maxSpeed) {
+      // Accelerate up to the maxSpeed
+      this.speed = Math.min(this.speed + this.maxSpeed / 5, this.maxSpeed);
+    }
+
+    if (this.inRedLight && this.speed > 0) {
+      this.speed = 0;
+    }
+  }
+
+  hasCarsOverlapping() {
+    const cheapDistance = (v1, v2) => Math.max(Math.abs(v1.x - v2.x), Math.abs(v1.y - v2.y));
+    const position = this.getSpritePosition();
+    return this.overlay.getCarsAround(this).some((carAround) => {
+      const overlapDistance = this.sprite.height / 2 + carAround.sprite.height / 2;
+      return cheapDistance(carAround.getSpritePosition(), position) < overlapDistance;
+    });
+  }
+
+  animate(time) {
+    this.adjustSpeed();
+
+    if (this.isSpawning && !this.hasCarsOverlapping()) {
+      this.isSpawning = false;
+    }
+
+    if (this.speed > 0) {
+      this.timeStopped = 0;
+      this.path.advance(this.speed * time);
+      this.setSpritePosition(this.tilePosition().add(this.path.position));
+      this.sprite.rotation = this.path.rotation;
+      if (this.path.progress === 1) {
+        this.onExitTile();
+      }
+    } else {
+      this.timeStopped += time;
+    }
+
+    this.lifetime += time;
+    if ((this.lifetime > MAX_LIFETIME || this.timeStopped > MAX_TIME_STOPPED)
+      && this.overlay.options.maxLifetime) {
+      this.despawn();
+    }
+
+    // This initial check to see if the car was killed is only needed because the car
+    // might be destroyed on the onExitTile above. Refactor.
+    if (this.isDespawning
+      || this.isSpawning
+      || !this.overlay.roads.isRoad(this.tile.x, this.tile.y)) {
+      this.fader.fadeOut();
+    } else {
+      this.fader.fadeIn();
+    }
+    this.fader.animate(time);
+  }
+}
+
+module.exports = Car;
+
+
+/***/ }),
+
+/***/ "./src/js/cars/path-arc.js":
+/*!*********************************!*\
+  !*** ./src/js/cars/path-arc.js ***!
+  \*********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Vec2 = __webpack_require__(/*! vec2 */ "./node_modules/vec2/vec2.js");
+const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+const RoadTile = __webpack_require__(/*! ./road-tile */ "./src/js/cars/road-tile.js");
+
+class PathArc {
+  constructor(lane, entrySide, exitSide) {
+    this.arcRotation = RoadTile.curveRotation(entrySide, exitSide);
+
+    const rotationDir = RoadTile.curveRotDir(entrySide, exitSide);
+    this.rotationSign = rotationDir === 'cw' ? 1 : -1;
+    this.arcRadius = RoadTile.curveRadius[rotationDir][lane];
+    this.arcLength = Math.PI * this.arcRadius / 2;
+    this.rotCenter = RoadTile.curveCenter(entrySide, exitSide);
+
+    this.distance = 0;
+    this.progress = 0;
+    this.remainder = 0;
+    this.position = RoadTile.entryPoint(lane, entrySide);
+  }
+
+  advance(distance) {
+    this.distance += distance;
+    if (this.distance > this.arcLength) {
+      this.remainder = this.distance - this.arcLength;
+      this.distance = this.arcLength;
+    }
+    this.progress = this.distance / this.arcLength;
+    const angle = this.arcRotation + this.progress * (Math.PI / 2) * this.rotationSign;
+    this.position = Vec2(0, this.arcRadius)
+      .rotate(angle)
+      .add(this.rotCenter);
+    this.rotation = angle + Math.PI / 2 * this.rotationSign;
+  }
+}
+
+module.exports = PathArc;
+
+
+/***/ }),
+
+/***/ "./src/js/cars/path-straight.js":
+/*!**************************************!*\
+  !*** ./src/js/cars/path-straight.js ***!
+  \**************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Vec2 = __webpack_require__(/*! vec2 */ "./node_modules/vec2/vec2.js");
+const RoadTile = __webpack_require__(/*! ./road-tile */ "./src/js/cars/road-tile.js");
+const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+const MapView = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
+
+class PathStraight {
+  constructor(lane, entrySide) {
+    this.entryPoint = RoadTile.entryPoint(lane, entrySide);
+    this.rotation = Dir.asAngle(Dir.opposite(entrySide));
+
+    this.distance = 0;
+    this.progress = 0;
+    this.remainder = 0;
+    this.position = this.entryPoint;
+  }
+
+  advance(distance) {
+    this.distance += distance;
+    if (this.distance > MapView.TILE_SIZE) {
+      this.remainder = this.distance - MapView.TILE_SIZE;
+      this.distance = MapView.TILE_SIZE;
+    }
+    this.progress = this.distance / MapView.TILE_SIZE;
+
+    this.position = Vec2(0, this.distance).rotate(this.rotation).add(this.entryPoint);
+  }
+}
+
+module.exports = PathStraight;
+
+
+/***/ }),
+
+/***/ "./src/js/cars/road-map.js":
+/*!*********************************!*\
+  !*** ./src/js/cars/road-map.js ***!
+  \*********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
+
+class RoadMap {
+  constructor(map, roadTileId) {
+    this.map = map;
+    this.roadTileId = roadTileId;
+  }
+
+  isRoad(x, y) {
+    return !this.map.isValidCoords(x, y)
+      || this.map.get(x, y) === this.roadTileId;
+  }
+
+  hasAdjRoad(x, y, direction) {
+    return this.isRoad(...Dir.adjCoords(x, y, direction));
+  }
+
+  adjRoadDirs(x, y) {
+    return Dir.all.filter(d => this.hasAdjRoad(x, y, d));
+  }
+
+  roadCount() {
+    return Array2D.reduce(this.map.cells,
+      (total, cell) => total + (cell === this.roadTileId ? 1 : 0), 0);
+  }
+
+  roadTiles() {
+    return Array2D.items(this.map.cells).filter(([x, y]) => this.map.get(x, y) === this.roadTileId);
+  }
+
+  connectedRoadTiles() {
+    return this.roadTiles().filter(([x, y]) => this.hasAdjRoad(x, y, 'N')
+      || this.hasAdjRoad(x, y, 'E')
+      || this.hasAdjRoad(x, y, 'S')
+      || this.hasAdjRoad(x, y, 'W'));
+  }
+}
+
+module.exports = RoadMap;
+
+
+/***/ }),
+
+/***/ "./src/js/cars/road-tile.js":
+/*!**********************************!*\
+  !*** ./src/js/cars/road-tile.js ***!
+  \**********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Vec2 = __webpack_require__(/*! vec2 */ "./node_modules/vec2/vec2.js");
+const { TILE_SIZE } = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
+
+const LANE_WIDTH = TILE_SIZE / 6;
+
+const INNER_LANE = 2;
+const OUTER_LANE = 1;
+const BIKE_LANE = 0;
+
+const laneNames = {
+  inner: INNER_LANE,
+  outer: OUTER_LANE,
+  bike: BIKE_LANE,
+};
+
+function entryPoint(lane, side) {
+  switch (side) {
+    case 'W':
+      return Vec2(0, TILE_SIZE - (LANE_WIDTH * (lane + 0.5)));
+    case 'E':
+      return Vec2(TILE_SIZE, LANE_WIDTH * (lane + 0.5));
+    case 'S':
+      return Vec2(TILE_SIZE - (LANE_WIDTH * (lane + 0.5)), TILE_SIZE);
+    case 'N':
+      return Vec2(LANE_WIDTH * (lane + 0.5), 0);
+    default:
+      throw new Error(`Invalid direction ${side}`);
+  }
+}
+
+function exitPoint(lane, side) {
+  switch (side) {
+    case 'W':
+      return Vec2(0, LANE_WIDTH * (lane + 0.5));
+    case 'E':
+      return Vec2(TILE_SIZE, TILE_SIZE - (LANE_WIDTH * (lane + 0.5)));
+    case 'S':
+      return Vec2(LANE_WIDTH * (lane + 0.5), TILE_SIZE);
+    case 'N':
+      return Vec2(TILE_SIZE - (LANE_WIDTH * (lane + 0.5)), 0);
+    default:
+      throw new Error(`Invalid direction ${side}`);
+  }
+}
+
+const curveRadius = {
+  cw: [],
+  ccw: [],
+};
+curveRadius.cw[BIKE_LANE] = LANE_WIDTH * 0.5;
+curveRadius.cw[OUTER_LANE] = LANE_WIDTH * 1.5;
+curveRadius.cw[INNER_LANE] = LANE_WIDTH * 2.5;
+curveRadius.ccw[INNER_LANE] = LANE_WIDTH * 3.5;
+curveRadius.ccw[OUTER_LANE] = LANE_WIDTH * 4.5;
+curveRadius.ccw[BIKE_LANE] = LANE_WIDTH * 5.5;
+
+function curveRotDir(entryDir, exitDir) {
+  const table = {
+    N: { W: 'cw', E: 'ccw' },
+    E: { N: 'cw', S: 'ccw' },
+    S: { E: 'cw', W: 'ccw' },
+    W: { S: 'cw', N: 'ccw' },
+  };
+
+  return table[entryDir][exitDir];
+}
+
+function curveCenter(entryDir, exitDir) {
+  const ne = Vec2(TILE_SIZE, 0);
+  const se = Vec2(TILE_SIZE, TILE_SIZE);
+  const sw = Vec2(0, TILE_SIZE);
+  const nw = Vec2(0, 0);
+
+  const table = {
+    N: { W: nw, E: ne },
+    E: { N: ne, S: se },
+    S: { E: se, W: sw },
+    W: { S: sw, N: nw },
+  };
+
+  return table[entryDir][exitDir];
+}
+
+function curveRotation(entryDir, exitDir) {
+
+  const table = {
+    N: { W: Math.PI * 1.5, E: Math.PI * 0.5 },
+    E: { N: 0, S: Math.PI },
+    S: { E: Math.PI * 0.5, W: Math.PI * 1.5 },
+    W: { S: Math.PI, N: 0 },
+  };
+
+  return table[entryDir][exitDir];
+}
+
+module.exports = {
+  BIKE_LANE,
+  OUTER_LANE,
+  INNER_LANE,
+  LANE_WIDTH,
+  laneNames,
+  entryPoint,
+  exitPoint,
+  curveRadius,
+  curveRotDir,
+  curveCenter,
+  curveRotation,
+};
+
+
+/***/ }),
+
+/***/ "./src/js/cars/traffic-lights.js":
+/*!***************************************!*\
+  !*** ./src/js/cars/traffic-lights.js ***!
+  \***************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+
+const MIN_LIGHT_CHANGE_DELAY = 500;
+const MAX_LIGHT_CHANGE_DELAY = 1200;
+
+class TrafficLights {
+  constructor() {
+    this.carsCrossing = [];
+    this.carsWaiting = [];
+    this.greenDirections = [];
+    this.lightsChanging = false;
+  }
+
+  onCarRequestToCross(car) {
+    if (!this.lightsChanging && this.greenDirections.length === 0) {
+      // This criteria to turn on green lights could be different
+      // or more complex. It could be based on the number of
+      // connections the tile has to roads, and the allowed
+      // directions of turns. But maybe this will be enough for now...
+      if (Dir.opposite(car.entrySide) === car.exitSide) {
+        this.greenDirections = [`${car.entrySide}-${car.exitSide}`,
+          `${Dir.opposite(car.entrySide)}-${Dir.opposite(car.exitSide)}`];
+      } else {
+        this.greenDirections = [`${car.entrySide}-${car.exitSide}`,
+          `${car.exitSide}-${car.entrySide}`];
+      }
+    }
+    if (this.greenDirections.includes(`${car.entrySide}-${car.exitSide}`)) {
+      return true;
+    }
+    return false;
+  }
+
+  onCarEnter(car) {
+    if (this.onCarRequestToCross(car)) {
+      this.carsCrossing.push(car);
+    } else {
+      this.carsWaiting.push(car);
+      car.onRedLight();
+    }
+  }
+
+  onCarExit(car) {
+    this.carsCrossing = this.carsCrossing.filter(c => c !== car);
+    this.carsWaiting = this.carsWaiting.filter(c => c !== car);
+    if (this.carsCrossing.length === 0) {
+      this.switchLights();
+    }
+  }
+
+  getRandomLightChangeDelay() {
+    return MIN_LIGHT_CHANGE_DELAY
+      + Math.random() * (MAX_LIGHT_CHANGE_DELAY - MIN_LIGHT_CHANGE_DELAY);
+  }
+
+  switchLights() {
+    this.lightsChanging = true;
+    setTimeout(() => {
+      this.lightsChanging = false;
+      this.greenDirections = [];
+      this.carsWaiting.forEach((car) => {
+        if (this.onCarRequestToCross(car)) {
+          this.carsWaiting = this.carsWaiting.filter(c => c !== car);
+          this.carsCrossing.push(car);
+          car.onGreenLight();
+        }
+      });
+    }, this.getRandomLightChangeDelay());
+  }
+}
+
+module.exports = TrafficLights;
 
 
 /***/ }),
@@ -1417,6 +2902,7 @@ __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
 const ServerSocketConnector = __webpack_require__(/*! ./server-socket-connector */ "./src/js/server-socket-connector.js");
 const ConnectionStateView = __webpack_require__(/*! ./connection-state-view */ "./src/js/connection-state-view.js");
 const showFatalError = __webpack_require__(/*! ./aux/show-fatal-error */ "./src/js/aux/show-fatal-error.js");
+const CarOverlay = __webpack_require__(/*! ./cars/car-overlay */ "./src/js/cars/car-overlay.js");
 
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -1428,15 +2914,16 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
       height: 1920,
       backgroundColor: 0xf2f2f2,
     });
-    const roadTextureAtlas = './textures/road-textures.json';
     // Add a pre-load middleware that does cache-busting
     app.loader.pre((resource, next) => { resource.url += `?t=${Date.now()}`; next(); });
-    app.loader.add(roadTextureAtlas);
+    app.loader.add('./textures/road-textures.json');
+    app.loader.add('./textures/car-textures.json');
     app.loader.load((loader, resources) => {
       $('[data-component="app-container"]').append(app.view);
       const textures = Object.assign(
         {},
-        resources[roadTextureAtlas].textures,
+        resources['./textures/road-textures.json'].textures,
+        resources['./textures/car-textures.json'].textures,
       );
 
       // Change the scaling mode for the road textures
@@ -1451,6 +2938,9 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
       mapView.displayObject.height = 1920;
       mapView.displayObject.x = 0;
       mapView.displayObject.y = 0;
+
+      const carOverlay = new CarOverlay(mapView, config, textures);
+      app.ticker.add(time => carOverlay.animate(time));
 
       const connector = new ServerSocketConnector("ws://localhost:4848");
       connector.events.on('map_update', (cells) => {
@@ -1473,4 +2963,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.1f0b6c5a30f7805f6858.js.map
+//# sourceMappingURL=city.a3718858cf03f0542767.js.map
