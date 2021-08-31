@@ -13,8 +13,8 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
     const city = new City(config.cityWidth, config.cityHeight);
 
     const app = new PIXI.Application({
-      width: 3840,
-      height: 1920,
+      width: 1152,
+      height: 1152,
       backgroundColor: 0xf2f2f2,
     });
     // Add a pre-load middleware that does cache-busting
@@ -37,8 +37,8 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
       // const mapView = new MapView(city, config, textures);
       const mapView = new MapView(city, config, textures);
       app.stage.addChild(mapView.displayObject);
-      mapView.displayObject.width = 1920;
-      mapView.displayObject.height = 1920;
+      mapView.displayObject.width = 1152;
+      mapView.displayObject.height = 1152;
       mapView.displayObject.x = 0;
       mapView.displayObject.y = 0;
 

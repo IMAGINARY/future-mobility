@@ -18,9 +18,16 @@ h2 {
   font-size: 1.5rem;
   margin-bottom: 0.75em; }
 
-[data-component="app-container"] canvas {
+[data-component="app-container"] {
+  max-width: 1152px;
+  max-height: 1152px;
   width: 100%;
-  height: auto; }
+  height: 100%;
+  text-align: center; }
+  [data-component="app-container"] canvas {
+    display: inline-block;
+    max-width: 100%;
+    max-height: 100%; }
 
 .map-view, .map-editor {
   width: 100%;
@@ -267,4 +274,4 @@ body > .tile-counter {
   top: 5px; }
 
 
-/*# sourceMappingURL=city.2f818d090050af48e895.css.map*/
+/*# sourceMappingURL=editor.d38564e74e65f3fc3529.css.map*/
