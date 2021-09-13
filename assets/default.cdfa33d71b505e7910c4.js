@@ -5582,6 +5582,104 @@ module.exports = SpriteFader;
 
 /***/ }),
 
+/***/ "./src/js/cars/car-driver.js":
+/*!***********************************!*\
+  !*** ./src/js/cars/car-driver.js ***!
+  \***********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+const RoadTile = __webpack_require__(/*! ./road-tile */ "./src/js/cars/road-tile.js");
+const { randomItem } = __webpack_require__(/*! ../aux/random */ "./src/js/aux/random.js");
+const { TILE_SIZE } = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
+
+const LIGHT_CHANGE_DELAY = [300, 800];
+// The closest a car can get to another
+const SAFE_DISTANCE = TILE_SIZE / 20;
+// Distance at which a car begins to slow down when there's another in front
+const SLOWDOWN_DISTANCE = TILE_SIZE / 3;
+
+class CarDriver {
+  constructor(car) {
+    this.car = car;
+    this.carDistanceFactor = 1 + Math.random() * 0.6;
+    this.safeDistance = SAFE_DISTANCE * this.carDistanceFactor;
+    this.slowdownDistance = SLOWDOWN_DISTANCE * this.carDistanceFactor;
+    this.inRedLight = false;
+  }
+
+  chooseExitSide(tileX, tileY, entrySide) {
+    // Select the direction based on road availability
+    const options = [];
+
+    // If it's possible to go forward, add the option
+    if (this.car.overlay.roads.hasAdjRoad(tileX, tileY, Dir.opposite(entrySide))) {
+      // Add it three times to make it more likely than turning
+      options.push(Dir.opposite(entrySide));
+      options.push(Dir.opposite(entrySide));
+      options.push(Dir.opposite(entrySide));
+    }
+    // If it's possible to turn right, add the option
+    if ((options.length === 0 || this.car.lane === RoadTile.OUTER_LANE)
+      && this.car.overlay.roads.hasAdjRoad(tileX, tileY, Dir.ccw(entrySide))) {
+      options.push(Dir.ccw(entrySide));
+    }
+    // If it's not possible to go forward or turn right,
+    // turn left if possible.
+    if (options.length === 0
+      && this.car.overlay.roads.hasAdjRoad(tileX, tileY, Dir.cw(entrySide))) {
+      options.push(Dir.cw(entrySide));
+    }
+
+    // Randomly select one of the possible directions
+    // return null if there's no way to go
+    return randomItem(options) || null;
+  }
+
+  onGreenLight() {
+    const [minDelay, maxDelay] = LIGHT_CHANGE_DELAY;
+    setTimeout(() => {
+      this.inRedLight = false;
+    }, minDelay + Math.random() * (maxDelay - minDelay));
+  }
+
+  onRedLight() {
+    this.inRedLight = true;
+  }
+
+  adjustCarSpeed() {
+    const position = this.car.getSpritePosition();
+    const carInFront = this.car.overlay.getCarInFront(this.car);
+    if (carInFront) {
+      const overlapDistance = this.car.sprite.height / 2 + carInFront.sprite.height / 2;
+      const distanceToCarInFront = carInFront
+        .getSpritePosition()
+        .distance(position) - overlapDistance;
+      if (distanceToCarInFront <= this.safeDistance) {
+        this.car.speed = 0;
+      } else if (distanceToCarInFront <= this.slowdownDistance) {
+        // Deaccelerate to maintain the safe distance
+        this.car.speed = this.car.maxSpeed * (1 - this.safeDistance / distanceToCarInFront);
+      } else if (this.car.speed < this.car.maxSpeed) {
+        // Accelerate up to the maxSpeed
+        this.car.speed = Math.min(this.car.speed + this.car.maxSpeed / 5, this.car.maxSpeed);
+      }
+    } else if (this.car.speed < this.car.maxSpeed) {
+      // Accelerate up to the maxSpeed
+      this.car.speed = Math.min(this.car.speed + this.car.maxSpeed / 5, this.car.maxSpeed);
+    }
+
+    if (this.inRedLight && this.car.speed > 0) {
+      this.car.speed = 0;
+    }
+  }
+}
+
+module.exports = CarDriver;
+
+
+/***/ }),
+
 /***/ "./src/js/cars/car-overlay.js":
 /*!************************************!*\
   !*** ./src/js/cars/car-overlay.js ***!
@@ -5792,6 +5890,25 @@ class CarSpawner {
     }
   }
 
+  spawnTram() {
+    // Todo: Temporary function for prototyping
+    const tile = this.getRandomTile();
+    if (tile) {
+      const entrySide = this.getRandomEntrySide(tile.x, tile.y);
+      const carType = 'bus-yellow';
+      const texture = this.overlay.textures[carType];
+      const lane = 'inner';
+      const maxSpeed = this.getRandomMaxSpeed(carType, lane);
+
+      const car1 = new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed);
+      const car2 = new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed);
+      const car3 = new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed);
+      this.overlay.addCar(car1);
+      this.overlay.addCar(car2);
+      this.overlay.addCar(car3);
+    }
+  }
+
   animate(time) {
     this.throttleTimer += time;
     if (this.throttleTimer > THROTTLE_TIME) {
@@ -5814,19 +5931,14 @@ module.exports = CarSpawner;
 
 /* globals PIXI */
 const Vec2 = __webpack_require__(/*! vec2 */ "./node_modules/vec2/vec2.js");
+const CarDriver = __webpack_require__(/*! ./car-driver */ "./src/js/cars/car-driver.js");
 const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
 const RoadTile = __webpack_require__(/*! ./road-tile */ "./src/js/cars/road-tile.js");
 const { TILE_SIZE } = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
 const SpriteFader = __webpack_require__(/*! ../aux/sprite-fader */ "./src/js/aux/sprite-fader.js");
 const PathStraight = __webpack_require__(/*! ./path-straight */ "./src/js/cars/path-straight.js");
 const PathArc = __webpack_require__(/*! ./path-arc */ "./src/js/cars/path-arc.js");
-const { randomItem } = __webpack_require__(/*! ../aux/random */ "./src/js/aux/random.js");
 
-// The closest a car can get to another
-const SAFE_DISTANCE = TILE_SIZE / 20;
-// Distance at which a car begins to slow down when there's another in front
-const SLOWDOWN_DISTANCE = TILE_SIZE / 3;
-const LIGHT_CHANGE_DELAY = [300, 800];
 // Max lifetime of cars
 const MAX_LIFETIME = 2 * 60 * 60; // Approx. 2 minutes
 const MAX_TIME_STOPPED = 60 * 60; // Approx. 1 minute
@@ -5834,19 +5946,16 @@ const MAX_TIME_STOPPED = 60 * 60; // Approx. 1 minute
 class Car {
   constructor(carOverlay, texture, tileX, tileY, entrySide, lane, maxSpeed = 1) {
     this.overlay = carOverlay;
+    this.driver = new CarDriver(this);
     this.lane = lane;
     this.maxSpeed = maxSpeed;
     this.speed = maxSpeed;
-    this.inRedLight = false;
     this.sprite = Car.createSprite(texture);
     this.fader = new SpriteFader(this.sprite);
     this.lifetime = 0;
     this.timeStopped = 0;
     this.isSpawning = true;
     this.isDespawning = false;
-    this.carDistanceFactor = 1 + Math.random() * 0.6;
-    this.safeDistance = SAFE_DISTANCE * this.carDistanceFactor;
-    this.slowdownDistance = SLOWDOWN_DISTANCE * this.carDistanceFactor;
 
     this.path = null;
     this.setTile(tileX, tileY, entrySide);
@@ -5892,7 +6001,7 @@ class Car {
     }
 
     // Check if the tile has an exit
-    const exitSide = this.getRandomExitSide(x, y, entrySide);
+    const exitSide = this.driver.chooseExitSide(x, y, entrySide);
     if (exitSide === null) {
       this.despawn();
       return;
@@ -5932,47 +6041,16 @@ class Car {
     return Vec2(this.sprite.x, this.sprite.y);
   }
 
-  getRandomExitSide(tileX, tileY, entrySide) {
-    // Select the direction based on road availability
-    const options = [];
-
-    // If it's possible to go forward, add the option
-    if (this.overlay.roads.hasAdjRoad(tileX, tileY, Dir.opposite(entrySide))) {
-      // Add it three times to make it more likely than turning
-      options.push(Dir.opposite(entrySide));
-      options.push(Dir.opposite(entrySide));
-      options.push(Dir.opposite(entrySide));
-    }
-    // If it's possible to turn right, add the option
-    if ((options.length === 0 || this.lane === RoadTile.OUTER_LANE)
-      && this.overlay.roads.hasAdjRoad(tileX, tileY, Dir.ccw(entrySide))) {
-      options.push(Dir.ccw(entrySide));
-    }
-    // If it's not possible to go forward or turn right,
-    // turn left if possible.
-    if (options.length === 0
-      && this.overlay.roads.hasAdjRoad(tileX, tileY, Dir.cw(entrySide))) {
-      options.push(Dir.cw(entrySide));
-    }
-
-    // Randomly select one of the possible directions
-    // return null if there's no way to go
-    return randomItem(options) || null;
-  }
-
   onEnterTile() {
     this.overlay.onCarEnterTile(this, this.tile.x, this.tile.y);
   }
 
   onGreenLight() {
-    const [minDelay, maxDelay] = LIGHT_CHANGE_DELAY;
-    setTimeout(() => {
-      this.inRedLight = false;
-    }, minDelay + Math.random() * (maxDelay - minDelay));
+    this.driver.onGreenLight();
   }
 
   onRedLight() {
-    this.inRedLight = true;
+    this.driver.onRedLight();
   }
 
   onExitTile() {
@@ -5980,33 +6058,6 @@ class Car {
 
     // Transfer the car to the next tile
     this.setTile(...this.getNextTile(), this.getNextEntry());
-  }
-
-  adjustSpeed() {
-    const position = this.getSpritePosition();
-    const carInFront = this.overlay.getCarInFront(this);
-    if (carInFront) {
-      const overlapDistance = this.sprite.height / 2 + carInFront.sprite.height / 2;
-      const distanceToCarInFront = carInFront
-        .getSpritePosition()
-        .distance(position) - overlapDistance;
-      if (distanceToCarInFront <= this.safeDistance) {
-        this.speed = 0;
-      } else if (distanceToCarInFront <= this.slowdownDistance) {
-        // Deaccelerate to maintain the safe distance
-        this.speed = this.maxSpeed * (1 - this.safeDistance / distanceToCarInFront);
-      } else if (this.speed < this.maxSpeed) {
-        // Accelerate up to the maxSpeed
-        this.speed = Math.min(this.speed + this.maxSpeed / 5, this.maxSpeed);
-      }
-    } else if (this.speed < this.maxSpeed) {
-      // Accelerate up to the maxSpeed
-      this.speed = Math.min(this.speed + this.maxSpeed / 5, this.maxSpeed);
-    }
-
-    if (this.inRedLight && this.speed > 0) {
-      this.speed = 0;
-    }
   }
 
   hasCarsOverlapping() {
@@ -6019,7 +6070,7 @@ class Car {
   }
 
   animate(time) {
-    this.adjustSpeed();
+    this.driver.adjustCarSpeed();
 
     if (this.isSpawning && !this.hasCarsOverlapping()) {
       this.isSpawning = false;
@@ -6043,8 +6094,6 @@ class Car {
       this.despawn();
     }
 
-    // This initial check to see if the car was killed is only needed because the car
-    // might be destroyed on the onExitTile above. Refactor.
     if (this.isDespawning
       || this.isSpawning
       || !this.overlay.roads.isRoad(this.tile.x, this.tile.y)) {
@@ -7964,4 +8013,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.0c16fe626996da8ecd77.js.map
+//# sourceMappingURL=default.cdfa33d71b505e7910c4.js.map

@@ -28,6 +28,10 @@ The **CarSpawner** spawns randomly defined cars at random intervals on the CarOv
 
 The **Car** class represents a single car. It calculates its movement and modifies a PIXI.Sprite.
 
+The **CarDriver** class simulates the car's driver. It makes decisions based on randomness to give
+the car "personality". e.g. delays when coming out of a red light, deciding whether to turn, 
+keeping distance to the car in front, etc.
+
 The CarOverlay and Cars track in which tile a car is. The car moves through a tile by following a
 path, which can be defined by **PathStraight** or **PathArc**. These classes receive the distance
 moved each frame and convert it to tile-relative coordinates. Cars are like trains and Paths define

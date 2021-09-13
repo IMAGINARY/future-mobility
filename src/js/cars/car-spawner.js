@@ -87,6 +87,25 @@ class CarSpawner {
     }
   }
 
+  spawnTram() {
+    // Todo: Temporary function for prototyping
+    const tile = this.getRandomTile();
+    if (tile) {
+      const entrySide = this.getRandomEntrySide(tile.x, tile.y);
+      const carType = 'bus-yellow';
+      const texture = this.overlay.textures[carType];
+      const lane = 'inner';
+      const maxSpeed = this.getRandomMaxSpeed(carType, lane);
+
+      const car1 = new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed);
+      const car2 = new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed);
+      const car3 = new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed);
+      this.overlay.addCar(car1);
+      this.overlay.addCar(car2);
+      this.overlay.addCar(car3);
+    }
+  }
+
   animate(time) {
     this.throttleTimer += time;
     if (this.throttleTimer > THROTTLE_TIME) {
