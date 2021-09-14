@@ -1,5 +1,12 @@
 {"frames": {
-
+"tram":
+{
+	"frame": {"x":1,"y":1,"w":24,"h":65},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":24,"h":65},
+	"sourceSize": {"w":24,"h":65}
+},
 "bus-yellow":
 {
 	"frame": {"x":1,"y":1,"w":24,"h":65},

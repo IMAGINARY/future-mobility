@@ -7,6 +7,7 @@ const { TILE_SIZE } = require('../map-view');
 const SpriteFader = require('../aux/sprite-fader');
 const PathStraight = require('./path-straight');
 const PathArc = require('./path-arc');
+const PulledCarDriver = require('./pulled-car-driver');
 
 // Max lifetime of cars
 const MAX_LIFETIME = 2 * 60 * 60; // Approx. 2 minutes
@@ -25,6 +26,8 @@ class Car {
     this.timeStopped = 0;
     this.isSpawning = true;
     this.isDespawning = false;
+    this.frontWagon = null;
+    this.backWagon = null;
 
     this.path = null;
     this.setTile(tileX, tileY, entrySide);
@@ -47,6 +50,9 @@ class Car {
   }
 
   destroy() {
+    if (this.backWagon) {
+      this.backWagon.removeFrontWagon();
+    }
     this.sprite.destroy();
     this.sprite = null;
     this.overlay = null;
@@ -60,6 +66,36 @@ class Car {
         this.overlay.onCarExitMap(this);
       });
     }
+  }
+
+  despawnWagons() {
+    let nextWagon = this.backWagon;
+    while (nextWagon) {
+      nextWagon.despawn();
+      nextWagon = nextWagon.backWagon;
+    }
+  }
+
+  addWagon(car) {
+    this.backWagon = car;
+    car.frontWagon = this;
+    car.driver = new PulledCarDriver(car);
+  }
+
+  removeFrontWagon() {
+    this.frontWagon = null;
+    this.driver = new CarDriver(this);
+  }
+
+  isPulling(car) {
+    let eachCar = this;
+    while (eachCar.backWagon) {
+      if (car === eachCar.backWagon) {
+        return true;
+      }
+      eachCar = eachCar.backWagon;
+    }
+    return false;
   }
 
   setTile(x, y, entrySide) {
@@ -134,14 +170,16 @@ class Car {
     const position = this.getSpritePosition();
     return this.overlay.getCarsAround(this).some((carAround) => {
       const overlapDistance = this.sprite.height / 2 + carAround.sprite.height / 2;
-      return cheapDistance(carAround.getSpritePosition(), position) < overlapDistance;
+      return cheapDistance(carAround.getSpritePosition(), position) < overlapDistance
+        && !this.isPulling(carAround) && !carAround.isPulling(this);
     });
   }
 
   animate(time) {
     this.driver.adjustCarSpeed();
 
-    if (this.isSpawning && !this.hasCarsOverlapping()) {
+    if (this.isSpawning && !this.hasCarsOverlapping()
+      && (!this.frontWagon || this.speed > 0)) {
       this.isSpawning = false;
     }
 
@@ -158,9 +196,12 @@ class Car {
     }
 
     this.lifetime += time;
-    if ((this.lifetime > MAX_LIFETIME || this.timeStopped > MAX_TIME_STOPPED)
-      && this.overlay.options.maxLifetime) {
-      this.despawn();
+    if (!this.frontWagon) {
+      if ((this.lifetime > MAX_LIFETIME || this.timeStopped > MAX_TIME_STOPPED)
+        && this.overlay.options.maxLifetime) {
+        this.despawn();
+        this.despawnWagons();
+      }
     }
 
     if (this.isDespawning

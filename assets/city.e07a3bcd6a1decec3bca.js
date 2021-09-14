@@ -1655,6 +1655,7 @@ class CarSpawner {
     );
 
     this.throttleTimer = Math.random() * THROTTLE_TIME;
+    // window.spawnTram = this.spawnTram.bind(this);
   }
 
   maybeSpawn() {
@@ -1721,28 +1722,45 @@ class CarSpawner {
       const lane = this.getRandomLane(carType);
       const maxSpeed = this.getRandomMaxSpeed(carType, lane);
 
-      this.overlay.addCar(new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed));
+      const car = new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed);
+      this.overlay.addCar(car);
+
+      if (this.config.carTypes[carType].wagons) {
+        let lastWagon = car;
+        this.config.carTypes[carType].wagons.forEach((wagonType) => {
+          const wagonTexture = this.overlay.textures[wagonType];
+          const wagon = new Car(
+            this.overlay, wagonTexture, tile.x, tile.y, entrySide, lane, maxSpeed
+          );
+          lastWagon.addWagon(wagon);
+          this.overlay.addCar(wagon);
+          lastWagon = wagon;
+        });
+      }
     }
   }
 
-  spawnTram() {
-    // Todo: Temporary function for prototyping
-    const tile = this.getRandomTile();
-    if (tile) {
-      const entrySide = this.getRandomEntrySide(tile.x, tile.y);
-      const carType = 'bus-yellow';
-      const texture = this.overlay.textures[carType];
-      const lane = 'inner';
-      const maxSpeed = this.getRandomMaxSpeed(carType, lane);
-
-      const car1 = new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed);
-      const car2 = new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed);
-      const car3 = new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed);
-      this.overlay.addCar(car1);
-      this.overlay.addCar(car2);
-      this.overlay.addCar(car3);
-    }
-  }
+  // spawnTram() {
+  //   // Todo: Temporary function for prototyping
+  //   const tile = this.getRandomTile();
+  //   if (tile) {
+  //     const entrySide = this.getRandomEntrySide(tile.x, tile.y);
+  //     const carType = 'bus-yellow';
+  //     const texture = this.overlay.textures[carType];
+  //     const lane = RoadTile.INNER_LANE;
+  //     const maxSpeed = this.getRandomMaxSpeed(carType, lane);
+  //
+  //     const car1 = new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed);
+  //     const car2 = new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed);
+  //     const car3 = new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed);
+  //     car1.addWagon(car2);
+  //     car2.addWagon(car3);
+  //     this.overlay.addCar(car1);
+  //     this.overlay.addCar(car2);
+  //     this.overlay.addCar(car3);
+  //     window.tram = [car1, car2, car3];
+  //   }
+  // }
 
   animate(time) {
     this.throttleTimer += time;
@@ -1773,6 +1791,7 @@ const { TILE_SIZE } = __webpack_require__(/*! ../map-view */ "./src/js/map-view.
 const SpriteFader = __webpack_require__(/*! ../aux/sprite-fader */ "./src/js/aux/sprite-fader.js");
 const PathStraight = __webpack_require__(/*! ./path-straight */ "./src/js/cars/path-straight.js");
 const PathArc = __webpack_require__(/*! ./path-arc */ "./src/js/cars/path-arc.js");
+const PulledCarDriver = __webpack_require__(/*! ./pulled-car-driver */ "./src/js/cars/pulled-car-driver.js");
 
 // Max lifetime of cars
 const MAX_LIFETIME = 2 * 60 * 60; // Approx. 2 minutes
@@ -1791,6 +1810,8 @@ class Car {
     this.timeStopped = 0;
     this.isSpawning = true;
     this.isDespawning = false;
+    this.frontWagon = null;
+    this.backWagon = null;
 
     this.path = null;
     this.setTile(tileX, tileY, entrySide);
@@ -1813,6 +1834,9 @@ class Car {
   }
 
   destroy() {
+    if (this.backWagon) {
+      this.backWagon.removeFrontWagon();
+    }
     this.sprite.destroy();
     this.sprite = null;
     this.overlay = null;
@@ -1826,6 +1850,36 @@ class Car {
         this.overlay.onCarExitMap(this);
       });
     }
+  }
+
+  despawnWagons() {
+    let nextWagon = this.backWagon;
+    while (nextWagon) {
+      nextWagon.despawn();
+      nextWagon = nextWagon.backWagon;
+    }
+  }
+
+  addWagon(car) {
+    this.backWagon = car;
+    car.frontWagon = this;
+    car.driver = new PulledCarDriver(car);
+  }
+
+  removeFrontWagon() {
+    this.frontWagon = null;
+    this.driver = new CarDriver(this);
+  }
+
+  isPulling(car) {
+    let eachCar = this;
+    while (eachCar.backWagon) {
+      if (car === eachCar.backWagon) {
+        return true;
+      }
+      eachCar = eachCar.backWagon;
+    }
+    return false;
   }
 
   setTile(x, y, entrySide) {
@@ -1900,14 +1954,16 @@ class Car {
     const position = this.getSpritePosition();
     return this.overlay.getCarsAround(this).some((carAround) => {
       const overlapDistance = this.sprite.height / 2 + carAround.sprite.height / 2;
-      return cheapDistance(carAround.getSpritePosition(), position) < overlapDistance;
+      return cheapDistance(carAround.getSpritePosition(), position) < overlapDistance
+        && !this.isPulling(carAround) && !carAround.isPulling(this);
     });
   }
 
   animate(time) {
     this.driver.adjustCarSpeed();
 
-    if (this.isSpawning && !this.hasCarsOverlapping()) {
+    if (this.isSpawning && !this.hasCarsOverlapping()
+      && (!this.frontWagon || this.speed > 0)) {
       this.isSpawning = false;
     }
 
@@ -1924,9 +1980,12 @@ class Car {
     }
 
     this.lifetime += time;
-    if ((this.lifetime > MAX_LIFETIME || this.timeStopped > MAX_TIME_STOPPED)
-      && this.overlay.options.maxLifetime) {
-      this.despawn();
+    if (!this.frontWagon) {
+      if ((this.lifetime > MAX_LIFETIME || this.timeStopped > MAX_TIME_STOPPED)
+        && this.overlay.options.maxLifetime) {
+        this.despawn();
+        this.despawnWagons();
+      }
     }
 
     if (this.isDespawning
@@ -2026,6 +2085,50 @@ class PathStraight {
 }
 
 module.exports = PathStraight;
+
+
+/***/ }),
+
+/***/ "./src/js/cars/pulled-car-driver.js":
+/*!******************************************!*\
+  !*** ./src/js/cars/pulled-car-driver.js ***!
+  \******************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const CarDriver = __webpack_require__(/*! ./car-driver */ "./src/js/cars/car-driver.js");
+
+class PulledCarDriver extends CarDriver {
+  chooseExitSide() {
+    return this.car.frontWagon.exitSide;
+  }
+
+  onGreenLight() {
+
+  }
+
+  onRedLight() {
+
+  }
+
+  adjustCarSpeed() {
+    const position = this.car.getSpritePosition();
+    const { frontWagon } = this.car;
+
+    const overlapDistance = this.car.sprite.height / 2 + frontWagon.sprite.height / 2;
+    const wagonDistance = overlapDistance;
+    const distanceToCarInFront = frontWagon
+      .getSpritePosition()
+      .distance(position) - overlapDistance;
+    if (distanceToCarInFront <= -this.car.sprite.height / 5) {
+      this.car.speed = 0;
+    } else {
+      // Deaccelerate to maintain the safe distance
+      this.car.speed = frontWagon.speed;
+    }
+  }
+}
+
+module.exports = PulledCarDriver;
 
 
 /***/ }),
@@ -3012,4 +3115,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.0f2c611d139112cf2297.js.map
+//# sourceMappingURL=city.e07a3bcd6a1decec3bca.js.map

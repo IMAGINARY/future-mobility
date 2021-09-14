@@ -63,4 +63,9 @@ carTypes:
     maxSpeed: 0.9
     frequency: 0.3
     lanes: outer
+  tram:
+    maxSpeed: 0.8
+    frequency: 0.3
+    lanes: inner
+    wagons: [tram, tram]
 
