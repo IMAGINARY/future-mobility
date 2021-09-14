@@ -17,7 +17,6 @@ class CarSpawner {
     );
 
     this.throttleTimer = Math.random() * THROTTLE_TIME;
-    // window.spawnTram = this.spawnTram.bind(this);
   }
 
   maybeSpawn() {
@@ -101,28 +100,6 @@ class CarSpawner {
       }
     }
   }
-
-  // spawnTram() {
-  //   // Todo: Temporary function for prototyping
-  //   const tile = this.getRandomTile();
-  //   if (tile) {
-  //     const entrySide = this.getRandomEntrySide(tile.x, tile.y);
-  //     const carType = 'bus-yellow';
-  //     const texture = this.overlay.textures[carType];
-  //     const lane = RoadTile.INNER_LANE;
-  //     const maxSpeed = this.getRandomMaxSpeed(carType, lane);
-  //
-  //     const car1 = new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed);
-  //     const car2 = new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed);
-  //     const car3 = new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed);
-  //     car1.addWagon(car2);
-  //     car2.addWagon(car3);
-  //     this.overlay.addCar(car1);
-  //     this.overlay.addCar(car2);
-  //     this.overlay.addCar(car3);
-  //     window.tram = [car1, car2, car3];
-  //   }
-  // }
 
   animate(time) {
     this.throttleTimer += time;
