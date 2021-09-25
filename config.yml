@@ -15,29 +15,29 @@ tileTypes:
   2:
     type: residential
     name: Residential
-    color: '#ff8787'
+    color: '#fd6451'
     editorIcon: 'static/fa/home-solid.svg'
   3:
     type: industrial
     name: Industrial
-    color: '#ffeb78'
+    color: '#ffeb53'
     editorIcon: 'static/fa/industry-solid.svg'
     emissions: 0.3
   4:
     type: commercial
     name: Commercial
-    color: '#84aeff'
+    color: '#5095ff'
     editorIcon: 'static/fa/building-regular.svg'
   5:
     type: park
     name: Park
-    color: '#44a740'
+    color: '#56c040'
     editorIcon: 'static/fa/tree-solid.svg'
     emissions: -0.2
   6:
     type: water
     name: Water
-    color: '#38c4ee'
+    color: '#70fff0'
     editorIcon: 'static/fa/water-solid.svg'
 carTypes:
   car-blue:
