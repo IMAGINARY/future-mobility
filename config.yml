@@ -31,13 +31,13 @@ tileTypes:
   5:
     type: park
     name: Park
-    color: '#56c040'
+    color: '#2ee517'
     editorIcon: 'static/fa/tree-solid.svg'
     emissions: -0.2
   6:
     type: water
     name: Water
-    color: '#70fff0'
+    color: '#19fff7'
     editorIcon: 'static/fa/water-solid.svg'
 carTypes:
   car-blue:
