@@ -1,5 +1,7 @@
 cityWidth: 16
 cityHeight: 16
+mapView:
+  gridOverlay: 0
 tileTypes:
   0:
     type: empty

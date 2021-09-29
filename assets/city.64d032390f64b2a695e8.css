@@ -8,6 +8,8 @@ body {
   font-family: 'Roboto Condensed', sans-serif;
   font-weight: 400;
   background-color: #f2f2f2; }
+  body.bg-black {
+    background-color: #000; }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Roboto Condensed', sans-serif;
@@ -274,4 +276,4 @@ body > .tile-counter {
   top: 5px; }
 
 
-/*# sourceMappingURL=city.d38564e74e65f3fc3529.css.map*/
+/*# sourceMappingURL=city.64d032390f64b2a695e8.css.map*/

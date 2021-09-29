@@ -1655,13 +1655,14 @@ const PencilCursor = __webpack_require__(/*! ../../static/fa/pencil-alt-solid.sv
 
 class MapView {
   constructor(city, config, textures) {
-    this.displayObject = new PIXI.Container();
     this.city = city;
     this.config = config;
     this.textures = textures;
     this.events = new EventEmitter();
     this.pointerActive = false;
     this.roadTileId = getTileTypeId(config, 'road');
+
+    this.displayObject = new PIXI.Container();
 
     this.bgTiles = Array2D.create(this.city.map.width, this.city.map.height, null);
     this.textureTiles = Array2D.create(this.city.map.width, this.city.map.height, null);
@@ -1684,12 +1685,30 @@ class MapView {
 
     this.displayObject.addChild(...Array2D.flatten(this.bgTiles));
     this.displayObject.addChild(...Array2D.flatten(this.textureTiles));
+    this.overlayContainer = new PIXI.Container();
+    this.displayObject.addChild(this.overlayContainer);
+    this.gridOverlay = this.createGridOverlay();
+    this.displayObject.addChild(this.gridOverlay);
+    if (this.config.mapView && this.config.mapView.gridOverlay) {
+      this.renderGrid(this.config.mapView.gridOverlay);
+    }
+
     this.city.map.events.on('update', this.handleCityUpdate.bind(this));
     this.handleCityUpdate(this.city.map.allCells());
   }
 
   addOverlay(displayObject) {
-    this.displayObject.addChild(displayObject);
+    this.overlayContainer.addChild(displayObject);
+  }
+
+  createGridOverlay() {
+    const overlay = new PIXI.Graphics();
+    overlay.x = 0;
+    overlay.y = 0;
+    overlay.width = this.city.map.width * MapView.TILE_SIZE;
+    overlay.height = this.city.map.height * MapView.TILE_SIZE;
+
+    return overlay;
   }
 
   enableTileInteractivity() {
@@ -1748,6 +1767,30 @@ class MapView {
     this.getTextureTile(i, j).visible = false;
   }
 
+  renderGrid(strokeWidth) {
+    const viewWidth = this.city.map.width * MapView.TILE_SIZE;
+    const viewHeight = this.city.map.height * MapView.TILE_SIZE;
+    this.gridOverlay.clear();
+    this.gridOverlay
+      .lineStyle(strokeWidth / 2, 0, 1, 1)
+      .moveTo(strokeWidth / 2, viewHeight - strokeWidth / 2)
+      .lineTo(strokeWidth / 2, strokeWidth / 2)
+      .lineTo(viewWidth - strokeWidth / 2, strokeWidth / 2)
+      .lineTo(viewWidth - strokeWidth / 2, viewHeight - strokeWidth / 2)
+      .lineTo(strokeWidth / 2, viewHeight - strokeWidth / 2)
+      .lineTo(strokeWidth / 2, viewHeight - strokeWidth);
+
+    this.gridOverlay.lineStyle(strokeWidth, 0, 1);
+    for (let i = 1; i < this.city.map.width; i += 1) {
+      this.gridOverlay.moveTo(i * MapView.TILE_SIZE, strokeWidth / 2)
+        .lineTo(i * MapView.TILE_SIZE, viewHeight - strokeWidth / 2);
+    }
+    for (let i = 1; i < this.city.map.height; i += 1) {
+      this.gridOverlay.moveTo(strokeWidth / 2, i * MapView.TILE_SIZE)
+        .lineTo(viewWidth - strokeWidth / 2, i * MapView.TILE_SIZE);
+    }
+  }
+
   handleCityUpdate(updates) {
     updates.forEach(([i, j]) => {
       this.renderTile(i, j);
@@ -1756,6 +1799,14 @@ class MapView {
         .filter(([x, y]) => this.city.map.get(x, y) === this.roadTileId)
         .forEach(([x, y]) => this.renderRoadTile(x, y));
     });
+  }
+
+  showGrid() {
+    this.gridOverlay.visible = true;
+  }
+
+  hideGrid() {
+    this.gridOverlay.visible = false;
   }
 }
 
@@ -2209,4 +2260,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.b3e95beb1ba50f102315.js.map
+//# sourceMappingURL=editor.5a5e947894de5fabe23d.js.map
