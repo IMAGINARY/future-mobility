@@ -1181,6 +1181,24 @@ class Array2D {
     }
     return accumulator;
   }
+
+  static forEach(a, callback) {
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        callback(a[y][x], x, y);
+      }
+    }
+  }
+
+  static zip(a, b, callback) {
+    const yMax = Math.min(a.length, b.length);
+    for (let y = 0; y < yMax; y += 1) {
+      const xMax = Math.min(a[y].length, b[y].length);
+      for (let x = 0; x < xMax; x += 1) {
+        callback(a[y][x], b[y][x], x, y);
+      }
+    }
+  }
 }
 
 module.exports = Array2D;
@@ -1493,7 +1511,7 @@ class CarDriver {
       if (distanceToCarInFront <= this.safeDistance) {
         this.car.speed = 0;
       } else if (distanceToCarInFront <= this.slowdownDistance) {
-        // Deaccelerate to maintain the safe distance
+        // Decelerate to maintain the safe distance
         this.car.speed = this.car.maxSpeed * (1 - this.safeDistance / distanceToCarInFront);
       } else if (this.car.speed < this.car.maxSpeed) {
         // Accelerate up to the maxSpeed
@@ -1543,6 +1561,7 @@ class CarOverlay {
     this.displayObject.height = this.mapView.height;
     this.displayObject.x = 0;
     this.displayObject.y = 0;
+    this.displayObject.zIndex = 100;
     this.mapView.addOverlay(this.displayObject);
 
     this.roadTileId = getTileTypeId(config, 'road');
@@ -2714,6 +2733,7 @@ class MapView {
 
   addOverlay(displayObject) {
     this.overlayContainer.addChild(displayObject);
+    this.overlayContainer.sortChildren();
   }
 
   createGridOverlay() {
@@ -2724,6 +2744,18 @@ class MapView {
     overlay.height = this.city.map.height * MapView.TILE_SIZE;
 
     return overlay;
+  }
+
+  setEditCursor() {
+    Array2D.items(this.bgTiles).forEach(([,, bgTile]) => {
+      bgTile.cursor = `url(${PencilCursor}) 0 20, auto`;
+    });
+  }
+
+  setInspectCursor() {
+    Array2D.items(this.bgTiles).forEach(([,, bgTile]) => {
+      bgTile.cursor = 'crosshair';
+    });
   }
 
   enableTileInteractivity() {
@@ -3143,4 +3175,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.3c16ad16f5aeb47233cf.js.map
+//# sourceMappingURL=city.c7cd315dcef49dd0822b.js.map

@@ -50,6 +50,7 @@ class MapView {
 
   addOverlay(displayObject) {
     this.overlayContainer.addChild(displayObject);
+    this.overlayContainer.sortChildren();
   }
 
   createGridOverlay() {
@@ -60,6 +61,18 @@ class MapView {
     overlay.height = this.city.map.height * MapView.TILE_SIZE;
 
     return overlay;
+  }
+
+  setEditCursor() {
+    Array2D.items(this.bgTiles).forEach(([,, bgTile]) => {
+      bgTile.cursor = `url(${PencilCursor}) 0 20, auto`;
+    });
+  }
+
+  setInspectCursor() {
+    Array2D.items(this.bgTiles).forEach(([,, bgTile]) => {
+      bgTile.cursor = 'crosshair';
+    });
   }
 
   enableTileInteractivity() {

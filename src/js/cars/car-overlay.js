@@ -20,6 +20,7 @@ class CarOverlay {
     this.displayObject.height = this.mapView.height;
     this.displayObject.x = 0;
     this.displayObject.y = 0;
+    this.displayObject.zIndex = 100;
     this.mapView.addOverlay(this.displayObject);
 
     this.roadTileId = getTileTypeId(config, 'road');

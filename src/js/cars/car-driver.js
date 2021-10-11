@@ -68,7 +68,7 @@ class CarDriver {
       if (distanceToCarInFront <= this.safeDistance) {
         this.car.speed = 0;
       } else if (distanceToCarInFront <= this.slowdownDistance) {
-        // Deaccelerate to maintain the safe distance
+        // Decelerate to maintain the safe distance
         this.car.speed = this.car.maxSpeed * (1 - this.safeDistance / distanceToCarInFront);
       } else if (this.car.speed < this.car.maxSpeed) {
         // Accelerate up to the maxSpeed

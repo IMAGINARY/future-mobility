@@ -10,6 +10,7 @@ const TestScenarios = require('./test/scenarios');
 const showFatalError = require('./aux/show-fatal-error');
 require('../sass/default.scss');
 const ZoneBalanceView = require('./zone-balance-view');
+const DataInspectorView = require('./data-inspector-view');
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -78,6 +79,10 @@ fetch('./config.yml', { cache: 'no-store' })
 
       const zoneBalanceView = new ZoneBalanceView(counterView.counter, config);
       counterPane.append(zoneBalanceView.$element);
+
+      const dataInspectorView = new DataInspectorView();
+      counterPane.append(dataInspectorView.$element);
+      mapEditor.events.on('inspect', data => dataInspectorView.display(data));
 
       if (testScenario) {
         testScenario(city, carOverlay);

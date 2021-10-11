@@ -275,5 +275,10 @@ body > .tile-counter {
   right: 5px;
   top: 5px; }
 
+.data-inspector .indicator {
+  font-size: 0.85em; }
+  .data-inspector .indicator .label {
+    font-weight: bold; }
 
-/*# sourceMappingURL=city.64d032390f64b2a695e8.css.map*/
+
+/*# sourceMappingURL=editor.295b84d9cee3b9027ede.css.map*/

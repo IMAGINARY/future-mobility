@@ -5346,6 +5346,24 @@ class Array2D {
     }
     return accumulator;
   }
+
+  static forEach(a, callback) {
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        callback(a[y][x], x, y);
+      }
+    }
+  }
+
+  static zip(a, b, callback) {
+    const yMax = Math.min(a.length, b.length);
+    for (let y = 0; y < yMax; y += 1) {
+      const xMax = Math.min(a[y].length, b[y].length);
+      for (let x = 0; x < xMax; x += 1) {
+        callback(a[y][x], b[y][x], x, y);
+      }
+    }
+  }
 }
 
 module.exports = Array2D;
@@ -5421,6 +5439,123 @@ function getTileTypeId(config, type) {
 }
 
 module.exports = { getTileTypeId };
+
+
+/***/ }),
+
+/***/ "./src/js/aux/flatqueue.js":
+/*!*********************************!*\
+  !*** ./src/js/aux/flatqueue.js ***!
+  \*********************************/
+/***/ ((module) => {
+
+// https://github.com/mourner/flatqueue
+
+/**
+ ISC License
+
+ Copyright (c) 2021, Vladimir Agafonkin
+
+ Permission to use, copy, modify, and/or distribute this software for any purpose
+ with or without fee is hereby granted, provided that the above copyright notice
+ and this permission notice appear in all copies.
+
+ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+ REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+ INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ THIS SOFTWARE.
+ © 2021 GitHub, Inc.
+ Terms
+ Privacy
+
+ */
+class FlatQueue {
+
+  constructor() {
+    this.ids = [];
+    this.values = [];
+    this.length = 0;
+  }
+
+  clear() {
+    this.length = 0;
+  }
+
+  push(id, value) {
+    let pos = this.length++;
+    this.ids[pos] = id;
+    this.values[pos] = value;
+
+    while (pos > 0) {
+      const parent = (pos - 1) >> 1;
+      const parentValue = this.values[parent];
+      if (value >= parentValue) break;
+      this.ids[pos] = this.ids[parent];
+      this.values[pos] = parentValue;
+      pos = parent;
+    }
+
+    this.ids[pos] = id;
+    this.values[pos] = value;
+  }
+
+  pop() {
+    if (this.length === 0) return undefined;
+
+    const top = this.ids[0];
+    this.length--;
+
+    if (this.length > 0) {
+      const id = this.ids[0] = this.ids[this.length];
+      const value = this.values[0] = this.values[this.length];
+      const halfLength = this.length >> 1;
+      let pos = 0;
+
+      while (pos < halfLength) {
+        let left = (pos << 1) + 1;
+        const right = left + 1;
+        let bestIndex = this.ids[left];
+        let bestValue = this.values[left];
+        const rightValue = this.values[right];
+
+        if (right < this.length && rightValue < bestValue) {
+          left = right;
+          bestIndex = this.ids[right];
+          bestValue = rightValue;
+        }
+        if (bestValue >= value) break;
+
+        this.ids[pos] = bestIndex;
+        this.values[pos] = bestValue;
+        pos = left;
+      }
+
+      this.ids[pos] = id;
+      this.values[pos] = value;
+    }
+
+    return top;
+  }
+
+  peek() {
+    if (this.length === 0) return undefined;
+    return this.ids[0];
+  }
+
+  peekValue() {
+    if (this.length === 0) return undefined;
+    return this.values[0];
+  }
+
+  shrink() {
+    this.ids.length = this.values.length = this.length;
+  }
+}
+
+module.exports = FlatQueue;
 
 
 /***/ }),
@@ -5582,6 +5717,60 @@ module.exports = SpriteFader;
 
 /***/ }),
 
+/***/ "./src/js/aux/travel-times.js":
+/*!************************************!*\
+  !*** ./src/js/aux/travel-times.js ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const FlatQueue = __webpack_require__(/*! ./flatqueue */ "./src/js/aux/flatqueue.js");
+const Array2D = __webpack_require__(/*! ./array-2d */ "./src/js/aux/array-2d.js");
+
+/**
+ * @callback timeFunctionCallback
+ * @param tileTypeFrom
+ * @param tileTypeTo
+ * @return {Number}
+ */
+/**
+ * Given a city map and a starting point it returns the travel time to all other cells.
+ *
+ * Uses [Uniform Cost Search](https://www.redblobgames.com/pathfinding/a-star/introduction.html),
+ * a variation on Dijkstra's algorithm.
+ *
+ * @param {Grid} map
+ * @param {number} startX
+ * @param {number} startY
+ * @param {timeFunctionCallback} timeFunction
+ * @return {number[][]}
+ */
+function travelTimes(map, [startX, startY], timeFunction) {
+  const answer = Array2D.create(map.width, map.height, null);
+  const frontier = new FlatQueue();
+  frontier.push([startX, startY, map.get(startX, startY)], 0);
+  answer[startY][startX] = 0;
+
+  while (frontier.length > 0) {
+    const [currX, currY, currTile] = frontier.pop();
+    map.adjacentCells(currX, currY)
+      .forEach(([nextX, nextY, nextTile]) => {
+        const newCost = answer[currY][currX] + timeFunction(currTile, nextTile);
+        const nextCost = answer[nextY][nextX];
+        if (nextCost === null || newCost < nextCost) {
+          answer[nextY][nextX] = newCost;
+          frontier.push([nextX, nextY, nextTile], newCost);
+        }
+      });
+  }
+
+  return answer;
+}
+
+module.exports = travelTimes;
+
+
+/***/ }),
+
 /***/ "./src/js/cars/car-driver.js":
 /*!***********************************!*\
   !*** ./src/js/cars/car-driver.js ***!
@@ -5658,7 +5847,7 @@ class CarDriver {
       if (distanceToCarInFront <= this.safeDistance) {
         this.car.speed = 0;
       } else if (distanceToCarInFront <= this.slowdownDistance) {
-        // Deaccelerate to maintain the safe distance
+        // Decelerate to maintain the safe distance
         this.car.speed = this.car.maxSpeed * (1 - this.safeDistance / distanceToCarInFront);
       } else if (this.car.speed < this.car.maxSpeed) {
         // Accelerate up to the maxSpeed
@@ -5708,6 +5897,7 @@ class CarOverlay {
     this.displayObject.height = this.mapView.height;
     this.displayObject.x = 0;
     this.displayObject.y = 0;
+    this.displayObject.zIndex = 100;
     this.mapView.addOverlay(this.displayObject);
 
     this.roadTileId = getTileTypeId(config, 'road');
@@ -6571,6 +6761,91 @@ module.exports = City;
 
 /***/ }),
 
+/***/ "./src/js/data-inspector-view.js":
+/*!***************************************!*\
+  !*** ./src/js/data-inspector-view.js ***!
+  \***************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+/* globals Chart */
+const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+
+class DataInspectorView {
+  constructor() {
+    this.$element = $('<div></div>')
+      .addClass('data-inspector');
+    this.$canvas = $('<canvas></canvas>').appendTo(this.$element);
+    this.$infoPane = $('<div></div>')
+      .addClass('data-inspector-info')
+      .appendTo(this.$element);
+    this.chart = new Chart(this.$canvas, {
+      type: 'bar',
+    });
+  }
+
+  display(data) {
+    const distribution = DataInspectorView.asDiscreteFrequency(data.values);
+    this.chart.data = {
+      labels: Object.keys(distribution),
+      datasets: [{
+        label: data.title,
+        data: Object.values(distribution),
+      }],
+    };
+    this.chart.update();
+
+    const info = DataInspectorView.distributionInfo(Array2D.flatten(data.values));
+    this.$infoPane.empty()
+      .append(info.map(indicator => $('<div></div>').addClass('indicator')
+        .append($('<span></span>').addClass('label').text(`${indicator.title}: `))
+        .append($('<span></span>').addClass('value').text(indicator.value))));
+  }
+
+  static asDiscreteFrequency(gridData) {
+    const data = {};
+
+    Array2D.forEach(gridData, (v) => {
+      data[Math.floor(v)] = (data[Math.floor(v)] || 0) + 1;
+    });
+    return data;
+  }
+
+  static distributionInfo(data) {
+    const formatNumber = n => (n !== undefined ? n.toFixed(2) : '-');
+
+    const sorted = data.sort((a, b) => a - b);
+    return [
+      { title: 'Range', value: `[${sorted[0] || '-'}, ${sorted[sorted.length - 1] || '-'}]` },
+      { title: 'Average', value: formatNumber(DataInspectorView.average(data)) },
+      { title: 'Median', value: formatNumber(DataInspectorView.quantile(sorted, 0.5)) },
+      { title: 'Q1', value: formatNumber(DataInspectorView.quantile(sorted, 0.25)) },
+      { title: 'Q3', value: formatNumber(DataInspectorView.quantile(sorted, 0.75)) },
+    ];
+  }
+
+  static average(data) {
+    return data.length > 0 ? data.reduce((a, b) => a + b, 0) / data.length : undefined;
+  }
+
+  static quantile(sortedData, q) {
+    if (sortedData.length === 0) {
+      return undefined;
+    }
+    const pos = (sortedData.length - 1) * q;
+    const base = Math.floor(pos);
+    const rest = pos - base;
+    if (sortedData[base + 1] !== undefined) {
+      return sortedData[base] + rest * (sortedData[base + 1] - sortedData[base]);
+    }
+    return sortedData[base];
+  }
+}
+
+module.exports = DataInspectorView;
+
+
+/***/ }),
+
 /***/ "./src/js/editor/city-browser.js":
 /*!***************************************!*\
   !*** ./src/js/editor/city-browser.js ***!
@@ -6685,8 +6960,35 @@ class MapEditorPalette {
         this.activeButton = $(ev.target);
         this.activeButton.addClass('active');
         this.tileId = Number(id);
-        this.events.emit('change', Number(id));
+        this.events.emit('change', 'tile', Number(id));
       }));
+
+    this.buttons.push($('<div class="separator"></div>'));
+
+    this.toolButtons = [
+      $('<button></button>')
+        .attr({type: 'button', title: 'Measure distance'})
+        .addClass([
+          'editor-palette-button',
+          'editor-palette-button-tool',
+          'editor-palette-button-tool-distance',
+        ])
+        .css({
+          backgroundImage: 'url(\'static/fa/ruler-horizontal-solid.svg\')',
+        })
+        .on('click', (ev) => {
+          if (this.activeButton) {
+            this.activeButton.removeClass('active');
+          }
+          this.activeButton = $(ev.target);
+          this.activeButton.addClass('active');
+          this.tileId = null;
+          this.events.emit('change', 'measureDistance');
+          // this.events.emit('action', 'measureDistance',);
+        }),
+    ];
+
+    this.buttons.push(...this.toolButtons);
 
     this.buttons.push($('<div class="separator"></div>'));
 
@@ -6750,6 +7052,7 @@ module.exports = MapEditorPalette;
   \*************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
 const City = __webpack_require__(/*! ../city */ "./src/js/city.js");
 const MapView = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
 const MapEditorPalette = __webpack_require__(/*! ./map-editor-palette */ "./src/js/editor/map-editor-palette.js");
@@ -6758,6 +7061,9 @@ const ModalSave = __webpack_require__(/*! ./modal-save */ "./src/js/editor/modal
 const ModalExport = __webpack_require__(/*! ./modal-export */ "./src/js/editor/modal-export.js");
 const ModalImport = __webpack_require__(/*! ./modal-import */ "./src/js/editor/modal-import.js");
 const ObjectStore = __webpack_require__(/*! ./object-store */ "./src/js/editor/object-store.js");
+const MapTextOverlay = __webpack_require__(/*! ../map-text-overlay */ "./src/js/map-text-overlay.js");
+const travelTimes = __webpack_require__(/*! ../aux/travel-times */ "./src/js/aux/travel-times.js");
+const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
 
 class MapEditor {
   constructor($element, city, config, textures) {
@@ -6765,15 +7071,23 @@ class MapEditor {
     this.city = city;
     this.config = config;
 
+    this.events = new EventEmitter();
     this.mapView = new MapView(city, config, textures);
     this.mapView.enableTileInteractivity();
     this.displayObject = this.mapView.displayObject;
+    this.textOverlay = new MapTextOverlay(this.mapView);
 
     this.palette = new MapEditorPalette($('<div></div>').appendTo(this.$element), config);
 
+    this.tool = null;
     this.tileType = this.palette.tileId;
-    this.palette.events.on('change', (tileType) => {
-      this.tileType = tileType;
+    this.palette.events.on('change', (tool, toolType) => {
+      if (this.tool) {
+        this.tools[this.tool].end();
+      }
+      this.tool = tool;
+      this.tileType = toolType;
+      this.tools[this.tool].start();
     });
 
     this.palette.events.on('action', (id) => {
@@ -6783,21 +7097,8 @@ class MapEditor {
     });
 
     let lastEdit = null;
-    this.mapView.events.on('action', ([x, y], props) => {
-      if (this.tileType !== null) {
-        if (lastEdit && props.shiftKey) {
-          const [lastX, lastY] = lastEdit;
-          for (let i = Math.min(lastX, x); i <= Math.max(lastX, x); i += 1) {
-            for (let j = Math.min(lastY, y); j <= Math.max(lastY, y); j += 1) {
-              this.city.map.set(i, j, this.tileType);
-            }
-          }
-        } else {
-          this.city.map.set(x, y, this.tileType);
-        }
-        lastEdit = [x, y];
-      }
-    });
+    this.mapView.events.on('action',
+      (...args) => this.tools[this.tool].action(...args));
 
     this.objectStore = new ObjectStore('./cities.json');
     this.actionHandlers = {
@@ -6829,6 +7130,53 @@ class MapEditor {
       export: () => {
         const modal = new ModalExport(JSON.stringify(this.city));
         modal.show();
+      },
+    };
+
+    this.tools = {
+      tile: {
+        start: () => {
+          this.mapView.setEditCursor();
+        },
+        end: () => {
+
+        },
+        action: ([x, y], props) => {
+          if (this.tileType !== null) {
+            if (lastEdit && props.shiftKey) {
+              const [lastX, lastY] = lastEdit;
+              for (let i = Math.min(lastX, x); i <= Math.max(lastX, x); i += 1) {
+                for (let j = Math.min(lastY, y); j <= Math.max(lastY, y); j += 1) {
+                  this.city.map.set(i, j, this.tileType);
+                }
+              }
+            } else {
+              this.city.map.set(x, y, this.tileType);
+            }
+            lastEdit = [x, y];
+          }
+        },
+      },
+      measureDistance: {
+        start: () => {
+          this.mapView.setInspectCursor();
+          this.textOverlay.clear();
+          this.textOverlay.show();
+        },
+        end: () => {
+          this.textOverlay.hide();
+        },
+        action: ([x, y]) => {
+          const roadTileId = getTileTypeId(this.config, 'road');
+          const data = travelTimes(this.mapView.city.map, [x, y],
+            (tileFrom, tileTo) => (
+              (tileFrom === roadTileId && tileTo === roadTileId) ? 1 : 5));
+          this.textOverlay.display(data);
+          this.events.emit('inspect', {
+            title: `Travel times from (${x}, ${y})`,
+            values: data,
+          });
+        },
       },
     };
   }
@@ -7356,6 +7704,88 @@ module.exports = Grid;
 
 /***/ }),
 
+/***/ "./src/js/map-text-overlay.js":
+/*!************************************!*\
+  !*** ./src/js/map-text-overlay.js ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+/* globals PIXI */
+
+const MapView = __webpack_require__(/*! ./map-view */ "./src/js/map-view.js");
+const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+
+class MapTextOverlay {
+  constructor(mapView) {
+    this.mapView = mapView;
+    this.visible = false;
+    this.fontSize = 32;
+    this.texts = Array2D.create(
+      this.mapView.city.map.width,
+      this.mapView.city.map.height,
+      null
+    );
+
+    this.displayObject = new PIXI.Container();
+    this.displayObject.visible = this.visible;
+    this.displayObject.zIndex = 1000;
+    this.mapView.addOverlay(this.displayObject);
+    this.createBackground();
+    this.createTexts();
+  }
+
+  createBackground() {
+    const background = new PIXI.Graphics();
+    background.beginFill(0, 0.75)
+      .drawRect(0, 0, this.mapView.displayObject.width, this.mapView.displayObject.height)
+      .endFill();
+    this.displayObject.addChild(background);
+  }
+
+  createTexts() {
+    Array2D.fill(this.texts, (x, y) => {
+      const text = new PIXI.Text('', {
+        fontFamily: 'Arial',
+        fontSize: this.fontSize,
+        fill: 'white',
+        align: 'center',
+      });
+      text.anchor.set(0.5, 0.5);
+      text.position.set(
+        MapView.TILE_SIZE * (x + 0.5),
+        MapView.TILE_SIZE * (y + 0.5)
+      );
+      this.displayObject.addChild(text);
+      return text;
+    });
+  }
+
+  clear() {
+    Array2D.forEach(this.texts, (each) => { each.text = ''; });
+  }
+
+  display(data) {
+    Array2D.zip(this.texts, data, (eachText, eachDataItem) => {
+      eachText.text = eachDataItem;
+    });
+  }
+
+  show() {
+    this.visible = true;
+    this.displayObject.visible = true;
+  }
+
+  hide() {
+    this.visible = false;
+    this.displayObject.visible = false;
+  }
+}
+
+module.exports = MapTextOverlay;
+
+
+/***/ }),
+
 /***/ "./src/js/map-view.js":
 /*!****************************!*\
   !*** ./src/js/map-view.js ***!
@@ -7414,6 +7844,7 @@ class MapView {
 
   addOverlay(displayObject) {
     this.overlayContainer.addChild(displayObject);
+    this.overlayContainer.sortChildren();
   }
 
   createGridOverlay() {
@@ -7424,6 +7855,18 @@ class MapView {
     overlay.height = this.city.map.height * MapView.TILE_SIZE;
 
     return overlay;
+  }
+
+  setEditCursor() {
+    Array2D.items(this.bgTiles).forEach(([,, bgTile]) => {
+      bgTile.cursor = `url(${PencilCursor}) 0 20, auto`;
+    });
+  }
+
+  setInspectCursor() {
+    Array2D.items(this.bgTiles).forEach(([,, bgTile]) => {
+      bgTile.cursor = 'crosshair';
+    });
   }
 
   enableTileInteractivity() {
@@ -8059,6 +8502,7 @@ const TestScenarios = __webpack_require__(/*! ./test/scenarios */ "./src/js/test
 const showFatalError = __webpack_require__(/*! ./aux/show-fatal-error */ "./src/js/aux/show-fatal-error.js");
 __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
 const ZoneBalanceView = __webpack_require__(/*! ./zone-balance-view */ "./src/js/zone-balance-view.js");
+const DataInspectorView = __webpack_require__(/*! ./data-inspector-view */ "./src/js/data-inspector-view.js");
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -8128,6 +8572,10 @@ fetch('./config.yml', { cache: 'no-store' })
       const zoneBalanceView = new ZoneBalanceView(counterView.counter, config);
       counterPane.append(zoneBalanceView.$element);
 
+      const dataInspectorView = new DataInspectorView();
+      counterPane.append(dataInspectorView.$element);
+      mapEditor.events.on('inspect', data => dataInspectorView.display(data));
+
       if (testScenario) {
         testScenario(city, carOverlay);
         if (!window.test) {
@@ -8144,4 +8592,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.77af31d1458bba9f56ed.js.map
+//# sourceMappingURL=default.71bf6ce9cf88d4f940a3.js.map

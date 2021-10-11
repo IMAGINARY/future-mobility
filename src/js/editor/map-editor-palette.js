@@ -31,8 +31,35 @@ class MapEditorPalette {
         this.activeButton = $(ev.target);
         this.activeButton.addClass('active');
         this.tileId = Number(id);
-        this.events.emit('change', Number(id));
+        this.events.emit('change', 'tile', Number(id));
       }));
+
+    this.buttons.push($('<div class="separator"></div>'));
+
+    this.toolButtons = [
+      $('<button></button>')
+        .attr({type: 'button', title: 'Measure distance'})
+        .addClass([
+          'editor-palette-button',
+          'editor-palette-button-tool',
+          'editor-palette-button-tool-distance',
+        ])
+        .css({
+          backgroundImage: 'url(\'static/fa/ruler-horizontal-solid.svg\')',
+        })
+        .on('click', (ev) => {
+          if (this.activeButton) {
+            this.activeButton.removeClass('active');
+          }
+          this.activeButton = $(ev.target);
+          this.activeButton.addClass('active');
+          this.tileId = null;
+          this.events.emit('change', 'measureDistance');
+          // this.events.emit('action', 'measureDistance',);
+        }),
+    ];
+
+    this.buttons.push(...this.toolButtons);
 
     this.buttons.push($('<div class="separator"></div>'));
 
