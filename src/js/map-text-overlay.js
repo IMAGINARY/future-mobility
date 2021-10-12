@@ -54,7 +54,7 @@ class MapTextOverlay {
 
   display(data) {
     Array2D.zip(this.texts, data, (eachText, eachDataItem) => {
-      eachText.text = eachDataItem;
+      eachText.text = typeof eachDataItem === 'number' ? eachDataItem.toFixed(2) : eachDataItem;
     });
   }
 

@@ -6794,17 +6794,17 @@ class DataInspectorView {
     };
     this.chart.update();
 
-    const info = DataInspectorView.distributionInfo(Array2D.flatten(data.values));
+    const info = DataInspectorView.distributionInfo(data.values);
     this.$infoPane.empty()
       .append(info.map(indicator => $('<div></div>').addClass('indicator')
         .append($('<span></span>').addClass('label').text(`${indicator.title}: `))
         .append($('<span></span>').addClass('value').text(indicator.value))));
   }
 
-  static asDiscreteFrequency(gridData) {
+  static asDiscreteFrequency(values) {
     const data = {};
 
-    Array2D.forEach(gridData, (v) => {
+    values.forEach((v) => {
       data[Math.floor(v)] = (data[Math.floor(v)] || 0) + 1;
     });
     return data;
@@ -6815,12 +6815,20 @@ class DataInspectorView {
 
     const sorted = data.sort((a, b) => a - b);
     return [
-      { title: 'Range', value: `[${sorted[0] || '-'}, ${sorted[sorted.length - 1] || '-'}]` },
+      { title: 'Count', value: data.length },
+      { title: 'Range', value: DataInspectorView.range(sorted) },
       { title: 'Average', value: formatNumber(DataInspectorView.average(data)) },
       { title: 'Median', value: formatNumber(DataInspectorView.quantile(sorted, 0.5)) },
       { title: 'Q1', value: formatNumber(DataInspectorView.quantile(sorted, 0.25)) },
       { title: 'Q3', value: formatNumber(DataInspectorView.quantile(sorted, 0.75)) },
     ];
+  }
+
+  static range(sortedData) {
+    if (sortedData.length === 0) {
+      return '[]';
+    }
+    return `[${sortedData.at(0)}, ${sortedData.at(-1)}]`;
   }
 
   static average(data) {
@@ -7064,6 +7072,7 @@ const ObjectStore = __webpack_require__(/*! ./object-store */ "./src/js/editor/o
 const MapTextOverlay = __webpack_require__(/*! ../map-text-overlay */ "./src/js/map-text-overlay.js");
 const travelTimes = __webpack_require__(/*! ../aux/travel-times */ "./src/js/aux/travel-times.js");
 const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
+const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
 
 class MapEditor {
   constructor($element, city, config, textures) {
@@ -7166,15 +7175,31 @@ class MapEditor {
         end: () => {
           this.textOverlay.hide();
         },
-        action: ([x, y]) => {
+        action: ([startX, startY]) => {
           const roadTileId = getTileTypeId(this.config, 'road');
-          const data = travelTimes(this.mapView.city.map, [x, y],
+          const data = travelTimes(this.mapView.city.map, [startX, startY],
             (tileFrom, tileTo) => (
               (tileFrom === roadTileId && tileTo === roadTileId) ? 1 : 5));
+          // Normalize the data
+          // Array2D.forEach(data, (v, x, y) => {
+          //   const manhattan = Math.abs(startX - x) + Math.abs(startY - y);
+          //   data[y][x] = (manhattan > 0 ? v / manhattan : 0);
+          // });
           this.textOverlay.display(data);
+
+          const residentalId = getTileTypeId(config, 'residential');
+          const commercialId = getTileTypeId(config, 'commercial');
+          const industrialId = getTileTypeId(config, 'industrial');
+          Array2D.zip(data, city.map.cells, (value, tile, x, y) => {
+            data[y][x] = (
+              (tile === residentalId || tile === commercialId || tile === industrialId)
+                ? value : null
+            );
+          });
+
           this.events.emit('inspect', {
-            title: `Travel times from (${x}, ${y})`,
-            values: data,
+            title: `Trip len from (${startX}, ${startY}) to RCI`,
+            values: Array2D.flatten(data).filter(v => v !== null),
           });
         },
       },
@@ -7766,7 +7791,7 @@ class MapTextOverlay {
 
   display(data) {
     Array2D.zip(this.texts, data, (eachText, eachDataItem) => {
-      eachText.text = eachDataItem;
+      eachText.text = typeof eachDataItem === 'number' ? eachDataItem.toFixed(2) : eachDataItem;
     });
   }
 
@@ -8217,6 +8242,65 @@ module.exports = TileCounter;
 
 /***/ }),
 
+/***/ "./src/js/travel-time-variable.js":
+/*!****************************************!*\
+  !*** ./src/js/travel-time-variable.js ***!
+  \****************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+const { getTileTypeId } = __webpack_require__(/*! ./aux/config-helpers */ "./src/js/aux/config-helpers.js");
+const travelTimes = __webpack_require__(/*! ./aux/travel-times */ "./src/js/aux/travel-times.js");
+const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+
+class TravelTimeVariable {
+  constructor(city, config) {
+    this.city = city;
+    this.config = config;
+    this.events = new EventEmitter();
+    this.roadTileTime = 1;
+    this.slowTileTile = 5;
+
+    this.roadTileId = getTileTypeId(this.config, 'road');
+    this.residentialId = getTileTypeId(this.config, 'residential');
+    this.commercialId = getTileTypeId(this.config, 'commercial');
+    this.industrialId = getTileTypeId(this.config, 'industrial');
+  }
+
+  calculate() {
+    const answer = [];
+    this.city.map.allCells().forEach(([x, y, tile]) => {
+      if (tile === this.residentialId || tile === this.commercialId || tile === this.industrialId) {
+        answer.push(...this.timesFrom(x, y));
+      }
+    });
+
+    return answer;
+  }
+
+  timesFrom(startX, startY) {
+    const answer = [];
+    const data = travelTimes(this.city.map, [startX, startY],
+      (tileFrom, tileTo) => (
+        (tileFrom === this.roadTileId && tileTo === this.roadTileId)
+          ? this.roadTileTime : this.slowTileTile));
+
+    Array2D.zip(data, this.city.map.cells, (value, tile) => {
+      if (value !== 0 && (
+        tile === this.residentialId || tile === this.commercialId || tile === this.industrialId)) {
+        answer.push(value);
+      }
+    });
+
+    return answer;
+  }
+}
+
+module.exports = TravelTimeVariable;
+
+
+/***/ }),
+
 /***/ "./src/js/variable-view.js":
 /*!*********************************!*\
   !*** ./src/js/variable-view.js ***!
@@ -8503,6 +8587,7 @@ const showFatalError = __webpack_require__(/*! ./aux/show-fatal-error */ "./src/
 __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
 const ZoneBalanceView = __webpack_require__(/*! ./zone-balance-view */ "./src/js/zone-balance-view.js");
 const DataInspectorView = __webpack_require__(/*! ./data-inspector-view */ "./src/js/data-inspector-view.js");
+const TravelTimeVariable = __webpack_require__(/*! ./travel-time-variable */ "./src/js/travel-time-variable.js");
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -8572,9 +8657,23 @@ fetch('./config.yml', { cache: 'no-store' })
       const zoneBalanceView = new ZoneBalanceView(counterView.counter, config);
       counterPane.append(zoneBalanceView.$element);
 
+      const travelTimeVariable = new TravelTimeVariable(city, config);
+
       const dataInspectorView = new DataInspectorView();
       counterPane.append(dataInspectorView.$element);
       mapEditor.events.on('inspect', data => dataInspectorView.display(data));
+
+      counterPane.append($('<button></button>')
+        .attr('type', 'button')
+        .addClass(['btn', 'btn-primary', 'btn-sm'])
+        .text('Calculate times')
+        .on('click', () => {
+          const data = travelTimeVariable.calculate();
+          dataInspectorView.display({
+            title: 'Travel times',
+            values: data,
+          });
+        }));
 
       if (testScenario) {
         testScenario(city, carOverlay);
@@ -8592,4 +8691,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.71bf6ce9cf88d4f940a3.js.map
+//# sourceMappingURL=default.26e036cb06a5341817bf.js.map

@@ -10,6 +10,7 @@ const ObjectStore = require('./object-store');
 const MapTextOverlay = require('../map-text-overlay');
 const travelTimes = require('../aux/travel-times');
 const { getTileTypeId } = require('../aux/config-helpers');
+const Array2D = require('../aux/array-2d');
 
 class MapEditor {
   constructor($element, city, config, textures) {
@@ -112,15 +113,31 @@ class MapEditor {
         end: () => {
           this.textOverlay.hide();
         },
-        action: ([x, y]) => {
+        action: ([startX, startY]) => {
           const roadTileId = getTileTypeId(this.config, 'road');
-          const data = travelTimes(this.mapView.city.map, [x, y],
+          const data = travelTimes(this.mapView.city.map, [startX, startY],
             (tileFrom, tileTo) => (
               (tileFrom === roadTileId && tileTo === roadTileId) ? 1 : 5));
+          // Normalize the data
+          // Array2D.forEach(data, (v, x, y) => {
+          //   const manhattan = Math.abs(startX - x) + Math.abs(startY - y);
+          //   data[y][x] = (manhattan > 0 ? v / manhattan : 0);
+          // });
           this.textOverlay.display(data);
+
+          const residentalId = getTileTypeId(config, 'residential');
+          const commercialId = getTileTypeId(config, 'commercial');
+          const industrialId = getTileTypeId(config, 'industrial');
+          Array2D.zip(data, city.map.cells, (value, tile, x, y) => {
+            data[y][x] = (
+              (tile === residentalId || tile === commercialId || tile === industrialId)
+                ? value : null
+            );
+          });
+
           this.events.emit('inspect', {
-            title: `Travel times from (${x}, ${y})`,
-            values: data,
+            title: `Trip len from (${startX}, ${startY}) to RCI`,
+            values: Array2D.flatten(data).filter(v => v !== null),
           });
         },
       },

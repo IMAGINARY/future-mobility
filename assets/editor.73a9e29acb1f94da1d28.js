@@ -1263,6 +1263,7 @@ const ObjectStore = __webpack_require__(/*! ./object-store */ "./src/js/editor/o
 const MapTextOverlay = __webpack_require__(/*! ../map-text-overlay */ "./src/js/map-text-overlay.js");
 const travelTimes = __webpack_require__(/*! ../aux/travel-times */ "./src/js/aux/travel-times.js");
 const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
+const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
 
 class MapEditor {
   constructor($element, city, config, textures) {
@@ -1365,15 +1366,31 @@ class MapEditor {
         end: () => {
           this.textOverlay.hide();
         },
-        action: ([x, y]) => {
+        action: ([startX, startY]) => {
           const roadTileId = getTileTypeId(this.config, 'road');
-          const data = travelTimes(this.mapView.city.map, [x, y],
+          const data = travelTimes(this.mapView.city.map, [startX, startY],
             (tileFrom, tileTo) => (
               (tileFrom === roadTileId && tileTo === roadTileId) ? 1 : 5));
+          // Normalize the data
+          // Array2D.forEach(data, (v, x, y) => {
+          //   const manhattan = Math.abs(startX - x) + Math.abs(startY - y);
+          //   data[y][x] = (manhattan > 0 ? v / manhattan : 0);
+          // });
           this.textOverlay.display(data);
+
+          const residentalId = getTileTypeId(config, 'residential');
+          const commercialId = getTileTypeId(config, 'commercial');
+          const industrialId = getTileTypeId(config, 'industrial');
+          Array2D.zip(data, city.map.cells, (value, tile, x, y) => {
+            data[y][x] = (
+              (tile === residentalId || tile === commercialId || tile === industrialId)
+                ? value : null
+            );
+          });
+
           this.events.emit('inspect', {
-            title: `Travel times from (${x}, ${y})`,
-            values: data,
+            title: `Trip len from (${startX}, ${startY}) to RCI`,
+            values: Array2D.flatten(data).filter(v => v !== null),
           });
         },
       },
@@ -1965,7 +1982,7 @@ class MapTextOverlay {
 
   display(data) {
     Array2D.zip(this.texts, data, (eachText, eachDataItem) => {
-      eachText.text = eachDataItem;
+      eachText.text = typeof eachDataItem === 'number' ? eachDataItem.toFixed(2) : eachDataItem;
     });
   }
 
@@ -2617,4 +2634,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.dfa8832cf28a2567979b.js.map
+//# sourceMappingURL=editor.73a9e29acb1f94da1d28.js.map

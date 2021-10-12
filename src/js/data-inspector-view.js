@@ -25,17 +25,17 @@ class DataInspectorView {
     };
     this.chart.update();
 
-    const info = DataInspectorView.distributionInfo(Array2D.flatten(data.values));
+    const info = DataInspectorView.distributionInfo(data.values);
     this.$infoPane.empty()
       .append(info.map(indicator => $('<div></div>').addClass('indicator')
         .append($('<span></span>').addClass('label').text(`${indicator.title}: `))
         .append($('<span></span>').addClass('value').text(indicator.value))));
   }
 
-  static asDiscreteFrequency(gridData) {
+  static asDiscreteFrequency(values) {
     const data = {};
 
-    Array2D.forEach(gridData, (v) => {
+    values.forEach((v) => {
       data[Math.floor(v)] = (data[Math.floor(v)] || 0) + 1;
     });
     return data;
@@ -46,12 +46,20 @@ class DataInspectorView {
 
     const sorted = data.sort((a, b) => a - b);
     return [
-      { title: 'Range', value: `[${sorted[0] || '-'}, ${sorted[sorted.length - 1] || '-'}]` },
+      { title: 'Count', value: data.length },
+      { title: 'Range', value: DataInspectorView.range(sorted) },
       { title: 'Average', value: formatNumber(DataInspectorView.average(data)) },
       { title: 'Median', value: formatNumber(DataInspectorView.quantile(sorted, 0.5)) },
       { title: 'Q1', value: formatNumber(DataInspectorView.quantile(sorted, 0.25)) },
       { title: 'Q3', value: formatNumber(DataInspectorView.quantile(sorted, 0.75)) },
     ];
+  }
+
+  static range(sortedData) {
+    if (sortedData.length === 0) {
+      return '[]';
+    }
+    return `[${sortedData.at(0)}, ${sortedData.at(-1)}]`;
   }
 
   static average(data) {
