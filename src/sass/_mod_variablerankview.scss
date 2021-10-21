@@ -1,0 +1,144 @@
+$rank-description-icon-width: 40px;
+$rank-description-icon-height: 40px;
+
+$rank-value-icon-width: 60px;
+$rank-value-icon-height: 60px;
+$rank-value-icon-face-ratio: 2/3;
+$rank-value-icon-margin: 20px;
+
+$rank-value-icon-face-width: $rank-value-icon-width * $rank-value-icon-face-ratio;
+$rank-value-icon-face-height: $rank-value-icon-height * $rank-value-icon-face-ratio;
+
+$rank-value-icon-face-px: ($rank-value-icon-width - $rank-value-icon-face-width) / 2;
+$rank-value-icon-face-py: ($rank-value-icon-height - $rank-value-icon-face-height) / 2;
+
+.variable-rank-list {
+  background-color: white;
+  padding: 1em;
+
+  .variable-rank {
+    margin-bottom: 0.75em;
+
+    .description {
+      display: inline-block;
+      width: calc(100% - (#{$rank-value-icon-width + $rank-value-icon-margin}));
+      text-overflow: clip;
+      background-repeat: no-repeat;
+      background-position: left center;
+      background-size: $rank-description-icon-width $rank-description-icon-height;
+      padding-left: $rank-description-icon-width + 20px;
+      min-height: $rank-description-icon-height;
+
+      .name {
+        font-weight: bold;
+      }
+      .name-tr {
+        font-size: 0.9em;
+      }
+    }
+
+    .value {
+      position: relative;
+      display: inline-block;
+      vertical-align: top;
+      margin-top: -8px;
+      font-size: 0;
+      width: $rank-value-icon-width;
+      height: $rank-value-icon-height;
+      margin-left: $rank-value-icon-margin;
+
+      &:before {
+        content: " ";
+        display: block;
+        position: absolute;
+        width: $rank-value-icon-face-width;
+        height: $rank-value-icon-face-height;
+        top: $rank-value-icon-face-py;
+        left: $rank-value-icon-face-px;
+        border-radius: 50%;
+        background-color: transparent;
+        transition: background-color 0.5s;
+      }
+
+      &:after {
+        content: " ";
+        display: block;
+        position: absolute;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center left;
+        width: $rank-value-icon-width;
+        height: $rank-value-icon-height;
+      }
+    }
+
+    &.value-1 .value {
+      &:before {
+        background-color: #ff5c5c;
+      }
+      &:after {
+        background-image: url('../../static/openmoji/bw/pouting-face.svg');
+      }
+    }
+
+    &.value-2 .value {
+      &:before {
+        background-color: #ffa242;
+      }
+      &:after {
+        background-image: url('../../static/openmoji/bw/slightly-frowning-face.svg');
+      }
+    }
+
+    &.value-3 .value {
+      &:before {
+        background-color: #ffdf42;
+      }
+      &:after {
+        background-image: url('../../static/openmoji/bw/neutral-face.svg');
+      }
+    }
+
+    &.value-4 .value {
+      &:before {
+        background-color: #bfff42;
+      }
+      &:after {
+        background-image: url('../../static/openmoji/bw/slightly-smiling-face.svg');
+      }
+    }
+
+    &.value-5 .value {
+      &:before {
+        background-color: #45ff42;
+      }
+      &:after {
+        background-image: url('../../static/openmoji/bw/grinning-face-big-eyes.svg');
+      }
+    }
+  }
+
+  .variable-rank-traffic-density .description {
+    background-image: url('../../static/icons/traffic-density.svg');
+  }
+
+  .variable-rank-travel-times .description {
+    background-image: url('../../static/icons/travel-times.svg');
+  }
+
+  .variable-rank-safety .description {
+    background-image: url('../../static/icons/safety.svg');
+  }
+
+  .variable-rank-pollution .description {
+    background-image: url('../../static/icons/pollution.svg');
+  }
+
+  .variable-rank-noise .description {
+    background-image: url('../../static/icons/noise.svg');
+  }
+
+  .variable-rank-green-spaces .description {
+    background-image: url('../../static/icons/green-spaces.svg');
+  }
+}

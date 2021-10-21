@@ -280,5 +280,85 @@ body > .tile-counter {
   .data-inspector .indicator .label {
     font-weight: bold; }
 
+.variable-rank-list {
+  background-color: white;
+  padding: 1em; }
+  .variable-rank-list .variable-rank {
+    margin-bottom: 0.75em; }
+    .variable-rank-list .variable-rank .description {
+      display: inline-block;
+      width: calc(100% - (80px));
+      text-overflow: clip;
+      background-repeat: no-repeat;
+      background-position: left center;
+      background-size: 40px 40px;
+      padding-left: 60px;
+      min-height: 40px; }
+      .variable-rank-list .variable-rank .description .name {
+        font-weight: bold; }
+      .variable-rank-list .variable-rank .description .name-tr {
+        font-size: 0.9em; }
+    .variable-rank-list .variable-rank .value {
+      position: relative;
+      display: inline-block;
+      vertical-align: top;
+      margin-top: -8px;
+      font-size: 0;
+      width: 60px;
+      height: 60px;
+      margin-left: 20px; }
+      .variable-rank-list .variable-rank .value:before {
+        content: " ";
+        display: block;
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        top: 10px;
+        left: 10px;
+        border-radius: 50%;
+        background-color: transparent;
+        transition: background-color 0.5s; }
+      .variable-rank-list .variable-rank .value:after {
+        content: " ";
+        display: block;
+        position: absolute;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center left;
+        width: 60px;
+        height: 60px; }
+    .variable-rank-list .variable-rank.value-1 .value:before {
+      background-color: #ff5c5c; }
+    .variable-rank-list .variable-rank.value-1 .value:after {
+      background-image: url(a6d7bdb36bd21ada45b9.svg); }
+    .variable-rank-list .variable-rank.value-2 .value:before {
+      background-color: #ffa242; }
+    .variable-rank-list .variable-rank.value-2 .value:after {
+      background-image: url(1cb78a1510cb4cef0fed.svg); }
+    .variable-rank-list .variable-rank.value-3 .value:before {
+      background-color: #ffdf42; }
+    .variable-rank-list .variable-rank.value-3 .value:after {
+      background-image: url(8b808f3edfdf875e86d2.svg); }
+    .variable-rank-list .variable-rank.value-4 .value:before {
+      background-color: #bfff42; }
+    .variable-rank-list .variable-rank.value-4 .value:after {
+      background-image: url(d79c03b62c63dca4b5e2.svg); }
+    .variable-rank-list .variable-rank.value-5 .value:before {
+      background-color: #45ff42; }
+    .variable-rank-list .variable-rank.value-5 .value:after {
+      background-image: url(a942db90fa7291bf1050.svg); }
+  .variable-rank-list .variable-rank-traffic-density .description {
+    background-image: url(632918cbe7876db6dd7b.svg); }
+  .variable-rank-list .variable-rank-travel-times .description {
+    background-image: url(32578fbf9f9c7c5cb17d.svg); }
+  .variable-rank-list .variable-rank-safety .description {
+    background-image: url(c0a1c68efaaa0ac826ae.svg); }
+  .variable-rank-list .variable-rank-pollution .description {
+    background-image: url(9e13219ed882649a1544.svg); }
+  .variable-rank-list .variable-rank-noise .description {
+    background-image: url(16a610a8640593ac1246.svg); }
+  .variable-rank-list .variable-rank-green-spaces .description {
+    background-image: url(1046d3ab27581bd9a7ba.svg); }
 
-/*# sourceMappingURL=default.295b84d9cee3b9027ede.css.map*/
+
+/*# sourceMappingURL=default.b88c72bf157972bc82db.css.map*/

@@ -2,7 +2,7 @@
 const City = require('./city');
 const EmissionsVariable = require('./emissions-variable');
 const MapEditor = require('./editor/map-editor');
-const VariableView = require('./variable-view');
+const VariableMapView = require('./variable-map-view');
 require('../sass/default.scss');
 const ServerSocketConnector = require('./server-socket-connector');
 const ConnectionStateView = require('./connection-state-view');
@@ -43,7 +43,7 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
       mapView.displayObject.x = 0;
       mapView.displayObject.y = 0;
 
-      const varViewer = new VariableView(emissions);
+      const varViewer = new VariableMapView(emissions);
       app.stage.addChild(varViewer.displayObject);
       varViewer.displayObject.width = 960;
       varViewer.displayObject.height = 960;

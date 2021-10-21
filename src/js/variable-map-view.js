@@ -2,7 +2,7 @@
 
 const TILE_SIZE = 10;
 
-class VariableView {
+class VariableMapView {
   constructor(variable) {
     this.displayObject = new PIXI.Container();
     this.variable = variable;
@@ -39,4 +39,4 @@ class VariableView {
   }
 }
 
-module.exports = VariableView;
+module.exports = VariableMapView;

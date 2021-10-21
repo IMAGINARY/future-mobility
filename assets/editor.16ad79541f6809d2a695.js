@@ -2418,17 +2418,17 @@ module.exports = ServerSocketConnector;
 
 /***/ }),
 
-/***/ "./src/js/variable-view.js":
-/*!*********************************!*\
-  !*** ./src/js/variable-view.js ***!
-  \*********************************/
+/***/ "./src/js/variable-map-view.js":
+/*!*************************************!*\
+  !*** ./src/js/variable-map-view.js ***!
+  \*************************************/
 /***/ ((module) => {
 
 /* globals PIXI */
 
 const TILE_SIZE = 10;
 
-class VariableView {
+class VariableMapView {
   constructor(variable) {
     this.displayObject = new PIXI.Container();
     this.variable = variable;
@@ -2465,7 +2465,7 @@ class VariableView {
   }
 }
 
-module.exports = VariableView;
+module.exports = VariableMapView;
 
 
 /***/ }),
@@ -2562,7 +2562,7 @@ var __webpack_exports__ = {};
 const City = __webpack_require__(/*! ./city */ "./src/js/city.js");
 const EmissionsVariable = __webpack_require__(/*! ./emissions-variable */ "./src/js/emissions-variable.js");
 const MapEditor = __webpack_require__(/*! ./editor/map-editor */ "./src/js/editor/map-editor.js");
-const VariableView = __webpack_require__(/*! ./variable-view */ "./src/js/variable-view.js");
+const VariableMapView = __webpack_require__(/*! ./variable-map-view */ "./src/js/variable-map-view.js");
 __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
 const ServerSocketConnector = __webpack_require__(/*! ./server-socket-connector */ "./src/js/server-socket-connector.js");
 const ConnectionStateView = __webpack_require__(/*! ./connection-state-view */ "./src/js/connection-state-view.js");
@@ -2603,7 +2603,7 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
       mapView.displayObject.x = 0;
       mapView.displayObject.y = 0;
 
-      const varViewer = new VariableView(emissions);
+      const varViewer = new VariableMapView(emissions);
       app.stage.addChild(varViewer.displayObject);
       varViewer.displayObject.width = 960;
       varViewer.displayObject.height = 960;
@@ -2634,4 +2634,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.73a9e29acb1f94da1d28.js.map
+//# sourceMappingURL=editor.16ad79541f6809d2a695.js.map

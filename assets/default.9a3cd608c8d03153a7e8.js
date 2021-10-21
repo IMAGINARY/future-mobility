@@ -8301,17 +8301,17 @@ module.exports = TravelTimeVariable;
 
 /***/ }),
 
-/***/ "./src/js/variable-view.js":
-/*!*********************************!*\
-  !*** ./src/js/variable-view.js ***!
-  \*********************************/
+/***/ "./src/js/variable-map-view.js":
+/*!*************************************!*\
+  !*** ./src/js/variable-map-view.js ***!
+  \*************************************/
 /***/ ((module) => {
 
 /* globals PIXI */
 
 const TILE_SIZE = 10;
 
-class VariableView {
+class VariableMapView {
   constructor(variable) {
     this.displayObject = new PIXI.Container();
     this.variable = variable;
@@ -8348,7 +8348,84 @@ class VariableView {
   }
 }
 
-module.exports = VariableView;
+module.exports = VariableMapView;
+
+
+/***/ }),
+
+/***/ "./src/js/variable-rank-list-view.js":
+/*!*******************************************!*\
+  !*** ./src/js/variable-rank-list-view.js ***!
+  \*******************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const VariableRankView = __webpack_require__(/*! ./variable-rank-view */ "./src/js/variable-rank-view.js");
+
+class VariableRankListView {
+  constructor(varDefs) {
+    this.$element = $('<div></div>')
+      .addClass('variable-rank-list');
+
+    this.variableRankViews = Object.fromEntries(
+      Object.entries(varDefs)
+        .map(([id, def]) => [id, new VariableRankView(id, def)])
+    );
+
+    this.$element.append(
+      $('<div></div>').addClass('variables')
+        .append(...Object.values(this.variableRankViews).map(view => view.$element))
+    );
+  }
+
+  set(varValues) {
+    Object.entries(varValues).forEach(([id, value]) => {
+      if (this.variableRankViews[id] !== undefined) {
+        this.variableRankViews[id].setValue(value);
+      }
+    });
+  }
+}
+
+module.exports = VariableRankListView;
+
+
+/***/ }),
+
+/***/ "./src/js/variable-rank-view.js":
+/*!**************************************!*\
+  !*** ./src/js/variable-rank-view.js ***!
+  \**************************************/
+/***/ ((module) => {
+
+class VariableRankView {
+  constructor(id, definition) {
+    this.id = id;
+    this.definition = definition;
+    this.value = null;
+    this.$valueElement = $('<div></div>').addClass('value');
+    this.$element = $('<div></div>')
+      .addClass(['variable-rank', `variable-rank-${this.id}`])
+      .append([
+        $('<div></div>').addClass('description')
+          .append([
+            $('<div></div>').addClass('name').text(this.definition.name.de),
+            $('<div></div>').addClass('name-tr').text(this.definition.name.en),
+          ]),
+        this.$valueElement,
+      ]);
+  }
+
+  setValue(value) {
+    if (this.value !== null) {
+      this.$element.removeClass(`value-${this.value}`);
+    }
+    this.value = value;
+    this.$element.addClass(`value-${this.value}`);
+    this.$valueElement.text(value);
+  }
+}
+
+module.exports = VariableRankView;
 
 
 /***/ }),
@@ -8579,7 +8656,7 @@ const yaml = __webpack_require__(/*! js-yaml */ "./node_modules/js-yaml/index.js
 const City = __webpack_require__(/*! ./city */ "./src/js/city.js");
 const EmissionsVariable = __webpack_require__(/*! ./emissions-variable */ "./src/js/emissions-variable.js");
 const MapEditor = __webpack_require__(/*! ./editor/map-editor */ "./src/js/editor/map-editor.js");
-const VariableView = __webpack_require__(/*! ./variable-view */ "./src/js/variable-view.js");
+const VariableMapView = __webpack_require__(/*! ./variable-map-view */ "./src/js/variable-map-view.js");
 const CarOverlay = __webpack_require__(/*! ./cars/car-overlay */ "./src/js/cars/car-overlay.js");
 const TileCounterView = __webpack_require__(/*! ./tile-counter-view */ "./src/js/tile-counter-view.js");
 const TestScenarios = __webpack_require__(/*! ./test/scenarios */ "./src/js/test/scenarios.js");
@@ -8588,6 +8665,7 @@ __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
 const ZoneBalanceView = __webpack_require__(/*! ./zone-balance-view */ "./src/js/zone-balance-view.js");
 const DataInspectorView = __webpack_require__(/*! ./data-inspector-view */ "./src/js/data-inspector-view.js");
 const TravelTimeVariable = __webpack_require__(/*! ./travel-time-variable */ "./src/js/travel-time-variable.js");
+const VariableRankListView = __webpack_require__(/*! ./variable-rank-list-view */ "./src/js/variable-rank-list-view.js");
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -8641,7 +8719,7 @@ fetch('./config.yml', { cache: 'no-store' })
       });
       app.ticker.add(time => carOverlay.animate(time));
 
-      const varViewer = new VariableView(emissions);
+      const varViewer = new VariableMapView(emissions);
       app.stage.addChild(varViewer.displayObject);
       varViewer.displayObject.width = 960;
       varViewer.displayObject.height = 960;
@@ -8675,6 +8753,19 @@ fetch('./config.yml', { cache: 'no-store' })
           });
         }));
 
+      const variableRankListView = new VariableRankListView(config.variables);
+      // Todo: Remove the lines below
+      $('[data-component="data-container"]').append(variableRankListView.$element);
+      variableRankListView.set({
+        'traffic-density': 1,
+        'travel-times': 2,
+        safety: 3,
+        pollution: 4,
+        noise: 5,
+        'green-spaces': 3,
+      });
+      window.variableRankListView = variableRankListView;
+
       if (testScenario) {
         testScenario(city, carOverlay);
         if (!window.test) {
@@ -8691,4 +8782,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.26e036cb06a5341817bf.js.map
+//# sourceMappingURL=default.9a3cd608c8d03153a7e8.js.map

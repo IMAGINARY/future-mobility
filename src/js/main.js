@@ -3,7 +3,7 @@ const yaml = require('js-yaml');
 const City = require('./city');
 const EmissionsVariable = require('./emissions-variable');
 const MapEditor = require('./editor/map-editor');
-const VariableView = require('./variable-view');
+const VariableMapView = require('./variable-map-view');
 const CarOverlay = require('./cars/car-overlay');
 const TileCounterView = require('./tile-counter-view');
 const TestScenarios = require('./test/scenarios');
@@ -12,6 +12,7 @@ require('../sass/default.scss');
 const ZoneBalanceView = require('./zone-balance-view');
 const DataInspectorView = require('./data-inspector-view');
 const TravelTimeVariable = require('./travel-time-variable');
+const VariableRankListView = require('./variable-rank-list-view');
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -65,7 +66,7 @@ fetch('./config.yml', { cache: 'no-store' })
       });
       app.ticker.add(time => carOverlay.animate(time));
 
-      const varViewer = new VariableView(emissions);
+      const varViewer = new VariableMapView(emissions);
       app.stage.addChild(varViewer.displayObject);
       varViewer.displayObject.width = 960;
       varViewer.displayObject.height = 960;
@@ -98,6 +99,19 @@ fetch('./config.yml', { cache: 'no-store' })
             values: data,
           });
         }));
+
+      const variableRankListView = new VariableRankListView(config.variables);
+      // Todo: Remove the lines below
+      $('[data-component="data-container"]').append(variableRankListView.$element);
+      variableRankListView.set({
+        'traffic-density': 1,
+        'travel-times': 2,
+        safety: 3,
+        pollution: 4,
+        noise: 5,
+        'green-spaces': 3,
+      });
+      window.variableRankListView = variableRankListView;
 
       if (testScenario) {
         testScenario(city, carOverlay);
