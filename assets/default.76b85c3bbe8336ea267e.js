@@ -5443,6 +5443,48 @@ module.exports = { getTileTypeId };
 
 /***/ }),
 
+/***/ "./src/js/aux/distance.js":
+/*!********************************!*\
+  !*** ./src/js/aux/distance.js ***!
+  \********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Array2D = __webpack_require__(/*! ./array-2d */ "./src/js/aux/array-2d.js");
+
+function allDistancesToTileType(map, tileTypeIds) {
+  const distances = Array2D.create(map.width, map.height, Infinity);
+  let distFromLast = Infinity;
+  // Forward pass
+  for (let y = 0; y !== map.cells.length; y += 1) {
+    distFromLast = Infinity;
+    for (let x = 0; x !== map.cells[y].length; x += 1) {
+      distFromLast = (tileTypeIds.includes(map.cells[y][x])) ? 0 : distFromLast + 1;
+      distances[y][x] = (y === 0) ? distFromLast : Math.min(distFromLast, distances[y - 1][x] + 1);
+    }
+  }
+
+  // Reverse pass
+  for (let y = map.cells.length - 1; y >= 0; y -= 1) {
+    for (let x = map.cells[y].length - 1; x >= 0; x -= 1) {
+      distances[y][x] = Math.min(
+        distances[y][x],
+        (y < map.cells.length - 1) ? distances[y + 1][x] + 1 : Infinity,
+        (x < map.cells[y].length - 1) ? distances[y][x + 1] + 1 : Infinity,
+      );
+    }
+  }
+  console.log(distances);
+
+  return distances;
+}
+
+module.exports = {
+  allDistancesToTileType,
+};
+
+
+/***/ }),
+
 /***/ "./src/js/aux/flatqueue.js":
 /*!*********************************!*\
   !*** ./src/js/aux/flatqueue.js ***!
@@ -7543,6 +7585,48 @@ module.exports = EmissionsVariable;
 
 /***/ }),
 
+/***/ "./src/js/green-spaces-variable.js":
+/*!*****************************************!*\
+  !*** ./src/js/green-spaces-variable.js ***!
+  \*****************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+const Grid = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
+const { getTileTypeId } = __webpack_require__(/*! ./aux/config-helpers */ "./src/js/aux/config-helpers.js");
+const { allDistancesToTileType } = __webpack_require__(/*! ./aux/distance */ "./src/js/aux/distance.js");
+
+class GreenSpacesVariable {
+  constructor(city, config) {
+    this.city = city;
+    this.config = config;
+    this.grid = new Grid(this.city.map.width, this.city.map.height);
+    this.events = new EventEmitter();
+
+    this.residentialId = getTileTypeId(this.config, 'residential');
+    this.parkTileId = getTileTypeId(this.config, 'park');
+    this.waterTileId = getTileTypeId(this.config, 'water');
+  }
+
+  calculate() {
+    const allDistances = allDistancesToTileType(this.city.map, [this.parkTileId, this.waterTileId]);
+
+    const answer = [];
+    this.city.map.allCells().forEach(([x, y, tile]) => {
+      if (tile === this.residentialId) {
+        answer.push(allDistances[y][x]);
+      }
+    });
+
+    return answer;
+  }
+}
+
+module.exports = GreenSpacesVariable;
+
+
+/***/ }),
+
 /***/ "./src/js/grid.js":
 /*!************************!*\
   !*** ./src/js/grid.js ***!
@@ -8666,6 +8750,7 @@ const ZoneBalanceView = __webpack_require__(/*! ./zone-balance-view */ "./src/js
 const DataInspectorView = __webpack_require__(/*! ./data-inspector-view */ "./src/js/data-inspector-view.js");
 const TravelTimeVariable = __webpack_require__(/*! ./travel-time-variable */ "./src/js/travel-time-variable.js");
 const VariableRankListView = __webpack_require__(/*! ./variable-rank-list-view */ "./src/js/variable-rank-list-view.js");
+const GreenSpacesVariable = __webpack_require__(/*! ./green-spaces-variable */ "./src/js/green-spaces-variable.js");
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -8736,22 +8821,38 @@ fetch('./config.yml', { cache: 'no-store' })
       counterPane.append(zoneBalanceView.$element);
 
       const travelTimeVariable = new TravelTimeVariable(city, config);
+      const greenSpacesVariable = new GreenSpacesVariable(city, config);
 
       const dataInspectorView = new DataInspectorView();
       counterPane.append(dataInspectorView.$element);
       mapEditor.events.on('inspect', data => dataInspectorView.display(data));
 
-      counterPane.append($('<button></button>')
-        .attr('type', 'button')
-        .addClass(['btn', 'btn-primary', 'btn-sm'])
-        .text('Calculate times')
-        .on('click', () => {
-          const data = travelTimeVariable.calculate();
-          dataInspectorView.display({
-            title: 'Travel times',
-            values: data,
-          });
-        }));
+      const variables = {
+        'Travel times': travelTimeVariable,
+        'Green spaces': greenSpacesVariable,
+      };
+
+      const varSelector = $('<select></select>')
+        .addClass(['form-control', 'mr-2'])
+        .append(Object.keys(variables).map(name => (
+          $('<option></option>').text(name).attr('value', name)
+        )));
+
+      $('<div></div>').addClass(['form-inline', 'mt-2'])
+        .append(varSelector)
+        .append($('<button></button>')
+          .attr('type', 'button')
+          .addClass(['btn', 'btn-primary', 'btn-sm'])
+          .text('Calculate')
+          .on('click', () => {
+            const varName = varSelector.val();
+            const data = variables[varName].calculate();
+            dataInspectorView.display({
+              title: varName,
+              values: data,
+            });
+          }))
+        .appendTo(counterPane);
 
       const variableRankListView = new VariableRankListView(config.variables);
       // Todo: Remove the lines below
@@ -8782,4 +8883,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.9a3cd608c8d03153a7e8.js.map
+//# sourceMappingURL=default.76b85c3bbe8336ea267e.js.map

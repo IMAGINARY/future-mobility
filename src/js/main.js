@@ -13,6 +13,7 @@ const ZoneBalanceView = require('./zone-balance-view');
 const DataInspectorView = require('./data-inspector-view');
 const TravelTimeVariable = require('./travel-time-variable');
 const VariableRankListView = require('./variable-rank-list-view');
+const GreenSpacesVariable = require('./green-spaces-variable');
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -83,22 +84,38 @@ fetch('./config.yml', { cache: 'no-store' })
       counterPane.append(zoneBalanceView.$element);
 
       const travelTimeVariable = new TravelTimeVariable(city, config);
+      const greenSpacesVariable = new GreenSpacesVariable(city, config);
 
       const dataInspectorView = new DataInspectorView();
       counterPane.append(dataInspectorView.$element);
       mapEditor.events.on('inspect', data => dataInspectorView.display(data));
 
-      counterPane.append($('<button></button>')
-        .attr('type', 'button')
-        .addClass(['btn', 'btn-primary', 'btn-sm'])
-        .text('Calculate times')
-        .on('click', () => {
-          const data = travelTimeVariable.calculate();
-          dataInspectorView.display({
-            title: 'Travel times',
-            values: data,
-          });
-        }));
+      const variables = {
+        'Travel times': travelTimeVariable,
+        'Green spaces': greenSpacesVariable,
+      };
+
+      const varSelector = $('<select></select>')
+        .addClass(['form-control', 'mr-2'])
+        .append(Object.keys(variables).map(name => (
+          $('<option></option>').text(name).attr('value', name)
+        )));
+
+      $('<div></div>').addClass(['form-inline', 'mt-2'])
+        .append(varSelector)
+        .append($('<button></button>')
+          .attr('type', 'button')
+          .addClass(['btn', 'btn-primary', 'btn-sm'])
+          .text('Calculate')
+          .on('click', () => {
+            const varName = varSelector.val();
+            const data = variables[varName].calculate();
+            dataInspectorView.display({
+              title: varName,
+              values: data,
+            });
+          }))
+        .appendTo(counterPane);
 
       const variableRankListView = new VariableRankListView(config.variables);
       // Todo: Remove the lines below
