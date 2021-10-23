@@ -13,7 +13,8 @@ const ZoneBalanceView = require('./zone-balance-view');
 const DataInspectorView = require('./data-inspector-view');
 const TravelTimeVariable = require('./travel-time-variable');
 const VariableRankListView = require('./variable-rank-list-view');
-const GreenSpacesVariable = require('./green-spaces-variable');
+const GreenSpaceProximityVariable = require('./green-space-proximity-variable');
+const GreenSpaceAreaVariable = require('./green-space-area-variable');
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -84,7 +85,8 @@ fetch('./config.yml', { cache: 'no-store' })
       counterPane.append(zoneBalanceView.$element);
 
       const travelTimeVariable = new TravelTimeVariable(city, config);
-      const greenSpacesVariable = new GreenSpacesVariable(city, config);
+      const greenSpaceProximityVariable = new GreenSpaceProximityVariable(city, config);
+      const greenSpaceAreaVariable = new GreenSpaceAreaVariable(city, config);
 
       const dataInspectorView = new DataInspectorView();
       counterPane.append(dataInspectorView.$element);
@@ -92,7 +94,8 @@ fetch('./config.yml', { cache: 'no-store' })
 
       const variables = {
         'Travel times': travelTimeVariable,
-        'Green spaces': greenSpacesVariable,
+        'Green space prox.': greenSpaceProximityVariable,
+        'Green space areas': greenSpaceAreaVariable,
       };
 
       const varSelector = $('<select></select>')

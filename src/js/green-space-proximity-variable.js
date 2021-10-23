@@ -1,14 +1,10 @@
-const EventEmitter = require('events');
-const Grid = require('./grid');
 const { getTileTypeId } = require('./aux/config-helpers');
 const { allDistancesToTileType } = require('./aux/distance');
 
-class GreenSpacesVariable {
+class GreenSpaceProximityVariable {
   constructor(city, config) {
     this.city = city;
     this.config = config;
-    this.grid = new Grid(this.city.map.width, this.city.map.height);
-    this.events = new EventEmitter();
 
     this.residentialId = getTileTypeId(this.config, 'residential');
     this.parkTileId = getTileTypeId(this.config, 'park');
@@ -29,4 +25,4 @@ class GreenSpacesVariable {
   }
 }
 
-module.exports = GreenSpacesVariable;
+module.exports = GreenSpaceProximityVariable;

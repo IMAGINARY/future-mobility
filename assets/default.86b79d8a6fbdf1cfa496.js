@@ -5646,6 +5646,47 @@ module.exports = {
 
 /***/ }),
 
+/***/ "./src/js/aux/regions.js":
+/*!*******************************!*\
+  !*** ./src/js/aux/regions.js ***!
+  \*******************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Array2D = __webpack_require__(/*! ./array-2d */ "./src/js/aux/array-2d.js");
+
+function regionAreas(map, tileTypeIds) {
+  const answer = [];
+  const seen = Array2D.create(map.width, map.height, false);
+
+  map.allCells().forEach(([x, y, value]) => {
+    if (seen[y][x] === false && tileTypeIds.includes(value)) {
+      const frontier = [[x, y]];
+      seen[y][x] = true;
+      let area = 0;
+      while (frontier.length > 0) {
+        const [currX, currY] = frontier.pop();
+        area += 1;
+        map.adjacentCells(currX, currY).forEach(([adjX, adjY, adjValue]) => {
+          if (seen[adjY][adjX] === false && tileTypeIds.includes(adjValue)) {
+            seen[adjY][adjX] = true;
+            frontier.push([adjX, adjY]);
+          }
+        });
+      }
+      answer.push(area);
+    }
+  });
+
+  return answer;
+}
+
+module.exports = {
+  regionAreas,
+};
+
+
+/***/ }),
+
 /***/ "./src/js/aux/show-fatal-error.js":
 /*!****************************************!*\
   !*** ./src/js/aux/show-fatal-error.js ***!
@@ -7585,23 +7626,47 @@ module.exports = EmissionsVariable;
 
 /***/ }),
 
-/***/ "./src/js/green-spaces-variable.js":
-/*!*****************************************!*\
-  !*** ./src/js/green-spaces-variable.js ***!
-  \*****************************************/
+/***/ "./src/js/green-space-area-variable.js":
+/*!*********************************************!*\
+  !*** ./src/js/green-space-area-variable.js ***!
+  \*********************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-const Grid = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
 const { getTileTypeId } = __webpack_require__(/*! ./aux/config-helpers */ "./src/js/aux/config-helpers.js");
-const { allDistancesToTileType } = __webpack_require__(/*! ./aux/distance */ "./src/js/aux/distance.js");
+const { regionAreas } = __webpack_require__(/*! ./aux/regions */ "./src/js/aux/regions.js");
 
-class GreenSpacesVariable {
+class GreenSpaceAreaVariable {
   constructor(city, config) {
     this.city = city;
     this.config = config;
-    this.grid = new Grid(this.city.map.width, this.city.map.height);
-    this.events = new EventEmitter();
+
+    this.parkTileId = getTileTypeId(this.config, 'park');
+    this.waterTileId = getTileTypeId(this.config, 'water');
+  }
+
+  calculate() {
+    return regionAreas(this.city.map, [this.parkTileId, this.waterTileId]);
+  }
+}
+
+module.exports = GreenSpaceAreaVariable;
+
+
+/***/ }),
+
+/***/ "./src/js/green-space-proximity-variable.js":
+/*!**************************************************!*\
+  !*** ./src/js/green-space-proximity-variable.js ***!
+  \**************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const { getTileTypeId } = __webpack_require__(/*! ./aux/config-helpers */ "./src/js/aux/config-helpers.js");
+const { allDistancesToTileType } = __webpack_require__(/*! ./aux/distance */ "./src/js/aux/distance.js");
+
+class GreenSpaceProximityVariable {
+  constructor(city, config) {
+    this.city = city;
+    this.config = config;
 
     this.residentialId = getTileTypeId(this.config, 'residential');
     this.parkTileId = getTileTypeId(this.config, 'park');
@@ -7622,7 +7687,7 @@ class GreenSpacesVariable {
   }
 }
 
-module.exports = GreenSpacesVariable;
+module.exports = GreenSpaceProximityVariable;
 
 
 /***/ }),
@@ -8750,7 +8815,8 @@ const ZoneBalanceView = __webpack_require__(/*! ./zone-balance-view */ "./src/js
 const DataInspectorView = __webpack_require__(/*! ./data-inspector-view */ "./src/js/data-inspector-view.js");
 const TravelTimeVariable = __webpack_require__(/*! ./travel-time-variable */ "./src/js/travel-time-variable.js");
 const VariableRankListView = __webpack_require__(/*! ./variable-rank-list-view */ "./src/js/variable-rank-list-view.js");
-const GreenSpacesVariable = __webpack_require__(/*! ./green-spaces-variable */ "./src/js/green-spaces-variable.js");
+const GreenSpaceProximityVariable = __webpack_require__(/*! ./green-space-proximity-variable */ "./src/js/green-space-proximity-variable.js");
+const GreenSpaceAreaVariable = __webpack_require__(/*! ./green-space-area-variable */ "./src/js/green-space-area-variable.js");
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -8821,7 +8887,8 @@ fetch('./config.yml', { cache: 'no-store' })
       counterPane.append(zoneBalanceView.$element);
 
       const travelTimeVariable = new TravelTimeVariable(city, config);
-      const greenSpacesVariable = new GreenSpacesVariable(city, config);
+      const greenSpaceProximityVariable = new GreenSpaceProximityVariable(city, config);
+      const greenSpaceAreaVariable = new GreenSpaceAreaVariable(city, config);
 
       const dataInspectorView = new DataInspectorView();
       counterPane.append(dataInspectorView.$element);
@@ -8829,7 +8896,8 @@ fetch('./config.yml', { cache: 'no-store' })
 
       const variables = {
         'Travel times': travelTimeVariable,
-        'Green spaces': greenSpacesVariable,
+        'Green space prox.': greenSpaceProximityVariable,
+        'Green space areas': greenSpaceAreaVariable,
       };
 
       const varSelector = $('<select></select>')
@@ -8883,4 +8951,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.76b85c3bbe8336ea267e.js.map
+//# sourceMappingURL=default.86b79d8a6fbdf1cfa496.js.map
