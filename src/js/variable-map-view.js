@@ -3,9 +3,10 @@
 const TILE_SIZE = 10;
 
 class VariableMapView {
-  constructor(variable) {
+  constructor(variable, color) {
     this.displayObject = new PIXI.Container();
     this.variable = variable;
+    this.color = color;
 
     this.tiles = Array(this.variable.grid.width * this.variable.grid.height);
     this.variable.grid.allCells().forEach(([i, j]) => {
@@ -27,7 +28,7 @@ class VariableMapView {
   renderTile(i, j) {
     this.getTile(i, j)
       .clear()
-      .beginFill(0x953202, this.variable.grid.get(i, j))
+      .beginFill(this.color, this.variable.grid.get(i, j))
       .drawRect(0, 0, TILE_SIZE, TILE_SIZE)
       .endFill();
   }

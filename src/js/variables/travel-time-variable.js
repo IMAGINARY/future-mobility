@@ -1,7 +1,7 @@
 const EventEmitter = require('events');
-const { getTileTypeId } = require('./aux/config-helpers');
-const travelTimes = require('./aux/travel-times');
-const Array2D = require('./aux/array-2d');
+const { getTileTypeId } = require('../aux/config-helpers');
+const travelTimes = require('../aux/travel-times');
+const Array2D = require('../aux/array-2d');
 
 class TravelTimeVariable {
   constructor(city, config) {

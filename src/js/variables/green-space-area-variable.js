@@ -1,5 +1,5 @@
-const { getTileTypeId } = require('./aux/config-helpers');
-const { regionAreas } = require('./aux/regions');
+const { getTileTypeId } = require('../aux/config-helpers');
+const { regionAreas } = require('../aux/regions');
 
 class GreenSpaceAreaVariable {
   constructor(city, config) {

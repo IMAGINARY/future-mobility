@@ -1,6 +1,6 @@
 /* globals PIXI */
 const City = require('./city');
-const EmissionsVariable = require('./emissions-variable');
+const EmissionsVariable = require('./variables/emissions-variable');
 const MapEditor = require('./editor/map-editor');
 const VariableMapView = require('./variable-map-view');
 require('../sass/default.scss');

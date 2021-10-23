@@ -1,5 +1,5 @@
-const { getTileTypeId } = require('./aux/config-helpers');
-const { allDistancesToTileType } = require('./aux/distance');
+const { getTileTypeId } = require('../aux/config-helpers');
+const { allDistancesToTileType } = require('../aux/distance');
 
 class GreenSpaceProximityVariable {
   constructor(city, config) {

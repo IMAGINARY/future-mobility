@@ -1,7 +1,7 @@
 /* globals PIXI */
 const yaml = require('js-yaml');
 const City = require('./city');
-const EmissionsVariable = require('./emissions-variable');
+const EmissionsVariable = require('./variables/emissions-variable');
 const MapEditor = require('./editor/map-editor');
 const VariableMapView = require('./variable-map-view');
 const CarOverlay = require('./cars/car-overlay');
@@ -11,10 +11,11 @@ const showFatalError = require('./aux/show-fatal-error');
 require('../sass/default.scss');
 const ZoneBalanceView = require('./zone-balance-view');
 const DataInspectorView = require('./data-inspector-view');
-const TravelTimeVariable = require('./travel-time-variable');
+const TravelTimeVariable = require('./variables/travel-time-variable');
 const VariableRankListView = require('./variable-rank-list-view');
-const GreenSpaceProximityVariable = require('./green-space-proximity-variable');
-const GreenSpaceAreaVariable = require('./green-space-area-variable');
+const GreenSpaceProximityVariable = require('./variables/green-space-proximity-variable');
+const GreenSpaceAreaVariable = require('./variables/green-space-area-variable');
+const NoiseVariable = require('./variables/noise-variable');
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -32,6 +33,7 @@ fetch('./config.yml', { cache: 'no-store' })
       ? City.fromJSON(testScenario.city)
       : new City(config.cityWidth, config.cityHeight);
     const emissions = new EmissionsVariable(city, config);
+    const noise = new NoiseVariable(city, config);
 
     const app = new PIXI.Application({
       width: 3840,
@@ -68,12 +70,20 @@ fetch('./config.yml', { cache: 'no-store' })
       });
       app.ticker.add(time => carOverlay.animate(time));
 
-      const varViewer = new VariableMapView(emissions);
-      app.stage.addChild(varViewer.displayObject);
-      varViewer.displayObject.width = 960;
-      varViewer.displayObject.height = 960;
-      varViewer.displayObject.x = 1920 + 40;
-      varViewer.displayObject.y = 0;
+      const emissionsVarViewer = new VariableMapView(emissions, 0x953202);
+      app.stage.addChild(emissionsVarViewer.displayObject);
+      emissionsVarViewer.displayObject.width = 960;
+      emissionsVarViewer.displayObject.height = 960;
+      emissionsVarViewer.displayObject.x = 1920 + 40;
+      emissionsVarViewer.displayObject.y = 0;
+
+      const noiseVarViewer = new VariableMapView(noise, 0x20e95ff);
+      app.stage.addChild(noiseVarViewer.displayObject);
+      noiseVarViewer.displayObject.width = 960;
+      noiseVarViewer.displayObject.height = 960;
+      noiseVarViewer.displayObject.x = 1920 + 40;
+      noiseVarViewer.displayObject.y = 960;
+
 
       const counterPane = $('<div></div>').addClass('counters');
       $('body').append(counterPane);

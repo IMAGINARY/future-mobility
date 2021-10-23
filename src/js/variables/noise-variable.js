@@ -1,7 +1,7 @@
 const EventEmitter = require('events');
-const Grid = require('./grid');
+const Grid = require('../grid');
 
-class EmissionsVariable {
+class NoiseVariable {
   constructor(city, config) {
     this.city = city;
     this.config = config;
@@ -13,15 +13,13 @@ class EmissionsVariable {
   }
 
   calculate(i, j) {
-    const emissions = (x, y) => (this.config.tileTypes[this.city.map.get(x, y)]
-      && this.config.tileTypes[this.city.map.get(x, y)].emissions)
+    const noise = (x, y) => (this.config.tileTypes[this.city.map.get(x, y)]
+      && this.config.tileTypes[this.city.map.get(x, y)].noise)
       || 0;
 
-    return Math.min(1, Math.max(0, emissions(i, j)
+    return Math.min(1, Math.max(0, noise(i, j)
       + this.city.map.nearbyCells(i, j, 1)
-        .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.5, 0)
-      + this.city.map.nearbyCells(i, j, 2)
-        .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.25, 0)));
+        .reduce((sum, [x, y]) => sum + noise(x, y) * 0.5, 0)));
   }
 
   handleCityUpdate(updates) {
@@ -40,4 +38,4 @@ class EmissionsVariable {
   }
 }
 
-module.exports = EmissionsVariable;
+module.exports = NoiseVariable;
