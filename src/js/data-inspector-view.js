@@ -1,5 +1,4 @@
 /* globals Chart */
-const Array2D = require('./aux/array-2d');
 
 class DataInspectorView {
   constructor() {
@@ -15,7 +14,7 @@ class DataInspectorView {
   }
 
   display(data) {
-    const distribution = DataInspectorView.asDiscreteFrequency(data.values);
+    const distribution = DataInspectorView.asFrequencyDistribution(data.values);
     this.chart.data = {
       labels: Object.keys(distribution),
       datasets: [{
@@ -32,7 +31,7 @@ class DataInspectorView {
         .append($('<span></span>').addClass('value').text(indicator.value))));
   }
 
-  static asDiscreteFrequency(values) {
+  static asFrequencyDistribution(values) {
     const data = {};
 
     values.forEach((v) => {

@@ -1,11 +1,11 @@
-class VariableRankView {
+class IndexView {
   constructor(id, definition) {
     this.id = id;
     this.definition = definition;
     this.value = null;
     this.$valueElement = $('<div></div>').addClass('value');
     this.$element = $('<div></div>')
-      .addClass(['variable-rank', `variable-rank-${this.id}`])
+      .addClass(['index', `index-${this.id}`])
       .append([
         $('<div></div>').addClass('description')
           .append([
@@ -26,4 +26,4 @@ class VariableRankView {
   }
 }
 
-module.exports = VariableRankView;
+module.exports = IndexView;

@@ -12,7 +12,7 @@ require('../sass/default.scss');
 const ZoneBalanceView = require('./zone-balance-view');
 const DataInspectorView = require('./data-inspector-view');
 const TravelTimeVariable = require('./variables/travel-time-variable');
-const VariableRankListView = require('./variable-rank-list-view');
+const VariableRankListView = require('./index-list-view');
 const GreenSpaceProximityVariable = require('./variables/green-space-proximity-variable');
 const GreenSpaceAreaVariable = require('./variables/green-space-area-variable');
 const NoiseVariable = require('./variables/noise-variable');

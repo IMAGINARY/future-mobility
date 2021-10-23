@@ -1,9 +1,9 @@
-const VariableRankView = require('./variable-rank-view');
+const VariableRankView = require('./index-view');
 
-class VariableRankListView {
+class IndexListView {
   constructor(varDefs) {
     this.$element = $('<div></div>')
-      .addClass('variable-rank-list');
+      .addClass('index-list');
 
     this.variableRankViews = Object.fromEntries(
       Object.entries(varDefs)
@@ -25,4 +25,4 @@ class VariableRankListView {
   }
 }
 
-module.exports = VariableRankListView;
+module.exports = IndexListView;

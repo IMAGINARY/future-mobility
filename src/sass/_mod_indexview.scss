@@ -1,33 +1,33 @@
-$rank-description-icon-width: 40px;
-$rank-description-icon-height: 40px;
+$index-description-icon-width: 40px;
+$index-description-icon-height: 40px;
 
-$rank-value-icon-width: 60px;
-$rank-value-icon-height: 60px;
-$rank-value-icon-face-ratio: 2/3;
-$rank-value-icon-margin: 20px;
+$index-value-icon-width: 60px;
+$index-value-icon-height: 60px;
+$index-value-icon-face-ratio: 2/3;
+$index-value-icon-margin: 20px;
 
-$rank-value-icon-face-width: $rank-value-icon-width * $rank-value-icon-face-ratio;
-$rank-value-icon-face-height: $rank-value-icon-height * $rank-value-icon-face-ratio;
+$index-value-icon-face-width: $index-value-icon-width * $index-value-icon-face-ratio;
+$index-value-icon-face-height: $index-value-icon-height * $index-value-icon-face-ratio;
 
-$rank-value-icon-face-px: ($rank-value-icon-width - $rank-value-icon-face-width) / 2;
-$rank-value-icon-face-py: ($rank-value-icon-height - $rank-value-icon-face-height) / 2;
+$index-value-icon-face-px: ($index-value-icon-width - $index-value-icon-face-width) / 2;
+$index-value-icon-face-py: ($index-value-icon-height - $index-value-icon-face-height) / 2;
 
-.variable-rank-list {
+.index-list {
   background-color: white;
   padding: 1em;
 
-  .variable-rank {
+  .index {
     margin-bottom: 0.75em;
 
     .description {
       display: inline-block;
-      width: calc(100% - (#{$rank-value-icon-width + $rank-value-icon-margin}));
+      width: calc(100% - (#{$index-value-icon-width + $index-value-icon-margin}));
       text-overflow: clip;
       background-repeat: no-repeat;
       background-position: left center;
-      background-size: $rank-description-icon-width $rank-description-icon-height;
-      padding-left: $rank-description-icon-width + 20px;
-      min-height: $rank-description-icon-height;
+      background-size: $index-description-icon-width $index-description-icon-height;
+      padding-left: $index-description-icon-width + 20px;
+      min-height: $index-description-icon-height;
 
       .name {
         font-weight: bold;
@@ -43,18 +43,18 @@ $rank-value-icon-face-py: ($rank-value-icon-height - $rank-value-icon-face-heigh
       vertical-align: top;
       margin-top: -8px;
       font-size: 0;
-      width: $rank-value-icon-width;
-      height: $rank-value-icon-height;
-      margin-left: $rank-value-icon-margin;
+      width: $index-value-icon-width;
+      height: $index-value-icon-height;
+      margin-left: $index-value-icon-margin;
 
       &:before {
         content: " ";
         display: block;
         position: absolute;
-        width: $rank-value-icon-face-width;
-        height: $rank-value-icon-face-height;
-        top: $rank-value-icon-face-py;
-        left: $rank-value-icon-face-px;
+        width: $index-value-icon-face-width;
+        height: $index-value-icon-face-height;
+        top: $index-value-icon-face-py;
+        left: $index-value-icon-face-px;
         border-radius: 50%;
         background-color: transparent;
         transition: background-color 0.5s;
@@ -67,8 +67,8 @@ $rank-value-icon-face-py: ($rank-value-icon-height - $rank-value-icon-face-heigh
         background-size: contain;
         background-repeat: no-repeat;
         background-position: center left;
-        width: $rank-value-icon-width;
-        height: $rank-value-icon-height;
+        width: $index-value-icon-width;
+        height: $index-value-icon-height;
       }
     }
 
@@ -118,27 +118,27 @@ $rank-value-icon-face-py: ($rank-value-icon-height - $rank-value-icon-face-heigh
     }
   }
 
-  .variable-rank-traffic-density .description {
+  .index-traffic-density .description {
     background-image: url('../../static/icons/traffic-density.svg');
   }
 
-  .variable-rank-travel-times .description {
+  .index-travel-times .description {
     background-image: url('../../static/icons/travel-times.svg');
   }
 
-  .variable-rank-safety .description {
+  .index-safety .description {
     background-image: url('../../static/icons/safety.svg');
   }
 
-  .variable-rank-pollution .description {
+  .index-pollution .description {
     background-image: url('../../static/icons/pollution.svg');
   }
 
-  .variable-rank-noise .description {
+  .index-noise .description {
     background-image: url('../../static/icons/noise.svg');
   }
 
-  .variable-rank-green-spaces .description {
+  .index-green-spaces .description {
     background-image: url('../../static/icons/green-spaces.svg');
   }
 }

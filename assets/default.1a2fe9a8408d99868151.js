@@ -6848,10 +6848,9 @@ module.exports = City;
 /*!***************************************!*\
   !*** ./src/js/data-inspector-view.js ***!
   \***************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+/***/ ((module) => {
 
 /* globals Chart */
-const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
 
 class DataInspectorView {
   constructor() {
@@ -6867,7 +6866,7 @@ class DataInspectorView {
   }
 
   display(data) {
-    const distribution = DataInspectorView.asDiscreteFrequency(data.values);
+    const distribution = DataInspectorView.asFrequencyDistribution(data.values);
     this.chart.data = {
       labels: Object.keys(distribution),
       datasets: [{
@@ -6884,7 +6883,7 @@ class DataInspectorView {
         .append($('<span></span>').addClass('value').text(indicator.value))));
   }
 
-  static asDiscreteFrequency(values) {
+  static asFrequencyDistribution(values) {
     const data = {};
 
     values.forEach((v) => {
@@ -7759,6 +7758,83 @@ module.exports = Grid;
 
 /***/ }),
 
+/***/ "./src/js/index-list-view.js":
+/*!***********************************!*\
+  !*** ./src/js/index-list-view.js ***!
+  \***********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const VariableRankView = __webpack_require__(/*! ./index-view */ "./src/js/index-view.js");
+
+class IndexListView {
+  constructor(varDefs) {
+    this.$element = $('<div></div>')
+      .addClass('index-list');
+
+    this.variableRankViews = Object.fromEntries(
+      Object.entries(varDefs)
+        .map(([id, def]) => [id, new VariableRankView(id, def)])
+    );
+
+    this.$element.append(
+      $('<div></div>').addClass('variables')
+        .append(...Object.values(this.variableRankViews).map(view => view.$element))
+    );
+  }
+
+  set(varValues) {
+    Object.entries(varValues).forEach(([id, value]) => {
+      if (this.variableRankViews[id] !== undefined) {
+        this.variableRankViews[id].setValue(value);
+      }
+    });
+  }
+}
+
+module.exports = IndexListView;
+
+
+/***/ }),
+
+/***/ "./src/js/index-view.js":
+/*!******************************!*\
+  !*** ./src/js/index-view.js ***!
+  \******************************/
+/***/ ((module) => {
+
+class IndexView {
+  constructor(id, definition) {
+    this.id = id;
+    this.definition = definition;
+    this.value = null;
+    this.$valueElement = $('<div></div>').addClass('value');
+    this.$element = $('<div></div>')
+      .addClass(['index', `index-${this.id}`])
+      .append([
+        $('<div></div>').addClass('description')
+          .append([
+            $('<div></div>').addClass('name').text(this.definition.name.de),
+            $('<div></div>').addClass('name-tr').text(this.definition.name.en),
+          ]),
+        this.$valueElement,
+      ]);
+  }
+
+  setValue(value) {
+    if (this.value !== null) {
+      this.$element.removeClass(`value-${this.value}`);
+    }
+    this.value = value;
+    this.$element.addClass(`value-${this.value}`);
+    this.$valueElement.text(value);
+  }
+}
+
+module.exports = IndexView;
+
+
+/***/ }),
+
 /***/ "./src/js/map-text-overlay.js":
 /*!************************************!*\
   !*** ./src/js/map-text-overlay.js ***!
@@ -8325,83 +8401,6 @@ module.exports = VariableMapView;
 
 /***/ }),
 
-/***/ "./src/js/variable-rank-list-view.js":
-/*!*******************************************!*\
-  !*** ./src/js/variable-rank-list-view.js ***!
-  \*******************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const VariableRankView = __webpack_require__(/*! ./variable-rank-view */ "./src/js/variable-rank-view.js");
-
-class VariableRankListView {
-  constructor(varDefs) {
-    this.$element = $('<div></div>')
-      .addClass('variable-rank-list');
-
-    this.variableRankViews = Object.fromEntries(
-      Object.entries(varDefs)
-        .map(([id, def]) => [id, new VariableRankView(id, def)])
-    );
-
-    this.$element.append(
-      $('<div></div>').addClass('variables')
-        .append(...Object.values(this.variableRankViews).map(view => view.$element))
-    );
-  }
-
-  set(varValues) {
-    Object.entries(varValues).forEach(([id, value]) => {
-      if (this.variableRankViews[id] !== undefined) {
-        this.variableRankViews[id].setValue(value);
-      }
-    });
-  }
-}
-
-module.exports = VariableRankListView;
-
-
-/***/ }),
-
-/***/ "./src/js/variable-rank-view.js":
-/*!**************************************!*\
-  !*** ./src/js/variable-rank-view.js ***!
-  \**************************************/
-/***/ ((module) => {
-
-class VariableRankView {
-  constructor(id, definition) {
-    this.id = id;
-    this.definition = definition;
-    this.value = null;
-    this.$valueElement = $('<div></div>').addClass('value');
-    this.$element = $('<div></div>')
-      .addClass(['variable-rank', `variable-rank-${this.id}`])
-      .append([
-        $('<div></div>').addClass('description')
-          .append([
-            $('<div></div>').addClass('name').text(this.definition.name.de),
-            $('<div></div>').addClass('name-tr').text(this.definition.name.en),
-          ]),
-        this.$valueElement,
-      ]);
-  }
-
-  setValue(value) {
-    if (this.value !== null) {
-      this.$element.removeClass(`value-${this.value}`);
-    }
-    this.value = value;
-    this.$element.addClass(`value-${this.value}`);
-    this.$valueElement.text(value);
-  }
-}
-
-module.exports = VariableRankView;
-
-
-/***/ }),
-
 /***/ "./src/js/variables/emissions-variable.js":
 /*!************************************************!*\
   !*** ./src/js/variables/emissions-variable.js ***!
@@ -8525,9 +8524,50 @@ module.exports = GreenSpaceProximityVariable;
 /*!********************************************!*\
   !*** ./src/js/variables/noise-variable.js ***!
   \********************************************/
-/***/ (() => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-throw new Error("Module parse failed: Unexpected token (22:60)\nYou may need an appropriate loader to handle this file type, currently no loaders are configured to process this file. See https://webpack.js.org/concepts#loaders\n|     return Math.min(1, Math.max(0, noise(i, j)\n|       + this.city.map.nearbyCells(i, j, 1)\n>         .reduce((sum, [x, y]) => sum + noise(x, y) * 0.5, 0);\n|   }\n| ");
+const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+const Grid = __webpack_require__(/*! ../grid */ "./src/js/grid.js");
+
+class NoiseVariable {
+  constructor(city, config) {
+    this.city = city;
+    this.config = config;
+    this.grid = new Grid(this.city.map.width, this.city.map.height);
+    this.events = new EventEmitter();
+
+    this.city.map.events.on('update', this.handleCityUpdate.bind(this));
+    this.handleCityUpdate(this.city.map.allCells());
+  }
+
+  calculate(i, j) {
+    const noise = (x, y) => (this.config.tileTypes[this.city.map.get(x, y)]
+      && this.config.tileTypes[this.city.map.get(x, y)].noise)
+      || 0;
+
+    return Math.min(1, Math.max(0, noise(i, j)
+      + this.city.map.nearbyCells(i, j, 1)
+        .reduce((sum, [x, y]) => sum + noise(x, y) * 0.5, 0)));
+  }
+
+  handleCityUpdate(updates) {
+    const coords = [];
+    updates.forEach(([i, j]) => {
+      coords.push([i, j]);
+      coords.push(...this.city.map.nearbyCells(i, j, 1).map(([x, y]) => [x, y]));
+      coords.push(...this.city.map.nearbyCells(i, j, 2).map(([x, y]) => [x, y]));
+    });
+    // Todo: deduplicating coords might be necessary if the way calculations
+    //    and updates are handled is not changed
+    coords.forEach(([i, j]) => {
+      this.grid.set(i, j, this.calculate(i, j));
+    });
+    this.events.emit('update', coords);
+  }
+}
+
+module.exports = NoiseVariable;
+
 
 /***/ }),
 
@@ -8825,7 +8865,7 @@ __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
 const ZoneBalanceView = __webpack_require__(/*! ./zone-balance-view */ "./src/js/zone-balance-view.js");
 const DataInspectorView = __webpack_require__(/*! ./data-inspector-view */ "./src/js/data-inspector-view.js");
 const TravelTimeVariable = __webpack_require__(/*! ./variables/travel-time-variable */ "./src/js/variables/travel-time-variable.js");
-const VariableRankListView = __webpack_require__(/*! ./variable-rank-list-view */ "./src/js/variable-rank-list-view.js");
+const VariableRankListView = __webpack_require__(/*! ./index-list-view */ "./src/js/index-list-view.js");
 const GreenSpaceProximityVariable = __webpack_require__(/*! ./variables/green-space-proximity-variable */ "./src/js/variables/green-space-proximity-variable.js");
 const GreenSpaceAreaVariable = __webpack_require__(/*! ./variables/green-space-area-variable */ "./src/js/variables/green-space-area-variable.js");
 const NoiseVariable = __webpack_require__(/*! ./variables/noise-variable */ "./src/js/variables/noise-variable.js");
@@ -8972,4 +9012,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.f53c6536b07bcfdab5b2.js.map
+//# sourceMappingURL=default.1a2fe9a8408d99868151.js.map
