@@ -16,7 +16,7 @@ class IndexListView {
     );
   }
 
-  set(varValues) {
+  setValues(varValues) {
     Object.entries(varValues).forEach(([id, value]) => {
       if (this.variableRankViews[id] !== undefined) {
         this.variableRankViews[id].setValue(value);

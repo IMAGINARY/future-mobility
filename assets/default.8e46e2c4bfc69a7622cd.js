@@ -5473,7 +5473,6 @@ function allDistancesToTileType(map, tileTypeIds) {
       );
     }
   }
-  console.log(distances);
 
   return distances;
 }
@@ -5796,6 +5795,72 @@ class SpriteFader {
 SpriteFader.DEFAULT_DURATION = 20;
 
 module.exports = SpriteFader;
+
+
+/***/ }),
+
+/***/ "./src/js/aux/statistics.js":
+/*!**********************************!*\
+  !*** ./src/js/aux/statistics.js ***!
+  \**********************************/
+/***/ ((module) => {
+
+function average(data) {
+  return data.length > 0 ? data.reduce((a, b) => a + b, 0) / data.length : undefined;
+}
+
+function sortedQuantile(sortedData, q) {
+  if (sortedData.length === 0) {
+    return undefined;
+  }
+  const pos = (sortedData.length - 1) * q;
+  const base = Math.floor(pos);
+  const rest = pos - base;
+  if (sortedData[base + 1] !== undefined) {
+    return sortedData[base] + rest * (sortedData[base + 1] - sortedData[base]);
+  }
+  return sortedData[base];
+}
+
+function quantile(data, q) {
+  return sortedQuantile(data.sort((a, b) => a - b), q);
+}
+
+function median(data) {
+  return quantile(data, 0.5);
+}
+
+function sortedMedian(data) {
+  return sortedQuantile(data, 0.5);
+}
+
+function firstQuartile(data) {
+  return quantile(data, 0.25);
+}
+
+function sortedFirstQuartile(data) {
+  return sortedQuantile(data, 0.25);
+}
+
+function thirdQuartile(data) {
+  return quantile(data, 0.75);
+}
+
+function sortedThirdQuartile(data) {
+  return sortedQuantile(data, 0.75);
+}
+
+module.exports = {
+  average,
+  quantile,
+  sortedQuantile,
+  median,
+  sortedMedian,
+  firstQuartile,
+  sortedFirstQuartile,
+  thirdQuartile,
+  sortedThirdQuartile,
+};
 
 
 /***/ }),
@@ -6848,9 +6913,13 @@ module.exports = City;
 /*!***************************************!*\
   !*** ./src/js/data-inspector-view.js ***!
   \***************************************/
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /* globals Chart */
+
+const {
+  average, sortedMedian, sortedFirstQuartile, sortedThirdQuartile,
+} = __webpack_require__(/*! ./aux/statistics */ "./src/js/aux/statistics.js");
 
 class DataInspectorView {
   constructor() {
@@ -6899,10 +6968,10 @@ class DataInspectorView {
     return [
       { title: 'Count', value: data.length },
       { title: 'Range', value: DataInspectorView.range(sorted) },
-      { title: 'Average', value: formatNumber(DataInspectorView.average(data)) },
-      { title: 'Median', value: formatNumber(DataInspectorView.quantile(sorted, 0.5)) },
-      { title: 'Q1', value: formatNumber(DataInspectorView.quantile(sorted, 0.25)) },
-      { title: 'Q3', value: formatNumber(DataInspectorView.quantile(sorted, 0.75)) },
+      { title: 'Average', value: formatNumber(average(data)) },
+      { title: 'Median', value: formatNumber(sortedMedian(sorted)) },
+      { title: 'Q1', value: formatNumber(sortedFirstQuartile(sorted)) },
+      { title: 'Q3', value: formatNumber(sortedThirdQuartile(sorted)) },
     ];
   }
 
@@ -6911,23 +6980,6 @@ class DataInspectorView {
       return '[]';
     }
     return `[${sortedData.at(0)}, ${sortedData.at(-1)}]`;
-  }
-
-  static average(data) {
-    return data.length > 0 ? data.reduce((a, b) => a + b, 0) / data.length : undefined;
-  }
-
-  static quantile(sortedData, q) {
-    if (sortedData.length === 0) {
-      return undefined;
-    }
-    const pos = (sortedData.length - 1) * q;
-    const base = Math.floor(pos);
-    const rest = pos - base;
-    if (sortedData[base + 1] !== undefined) {
-      return sortedData[base] + rest * (sortedData[base + 1] - sortedData[base]);
-    }
-    return sortedData[base];
   }
 }
 
@@ -7751,6 +7803,22 @@ class Grid {
       .filter(([x, y]) => this.isValidCoords(x, y))
       .map(([x, y]) => [x, y, this.get(x, y)]);
   }
+
+
+  /**
+   * Returns the frequency distribution of the values
+   * stored in the cells.
+   *
+   * @return {Object.<string, number>}
+   */
+  frequencyDistribution() {
+    const answer = {};
+    Array2D.forEach(this.cells, (v) => {
+      answer[v] = answer[v] === undefined ? 0 : answer[v] + 1;
+    });
+
+    return answer;
+  }
 }
 
 module.exports = Grid;
@@ -7782,7 +7850,7 @@ class IndexListView {
     );
   }
 
-  set(varValues) {
+  setValues(varValues) {
     Object.entries(varValues).forEach(([id, value]) => {
       if (this.variableRankViews[id] !== undefined) {
         this.variableRankViews[id].setValue(value);
@@ -7821,12 +7889,14 @@ class IndexView {
   }
 
   setValue(value) {
-    if (this.value !== null) {
-      this.$element.removeClass(`value-${this.value}`);
+    if (value !== this.value) {
+      if (this.value !== null) {
+        this.$element.removeClass(`value-${this.value}`);
+      }
+      this.value = value;
+      this.$element.addClass(`value-${this.value}`);
+      this.$valueElement.text(value);
     }
-    this.value = value;
-    this.$element.addClass(`value-${this.value}`);
-    this.$valueElement.text(value);
   }
 }
 
@@ -8482,6 +8552,63 @@ module.exports = GreenSpaceAreaVariable;
 
 /***/ }),
 
+/***/ "./src/js/variables/green-space-index.js":
+/*!***********************************************!*\
+  !*** ./src/js/variables/green-space-index.js ***!
+  \***********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const GreenSpaceProximityVariable = __webpack_require__(/*! ./green-space-proximity-variable */ "./src/js/variables/green-space-proximity-variable.js");
+const GreenSpaceAreaVariable = __webpack_require__(/*! ./green-space-area-variable */ "./src/js/variables/green-space-area-variable.js");
+const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
+
+class GreenSpaceIndex {
+  constructor(city, config) {
+    this.city = city;
+    this.config = config;
+
+    this.proximityVar = new GreenSpaceProximityVariable(this.city, this.config);
+    this.areaVar = new GreenSpaceAreaVariable(this.city, this.config);
+    this.parkTileId = getTileTypeId(this.config, 'park');
+    this.waterTileId = getTileTypeId(this.config, 'water');
+  }
+
+  calculate() {
+    // Sum of the areas of green spaces with area of 3 or more
+    const largeGreenSpaceArea = this.areaVar.calculate()
+      .filter(area => area >= 3).reduce((total, area) => total + area, 0);
+
+    const tileTypeCount = this.city.map.frequencyDistribution();
+    const numGreenSpaces = (tileTypeCount[this.parkTileId] || 0)
+      + (tileTypeCount[this.waterTileId] || 0);
+
+    // Check how many green spaces are within 5 and 3 tiles distance
+    // from residential areas
+    const proximities = this.proximityVar.calculate();
+    let numUnder5 = 0;
+    let numUnder3 = 0;
+    proximities.forEach((distance) => {
+      if (distance <= 5) {
+        numUnder5 += 1;
+      }
+      if (distance <= 3) {
+        numUnder3 += 1;
+      }
+    });
+
+    return 1
+      + (largeGreenSpaceArea > 16 ? 1 : 0)
+      + (numGreenSpaces > 10 ? 1 : 0)
+      + (numGreenSpaces > 20 && numUnder5 >= Math.floor(proximities.length * 0.75) ? 1 : 0)
+      + (numGreenSpaces > 30 && numUnder3 >= Math.floor(proximities.length * 0.75) ? 1 : 0);
+  }
+}
+
+module.exports = GreenSpaceIndex;
+
+
+/***/ }),
+
 /***/ "./src/js/variables/green-space-proximity-variable.js":
 /*!************************************************************!*\
   !*** ./src/js/variables/green-space-proximity-variable.js ***!
@@ -8869,6 +8996,7 @@ const VariableRankListView = __webpack_require__(/*! ./index-list-view */ "./src
 const GreenSpaceProximityVariable = __webpack_require__(/*! ./variables/green-space-proximity-variable */ "./src/js/variables/green-space-proximity-variable.js");
 const GreenSpaceAreaVariable = __webpack_require__(/*! ./variables/green-space-area-variable */ "./src/js/variables/green-space-area-variable.js");
 const NoiseVariable = __webpack_require__(/*! ./variables/noise-variable */ "./src/js/variables/noise-variable.js");
+const GreenSpaceIndex = __webpack_require__(/*! ./variables/green-space-index */ "./src/js/variables/green-space-index.js");
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -8986,15 +9114,41 @@ fetch('./config.yml', { cache: 'no-store' })
       const variableRankListView = new VariableRankListView(config.variables);
       // Todo: Remove the lines below
       $('[data-component="data-container"]').append(variableRankListView.$element);
-      variableRankListView.set({
-        'traffic-density': 1,
-        'travel-times': 2,
+      variableRankListView.setValues({
+        'traffic-density': 3,
+        'travel-times': 3,
         safety: 3,
-        pollution: 4,
-        noise: 5,
+        pollution: 3,
+        noise: 3,
         'green-spaces': 3,
       });
       window.variableRankListView = variableRankListView;
+
+      let indexesDirty = true;
+      let indexesCooldownTimer = null;
+      const indexesCooldownTime = 1000;
+      const greenSpaceIndex = new GreenSpaceIndex(city, config);
+
+      function recalculateIndexes() {
+        indexesDirty = true;
+        if (indexesCooldownTimer === null) {
+          variableRankListView.setValues({
+            'green-spaces': greenSpaceIndex.calculate(),
+          });
+          indexesDirty = false;
+          indexesCooldownTimer = setTimeout(() => {
+            indexesCooldownTimer = null;
+            if (indexesDirty) {
+              recalculateIndexes();
+            }
+          }, indexesCooldownTime);
+        }
+      }
+
+      city.map.events.on('update', () => {
+        recalculateIndexes();
+      });
+      recalculateIndexes();
 
       if (testScenario) {
         testScenario(city, carOverlay);
@@ -9012,4 +9166,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.1a2fe9a8408d99868151.js.map
+//# sourceMappingURL=default.8e46e2c4bfc69a7622cd.js.map

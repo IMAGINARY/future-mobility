@@ -16,6 +16,7 @@ const VariableRankListView = require('./index-list-view');
 const GreenSpaceProximityVariable = require('./variables/green-space-proximity-variable');
 const GreenSpaceAreaVariable = require('./variables/green-space-area-variable');
 const NoiseVariable = require('./variables/noise-variable');
+const GreenSpaceIndex = require('./variables/green-space-index');
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -133,15 +134,41 @@ fetch('./config.yml', { cache: 'no-store' })
       const variableRankListView = new VariableRankListView(config.variables);
       // Todo: Remove the lines below
       $('[data-component="data-container"]').append(variableRankListView.$element);
-      variableRankListView.set({
-        'traffic-density': 1,
-        'travel-times': 2,
+      variableRankListView.setValues({
+        'traffic-density': 3,
+        'travel-times': 3,
         safety: 3,
-        pollution: 4,
-        noise: 5,
+        pollution: 3,
+        noise: 3,
         'green-spaces': 3,
       });
       window.variableRankListView = variableRankListView;
+
+      let indexesDirty = true;
+      let indexesCooldownTimer = null;
+      const indexesCooldownTime = 1000;
+      const greenSpaceIndex = new GreenSpaceIndex(city, config);
+
+      function recalculateIndexes() {
+        indexesDirty = true;
+        if (indexesCooldownTimer === null) {
+          variableRankListView.setValues({
+            'green-spaces': greenSpaceIndex.calculate(),
+          });
+          indexesDirty = false;
+          indexesCooldownTimer = setTimeout(() => {
+            indexesCooldownTimer = null;
+            if (indexesDirty) {
+              recalculateIndexes();
+            }
+          }, indexesCooldownTime);
+        }
+      }
+
+      city.map.events.on('update', () => {
+        recalculateIndexes();
+      });
+      recalculateIndexes();
 
       if (testScenario) {
         testScenario(city, carOverlay);

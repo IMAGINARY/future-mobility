@@ -1860,6 +1860,22 @@ class Grid {
       .filter(([x, y]) => this.isValidCoords(x, y))
       .map(([x, y]) => [x, y, this.get(x, y)]);
   }
+
+
+  /**
+   * Returns the frequency distribution of the values
+   * stored in the cells.
+   *
+   * @return {Object.<string, number>}
+   */
+  frequencyDistribution() {
+    const answer = {};
+    Array2D.forEach(this.cells, (v) => {
+      answer[v] = answer[v] === undefined ? 0 : answer[v] + 1;
+    });
+
+    return answer;
+  }
 }
 
 module.exports = Grid;
@@ -2635,4 +2651,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.5e209075b96655c6a33a.js.map
+//# sourceMappingURL=editor.5d902a985be43861093c.js.map

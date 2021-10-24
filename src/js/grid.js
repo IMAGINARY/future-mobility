@@ -171,6 +171,22 @@ class Grid {
       .filter(([x, y]) => this.isValidCoords(x, y))
       .map(([x, y]) => [x, y, this.get(x, y)]);
   }
+
+
+  /**
+   * Returns the frequency distribution of the values
+   * stored in the cells.
+   *
+   * @return {Object.<string, number>}
+   */
+  frequencyDistribution() {
+    const answer = {};
+    Array2D.forEach(this.cells, (v) => {
+      answer[v] = answer[v] === undefined ? 0 : answer[v] + 1;
+    });
+
+    return answer;
+  }
 }
 
 module.exports = Grid;

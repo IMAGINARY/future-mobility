@@ -17,12 +17,14 @@ class IndexView {
   }
 
   setValue(value) {
-    if (this.value !== null) {
-      this.$element.removeClass(`value-${this.value}`);
+    if (value !== this.value) {
+      if (this.value !== null) {
+        this.$element.removeClass(`value-${this.value}`);
+      }
+      this.value = value;
+      this.$element.addClass(`value-${this.value}`);
+      this.$valueElement.text(value);
     }
-    this.value = value;
-    this.$element.addClass(`value-${this.value}`);
-    this.$valueElement.text(value);
   }
 }
 

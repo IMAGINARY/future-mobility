@@ -22,7 +22,6 @@ function allDistancesToTileType(map, tileTypeIds) {
       );
     }
   }
-  console.log(distances);
 
   return distances;
 }
