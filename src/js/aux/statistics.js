@@ -43,6 +43,51 @@ function sortedThirdQuartile(data) {
   return sortedQuantile(data, 0.75);
 }
 
+function numberUnderValue(data, k) {
+  let count = 0;
+  for (let i = 0; i < data.length; i += 1) {
+    if (data[i] < k) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+function percentageUnderValue(data, k) {
+  return data.length > 0 ? numberUnderValue(data, k) / data.length : 1;
+}
+
+function numberOverValue(data, k) {
+  let count = 0;
+  for (let i = 0; i < data.length; i += 1) {
+    if (data[i] > k) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+function percentageOverValue(data, k) {
+  return data.length > 0 ? numberOverValue(data, k) / data.length : 1;
+}
+
+function numberEqualValue(data, k) {
+  let count = 0;
+  for (let i = 0; i < data.length; i += 1) {
+    if (data[i] === k) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+function percentageEqualValue(data, k) {
+  return data.length > 0 ? numberEqualValue(data, k) / data.length : 1;
+}
+
 module.exports = {
   average,
   quantile,
@@ -53,4 +98,10 @@ module.exports = {
   sortedFirstQuartile,
   thirdQuartile,
   sortedThirdQuartile,
+  numberUnderValue,
+  percentageUnderValue,
+  numberOverValue,
+  percentageOverValue,
+  numberEqualValue,
+  percentageEqualValue,
 };

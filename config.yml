@@ -14,7 +14,7 @@ tileTypes:
     color: '#8f8f8f'
     editorIcon: 'static/fa/road-solid.svg'
     emissions: 0.1
-    noise: 0.15
+    noise: 0.20
   2:
     type: residential
     name: Residential
@@ -31,7 +31,7 @@ tileTypes:
     name: Commercial
     color: '#5095ff'
     editorIcon: 'static/fa/building-regular.svg'
-    noise: 0.15
+    noise: 0.20
   5:
     type: park
     name: Park

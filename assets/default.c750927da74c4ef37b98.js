@@ -5850,6 +5850,51 @@ function sortedThirdQuartile(data) {
   return sortedQuantile(data, 0.75);
 }
 
+function numberUnderValue(data, k) {
+  let count = 0;
+  for (let i = 0; i < data.length; i += 1) {
+    if (data[i] < k) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+function percentageUnderValue(data, k) {
+  return data.length > 0 ? numberUnderValue(data, k) / data.length : 1;
+}
+
+function numberOverValue(data, k) {
+  let count = 0;
+  for (let i = 0; i < data.length; i += 1) {
+    if (data[i] > k) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+function percentageOverValue(data, k) {
+  return data.length > 0 ? numberOverValue(data, k) / data.length : 1;
+}
+
+function numberEqualValue(data, k) {
+  let count = 0;
+  for (let i = 0; i < data.length; i += 1) {
+    if (data[i] === k) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+function percentageEqualValue(data, k) {
+  return data.length > 0 ? numberEqualValue(data, k) / data.length : 1;
+}
+
 module.exports = {
   average,
   quantile,
@@ -5860,6 +5905,12 @@ module.exports = {
   sortedFirstQuartile,
   thirdQuartile,
   sortedThirdQuartile,
+  numberUnderValue,
+  percentageUnderValue,
+  numberOverValue,
+  percentageOverValue,
+  numberEqualValue,
+  percentageEqualValue,
 };
 
 
@@ -6935,7 +6986,7 @@ class DataInspectorView {
   }
 
   display(data) {
-    const distribution = DataInspectorView.asFrequencyDistribution(data.values);
+    const distribution = DataInspectorView.asFrequencyDistribution(data.values, data.fractional);
     this.chart.data = {
       labels: Object.keys(distribution),
       datasets: [{
@@ -6952,12 +7003,21 @@ class DataInspectorView {
         .append($('<span></span>').addClass('value').text(indicator.value))));
   }
 
-  static asFrequencyDistribution(values) {
+  static asFrequencyDistribution(values, fractional) {
     const data = {};
 
-    values.forEach((v) => {
-      data[Math.floor(v)] = (data[Math.floor(v)] || 0) + 1;
-    });
+    if (fractional) {
+      for (let i = 0; i <= 1; i += 0.1) {
+        data[i.toFixed(1)] = 0;
+      }
+      values.forEach((v) => {
+        data[v.toFixed(1)] = (data[v.toFixed(1)] || 0) + 1;
+      });
+    } else {
+      values.forEach((v) => {
+        data[Math.floor(v)] = (data[Math.floor(v)] || 0) + 1;
+      });
+    }
     return data;
   }
 
@@ -8479,6 +8539,7 @@ module.exports = VariableMapView;
 
 const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
 const Grid = __webpack_require__(/*! ../grid */ "./src/js/grid.js");
+const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
 
 class EmissionsVariable {
   constructor(city, config) {
@@ -8491,12 +8552,13 @@ class EmissionsVariable {
     this.handleCityUpdate(this.city.map.allCells());
   }
 
-  calculate(i, j) {
+  calculateCell(i, j) {
     const emissions = (x, y) => (this.config.tileTypes[this.city.map.get(x, y)]
       && this.config.tileTypes[this.city.map.get(x, y)].emissions)
       || 0;
 
-    return Math.min(1, Math.max(0, emissions(i, j)
+    return Math.min(EmissionsVariable.MaxValue, Math.max(EmissionsVariable.MinValue,
+      emissions(i, j)
       + this.city.map.nearbyCells(i, j, 1)
         .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.5, 0)
       + this.city.map.nearbyCells(i, j, 2)
@@ -8513,11 +8575,18 @@ class EmissionsVariable {
     // Todo: deduplicating coords might be necessary if the way calculations
     //    and updates are handled is not changed
     coords.forEach(([i, j]) => {
-      this.grid.set(i, j, this.calculate(i, j));
+      this.grid.set(i, j, this.calculateCell(i, j));
     });
     this.events.emit('update', coords);
   }
+
+  calculate() {
+    return Array2D.flatten(this.grid.cells);
+  }
 }
+
+EmissionsVariable.MinValue = 0;
+EmissionsVariable.MaxValue = 1;
 
 module.exports = EmissionsVariable;
 
@@ -8647,6 +8716,74 @@ module.exports = GreenSpaceProximityVariable;
 
 /***/ }),
 
+/***/ "./src/js/variables/map-filter-variable.js":
+/*!*************************************************!*\
+  !*** ./src/js/variables/map-filter-variable.js ***!
+  \*************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
+
+class MapFilterVariable {
+  constructor(parentVariable, tileType) {
+    this.parent = parentVariable;
+    this.filterTileType = getTileTypeId(this.parent.config, tileType);
+  }
+
+  calculate() {
+    return this.parent.city.map.allCells()
+      .filter(([, , v]) => this.filterTileType === v)
+      .map(([x, y]) => this.parent.grid.get(x, y));
+  }
+}
+
+MapFilterVariable.MinValue = 0;
+MapFilterVariable.MaxValue = 1;
+
+module.exports = MapFilterVariable;
+
+
+/***/ }),
+
+/***/ "./src/js/variables/noise-index.js":
+/*!*****************************************!*\
+  !*** ./src/js/variables/noise-index.js ***!
+  \*****************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const MapFilterVariable = __webpack_require__(/*! ./map-filter-variable */ "./src/js/variables/map-filter-variable.js");
+const { percentageEqualValue, percentageOverValue } = __webpack_require__(/*! ../aux/statistics */ "./src/js/aux/statistics.js");
+
+class NoiseIndex {
+  constructor(city, config, noiseVar) {
+    this.city = city;
+    this.config = config;
+
+    this.noiseVar = noiseVar;
+    this.residentialEmissionsVar = new MapFilterVariable(noiseVar, 'residential');
+  }
+
+  calculate() {
+    const cityData = this.noiseVar.calculate();
+    const residentialData = this.residentialEmissionsVar.calculate();
+
+    return 1
+      // percentage of tiles with max noise under 5%
+      + (percentageEqualValue(cityData, 1) < 0.05 ? 1 : 0)
+      // percentage of tiles with noise 0.5 or more under 50%
+      + (percentageOverValue(cityData, 0.5) < 0.5 ? 1 : 0)
+      // percentage of residential tiles with noise 0.5 or more under 50%
+      + (percentageOverValue(residentialData, 0.5) < 0.5 ? 1 : 0)
+      // percentage of residential tiles with noise 0.25 or more under 50%
+      + (percentageOverValue(residentialData, 0.1) < 0.25 ? 1 : 0);
+  }
+}
+
+module.exports = NoiseIndex;
+
+
+/***/ }),
+
 /***/ "./src/js/variables/noise-variable.js":
 /*!********************************************!*\
   !*** ./src/js/variables/noise-variable.js ***!
@@ -8655,6 +8792,7 @@ module.exports = GreenSpaceProximityVariable;
 
 const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
 const Grid = __webpack_require__(/*! ../grid */ "./src/js/grid.js");
+const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
 
 class NoiseVariable {
   constructor(city, config) {
@@ -8667,12 +8805,13 @@ class NoiseVariable {
     this.handleCityUpdate(this.city.map.allCells());
   }
 
-  calculate(i, j) {
+  calculateCell(i, j) {
     const noise = (x, y) => (this.config.tileTypes[this.city.map.get(x, y)]
       && this.config.tileTypes[this.city.map.get(x, y)].noise)
       || 0;
 
-    return Math.min(1, Math.max(0, noise(i, j)
+    return Math.min(NoiseVariable.MaxValue, Math.max(NoiseVariable.MinValue,
+      noise(i, j)
       + this.city.map.nearbyCells(i, j, 1)
         .reduce((sum, [x, y]) => sum + noise(x, y) * 0.5, 0)));
   }
@@ -8687,13 +8826,59 @@ class NoiseVariable {
     // Todo: deduplicating coords might be necessary if the way calculations
     //    and updates are handled is not changed
     coords.forEach(([i, j]) => {
-      this.grid.set(i, j, this.calculate(i, j));
+      this.grid.set(i, j, this.calculateCell(i, j));
     });
     this.events.emit('update', coords);
   }
+
+  calculate() {
+    return Array2D.flatten(this.grid.cells);
+  }
 }
 
+NoiseVariable.MinValue = 0;
+NoiseVariable.MaxValue = 1;
+
 module.exports = NoiseVariable;
+
+
+/***/ }),
+
+/***/ "./src/js/variables/pollution-index.js":
+/*!*********************************************!*\
+  !*** ./src/js/variables/pollution-index.js ***!
+  \*********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const MapFilterVariable = __webpack_require__(/*! ./map-filter-variable */ "./src/js/variables/map-filter-variable.js");
+const { percentageEqualValue, percentageOverValue } = __webpack_require__(/*! ../aux/statistics */ "./src/js/aux/statistics.js");
+
+class PollutionIndex {
+  constructor(city, config, emissionsVar) {
+    this.city = city;
+    this.config = config;
+
+    this.emissionsVar = emissionsVar;
+    this.residentialEmissionsVar = new MapFilterVariable(emissionsVar, 'residential');
+  }
+
+  calculate() {
+    const cityData = this.emissionsVar.calculate();
+    const residentialData = this.residentialEmissionsVar.calculate();
+
+    return 1
+      // percentage of tiles with max pollution under 5%
+      + (percentageEqualValue(cityData, 1) < 0.05 ? 1 : 0)
+      // percentage of tiles with pollution 0.3 or more under 50%
+      + (percentageOverValue(cityData, 0.3) < 0.5 ? 1 : 0)
+      // percentage of residential tiles with pollution 0.2 or more under 50%
+      + (percentageOverValue(residentialData, 0.2) < 0.5 ? 1 : 0)
+      // percentage of residential tiles with pollution 0.1 or more under 50%
+      + (percentageOverValue(residentialData, 0.1) < 0.5 ? 1 : 0);
+  }
+}
+
+module.exports = PollutionIndex;
 
 
 /***/ }),
@@ -8997,6 +9182,9 @@ const GreenSpaceProximityVariable = __webpack_require__(/*! ./variables/green-sp
 const GreenSpaceAreaVariable = __webpack_require__(/*! ./variables/green-space-area-variable */ "./src/js/variables/green-space-area-variable.js");
 const NoiseVariable = __webpack_require__(/*! ./variables/noise-variable */ "./src/js/variables/noise-variable.js");
 const GreenSpaceIndex = __webpack_require__(/*! ./variables/green-space-index */ "./src/js/variables/green-space-index.js");
+const MapFilterVariable = __webpack_require__(/*! ./variables/map-filter-variable */ "./src/js/variables/map-filter-variable.js");
+const PollutionIndex = __webpack_require__(/*! ./variables/pollution-index */ "./src/js/variables/pollution-index.js");
+const NoiseIndex = __webpack_require__(/*! ./variables/noise-index */ "./src/js/variables/noise-index.js");
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -9087,7 +9275,12 @@ fetch('./config.yml', { cache: 'no-store' })
         'Travel times': travelTimeVariable,
         'Green space prox.': greenSpaceProximityVariable,
         'Green space areas': greenSpaceAreaVariable,
+        'Pollution (all)': emissions,
+        'Pollution (resid.)': new MapFilterVariable(emissions, 'residential'),
+        'Noise (all)': noise,
+        'Noise (resid.)': new MapFilterVariable(noise, 'residential'),
       };
+      window.emissions = emissions;
 
       const varSelector = $('<select></select>')
         .addClass(['form-control', 'mr-2'])
@@ -9107,6 +9300,7 @@ fetch('./config.yml', { cache: 'no-store' })
             dataInspectorView.display({
               title: varName,
               values: data,
+              fractional: (variables[varName].constructor.MaxValue === 1),
             });
           }))
         .appendTo(counterPane);
@@ -9128,12 +9322,16 @@ fetch('./config.yml', { cache: 'no-store' })
       let indexesCooldownTimer = null;
       const indexesCooldownTime = 1000;
       const greenSpaceIndex = new GreenSpaceIndex(city, config);
+      const pollutionIndex = new PollutionIndex(city, config, emissions);
+      const noiseIndex = new NoiseIndex(city, config, noise);
 
       function recalculateIndexes() {
         indexesDirty = true;
         if (indexesCooldownTimer === null) {
           variableRankListView.setValues({
             'green-spaces': greenSpaceIndex.calculate(),
+            pollution: pollutionIndex.calculate(),
+            noise: noiseIndex.calculate(),
           });
           indexesDirty = false;
           indexesCooldownTimer = setTimeout(() => {
@@ -9166,4 +9364,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.8e46e2c4bfc69a7622cd.js.map
+//# sourceMappingURL=default.c750927da74c4ef37b98.js.map

@@ -18,7 +18,7 @@ class DataInspectorView {
   }
 
   display(data) {
-    const distribution = DataInspectorView.asFrequencyDistribution(data.values);
+    const distribution = DataInspectorView.asFrequencyDistribution(data.values, data.fractional);
     this.chart.data = {
       labels: Object.keys(distribution),
       datasets: [{
@@ -35,12 +35,21 @@ class DataInspectorView {
         .append($('<span></span>').addClass('value').text(indicator.value))));
   }
 
-  static asFrequencyDistribution(values) {
+  static asFrequencyDistribution(values, fractional) {
     const data = {};
 
-    values.forEach((v) => {
-      data[Math.floor(v)] = (data[Math.floor(v)] || 0) + 1;
-    });
+    if (fractional) {
+      for (let i = 0; i <= 1; i += 0.1) {
+        data[i.toFixed(1)] = 0;
+      }
+      values.forEach((v) => {
+        data[v.toFixed(1)] = (data[v.toFixed(1)] || 0) + 1;
+      });
+    } else {
+      values.forEach((v) => {
+        data[Math.floor(v)] = (data[Math.floor(v)] || 0) + 1;
+      });
+    }
     return data;
   }
 

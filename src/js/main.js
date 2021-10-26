@@ -17,6 +17,9 @@ const GreenSpaceProximityVariable = require('./variables/green-space-proximity-v
 const GreenSpaceAreaVariable = require('./variables/green-space-area-variable');
 const NoiseVariable = require('./variables/noise-variable');
 const GreenSpaceIndex = require('./variables/green-space-index');
+const MapFilterVariable = require('./variables/map-filter-variable');
+const PollutionIndex = require('./variables/pollution-index');
+const NoiseIndex = require('./variables/noise-index');
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -107,7 +110,12 @@ fetch('./config.yml', { cache: 'no-store' })
         'Travel times': travelTimeVariable,
         'Green space prox.': greenSpaceProximityVariable,
         'Green space areas': greenSpaceAreaVariable,
+        'Pollution (all)': emissions,
+        'Pollution (resid.)': new MapFilterVariable(emissions, 'residential'),
+        'Noise (all)': noise,
+        'Noise (resid.)': new MapFilterVariable(noise, 'residential'),
       };
+      window.emissions = emissions;
 
       const varSelector = $('<select></select>')
         .addClass(['form-control', 'mr-2'])
@@ -127,6 +135,7 @@ fetch('./config.yml', { cache: 'no-store' })
             dataInspectorView.display({
               title: varName,
               values: data,
+              fractional: (variables[varName].constructor.MaxValue === 1),
             });
           }))
         .appendTo(counterPane);
@@ -148,12 +157,16 @@ fetch('./config.yml', { cache: 'no-store' })
       let indexesCooldownTimer = null;
       const indexesCooldownTime = 1000;
       const greenSpaceIndex = new GreenSpaceIndex(city, config);
+      const pollutionIndex = new PollutionIndex(city, config, emissions);
+      const noiseIndex = new NoiseIndex(city, config, noise);
 
       function recalculateIndexes() {
         indexesDirty = true;
         if (indexesCooldownTimer === null) {
           variableRankListView.setValues({
             'green-spaces': greenSpaceIndex.calculate(),
+            pollution: pollutionIndex.calculate(),
+            noise: noiseIndex.calculate(),
           });
           indexesDirty = false;
           indexesCooldownTimer = setTimeout(() => {

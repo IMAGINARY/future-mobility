@@ -1,5 +1,6 @@
 const EventEmitter = require('events');
 const Grid = require('../grid');
+const Array2D = require('../aux/array-2d');
 
 class NoiseVariable {
   constructor(city, config) {
@@ -12,12 +13,13 @@ class NoiseVariable {
     this.handleCityUpdate(this.city.map.allCells());
   }
 
-  calculate(i, j) {
+  calculateCell(i, j) {
     const noise = (x, y) => (this.config.tileTypes[this.city.map.get(x, y)]
       && this.config.tileTypes[this.city.map.get(x, y)].noise)
       || 0;
 
-    return Math.min(1, Math.max(0, noise(i, j)
+    return Math.min(NoiseVariable.MaxValue, Math.max(NoiseVariable.MinValue,
+      noise(i, j)
       + this.city.map.nearbyCells(i, j, 1)
         .reduce((sum, [x, y]) => sum + noise(x, y) * 0.5, 0)));
   }
@@ -32,10 +34,17 @@ class NoiseVariable {
     // Todo: deduplicating coords might be necessary if the way calculations
     //    and updates are handled is not changed
     coords.forEach(([i, j]) => {
-      this.grid.set(i, j, this.calculate(i, j));
+      this.grid.set(i, j, this.calculateCell(i, j));
     });
     this.events.emit('update', coords);
   }
+
+  calculate() {
+    return Array2D.flatten(this.grid.cells);
+  }
 }
+
+NoiseVariable.MinValue = 0;
+NoiseVariable.MaxValue = 1;
 
 module.exports = NoiseVariable;

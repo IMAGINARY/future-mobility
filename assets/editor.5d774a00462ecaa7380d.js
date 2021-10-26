@@ -2442,6 +2442,7 @@ module.exports = VariableMapView;
 
 const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
 const Grid = __webpack_require__(/*! ../grid */ "./src/js/grid.js");
+const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
 
 class EmissionsVariable {
   constructor(city, config) {
@@ -2454,12 +2455,13 @@ class EmissionsVariable {
     this.handleCityUpdate(this.city.map.allCells());
   }
 
-  calculate(i, j) {
+  calculateCell(i, j) {
     const emissions = (x, y) => (this.config.tileTypes[this.city.map.get(x, y)]
       && this.config.tileTypes[this.city.map.get(x, y)].emissions)
       || 0;
 
-    return Math.min(1, Math.max(0, emissions(i, j)
+    return Math.min(EmissionsVariable.MaxValue, Math.max(EmissionsVariable.MinValue,
+      emissions(i, j)
       + this.city.map.nearbyCells(i, j, 1)
         .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.5, 0)
       + this.city.map.nearbyCells(i, j, 2)
@@ -2476,11 +2478,18 @@ class EmissionsVariable {
     // Todo: deduplicating coords might be necessary if the way calculations
     //    and updates are handled is not changed
     coords.forEach(([i, j]) => {
-      this.grid.set(i, j, this.calculate(i, j));
+      this.grid.set(i, j, this.calculateCell(i, j));
     });
     this.events.emit('update', coords);
   }
+
+  calculate() {
+    return Array2D.flatten(this.grid.cells);
+  }
 }
+
+EmissionsVariable.MinValue = 0;
+EmissionsVariable.MaxValue = 1;
 
 module.exports = EmissionsVariable;
 
@@ -2651,4 +2660,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.5d902a985be43861093c.js.map
+//# sourceMappingURL=editor.5d774a00462ecaa7380d.js.map
