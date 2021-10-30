@@ -2,6 +2,8 @@
 const yargs = require('yargs');
 const { hideBin } = require('yargs/helpers');
 const createServer = require('./server');
+const CfgLoader = require('../src/js/cfg-loader');
+const CfgReaderFile = require('../src/js/cfg-reader-file');
 
 const { port } = yargs(hideBin(process.argv))
   .option('p', {
@@ -11,5 +13,14 @@ const { port } = yargs(hideBin(process.argv))
   })
   .argv;
 
-createServer(port);
-console.log(`Listening on port ${port}`);
+const cfgLoader = new CfgLoader(CfgReaderFile);
+cfgLoader.load(['../config.yml'])
+  .catch((err) => {
+    console.error('Error loading configuration');
+    console.error(err);
+    process.exit(1);
+  })
+  .then((config) => {
+    createServer(port, config);
+    console.log(`Listening on port ${port}`);
+  });

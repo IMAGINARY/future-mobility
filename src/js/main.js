@@ -1,5 +1,6 @@
 /* globals PIXI */
-const yaml = require('js-yaml');
+const CfgReaderFetch = require('./cfg-reader-fetch');
+const CfgLoader = require('./cfg-loader');
 const City = require('./city');
 const MapEditor = require('./editor/map-editor');
 const VariableMapView = require('./variable-map-view');
@@ -16,12 +17,12 @@ const NoiseData = require('./data-sources/noise-data');
 const GreenSpacesData = require('./data-sources/green-spaces-data');
 const TravelTimesData = require('./data-sources/travel-times-data');
 
+
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
 
-fetch('./config.yml', { cache: 'no-store' })
-  .then(response => response.text())
-  .then(data => yaml.load(data))
+const cfgLoader = new CfgLoader(CfgReaderFetch);
+cfgLoader.load(['./config.yml'])
   .catch((err) => {
     showFatalError('Error loading configuration', err);
     console.error('Error loading configuration');

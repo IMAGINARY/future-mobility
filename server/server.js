@@ -1,6 +1,7 @@
-const { app, wss } = require('./app.js');
+const initApp = require('./app.js');
 
-function createServer(port) {
+function createServer(port, config) {
+  const [app, wss] = initApp(config);
   const server = app.listen(port);
 
   server.on('upgrade', (request, socket, head) => {

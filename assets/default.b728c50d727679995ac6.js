@@ -6928,6 +6928,59 @@ module.exports = TrafficLights;
 
 /***/ }),
 
+/***/ "./src/js/cfg-loader.js":
+/*!******************************!*\
+  !*** ./src/js/cfg-loader.js ***!
+  \******************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const yaml = __webpack_require__(/*! js-yaml */ "./node_modules/js-yaml/index.js");
+
+class CfgLoader {
+  constructor(cfgReader) {
+    this.reader = cfgReader;
+  }
+
+  async load(files) {
+    const segments = [];
+    const promises = [];
+
+    files.forEach((file, i) => {
+      promises.push(
+        this.reader(file)
+          .then(cfgText => yaml.load(cfgText))
+          .then((cfgSegment) => {
+            // We keep the segments in order
+            segments[i] = cfgSegment;
+          })
+      );
+    });
+
+    return Promise.all(promises).then(() => Object.assign({}, ...segments));
+  }
+}
+
+module.exports = CfgLoader;
+
+
+/***/ }),
+
+/***/ "./src/js/cfg-reader-fetch.js":
+/*!************************************!*\
+  !*** ./src/js/cfg-reader-fetch.js ***!
+  \************************************/
+/***/ ((module) => {
+
+function CfgReaderFetch(filename) {
+  return fetch(filename, { cache: 'no-store' })
+    .then(response => response.text());
+}
+
+module.exports = CfgReaderFetch;
+
+
+/***/ }),
+
 /***/ "./src/js/city.js":
 /*!************************!*\
   !*** ./src/js/city.js ***!
@@ -9212,7 +9265,8 @@ var __webpack_exports__ = {};
   !*** ./src/js/main.js ***!
   \************************/
 /* globals PIXI */
-const yaml = __webpack_require__(/*! js-yaml */ "./node_modules/js-yaml/index.js");
+const CfgReaderFetch = __webpack_require__(/*! ./cfg-reader-fetch */ "./src/js/cfg-reader-fetch.js");
+const CfgLoader = __webpack_require__(/*! ./cfg-loader */ "./src/js/cfg-loader.js");
 const City = __webpack_require__(/*! ./city */ "./src/js/city.js");
 const MapEditor = __webpack_require__(/*! ./editor/map-editor */ "./src/js/editor/map-editor.js");
 const VariableMapView = __webpack_require__(/*! ./variable-map-view */ "./src/js/variable-map-view.js");
@@ -9229,12 +9283,12 @@ const NoiseData = __webpack_require__(/*! ./data-sources/noise-data */ "./src/js
 const GreenSpacesData = __webpack_require__(/*! ./data-sources/green-spaces-data */ "./src/js/data-sources/green-spaces-data.js");
 const TravelTimesData = __webpack_require__(/*! ./data-sources/travel-times-data */ "./src/js/data-sources/travel-times-data.js");
 
+
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
 
-fetch('./config.yml', { cache: 'no-store' })
-  .then(response => response.text())
-  .then(data => yaml.load(data))
+const cfgLoader = new CfgLoader(CfgReaderFetch);
+cfgLoader.load(['./config.yml'])
   .catch((err) => {
     showFatalError('Error loading configuration', err);
     console.error('Error loading configuration');
@@ -9407,4 +9461,4 @@ fetch('./config.yml', { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=default.b6065cfd3311f2771597.js.map
+//# sourceMappingURL=default.b728c50d727679995ac6.js.map
