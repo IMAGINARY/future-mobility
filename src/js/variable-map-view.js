@@ -1,41 +1,42 @@
 /* globals PIXI */
+const Array2D = require('./aux/array-2d');
 
 const TILE_SIZE = 10;
 
 class VariableMapView {
-  constructor(variable, color) {
+  constructor(width, height, color) {
     this.displayObject = new PIXI.Container();
-    this.variable = variable;
     this.color = color;
+    this.tiles = Array2D.create(width, height, null);
+    this.values = Array2D.create(width, height, 0);
 
-    this.tiles = Array(this.variable.grid.width * this.variable.grid.height);
-    this.variable.grid.allCells().forEach(([i, j]) => {
+    Array2D.fill(this.tiles, (x, y) => {
       const newTile = new PIXI.Graphics();
-      newTile.x = i * TILE_SIZE;
-      newTile.y = j * TILE_SIZE;
-      this.tiles[this.variable.grid.offset(i, j)] = newTile;
+      newTile.x = x * TILE_SIZE;
+      newTile.y = y * TILE_SIZE;
+      return newTile;
     });
 
-    this.displayObject.addChild(...this.tiles);
-    this.variable.events.on('update', this.handleUpdate.bind(this));
-    this.handleUpdate(this.variable.grid.allCells());
+    this.displayObject.addChild(...Array2D.flatten(this.tiles));
+    Array2D.forEach(this.values, (value, x, y) => {
+      this.renderTile(x, y);
+    });
   }
 
-  getTile(i, j) {
-    return this.tiles[this.variable.grid.offset(i, j)];
-  }
-
-  renderTile(i, j) {
-    this.getTile(i, j)
+  renderTile(x, y) {
+    this.tiles[y][x]
       .clear()
-      .beginFill(this.color, this.variable.grid.get(i, j))
+      .beginFill(this.color, this.values[y][x])
       .drawRect(0, 0, TILE_SIZE, TILE_SIZE)
       .endFill();
   }
 
-  handleUpdate(updates) {
-    updates.forEach(([i, j]) => {
-      this.renderTile(i, j);
+  update(data) {
+    Array2D.zip(this.values, data, (value, newValue, x, y) => {
+      if (value !== newValue) {
+        this.values[y][x] = newValue;
+        this.renderTile(x, y);
+      }
     });
   }
 }

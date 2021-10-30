@@ -640,6 +640,20 @@ class Array2D {
   }
 
   /**
+   * Sets all cells to a fixed value
+   *
+   * @param a {any[][]}
+   * @param value {any}
+   */
+  static setAll(a, value) {
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        a[y][x] = value;
+      }
+    }
+  }
+
+  /**
    * Returns all items as a flat array of [x, y, value] arrays.
    *
    * @param a {any[][]}
@@ -881,6 +895,123 @@ module.exports = showFatalError;
 
 /***/ }),
 
+/***/ "./src/js/aux/statistics.js":
+/*!**********************************!*\
+  !*** ./src/js/aux/statistics.js ***!
+  \**********************************/
+/***/ ((module) => {
+
+function average(data) {
+  return data.length > 0 ? data.reduce((a, b) => a + b, 0) / data.length : undefined;
+}
+
+function sortedQuantile(sortedData, q) {
+  if (sortedData.length === 0) {
+    return undefined;
+  }
+  const pos = (sortedData.length - 1) * q;
+  const base = Math.floor(pos);
+  const rest = pos - base;
+  if (sortedData[base + 1] !== undefined) {
+    return sortedData[base] + rest * (sortedData[base + 1] - sortedData[base]);
+  }
+  return sortedData[base];
+}
+
+function quantile(data, q) {
+  return sortedQuantile(data.sort((a, b) => a - b), q);
+}
+
+function median(data) {
+  return quantile(data, 0.5);
+}
+
+function sortedMedian(data) {
+  return sortedQuantile(data, 0.5);
+}
+
+function firstQuartile(data) {
+  return quantile(data, 0.25);
+}
+
+function sortedFirstQuartile(data) {
+  return sortedQuantile(data, 0.25);
+}
+
+function thirdQuartile(data) {
+  return quantile(data, 0.75);
+}
+
+function sortedThirdQuartile(data) {
+  return sortedQuantile(data, 0.75);
+}
+
+function numberUnderValue(data, k) {
+  let count = 0;
+  for (let i = 0; i < data.length; i += 1) {
+    if (data[i] < k) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+function percentageUnderValue(data, k) {
+  return data.length > 0 ? numberUnderValue(data, k) / data.length : 1;
+}
+
+function numberOverValue(data, k) {
+  let count = 0;
+  for (let i = 0; i < data.length; i += 1) {
+    if (data[i] > k) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+function percentageOverValue(data, k) {
+  return data.length > 0 ? numberOverValue(data, k) / data.length : 1;
+}
+
+function numberEqualValue(data, k) {
+  let count = 0;
+  for (let i = 0; i < data.length; i += 1) {
+    if (data[i] === k) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+function percentageEqualValue(data, k) {
+  return data.length > 0 ? numberEqualValue(data, k) / data.length : 1;
+}
+
+module.exports = {
+  average,
+  quantile,
+  sortedQuantile,
+  median,
+  sortedMedian,
+  firstQuartile,
+  sortedFirstQuartile,
+  thirdQuartile,
+  sortedThirdQuartile,
+  numberUnderValue,
+  percentageUnderValue,
+  numberOverValue,
+  percentageOverValue,
+  numberEqualValue,
+  percentageEqualValue,
+};
+
+
+/***/ }),
+
 /***/ "./src/js/aux/travel-times.js":
 /*!************************************!*\
   !*** ./src/js/aux/travel-times.js ***!
@@ -943,10 +1074,16 @@ module.exports = travelTimes;
 
 const Grid = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
 const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+const DataManager = __webpack_require__(/*! ./data-manager */ "./src/js/data-manager.js");
 
 class City {
   constructor(width, height, cells = null) {
     this.map = new Grid(width, height, cells);
+    this.stats = new DataManager();
+
+    this.map.events.on('update', () => {
+      this.stats.calculateAll();
+    });
   }
 
   toJSON() {
@@ -1041,6 +1178,270 @@ class ConnectionStateView {
 }
 
 module.exports = ConnectionStateView;
+
+
+/***/ }),
+
+/***/ "./src/js/data-manager.js":
+/*!********************************!*\
+  !*** ./src/js/data-manager.js ***!
+  \********************************/
+/***/ ((module) => {
+
+class DataManager {
+  constructor() {
+    this.sources = [];
+    this.variables = {};
+  }
+
+  /**
+   * Add a new data source to the data manager.
+   *
+   * @param {DataSource} dataSource
+   */
+  registerSource(dataSource) {
+    if (this.sources.includes(dataSource)) {
+      throw new Error(`Source ${dataSource.constructor.name} already registered.`);
+    }
+    this.sources.push(dataSource);
+
+    Object.entries(dataSource.getVariables()).forEach(([id, callback]) => {
+      if (this.variables[id] !== undefined) {
+        throw new Error(`Source ${dataSource.constructor.name} registering already registered variable ${id}.`);
+      }
+      this.variables[id] = callback;
+    });
+  }
+
+  /**
+   * Get the value of a variable.
+   *
+   * @param {string} variableId
+   * @return {*}
+   */
+  get(variableId) {
+    if (this.variables[variableId] === undefined) {
+      throw new Error(`Requested unknown variable ${variableId}.`);
+    }
+    return this.variables[variableId]();
+  }
+
+  calculateAll() {
+    this.sources.forEach((source) => {
+      source.calculate();
+    });
+  }
+}
+
+module.exports = DataManager;
+
+
+/***/ }),
+
+/***/ "./src/js/data-source.js":
+/*!*******************************!*\
+  !*** ./src/js/data-source.js ***!
+  \*******************************/
+/***/ ((module) => {
+
+class DataSource {
+  /**
+   * Get the list of variables provided by this data source.
+   *
+   * Provides a map of callbacks that return the data of the variable.
+   *
+   * @return {Object.<string, function>}
+   */
+  // eslint-disable-next-line class-methods-use-this
+  getVariables() {
+    return {};
+  }
+
+  /**
+   * Computes the values of all variables provided by this source.
+   */
+  calculate() {
+  }
+}
+
+module.exports = DataSource;
+
+
+/***/ }),
+
+/***/ "./src/js/data-sources/noise-data.js":
+/*!*******************************************!*\
+  !*** ./src/js/data-sources/noise-data.js ***!
+  \*******************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const DataSource = __webpack_require__(/*! ../data-source */ "./src/js/data-source.js");
+const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
+const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
+const { percentageEqualValue, percentageOverValue } = __webpack_require__(/*! ../aux/statistics */ "./src/js/aux/statistics.js");
+
+class NoiseData extends DataSource {
+  constructor(city, config) {
+    super();
+    this.city = city;
+    this.config = config;
+    this.data = Array2D.create(this.city.map.width, this.city.map.height);
+  }
+
+  getVariables() {
+    return {
+      noise: this.getNoise.bind(this),
+      'noise-residential': this.getResidentialNoise.bind(this),
+      'noise-map': this.getNoiseMap.bind(this),
+      'noise-index': this.getNoiseIndex.bind(this),
+    };
+  }
+
+  calculate() {
+    Array2D.setAll(this.data, 0);
+    Array2D.forEach(this.city.map.cells, (v, x, y) => {
+      const noise = (this.config.tileTypes[v] && this.config.tileTypes[v].noise) || 0;
+      if (noise !== 0) {
+        this.data[y][x] += noise;
+        this.city.map.nearbyCoords(x, y, 1).forEach(([nx, ny]) => {
+          this.data[ny][nx] += noise * 0.5;
+        });
+      }
+    });
+    Array2D.forEach(this.data, (v, x, y) => {
+      this.data[y][x] = Math.min(NoiseData.MaxValue, Math.max(NoiseData.MinValue, v));
+    });
+  }
+
+  getNoiseMap() {
+    return this.data;
+  }
+
+  getNoise() {
+    return Array2D.flatten(this.data);
+  }
+
+  getResidentialNoise() {
+    const answer = [];
+    const tileTypeId = getTileTypeId(this.config, 'residential');
+    Array2D.zip(this.city.map.cells, this.data, (tile, value) => {
+      if (tile === tileTypeId) {
+        answer.push(value);
+      }
+    });
+    return answer;
+  }
+
+  getNoiseIndex() {
+    const cityData = this.getNoise();
+    const residentialData = this.getResidentialNoise();
+
+    return 1
+      // percentage of tiles with max noise under 5%
+      + (percentageEqualValue(cityData, 1) < 0.05 ? 1 : 0)
+      // percentage of tiles with noise 0.5 or more under 50%
+      + (percentageOverValue(cityData, 0.49) < 0.5 ? 1 : 0)
+      // percentage of residential tiles with noise 0.5 or more under 50%
+      + (percentageOverValue(residentialData, 0.49) < 0.5 ? 1 : 0)
+      // percentage of residential tiles with noise 0.25 or more under 50%
+      + (percentageOverValue(residentialData, 0.25) < 0.5 ? 1 : 0);
+  }
+}
+
+NoiseData.MinValue = 0;
+NoiseData.MaxValue = 1;
+
+module.exports = NoiseData;
+
+
+/***/ }),
+
+/***/ "./src/js/data-sources/pollution-data.js":
+/*!***********************************************!*\
+  !*** ./src/js/data-sources/pollution-data.js ***!
+  \***********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const DataSource = __webpack_require__(/*! ../data-source */ "./src/js/data-source.js");
+const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
+const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
+const { percentageEqualValue, percentageOverValue } = __webpack_require__(/*! ../aux/statistics */ "./src/js/aux/statistics.js");
+
+class PollutionData extends DataSource {
+  constructor(city, config) {
+    super();
+    this.city = city;
+    this.config = config;
+    this.data = Array2D.create(this.city.map.width, this.city.map.height);
+  }
+
+  getVariables() {
+    return {
+      pollution: this.getPollution.bind(this),
+      'pollution-residential': this.getResidentialPollution.bind(this),
+      'pollution-map': this.getPollutionMap.bind(this),
+      'pollution-index': this.getPollutionIndex.bind(this),
+    };
+  }
+
+  calculate() {
+    Array2D.setAll(this.data, 0);
+    Array2D.forEach(this.city.map.cells, (v, x, y) => {
+      const emissions = (this.config.tileTypes[v] && this.config.tileTypes[v].emissions) || 0;
+      if (emissions !== 0) {
+        this.data[y][x] += emissions;
+        this.city.map.nearbyCoords(x, y, 1).forEach(([nx, ny]) => {
+          this.data[ny][nx] += emissions * 0.5;
+        });
+        this.city.map.nearbyCoords(x, y, 2).forEach(([nx, ny]) => {
+          this.data[ny][nx] += emissions * 0.25;
+        });
+      }
+    });
+    Array2D.forEach(this.data, (v, x, y) => {
+      this.data[y][x] = Math.min(PollutionData.MaxValue, Math.max(PollutionData.MinValue, v));
+    });
+  }
+
+  getPollutionMap() {
+    return this.data;
+  }
+
+  getPollution() {
+    return Array2D.flatten(this.data);
+  }
+
+  getResidentialPollution() {
+    const answer = [];
+    const tileTypeId = getTileTypeId(this.config, 'residential');
+    Array2D.zip(this.city.map.cells, this.data, (tile, value) => {
+      if (tile === tileTypeId) {
+        answer.push(value);
+      }
+    });
+    return answer;
+  }
+
+  getPollutionIndex() {
+    const cityData = this.getPollution();
+    const residentialData = this.getResidentialPollution();
+
+    return 1
+      // percentage of tiles with max pollution under 5%
+      + (percentageEqualValue(cityData, 1) < 0.05 ? 1 : 0)
+      // percentage of tiles with pollution 0.3 or more under 50%
+      + (percentageOverValue(cityData, 0.3) < 0.5 ? 1 : 0)
+      // percentage of residential tiles with pollution 0.2 or more under 50%
+      + (percentageOverValue(residentialData, 0.2) < 0.5 ? 1 : 0)
+      // percentage of residential tiles with pollution 0.1 or more under 50%
+      + (percentageOverValue(residentialData, 0.1) < 0.5 ? 1 : 0);
+  }
+}
+
+PollutionData.MinValue = 0;
+PollutionData.MaxValue = 1;
+
+module.exports = PollutionData;
 
 
 /***/ }),
@@ -1826,41 +2227,56 @@ class Grid {
   }
 
   /**
-   * Returns the cells around the cell at (i, j).
+   * Returns the coordinates of cells around the cell at (x, y).
    *
-   * Each cells returned is represented as an array [i, j, value].
+   * Each cells returned is represented as an array [x, y].
    * Cells "around" are those reachable by no less than <distance> steps in
    * any direction, including diagonals.
    *
-   * @param {number} i
-   * @param {number} j
+   * @param {number} x
+   * @param {number} y
    * @param {number} distance
-   * @return {[[number, number, number]]}
+   * @return {[[number, number]]}
    */
-  nearbyCells(i, j, distance = 1) {
+  nearbyCoords(x, y, distance) {
     const coords = [];
     // Top
-    for (let x = i - distance; x < i + distance; x += 1) {
-      coords.push([x, j - distance]);
+    for (let i = x - distance; i < x + distance; i += 1) {
+      coords.push([i, y - distance]);
     }
     // Right
-    for (let y = j - distance; y < j + distance; y += 1) {
-      coords.push([i + distance, y]);
+    for (let i = y - distance; i < y + distance; i += 1) {
+      coords.push([x + distance, i]);
     }
     // Bottom
-    for (let x = i + distance; x > i - distance; x -= 1) {
-      coords.push([x, j + distance]);
+    for (let i = x + distance; i > x - distance; i -= 1) {
+      coords.push([i, y + distance]);
     }
     // Left
-    for (let y = j + distance; y > j - distance; y -= 1) {
-      coords.push([i - distance, y]);
+    for (let i = y + distance; i > y - distance; i -= 1) {
+      coords.push([x - distance, i]);
     }
 
     return coords
-      .filter(([x, y]) => this.isValidCoords(x, y))
-      .map(([x, y]) => [x, y, this.get(x, y)]);
+      .filter(([eachX, eachY]) => this.isValidCoords(eachX, eachY));
   }
 
+  /**
+   * Returns the cells around the cell at (x, y).
+   *
+   * Each cells returned is represented as an array [x, y, value].
+   * Cells "around" are those reachable by no less than <distance> steps in
+   * any direction, including diagonals.
+   *
+   * @param {number} x
+   * @param {number} y
+   * @param {number} distance
+   * @return {[[number, number, number]]}
+   */
+  nearbyCells(x, y, distance = 1) {
+    return this.nearbyCoords(x, y, distance)
+      .map(([nx, ny]) => [nx, ny, this.get(nx, ny)]);
+  }
 
   /**
    * Returns the frequency distribution of the values
@@ -2385,113 +2801,52 @@ module.exports = ServerSocketConnector;
 /*!*************************************!*\
   !*** ./src/js/variable-map-view.js ***!
   \*************************************/
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /* globals PIXI */
+const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
 
 const TILE_SIZE = 10;
 
 class VariableMapView {
-  constructor(variable, color) {
+  constructor(width, height, color) {
     this.displayObject = new PIXI.Container();
-    this.variable = variable;
     this.color = color;
+    this.tiles = Array2D.create(width, height, null);
+    this.values = Array2D.create(width, height, 0);
 
-    this.tiles = Array(this.variable.grid.width * this.variable.grid.height);
-    this.variable.grid.allCells().forEach(([i, j]) => {
+    Array2D.fill(this.tiles, (x, y) => {
       const newTile = new PIXI.Graphics();
-      newTile.x = i * TILE_SIZE;
-      newTile.y = j * TILE_SIZE;
-      this.tiles[this.variable.grid.offset(i, j)] = newTile;
+      newTile.x = x * TILE_SIZE;
+      newTile.y = y * TILE_SIZE;
+      return newTile;
     });
 
-    this.displayObject.addChild(...this.tiles);
-    this.variable.events.on('update', this.handleUpdate.bind(this));
-    this.handleUpdate(this.variable.grid.allCells());
+    this.displayObject.addChild(...Array2D.flatten(this.tiles));
+    Array2D.forEach(this.values, (value, x, y) => {
+      this.renderTile(x, y);
+    });
   }
 
-  getTile(i, j) {
-    return this.tiles[this.variable.grid.offset(i, j)];
-  }
-
-  renderTile(i, j) {
-    this.getTile(i, j)
+  renderTile(x, y) {
+    this.tiles[y][x]
       .clear()
-      .beginFill(this.color, this.variable.grid.get(i, j))
+      .beginFill(this.color, this.values[y][x])
       .drawRect(0, 0, TILE_SIZE, TILE_SIZE)
       .endFill();
   }
 
-  handleUpdate(updates) {
-    updates.forEach(([i, j]) => {
-      this.renderTile(i, j);
+  update(data) {
+    Array2D.zip(this.values, data, (value, newValue, x, y) => {
+      if (value !== newValue) {
+        this.values[y][x] = newValue;
+        this.renderTile(x, y);
+      }
     });
   }
 }
 
 module.exports = VariableMapView;
-
-
-/***/ }),
-
-/***/ "./src/js/variables/emissions-variable.js":
-/*!************************************************!*\
-  !*** ./src/js/variables/emissions-variable.js ***!
-  \************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-const Grid = __webpack_require__(/*! ../grid */ "./src/js/grid.js");
-const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
-
-class EmissionsVariable {
-  constructor(city, config) {
-    this.city = city;
-    this.config = config;
-    this.grid = new Grid(this.city.map.width, this.city.map.height);
-    this.events = new EventEmitter();
-
-    this.city.map.events.on('update', this.handleCityUpdate.bind(this));
-    this.handleCityUpdate(this.city.map.allCells());
-  }
-
-  calculateCell(i, j) {
-    const emissions = (x, y) => (this.config.tileTypes[this.city.map.get(x, y)]
-      && this.config.tileTypes[this.city.map.get(x, y)].emissions)
-      || 0;
-
-    return Math.min(EmissionsVariable.MaxValue, Math.max(EmissionsVariable.MinValue,
-      emissions(i, j)
-      + this.city.map.nearbyCells(i, j, 1)
-        .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.5, 0)
-      + this.city.map.nearbyCells(i, j, 2)
-        .reduce((sum, [x, y]) => sum + emissions(x, y) * 0.25, 0)));
-  }
-
-  handleCityUpdate(updates) {
-    const coords = [];
-    updates.forEach(([i, j]) => {
-      coords.push([i, j]);
-      coords.push(...this.city.map.nearbyCells(i, j, 1).map(([x, y]) => [x, y]));
-      coords.push(...this.city.map.nearbyCells(i, j, 2).map(([x, y]) => [x, y]));
-    });
-    // Todo: deduplicating coords might be necessary if the way calculations
-    //    and updates are handled is not changed
-    coords.forEach(([i, j]) => {
-      this.grid.set(i, j, this.calculateCell(i, j));
-    });
-    this.events.emit('update', coords);
-  }
-
-  calculate() {
-    return Array2D.flatten(this.grid.cells);
-  }
-}
-
-EmissionsVariable.MinValue = 0;
-EmissionsVariable.MaxValue = 1;
-
-module.exports = EmissionsVariable;
 
 
 /***/ }),
@@ -2586,20 +2941,23 @@ var __webpack_exports__ = {};
   \*******************************/
 /* globals PIXI */
 const City = __webpack_require__(/*! ./city */ "./src/js/city.js");
-const EmissionsVariable = __webpack_require__(/*! ./variables/emissions-variable */ "./src/js/variables/emissions-variable.js");
 const MapEditor = __webpack_require__(/*! ./editor/map-editor */ "./src/js/editor/map-editor.js");
 const VariableMapView = __webpack_require__(/*! ./variable-map-view */ "./src/js/variable-map-view.js");
 __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
 const ServerSocketConnector = __webpack_require__(/*! ./server-socket-connector */ "./src/js/server-socket-connector.js");
 const ConnectionStateView = __webpack_require__(/*! ./connection-state-view */ "./src/js/connection-state-view.js");
 const showFatalError = __webpack_require__(/*! ./aux/show-fatal-error */ "./src/js/aux/show-fatal-error.js");
+const PollutionData = __webpack_require__(/*! ./data-sources/pollution-data */ "./src/js/data-sources/pollution-data.js");
+const NoiseData = __webpack_require__(/*! ./data-sources/noise-data */ "./src/js/data-sources/noise-data.js");
 
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
   .then(response => response.json())
   .then((config) => {
     // const city = City.fromJSON(Cities.cities[0]);
     const city = new City(config.cityWidth, config.cityHeight);
-    const emissions = new EmissionsVariable(city, config);
+
+    city.stats.registerSource(new PollutionData(city, config));
+    city.stats.registerSource(new NoiseData(city, config));
 
     const app = new PIXI.Application({
       width: 3840,
@@ -2629,12 +2987,24 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
       mapView.displayObject.x = 0;
       mapView.displayObject.y = 0;
 
-      const varViewer = new VariableMapView(emissions);
-      app.stage.addChild(varViewer.displayObject);
-      varViewer.displayObject.width = 960;
-      varViewer.displayObject.height = 960;
-      varViewer.displayObject.x = 1920 + 40;
-      varViewer.displayObject.y = 0;
+      const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x953202);
+      app.stage.addChild(emissionsVarViewer.displayObject);
+      emissionsVarViewer.displayObject.width = 960;
+      emissionsVarViewer.displayObject.height = 960;
+      emissionsVarViewer.displayObject.x = 1920 + 40;
+      emissionsVarViewer.displayObject.y = 0;
+
+      const noiseVarViewer = new VariableMapView(city.map.width, city.map.height, 0x20e95ff);
+      app.stage.addChild(noiseVarViewer.displayObject);
+      noiseVarViewer.displayObject.width = 960;
+      noiseVarViewer.displayObject.height = 960;
+      noiseVarViewer.displayObject.x = 1920 + 40;
+      noiseVarViewer.displayObject.y = 960;
+
+      city.map.events.on('update', () => {
+        emissionsVarViewer.update(city.stats.get('pollution-map'));
+        noiseVarViewer.update(city.stats.get('noise-map'));
+      });
 
       const connector = new ServerSocketConnector("ws://localhost:4848");
       connector.events.once('map_update', (cells) => {
@@ -2660,4 +3030,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.5d774a00462ecaa7380d.js.map
+//# sourceMappingURL=editor.a65fb189f09b666ccf31.js.map

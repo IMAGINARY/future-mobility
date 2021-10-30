@@ -110,6 +110,20 @@ class Array2D {
   }
 
   /**
+   * Sets all cells to a fixed value
+   *
+   * @param a {any[][]}
+   * @param value {any}
+   */
+  static setAll(a, value) {
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        a[y][x] = value;
+      }
+    }
+  }
+
+  /**
    * Returns all items as a flat array of [x, y, value] arrays.
    *
    * @param a {any[][]}

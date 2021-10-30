@@ -1,7 +1,6 @@
 /* globals PIXI */
 const yaml = require('js-yaml');
 const City = require('./city');
-const EmissionsVariable = require('./variables/emissions-variable');
 const MapEditor = require('./editor/map-editor');
 const VariableMapView = require('./variable-map-view');
 const CarOverlay = require('./cars/car-overlay');
@@ -11,15 +10,11 @@ const showFatalError = require('./aux/show-fatal-error');
 require('../sass/default.scss');
 const ZoneBalanceView = require('./zone-balance-view');
 const DataInspectorView = require('./data-inspector-view');
-const TravelTimeVariable = require('./variables/travel-time-variable');
 const VariableRankListView = require('./index-list-view');
-const GreenSpaceProximityVariable = require('./variables/green-space-proximity-variable');
-const GreenSpaceAreaVariable = require('./variables/green-space-area-variable');
-const NoiseVariable = require('./variables/noise-variable');
-const GreenSpaceIndex = require('./variables/green-space-index');
-const MapFilterVariable = require('./variables/map-filter-variable');
-const PollutionIndex = require('./variables/pollution-index');
-const NoiseIndex = require('./variables/noise-index');
+const PollutionData = require('./data-sources/pollution-data');
+const NoiseData = require('./data-sources/noise-data');
+const GreenSpacesData = require('./data-sources/green-spaces-data');
+const TravelTimesData = require('./data-sources/travel-times-data');
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -36,8 +31,11 @@ fetch('./config.yml', { cache: 'no-store' })
     const city = (testScenario && testScenario.city)
       ? City.fromJSON(testScenario.city)
       : new City(config.cityWidth, config.cityHeight);
-    const emissions = new EmissionsVariable(city, config);
-    const noise = new NoiseVariable(city, config);
+
+    city.stats.registerSource(new PollutionData(city, config));
+    city.stats.registerSource(new NoiseData(city, config));
+    city.stats.registerSource(new GreenSpacesData(city, config));
+    city.stats.registerSource(new TravelTimesData(city, config));
 
     const app = new PIXI.Application({
       width: 3840,
@@ -74,20 +72,24 @@ fetch('./config.yml', { cache: 'no-store' })
       });
       app.ticker.add(time => carOverlay.animate(time));
 
-      const emissionsVarViewer = new VariableMapView(emissions, 0x953202);
+      const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x953202);
       app.stage.addChild(emissionsVarViewer.displayObject);
       emissionsVarViewer.displayObject.width = 960;
       emissionsVarViewer.displayObject.height = 960;
       emissionsVarViewer.displayObject.x = 1920 + 40;
       emissionsVarViewer.displayObject.y = 0;
 
-      const noiseVarViewer = new VariableMapView(noise, 0x20e95ff);
+      const noiseVarViewer = new VariableMapView(city.map.width, city.map.height, 0x20e95ff);
       app.stage.addChild(noiseVarViewer.displayObject);
       noiseVarViewer.displayObject.width = 960;
       noiseVarViewer.displayObject.height = 960;
       noiseVarViewer.displayObject.x = 1920 + 40;
       noiseVarViewer.displayObject.y = 960;
 
+      city.map.events.on('update', () => {
+        emissionsVarViewer.update(city.stats.get('pollution-map'));
+        noiseVarViewer.update(city.stats.get('noise-map'));
+      });
 
       const counterPane = $('<div></div>').addClass('counters');
       $('body').append(counterPane);
@@ -98,24 +100,19 @@ fetch('./config.yml', { cache: 'no-store' })
       const zoneBalanceView = new ZoneBalanceView(counterView.counter, config);
       counterPane.append(zoneBalanceView.$element);
 
-      const travelTimeVariable = new TravelTimeVariable(city, config);
-      const greenSpaceProximityVariable = new GreenSpaceProximityVariable(city, config);
-      const greenSpaceAreaVariable = new GreenSpaceAreaVariable(city, config);
-
       const dataInspectorView = new DataInspectorView();
       counterPane.append(dataInspectorView.$element);
       mapEditor.events.on('inspect', data => dataInspectorView.display(data));
 
       const variables = {
-        'Travel times': travelTimeVariable,
-        'Green space prox.': greenSpaceProximityVariable,
-        'Green space areas': greenSpaceAreaVariable,
-        'Pollution (all)': emissions,
-        'Pollution (resid.)': new MapFilterVariable(emissions, 'residential'),
-        'Noise (all)': noise,
-        'Noise (resid.)': new MapFilterVariable(noise, 'residential'),
+        'Travel times': 'travel-times',
+        'Green space prox.': 'green-spaces-proximity',
+        'Green space areas': 'green-spaces-areas',
+        'Pollution (all)': 'pollution',
+        'Pollution (resid.)': 'pollution-residential',
+        'Noise (all)': 'noise',
+        'Noise (resid.)': 'noise-residential',
       };
-      window.emissions = emissions;
 
       const varSelector = $('<select></select>')
         .addClass(['form-control', 'mr-2'])
@@ -131,11 +128,12 @@ fetch('./config.yml', { cache: 'no-store' })
           .text('Calculate')
           .on('click', () => {
             const varName = varSelector.val();
-            const data = variables[varName].calculate();
+            const varData = typeof variables[varName] === 'string'
+              ? city.stats.get(variables[varName]) : variables[varName].calculate();
             dataInspectorView.display({
               title: varName,
-              values: data,
-              fractional: (variables[varName].constructor.MaxValue === 1),
+              values: varData,
+              fractional: (Math.max(...varData) <= 1),
             });
           }))
         .appendTo(counterPane);
@@ -156,17 +154,14 @@ fetch('./config.yml', { cache: 'no-store' })
       let indexesDirty = true;
       let indexesCooldownTimer = null;
       const indexesCooldownTime = 1000;
-      const greenSpaceIndex = new GreenSpaceIndex(city, config);
-      const pollutionIndex = new PollutionIndex(city, config, emissions);
-      const noiseIndex = new NoiseIndex(city, config, noise);
 
       function recalculateIndexes() {
         indexesDirty = true;
         if (indexesCooldownTimer === null) {
           variableRankListView.setValues({
-            'green-spaces': greenSpaceIndex.calculate(),
-            pollution: pollutionIndex.calculate(),
-            noise: noiseIndex.calculate(),
+            'green-spaces': city.stats.get('green-spaces-index'),
+            pollution: city.stats.get('pollution-index'),
+            noise: city.stats.get('noise-index'),
           });
           indexesDirty = false;
           indexesCooldownTimer = setTimeout(() => {

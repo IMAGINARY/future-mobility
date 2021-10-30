@@ -137,41 +137,56 @@ class Grid {
   }
 
   /**
-   * Returns the cells around the cell at (i, j).
+   * Returns the coordinates of cells around the cell at (x, y).
    *
-   * Each cells returned is represented as an array [i, j, value].
+   * Each cells returned is represented as an array [x, y].
    * Cells "around" are those reachable by no less than <distance> steps in
    * any direction, including diagonals.
    *
-   * @param {number} i
-   * @param {number} j
+   * @param {number} x
+   * @param {number} y
    * @param {number} distance
-   * @return {[[number, number, number]]}
+   * @return {[[number, number]]}
    */
-  nearbyCells(i, j, distance = 1) {
+  nearbyCoords(x, y, distance) {
     const coords = [];
     // Top
-    for (let x = i - distance; x < i + distance; x += 1) {
-      coords.push([x, j - distance]);
+    for (let i = x - distance; i < x + distance; i += 1) {
+      coords.push([i, y - distance]);
     }
     // Right
-    for (let y = j - distance; y < j + distance; y += 1) {
-      coords.push([i + distance, y]);
+    for (let i = y - distance; i < y + distance; i += 1) {
+      coords.push([x + distance, i]);
     }
     // Bottom
-    for (let x = i + distance; x > i - distance; x -= 1) {
-      coords.push([x, j + distance]);
+    for (let i = x + distance; i > x - distance; i -= 1) {
+      coords.push([i, y + distance]);
     }
     // Left
-    for (let y = j + distance; y > j - distance; y -= 1) {
-      coords.push([i - distance, y]);
+    for (let i = y + distance; i > y - distance; i -= 1) {
+      coords.push([x - distance, i]);
     }
 
     return coords
-      .filter(([x, y]) => this.isValidCoords(x, y))
-      .map(([x, y]) => [x, y, this.get(x, y)]);
+      .filter(([eachX, eachY]) => this.isValidCoords(eachX, eachY));
   }
 
+  /**
+   * Returns the cells around the cell at (x, y).
+   *
+   * Each cells returned is represented as an array [x, y, value].
+   * Cells "around" are those reachable by no less than <distance> steps in
+   * any direction, including diagonals.
+   *
+   * @param {number} x
+   * @param {number} y
+   * @param {number} distance
+   * @return {[[number, number, number]]}
+   */
+  nearbyCells(x, y, distance = 1) {
+    return this.nearbyCoords(x, y, distance)
+      .map(([nx, ny]) => [nx, ny, this.get(nx, ny)]);
+  }
 
   /**
    * Returns the frequency distribution of the values

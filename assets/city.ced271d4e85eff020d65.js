@@ -1123,6 +1123,20 @@ class Array2D {
   }
 
   /**
+   * Sets all cells to a fixed value
+   *
+   * @param a {any[][]}
+   * @param value {any}
+   */
+  static setAll(a, value) {
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        a[y][x] = value;
+      }
+    }
+  }
+
+  /**
    * Returns all items as a flat array of [x, y, value] arrays.
    *
    * @param a {any[][]}
@@ -2387,10 +2401,16 @@ module.exports = TrafficLights;
 
 const Grid = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
 const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+const DataManager = __webpack_require__(/*! ./data-manager */ "./src/js/data-manager.js");
 
 class City {
   constructor(width, height, cells = null) {
     this.map = new Grid(width, height, cells);
+    this.stats = new DataManager();
+
+    this.map.events.on('update', () => {
+      this.stats.calculateAll();
+    });
   }
 
   toJSON() {
@@ -2485,6 +2505,62 @@ class ConnectionStateView {
 }
 
 module.exports = ConnectionStateView;
+
+
+/***/ }),
+
+/***/ "./src/js/data-manager.js":
+/*!********************************!*\
+  !*** ./src/js/data-manager.js ***!
+  \********************************/
+/***/ ((module) => {
+
+class DataManager {
+  constructor() {
+    this.sources = [];
+    this.variables = {};
+  }
+
+  /**
+   * Add a new data source to the data manager.
+   *
+   * @param {DataSource} dataSource
+   */
+  registerSource(dataSource) {
+    if (this.sources.includes(dataSource)) {
+      throw new Error(`Source ${dataSource.constructor.name} already registered.`);
+    }
+    this.sources.push(dataSource);
+
+    Object.entries(dataSource.getVariables()).forEach(([id, callback]) => {
+      if (this.variables[id] !== undefined) {
+        throw new Error(`Source ${dataSource.constructor.name} registering already registered variable ${id}.`);
+      }
+      this.variables[id] = callback;
+    });
+  }
+
+  /**
+   * Get the value of a variable.
+   *
+   * @param {string} variableId
+   * @return {*}
+   */
+  get(variableId) {
+    if (this.variables[variableId] === undefined) {
+      throw new Error(`Requested unknown variable ${variableId}.`);
+    }
+    return this.variables[variableId]();
+  }
+
+  calculateAll() {
+    this.sources.forEach((source) => {
+      source.calculate();
+    });
+  }
+}
+
+module.exports = DataManager;
 
 
 /***/ }),
@@ -2634,41 +2710,56 @@ class Grid {
   }
 
   /**
-   * Returns the cells around the cell at (i, j).
+   * Returns the coordinates of cells around the cell at (x, y).
    *
-   * Each cells returned is represented as an array [i, j, value].
+   * Each cells returned is represented as an array [x, y].
    * Cells "around" are those reachable by no less than <distance> steps in
    * any direction, including diagonals.
    *
-   * @param {number} i
-   * @param {number} j
+   * @param {number} x
+   * @param {number} y
    * @param {number} distance
-   * @return {[[number, number, number]]}
+   * @return {[[number, number]]}
    */
-  nearbyCells(i, j, distance = 1) {
+  nearbyCoords(x, y, distance) {
     const coords = [];
     // Top
-    for (let x = i - distance; x < i + distance; x += 1) {
-      coords.push([x, j - distance]);
+    for (let i = x - distance; i < x + distance; i += 1) {
+      coords.push([i, y - distance]);
     }
     // Right
-    for (let y = j - distance; y < j + distance; y += 1) {
-      coords.push([i + distance, y]);
+    for (let i = y - distance; i < y + distance; i += 1) {
+      coords.push([x + distance, i]);
     }
     // Bottom
-    for (let x = i + distance; x > i - distance; x -= 1) {
-      coords.push([x, j + distance]);
+    for (let i = x + distance; i > x - distance; i -= 1) {
+      coords.push([i, y + distance]);
     }
     // Left
-    for (let y = j + distance; y > j - distance; y -= 1) {
-      coords.push([i - distance, y]);
+    for (let i = y + distance; i > y - distance; i -= 1) {
+      coords.push([x - distance, i]);
     }
 
     return coords
-      .filter(([x, y]) => this.isValidCoords(x, y))
-      .map(([x, y]) => [x, y, this.get(x, y)]);
+      .filter(([eachX, eachY]) => this.isValidCoords(eachX, eachY));
   }
 
+  /**
+   * Returns the cells around the cell at (x, y).
+   *
+   * Each cells returned is represented as an array [x, y, value].
+   * Cells "around" are those reachable by no less than <distance> steps in
+   * any direction, including diagonals.
+   *
+   * @param {number} x
+   * @param {number} y
+   * @param {number} distance
+   * @return {[[number, number, number]]}
+   */
+  nearbyCells(x, y, distance = 1) {
+    return this.nearbyCoords(x, y, distance)
+      .map(([nx, ny]) => [nx, ny, this.get(nx, ny)]);
+  }
 
   /**
    * Returns the frequency distribution of the values
@@ -3191,4 +3282,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.81492e6a77cf45abc23c.js.map
+//# sourceMappingURL=city.ced271d4e85eff020d65.js.map

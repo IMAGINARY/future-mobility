@@ -1,9 +1,15 @@
 const Grid = require('./grid');
 const Array2D = require('./aux/array-2d');
+const DataManager = require('./data-manager');
 
 class City {
   constructor(width, height, cells = null) {
     this.map = new Grid(width, height, cells);
+    this.stats = new DataManager();
+
+    this.map.events.on('update', () => {
+      this.stats.calculateAll();
+    });
   }
 
   toJSON() {

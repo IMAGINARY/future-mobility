@@ -1,19 +1,22 @@
 /* globals PIXI */
 const City = require('./city');
-const EmissionsVariable = require('./variables/emissions-variable');
 const MapEditor = require('./editor/map-editor');
 const VariableMapView = require('./variable-map-view');
 require('../sass/default.scss');
 const ServerSocketConnector = require('./server-socket-connector');
 const ConnectionStateView = require('./connection-state-view');
 const showFatalError = require('./aux/show-fatal-error');
+const PollutionData = require('./data-sources/pollution-data');
+const NoiseData = require('./data-sources/noise-data');
 
 fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
   .then(response => response.json())
   .then((config) => {
     // const city = City.fromJSON(Cities.cities[0]);
     const city = new City(config.cityWidth, config.cityHeight);
-    const emissions = new EmissionsVariable(city, config);
+
+    city.stats.registerSource(new PollutionData(city, config));
+    city.stats.registerSource(new NoiseData(city, config));
 
     const app = new PIXI.Application({
       width: 3840,
@@ -43,12 +46,24 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
       mapView.displayObject.x = 0;
       mapView.displayObject.y = 0;
 
-      const varViewer = new VariableMapView(emissions);
-      app.stage.addChild(varViewer.displayObject);
-      varViewer.displayObject.width = 960;
-      varViewer.displayObject.height = 960;
-      varViewer.displayObject.x = 1920 + 40;
-      varViewer.displayObject.y = 0;
+      const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x953202);
+      app.stage.addChild(emissionsVarViewer.displayObject);
+      emissionsVarViewer.displayObject.width = 960;
+      emissionsVarViewer.displayObject.height = 960;
+      emissionsVarViewer.displayObject.x = 1920 + 40;
+      emissionsVarViewer.displayObject.y = 0;
+
+      const noiseVarViewer = new VariableMapView(city.map.width, city.map.height, 0x20e95ff);
+      app.stage.addChild(noiseVarViewer.displayObject);
+      noiseVarViewer.displayObject.width = 960;
+      noiseVarViewer.displayObject.height = 960;
+      noiseVarViewer.displayObject.x = 1920 + 40;
+      noiseVarViewer.displayObject.y = 960;
+
+      city.map.events.on('update', () => {
+        emissionsVarViewer.update(city.stats.get('pollution-map'));
+        noiseVarViewer.update(city.stats.get('noise-map'));
+      });
 
       const connector = new ServerSocketConnector(process.env.SERVER_SOCKET_URI);
       connector.events.once('map_update', (cells) => {
