@@ -327,6 +327,13 @@ body > .tile-counter {
         background-position: center left;
         width: 60px;
         height: 60px; }
+    .index-list .index.value-0 .description {
+      opacity: 0.5; }
+    .index-list .index.value-0 .value:before {
+      background-color: #e7e7e6; }
+    .index-list .index.value-0 .value:after {
+      background-image: url(8b808f3edfdf875e86d2.svg);
+      opacity: 0.35; }
     .index-list .index.value-1 .value:before {
       background-color: #ff5c5c; }
     .index-list .index.value-1 .value:after {
@@ -361,4 +368,4 @@ body > .tile-counter {
     background-image: url(1046d3ab27581bd9a7ba.svg); }
 
 
-/*# sourceMappingURL=editor.c45daa970cd5bacc9db0.css.map*/
+/*# sourceMappingURL=default.ddb1ec692c597f1c743a.css.map*/

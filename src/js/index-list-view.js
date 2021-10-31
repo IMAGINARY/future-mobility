@@ -1,4 +1,4 @@
-const VariableRankView = require('./index-view');
+const IndexView = require('./index-view');
 
 class IndexListView {
   constructor(varDefs) {
@@ -7,7 +7,7 @@ class IndexListView {
 
     this.variableRankViews = Object.fromEntries(
       Object.entries(varDefs)
-        .map(([id, def]) => [id, new VariableRankView(id, def)])
+        .map(([id, def]) => [id, new IndexView(id, def)])
     );
 
     this.$element.append(

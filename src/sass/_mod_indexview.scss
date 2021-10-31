@@ -72,6 +72,20 @@ $index-value-icon-face-py: ($index-value-icon-height - $index-value-icon-face-he
       }
     }
 
+    &.value-0 .description {
+      opacity: 0.5;
+    }
+
+    &.value-0 .value {
+      &:before {
+        background-color: #e7e7e6;
+      }
+      &:after {
+        background-image: url('../../static/openmoji/bw/neutral-face.svg');
+        opacity: 0.35;
+      }
+    }
+
     &.value-1 .value {
       &:before {
         background-color: #ff5c5c;

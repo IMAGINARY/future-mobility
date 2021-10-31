@@ -8403,7 +8403,7 @@ module.exports = Grid;
   \***********************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-const VariableRankView = __webpack_require__(/*! ./index-view */ "./src/js/index-view.js");
+const IndexView = __webpack_require__(/*! ./index-view */ "./src/js/index-view.js");
 
 class IndexListView {
   constructor(varDefs) {
@@ -8412,7 +8412,7 @@ class IndexListView {
 
     this.variableRankViews = Object.fromEntries(
       Object.entries(varDefs)
-        .map(([id, def]) => [id, new VariableRankView(id, def)])
+        .map(([id, def]) => [id, new IndexView(id, def)])
     );
 
     this.$element.append(
@@ -9415,12 +9415,12 @@ cfgLoader.load([
       // Todo: Remove the lines below
       $('[data-component="data-container"]').append(variableRankListView.$element);
       variableRankListView.setValues({
-        'traffic-density': 3,
-        'travel-times': 3,
-        safety: 3,
-        pollution: 3,
-        noise: 3,
-        'green-spaces': 3,
+        'traffic-density': 0,
+        'travel-times': 0,
+        safety: 0,
+        pollution: 0,
+        noise: 0,
+        'green-spaces': 0,
       });
       window.variableRankListView = variableRankListView;
 
@@ -9467,4 +9467,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.013e860e9d29c6e14ce5.js.map
+//# sourceMappingURL=default.f2fec76674d04ea96069.js.map

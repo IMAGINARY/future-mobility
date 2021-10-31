@@ -149,12 +149,12 @@ cfgLoader.load([
       // Todo: Remove the lines below
       $('[data-component="data-container"]').append(variableRankListView.$element);
       variableRankListView.setValues({
-        'traffic-density': 3,
-        'travel-times': 3,
-        safety: 3,
-        pollution: 3,
-        noise: 3,
-        'green-spaces': 3,
+        'traffic-density': 0,
+        'travel-times': 0,
+        safety: 0,
+        pollution: 0,
+        noise: 0,
+        'green-spaces': 0,
       });
       window.variableRankListView = variableRankListView;
 
