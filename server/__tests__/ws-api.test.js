@@ -1,14 +1,32 @@
-/* globals describe, it, expect, beforeEach, afterEach */
+/* globals describe, it, expect, beforeEach, afterEach, beforeAll */
 const WebSocket = require('ws');
 const createServer = require('../server');
+const CfgLoader = require('../../src/js/cfg-loader');
+const CfgReaderFile = require('../../src/js/cfg-reader-file');
 
 const TEST_PORT = 3012;
+
+let config = null;
+
+beforeAll(() => {
+  const cfgLoader = new CfgLoader(CfgReaderFile);
+  return cfgLoader.load([
+    '../config/city.yml',
+    '../config/tiles.yml',
+    '../config/variables.yml',
+    '../config/cars.yml',
+    '../settings.yml',
+  ])
+    .then((data) => {
+      config = data;
+    });
+});
 
 describe('Test the WSS API', () => {
   let server;
 
   beforeEach((done) => {
-    server = createServer(TEST_PORT);
+    server = createServer(TEST_PORT, config);
     done();
   });
 

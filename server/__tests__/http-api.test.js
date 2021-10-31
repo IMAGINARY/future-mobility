@@ -1,7 +1,25 @@
-/* globals describe, it, expect */
+/* globals describe, it, expect, beforeAll */
 
 const request = require('supertest');
-const { app } = require('../app');
+const initApp = require('../app');
+const CfgLoader = require('../../src/js/cfg-loader');
+const CfgReaderFile = require('../../src/js/cfg-reader-file');
+
+let app = null;
+
+beforeAll(() => {
+  const cfgLoader = new CfgLoader(CfgReaderFile);
+  return cfgLoader.load([
+    '../config/city.yml',
+    '../config/tiles.yml',
+    '../config/variables.yml',
+    '../config/cars.yml',
+    '../settings.yml',
+  ])
+    .then((config) => {
+      [app] = initApp(config);
+    });
+});
 
 describe('Test the HTTP API', () => {
   it('It should GET /config', (done) => {
