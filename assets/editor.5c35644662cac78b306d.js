@@ -1294,6 +1294,7 @@ class NoiseData extends DataSource {
       'noise-residential': this.getResidentialNoise.bind(this),
       'noise-map': this.getNoiseMap.bind(this),
       'noise-index': this.getNoiseIndex.bind(this),
+      'noise-goals': () => this.getNoiseGoals(),
     };
   }
 
@@ -1346,6 +1347,26 @@ class NoiseData extends DataSource {
       // percentage of residential tiles with noise 0.25 or more under 50%
       + (percentageOverValue(residentialData, 0.25) < 0.5 ? 1 : 0);
   }
+
+  getNoiseGoals() {
+    return [
+      {
+        id: 'noise-city',
+        category: 'noise',
+        priority: 1,
+      },
+      {
+        id: 'noise-residential',
+        category: 'noise',
+        priority: 2,
+      },
+      {
+        id: 'noise-max',
+        category: 'noise',
+        priority: 3,
+      },
+    ];
+  }
 }
 
 NoiseData.MinValue = 0;
@@ -1381,6 +1402,7 @@ class PollutionData extends DataSource {
       'pollution-residential': this.getResidentialPollution.bind(this),
       'pollution-map': this.getPollutionMap.bind(this),
       'pollution-index': this.getPollutionIndex.bind(this),
+      'pollution-goals': () => this.getPollutionGoals(),
     };
   }
 
@@ -1435,6 +1457,26 @@ class PollutionData extends DataSource {
       + (percentageOverValue(residentialData, 0.2) < 0.5 ? 1 : 0)
       // percentage of residential tiles with pollution 0.1 or more under 50%
       + (percentageOverValue(residentialData, 0.1) < 0.5 ? 1 : 0);
+  }
+
+  getPollutionGoals() {
+    return [
+      {
+        id: 'pollution-city',
+        category: 'pollution',
+        priority: 1,
+      },
+      {
+        id: 'pollution-residential',
+        category: 'pollution',
+        priority: 2,
+      },
+      {
+        id: 'pollution-max',
+        category: 'pollution',
+        priority: 3,
+      },
+    ];
   }
 }
 
@@ -3030,4 +3072,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.a65fb189f09b666ccf31.js.map
+//# sourceMappingURL=editor.5c35644662cac78b306d.js.map

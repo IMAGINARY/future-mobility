@@ -19,6 +19,7 @@ class GreenSpacesData extends DataSource {
       'green-spaces-areas': () => this.areas,
       'green-spaces-proximity': () => this.proximities,
       'green-spaces-index': () => this.index,
+      'green-spaces-goals': () => this.getGreenSpacesGoals(),
     };
   }
 
@@ -79,6 +80,26 @@ class GreenSpacesData extends DataSource {
       + (numGreenSpaces > 10 ? 1 : 0)
       + (numGreenSpaces > 20 && numUnder5 >= Math.floor(this.proximities.length * 0.75) ? 1 : 0)
       + (numGreenSpaces > 30 && numUnder3 >= Math.floor(this.proximities.length * 0.75) ? 1 : 0);
+  }
+
+  getGreenSpacesGoals() {
+    return [
+      {
+        id: 'green-spaces-count',
+        category: 'green-spaces',
+        priority: 1,
+      },
+      {
+        id: 'green-spaces-large-spaces-area',
+        category: 'green-spaces',
+        priority: 2,
+      },
+      {
+        id: 'green-spaces-proximity',
+        category: 'green-spaces',
+        priority: 3,
+      },
+    ];
   }
 }
 

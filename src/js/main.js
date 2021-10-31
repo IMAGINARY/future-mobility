@@ -16,6 +16,8 @@ const PollutionData = require('./data-sources/pollution-data');
 const NoiseData = require('./data-sources/noise-data');
 const GreenSpacesData = require('./data-sources/green-spaces-data');
 const TravelTimesData = require('./data-sources/travel-times-data');
+const ZoningData = require('./data-sources/zoning-data');
+const ZoneBalanceData = require('./data-sources/zone-balance-data');
 
 
 const qs = new URLSearchParams(window.location.search);
@@ -39,6 +41,8 @@ cfgLoader.load([
       ? City.fromJSON(testScenario.city)
       : new City(config.cityWidth, config.cityHeight);
 
+    city.stats.registerSource(new ZoningData(city, config));
+    city.stats.registerSource(new ZoneBalanceData(city, config));
     city.stats.registerSource(new PollutionData(city, config));
     city.stats.registerSource(new NoiseData(city, config));
     city.stats.registerSource(new GreenSpacesData(city, config));
@@ -104,7 +108,7 @@ cfgLoader.load([
       const counterView = new TileCounterView(city, config);
       counterPane.append(counterView.$element);
 
-      const zoneBalanceView = new ZoneBalanceView(counterView.counter, config);
+      const zoneBalanceView = new ZoneBalanceView(city, config);
       counterPane.append(zoneBalanceView.$element);
 
       const dataInspectorView = new DataInspectorView();

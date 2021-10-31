@@ -17,6 +17,7 @@ class NoiseData extends DataSource {
       'noise-residential': this.getResidentialNoise.bind(this),
       'noise-map': this.getNoiseMap.bind(this),
       'noise-index': this.getNoiseIndex.bind(this),
+      'noise-goals': () => this.getNoiseGoals(),
     };
   }
 
@@ -68,6 +69,26 @@ class NoiseData extends DataSource {
       + (percentageOverValue(residentialData, 0.49) < 0.5 ? 1 : 0)
       // percentage of residential tiles with noise 0.25 or more under 50%
       + (percentageOverValue(residentialData, 0.25) < 0.5 ? 1 : 0);
+  }
+
+  getNoiseGoals() {
+    return [
+      {
+        id: 'noise-city',
+        category: 'noise',
+        priority: 1,
+      },
+      {
+        id: 'noise-residential',
+        category: 'noise',
+        priority: 2,
+      },
+      {
+        id: 'noise-max',
+        category: 'noise',
+        priority: 3,
+      },
+    ];
   }
 }
 

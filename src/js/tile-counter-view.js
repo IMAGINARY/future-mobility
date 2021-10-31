@@ -1,12 +1,9 @@
-const TileCounter = require('./tile-counter');
-
 class TileCounterView {
   constructor(city, config) {
     this.city = city;
     this.config = config;
 
-    this.counter = new TileCounter(city, config);
-    this.counter.events.on('update', this.handleUpdate.bind(this));
+    this.city.map.events.on('update', this.handleUpdate.bind(this));
 
     this.$element = $('<div></div>')
       .addClass('tile-counter');
@@ -27,12 +24,16 @@ class TileCounterView {
         )
     );
 
+    this.total = this.city.stats.get('zones-total');
+
     this.handleUpdate();
   }
 
   handleUpdate() {
-    Object.entries(this.counter.numPerType).forEach(([id, count]) => {
-      this.fields[id].text(`${count} (${((count / this.counter.total) * 100).toFixed(1)}%)`);
+    Object.keys(this.config.tileTypes).forEach((id) => {
+      const { type } = this.config.tileTypes[id];
+      const count = this.city.stats.get(`zones-${type}-count`);
+      this.fields[id].text(`${count} (${((count / this.total) * 100).toFixed(1)}%)`);
     });
   }
 }

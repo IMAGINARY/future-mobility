@@ -1,10 +1,8 @@
-const ZoneBalance = require('./zone-balance');
-
 class ZoneBalanceView {
-  constructor(counter, config) {
+  constructor(city, config) {
+    this.city = city;
     this.config = config;
-    this.zoneBalance = new ZoneBalance(counter, config);
-    this.zoneBalance.events.on('update', this.handleUpdate.bind(this));
+    this.city.map.events.on('update', this.handleUpdate.bind(this));
 
     this.$element = $('<div></div>')
       .addClass('zone-balance');
@@ -37,7 +35,7 @@ class ZoneBalanceView {
 
   handleUpdate() {
     Object.entries(this.levels).forEach(([type, level]) => {
-      const diff = this.zoneBalance.difference[type];
+      const diff = this.city.stats.get(`${type}-difference`);
       const currLevel = Math.sign(diff) * (Math.ceil(Math.abs(diff) / 0.25) - 1);
       if (currLevel !== level) {
         const oldClass = ZoneBalanceView.levelAsClass(level);

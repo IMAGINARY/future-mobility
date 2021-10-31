@@ -7235,6 +7235,7 @@ class GreenSpacesData extends DataSource {
       'green-spaces-areas': () => this.areas,
       'green-spaces-proximity': () => this.proximities,
       'green-spaces-index': () => this.index,
+      'green-spaces-goals': () => this.getGreenSpacesGoals(),
     };
   }
 
@@ -7296,6 +7297,26 @@ class GreenSpacesData extends DataSource {
       + (numGreenSpaces > 20 && numUnder5 >= Math.floor(this.proximities.length * 0.75) ? 1 : 0)
       + (numGreenSpaces > 30 && numUnder3 >= Math.floor(this.proximities.length * 0.75) ? 1 : 0);
   }
+
+  getGreenSpacesGoals() {
+    return [
+      {
+        id: 'green-spaces-count',
+        category: 'green-spaces',
+        priority: 1,
+      },
+      {
+        id: 'green-spaces-large-spaces-area',
+        category: 'green-spaces',
+        priority: 2,
+      },
+      {
+        id: 'green-spaces-proximity',
+        category: 'green-spaces',
+        priority: 3,
+      },
+    ];
+  }
 }
 
 module.exports = GreenSpacesData;
@@ -7328,6 +7349,7 @@ class NoiseData extends DataSource {
       'noise-residential': this.getResidentialNoise.bind(this),
       'noise-map': this.getNoiseMap.bind(this),
       'noise-index': this.getNoiseIndex.bind(this),
+      'noise-goals': () => this.getNoiseGoals(),
     };
   }
 
@@ -7380,6 +7402,26 @@ class NoiseData extends DataSource {
       // percentage of residential tiles with noise 0.25 or more under 50%
       + (percentageOverValue(residentialData, 0.25) < 0.5 ? 1 : 0);
   }
+
+  getNoiseGoals() {
+    return [
+      {
+        id: 'noise-city',
+        category: 'noise',
+        priority: 1,
+      },
+      {
+        id: 'noise-residential',
+        category: 'noise',
+        priority: 2,
+      },
+      {
+        id: 'noise-max',
+        category: 'noise',
+        priority: 3,
+      },
+    ];
+  }
 }
 
 NoiseData.MinValue = 0;
@@ -7415,6 +7457,7 @@ class PollutionData extends DataSource {
       'pollution-residential': this.getResidentialPollution.bind(this),
       'pollution-map': this.getPollutionMap.bind(this),
       'pollution-index': this.getPollutionIndex.bind(this),
+      'pollution-goals': () => this.getPollutionGoals(),
     };
   }
 
@@ -7469,6 +7512,26 @@ class PollutionData extends DataSource {
       + (percentageOverValue(residentialData, 0.2) < 0.5 ? 1 : 0)
       // percentage of residential tiles with pollution 0.1 or more under 50%
       + (percentageOverValue(residentialData, 0.1) < 0.5 ? 1 : 0);
+  }
+
+  getPollutionGoals() {
+    return [
+      {
+        id: 'pollution-city',
+        category: 'pollution',
+        priority: 1,
+      },
+      {
+        id: 'pollution-residential',
+        category: 'pollution',
+        priority: 2,
+      },
+      {
+        id: 'pollution-max',
+        category: 'pollution',
+        priority: 3,
+      },
+    ];
   }
 }
 
@@ -7540,6 +7603,148 @@ class TravelTimesData extends DataSource {
 }
 
 module.exports = TravelTimesData;
+
+
+/***/ }),
+
+/***/ "./src/js/data-sources/zone-balance-data.js":
+/*!**************************************************!*\
+  !*** ./src/js/data-sources/zone-balance-data.js ***!
+  \**************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const DataSource = __webpack_require__(/*! ../data-source */ "./src/js/data-source.js");
+const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
+
+class ZoneBalanceData extends DataSource {
+  constructor(city, config) {
+    super();
+    this.city = city;
+    this.config = config;
+
+    this.tileTypeIds = {
+      residential: getTileTypeId(this.config, 'residential'),
+      commercial: getTileTypeId(this.config, 'commercial'),
+      industrial: getTileTypeId(this.config, 'industrial'),
+    };
+
+    this.percentage = {
+      residential: 0,
+      commercial: 0,
+      industrial: 0,
+    };
+
+    this.difference = {
+      residential: 0,
+      commercial: 0,
+      industrial: 0,
+    };
+  }
+
+  getVariables() {
+    return {
+      'residential-percentage': () => this.percentage.residential,
+      'commercial-percentage': () => this.percentage.commercial,
+      'industrial-percentage': () => this.percentage.industrial,
+      'residential-difference': () => this.difference.residential,
+      'commercial-difference': () => this.difference.commercial,
+      'industrial-difference': () => this.difference.industrial,
+    };
+  }
+
+  calculate() {
+    const total = Object.keys(this.tileTypeIds)
+      .reduce((sum, type) => sum
+        + this.city.stats.get(`zones-${type}-count`), 0);
+
+    Object.keys(this.tileTypeIds).forEach((type) => {
+      this.percentage[type] = total === 0 ? ZoneBalanceData.IdealPercentage[type]
+        : (this.city.stats.get(`zones-${type}-count`) / total);
+
+      this.difference[type] = Math.min(
+        (this.percentage[type] - ZoneBalanceData.IdealPercentage[type])
+          / ZoneBalanceData.IdealPercentage[type],
+        1
+      );
+    });
+  }
+
+  getGoals() {
+    return [
+      {
+        id: 'zone-balance-r-low',
+        category: 'zone-balance',
+        priority: 1,
+      },
+      {
+        id: 'zone-balance-i-low',
+        category: 'zone-balance',
+        priority: 1,
+      },
+      {
+        id: 'zone-balance-c-low',
+        category: 'zone-balance',
+        priority: 1,
+      },
+    ];
+  }
+}
+
+ZoneBalanceData.IdealPercentage = {
+  residential: 0.5,
+  commercial: 0.25,
+  industrial: 0.25,
+};
+
+module.exports = ZoneBalanceData;
+
+
+/***/ }),
+
+/***/ "./src/js/data-sources/zoning-data.js":
+/*!********************************************!*\
+  !*** ./src/js/data-sources/zoning-data.js ***!
+  \********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const DataSource = __webpack_require__(/*! ../data-source */ "./src/js/data-source.js");
+const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
+
+class ZoningData extends DataSource {
+  constructor(city, config) {
+    super();
+    this.city = city;
+    this.config = config;
+
+    this.numPerType = Object.fromEntries(
+      Object.keys(config.tileTypes).map(cellType => [cellType, 0])
+    );
+
+    this.total = this.city.map.width * this.city.map.height;
+  }
+
+  getVariables() {
+    const variables = {};
+
+    Object.keys(this.config.tileTypes).forEach((id) => {
+      const { type } = this.config.tileTypes[id];
+      variables[`zones-${type}-count`] = () => this.numPerType[id];
+    });
+
+    return Object.assign(variables, {
+      'zones-total': () => this.total,
+    });
+  }
+
+  calculate() {
+    Object.keys(this.numPerType).forEach((cellType) => { this.numPerType[cellType] = 0; });
+    Array2D.forEach(this.city.map.cells, (cellType) => {
+      this.numPerType[cellType] += 1;
+    });
+  }
+}
+
+module.exports = ZoningData;
 
 
 /***/ }),
@@ -8904,17 +9109,14 @@ module.exports = {
 /*!*************************************!*\
   !*** ./src/js/tile-counter-view.js ***!
   \*************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const TileCounter = __webpack_require__(/*! ./tile-counter */ "./src/js/tile-counter.js");
+/***/ ((module) => {
 
 class TileCounterView {
   constructor(city, config) {
     this.city = city;
     this.config = config;
 
-    this.counter = new TileCounter(city, config);
-    this.counter.events.on('update', this.handleUpdate.bind(this));
+    this.city.map.events.on('update', this.handleUpdate.bind(this));
 
     this.$element = $('<div></div>')
       .addClass('tile-counter');
@@ -8935,56 +9137,21 @@ class TileCounterView {
         )
     );
 
+    this.total = this.city.stats.get('zones-total');
+
     this.handleUpdate();
   }
 
   handleUpdate() {
-    Object.entries(this.counter.numPerType).forEach(([id, count]) => {
-      this.fields[id].text(`${count} (${((count / this.counter.total) * 100).toFixed(1)}%)`);
+    Object.keys(this.config.tileTypes).forEach((id) => {
+      const { type } = this.config.tileTypes[id];
+      const count = this.city.stats.get(`zones-${type}-count`);
+      this.fields[id].text(`${count} (${((count / this.total) * 100).toFixed(1)}%)`);
     });
   }
 }
 
 module.exports = TileCounterView;
-
-
-/***/ }),
-
-/***/ "./src/js/tile-counter.js":
-/*!********************************!*\
-  !*** ./src/js/tile-counter.js ***!
-  \********************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
-
-class TileCounter {
-  constructor(city, config) {
-    this.city = city;
-    this.config = config;
-    this.events = new EventEmitter();
-
-    this.numPerType = Object.fromEntries(
-      Object.keys(config.tileTypes).map(cellType => [cellType, 0])
-    );
-    this.total = this.city.map.width * this.city.map.height;
-
-    this.city.map.events.on('update', this.handleUpdate.bind(this));
-    this.handleUpdate();
-  }
-
-  handleUpdate() {
-    Object.keys(this.numPerType).forEach((cellType) => { this.numPerType[cellType] = 0; });
-    Array2D.flatten(this.city.map.cells).forEach((cellType) => {
-      this.numPerType[cellType] += 1;
-    });
-
-    this.events.emit('update');
-  }
-}
-
-module.exports = TileCounter;
 
 
 /***/ }),
@@ -9047,15 +9214,13 @@ module.exports = VariableMapView;
 /*!*************************************!*\
   !*** ./src/js/zone-balance-view.js ***!
   \*************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const ZoneBalance = __webpack_require__(/*! ./zone-balance */ "./src/js/zone-balance.js");
+/***/ ((module) => {
 
 class ZoneBalanceView {
-  constructor(counter, config) {
+  constructor(city, config) {
+    this.city = city;
     this.config = config;
-    this.zoneBalance = new ZoneBalance(counter, config);
-    this.zoneBalance.events.on('update', this.handleUpdate.bind(this));
+    this.city.map.events.on('update', this.handleUpdate.bind(this));
 
     this.$element = $('<div></div>')
       .addClass('zone-balance');
@@ -9088,7 +9253,7 @@ class ZoneBalanceView {
 
   handleUpdate() {
     Object.entries(this.levels).forEach(([type, level]) => {
-      const diff = this.zoneBalance.difference[type];
+      const diff = this.city.stats.get(`${type}-difference`);
       const currLevel = Math.sign(diff) * (Math.ceil(Math.abs(diff) / 0.25) - 1);
       if (currLevel !== level) {
         const oldClass = ZoneBalanceView.levelAsClass(level);
@@ -9104,74 +9269,6 @@ class ZoneBalanceView {
 }
 
 module.exports = ZoneBalanceView;
-
-
-/***/ }),
-
-/***/ "./src/js/zone-balance.js":
-/*!********************************!*\
-  !*** ./src/js/zone-balance.js ***!
-  \********************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-
-class ZoneBalance {
-  constructor(counter, config) {
-    this.counter = counter;
-    this.config = config;
-    this.events = new EventEmitter();
-
-    const tileTypeId = (type) => Object.keys(this.config.tileTypes)
-      .find(k => this.config.tileTypes[k].type === type);
-
-    this.tileTypeIds = {
-      residential: tileTypeId('residential'),
-      commercial: tileTypeId('commercial'),
-      industrial: tileTypeId('industrial'),
-    };
-
-    this.percentage = {
-      residential: 0,
-      commercial: 0,
-      industrial: 0,
-    };
-
-    this.difference = {
-      residential: 0,
-      commercial: 0,
-      industrial: 0,
-    };
-
-    this.counter.events.on('update', this.handleUpdate.bind(this));
-    this.handleUpdate();
-  }
-
-  handleUpdate() {
-    const total = Object.keys(this.difference)
-      .reduce((sum, type) => sum
-        + this.counter.numPerType[this.tileTypeIds[type]], 0);
-
-    Object.keys(this.difference).forEach((type) => {
-      this.percentage[type] = total === 0 ? ZoneBalance.IdealPercentage[type]
-        : (this.counter.numPerType[this.tileTypeIds[type]] / total);
-
-      this.difference[type] = Math.min((
-        this.percentage[type] - ZoneBalance.IdealPercentage[type])
-          / ZoneBalance.IdealPercentage[type],
-      1);
-    });
-    this.events.emit('update');
-  }
-}
-
-ZoneBalance.IdealPercentage = {
-  residential: 0.5,
-  commercial: 0.25,
-  industrial: 0.25,
-};
-
-module.exports = ZoneBalance;
 
 
 /***/ }),
@@ -9282,6 +9379,8 @@ const PollutionData = __webpack_require__(/*! ./data-sources/pollution-data */ "
 const NoiseData = __webpack_require__(/*! ./data-sources/noise-data */ "./src/js/data-sources/noise-data.js");
 const GreenSpacesData = __webpack_require__(/*! ./data-sources/green-spaces-data */ "./src/js/data-sources/green-spaces-data.js");
 const TravelTimesData = __webpack_require__(/*! ./data-sources/travel-times-data */ "./src/js/data-sources/travel-times-data.js");
+const ZoningData = __webpack_require__(/*! ./data-sources/zoning-data */ "./src/js/data-sources/zoning-data.js");
+const ZoneBalanceData = __webpack_require__(/*! ./data-sources/zone-balance-data */ "./src/js/data-sources/zone-balance-data.js");
 
 
 const qs = new URLSearchParams(window.location.search);
@@ -9305,6 +9404,8 @@ cfgLoader.load([
       ? City.fromJSON(testScenario.city)
       : new City(config.cityWidth, config.cityHeight);
 
+    city.stats.registerSource(new ZoningData(city, config));
+    city.stats.registerSource(new ZoneBalanceData(city, config));
     city.stats.registerSource(new PollutionData(city, config));
     city.stats.registerSource(new NoiseData(city, config));
     city.stats.registerSource(new GreenSpacesData(city, config));
@@ -9370,7 +9471,7 @@ cfgLoader.load([
       const counterView = new TileCounterView(city, config);
       counterPane.append(counterView.$element);
 
-      const zoneBalanceView = new ZoneBalanceView(counterView.counter, config);
+      const zoneBalanceView = new ZoneBalanceView(city, config);
       counterPane.append(zoneBalanceView.$element);
 
       const dataInspectorView = new DataInspectorView();
@@ -9467,4 +9568,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.f2fec76674d04ea96069.js.map
+//# sourceMappingURL=default.d3dd3da7d51ab0e10b82.js.map
