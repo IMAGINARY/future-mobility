@@ -1,10 +1,8 @@
 /* eslint-disable no-console */
-const fs = require('fs');
 const express = require('express');
 const ws = require('ws');
 const cors = require('cors');
 const OpenApiValidator = require('express-openapi-validator');
-const yaml = require('js-yaml');
 const City = require('../src/js/city');
 
 function initApp(config) {

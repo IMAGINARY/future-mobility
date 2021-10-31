@@ -22,7 +22,13 @@ const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
 
 const cfgLoader = new CfgLoader(CfgReaderFetch);
-cfgLoader.load(['./config.yml'])
+cfgLoader.load([
+  'config/city.yml',
+  'config/tiles.yml',
+  'config/variables.yml',
+  'config/cars.yml',
+  './settings.yml',
+])
   .catch((err) => {
     showFatalError('Error loading configuration', err);
     console.error('Error loading configuration');

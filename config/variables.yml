@@ -1,0 +1,25 @@
+variables:
+  traffic-density:
+    name:
+      de: Verkehrsdichte
+      en: Traffic Density
+  travel-times:
+    name:
+      de: Fahrzeiten
+      en: Travel times
+  safety:
+    name:
+      de: Verkehrssicherheit
+      en: Road traffic safety
+  pollution:
+    name:
+      de: Luftverschmutzung
+      en: Pollution level
+  noise:
+    name:
+      de: Lärmbelastung
+      en: Noise level
+  green-spaces:
+    name:
+      de: Freifläche
+      en: Green spaces

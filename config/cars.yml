@@ -1,0 +1,29 @@
+carTypes:
+  car-blue:
+    maxSpeed: 1
+    frequency: 1
+  car-white:
+    maxSpeed: 1.2
+    frequency: 0.5
+  car-red:
+    maxSpeed: 1.1
+    frequency: 1
+  truck-white:
+    maxSpeed: 0.85
+    frequency: 0.2
+    lanes: inner
+  pickup-aqua:
+    maxSpeed: 1
+    frequency: 0.5
+  van-white:
+    maxSpeed: 1
+    frequency: 0.7
+  bus-yellow:
+    maxSpeed: 0.9
+    frequency: 0.3
+    lanes: outer
+  tram:
+    maxSpeed: 0.8
+    frequency: 0.3
+    lanes: inner
+    wagons: [tram, tram]
