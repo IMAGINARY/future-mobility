@@ -73,6 +73,21 @@ function percentageOverValue(data, k) {
   return data.length > 0 ? numberOverValue(data, k) / data.length : 1;
 }
 
+function numberOverEqValue(data, k) {
+  let count = 0;
+  for (let i = 0; i < data.length; i += 1) {
+    if (data[i] >= k) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+function percentageOverEqValue(data, k) {
+  return data.length > 0 ? numberOverEqValue(data, k) / data.length : 1;
+}
+
 function numberEqualValue(data, k) {
   let count = 0;
   for (let i = 0; i < data.length; i += 1) {
@@ -102,6 +117,8 @@ module.exports = {
   percentageUnderValue,
   numberOverValue,
   percentageOverValue,
+  numberOverEqValue,
+  percentageOverEqValue,
   numberEqualValue,
   percentageEqualValue,
 };

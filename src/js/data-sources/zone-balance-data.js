@@ -13,6 +13,34 @@ class ZoneBalanceData extends DataSource {
       industrial: getTileTypeId(this.config, 'industrial'),
     };
 
+    this.idealPct = {
+      residential: this.config.goals['zone-balance']['ideal-residential-percentage'] || 0.5,
+      commercial: this.config.goals['zone-balance']['ideal-commercial-percentage'] || 0.25,
+      industrial: this.config.goals['zone-balance']['ideal-industrial-percentage'] || 0.25,
+    };
+
+    this.undervelopedPct = this.config.goals['zone-balance']['underdeveloped-percentage'] || 0.35;
+    this.overdevelopedPct = this.config.goals['zone-balance']['overdeveloped-percentage'] || 0.47;
+    this.acceptablePctDiff = this.config.goals['zone-balance']['acceptable-percentage-difference'] || 0.25;
+
+    this.amount = {
+      residential: 0,
+      commercial: 0,
+      industrial: 0,
+    };
+    this.underDevThreshold = {};
+    this.overDevThreshold = {};
+    const tileCount = this.city.map.width * this.city.map.height;
+
+    Object.keys(this.tileTypeIds).forEach((type) => {
+      this.underDevThreshold[type] = Math.round(
+        this.idealPct[type] * this.undervelopedPct * tileCount
+      );
+      this.overDevThreshold[type] = Math.round(
+        this.idealPct[type] * this.overdevelopedPct * tileCount
+      );
+    });
+
     this.percentage = {
       residential: 0,
       commercial: 0,
@@ -38,17 +66,19 @@ class ZoneBalanceData extends DataSource {
   }
 
   calculate() {
-    const total = Object.keys(this.tileTypeIds)
-      .reduce((sum, type) => sum
-        + this.city.stats.get(`zones-${type}-count`), 0);
+    Object.keys(this.tileTypeIds).forEach((type) => {
+      this.amount[type] = this.city.stats.get(`zones-${type}-count`);
+    });
+
+    const total = Object.values(this.amount)
+      .reduce((value, sum) => sum + value, 0);
 
     Object.keys(this.tileTypeIds).forEach((type) => {
-      this.percentage[type] = total === 0 ? ZoneBalanceData.IdealPercentage[type]
+      this.percentage[type] = total === 0 ? this.idealPct[type]
         : (this.city.stats.get(`zones-${type}-count`) / total);
 
       this.difference[type] = Math.min(
-        (this.percentage[type] - ZoneBalanceData.IdealPercentage[type])
-          / ZoneBalanceData.IdealPercentage[type],
+        (this.percentage[type] - this.idealPct[type]) / this.idealPct[type],
         1
       );
     });
@@ -60,25 +90,58 @@ class ZoneBalanceData extends DataSource {
         id: 'zone-balance-r-low',
         category: 'zone-balance',
         priority: 1,
+        condition: this.amount.residential >= this.underDevThreshold.residential,
+        progress:
+          (this.amount.residential >= this.underDevThreshold.residential)
+          || this.goalProgress(1 + this.difference.residential, 1 - this.acceptablePctDiff),
       },
       {
         id: 'zone-balance-i-low',
         category: 'zone-balance',
         priority: 1,
+        condition: this.amount.industrial >= this.underDevThreshold.industrial,
+        progress:
+          (this.amount.industrial >= this.underDevThreshold.industrial)
+          || this.goalProgress(1 + this.difference.industrial, 1 - this.acceptablePctDiff),
       },
       {
         id: 'zone-balance-c-low',
         category: 'zone-balance',
         priority: 1,
+        condition: this.amount.commercial >= this.underDevThreshold.commercial,
+        progress:
+          (this.amount.commercial >= this.underDevThreshold.commercial)
+          || this.goalProgress(1 + this.difference.commercial, 1 - this.acceptablePctDiff),
+      },
+      {
+        id: 'zone-balance-r-high',
+        category: 'zone-balance',
+        priority: 2,
+        condition: this.amount.residential <= this.overDevThreshold.residential,
+        progress:
+          (this.amount.residential <= this.overDevThreshold.residential)
+          || this.goalProgress(1 - this.difference.residential, 1 - this.acceptablePctDiff),
+      },
+      {
+        id: 'zone-balance-i-high',
+        category: 'zone-balance',
+        priority: 2,
+        condition: this.amount.industrial <= this.overDevThreshold.industrial,
+        progress:
+          (this.amount.industrial <= this.overDevThreshold.industrial)
+          || this.goalProgress(1 - this.difference.industrial, 1 - this.acceptablePctDiff),
+      },
+      {
+        id: 'zone-balance-c-high',
+        category: 'zone-balance',
+        priority: 2,
+        condition: this.amount.commercial <= this.overDevThreshold.commercial,
+        progress:
+          (this.amount.commercial <= this.overDevThreshold.commercial)
+          || this.goalProgress(1 - this.difference.commercial, 1 - this.acceptablePctDiff),
       },
     ];
   }
 }
-
-ZoneBalanceData.IdealPercentage = {
-  residential: 0.5,
-  commercial: 0.25,
-  industrial: 0.25,
-};
 
 module.exports = ZoneBalanceData;

@@ -41,6 +41,12 @@ class DataManager {
       source.calculate();
     });
   }
+
+  getGoals() {
+    return this.sources.reduce((acc, source) => {
+      return acc.concat(source.getGoals());
+    }, []);
+  }
 }
 
 module.exports = DataManager;

@@ -8,88 +8,110 @@ class PollutionData extends DataSource {
     super();
     this.city = city;
     this.config = config;
-    this.data = Array2D.create(this.city.map.width, this.city.map.height);
+
+    this.pollutionMap = Array2D.create(this.city.map.width, this.city.map.height);
+    this.pollution = [];
+    this.residentialPollution = [];
+
+    this.maxLevel = this.config.goals.pollution['max-pollution-level'] || 1;
+    this.highLevel = this.config.goals.pollution['high-pollution-level'] || 0.3;
+    this.highResidentialLevel = this.config.goals.pollution['high-residential-pollution-level'] || 0.2;
+    this.medResidentialLevel = this.config.goals.pollution['med-residential-pollution-level'] || 0.1;
+
+    this.maxPollutionGoalPct = this.config.goals.pollution['max-pollution-goal-percentage'] || 0.05;
+    this.highPollutionGoalPct = this.config.goals.pollution['high-pollution-goal-percentage'] || 0.5;
+    this.residentialHighPollutionGoalPct = this.config.goals
+      .pollution['residential-high-pollution-goal-percentage'] || 0.5;
+    this.residentialMedPollutionGoalPct = this.config.goals
+      .pollution['residential-med-pollution-goal-percentage'] || 0.5;
+
+    this.maxPollutionPct = 0;
+    this.highPollutionPct = 0;
+    this.residentialHighPollutionPct = 0;
+    this.residentialMedPollutionPct = 0;
   }
 
   getVariables() {
     return {
-      pollution: this.getPollution.bind(this),
-      'pollution-residential': this.getResidentialPollution.bind(this),
-      'pollution-map': this.getPollutionMap.bind(this),
-      'pollution-index': this.getPollutionIndex.bind(this),
-      'pollution-goals': () => this.getPollutionGoals(),
+      pollution: () => this.pollution,
+      'pollution-residential': () => this.residentialPollution,
+      'pollution-map': () => this.pollutionMap,
+      'pollution-index': () => this.getPollutionIndex(),
     };
   }
 
   calculate() {
-    Array2D.setAll(this.data, 0);
+    Array2D.setAll(this.pollutionMap, 0);
     Array2D.forEach(this.city.map.cells, (v, x, y) => {
       const emissions = (this.config.tileTypes[v] && this.config.tileTypes[v].emissions) || 0;
       if (emissions !== 0) {
-        this.data[y][x] += emissions;
+        this.pollutionMap[y][x] += emissions;
         this.city.map.nearbyCoords(x, y, 1).forEach(([nx, ny]) => {
-          this.data[ny][nx] += emissions * 0.5;
+          this.pollutionMap[ny][nx] += emissions * 0.5;
         });
         this.city.map.nearbyCoords(x, y, 2).forEach(([nx, ny]) => {
-          this.data[ny][nx] += emissions * 0.25;
+          this.pollutionMap[ny][nx] += emissions * 0.25;
         });
       }
     });
-    Array2D.forEach(this.data, (v, x, y) => {
-      this.data[y][x] = Math.min(PollutionData.MaxValue, Math.max(PollutionData.MinValue, v));
+    Array2D.forEach(this.pollutionMap, (v, x, y) => {
+      this.pollutionMap[y][x] = Math.min(PollutionData.MaxValue,
+        Math.max(PollutionData.MinValue, v));
     });
-  }
 
-  getPollutionMap() {
-    return this.data;
-  }
+    this.pollution = Array2D.flatten(this.pollutionMap);
 
-  getPollution() {
-    return Array2D.flatten(this.data);
-  }
-
-  getResidentialPollution() {
-    const answer = [];
-    const tileTypeId = getTileTypeId(this.config, 'residential');
-    Array2D.zip(this.city.map.cells, this.data, (tile, value) => {
-      if (tile === tileTypeId) {
-        answer.push(value);
+    this.residentialPollution = [];
+    const residentialTileId = getTileTypeId(this.config, 'residential');
+    Array2D.zip(this.city.map.cells, this.pollutionMap, (tile, value) => {
+      if (tile === residentialTileId) {
+        this.residentialPollution.push(value);
       }
     });
-    return answer;
+
+    this.maxPollutionPct = percentageEqualValue(this.pollution, this.maxLevel);
+    this.highPollutionPct = percentageOverValue(this.pollution, this.highLevel);
+    this.residentialHighPollutionPct = percentageOverValue(this.residentialPollution,
+      this.highResidentialLevel);
+    this.residentialMedPollutionPct = percentageOverValue(this.residentialPollution,
+      this.medResidentialLevel);
   }
 
   getPollutionIndex() {
-    const cityData = this.getPollution();
-    const residentialData = this.getResidentialPollution();
-
     return 1
       // percentage of tiles with max pollution under 5%
-      + (percentageEqualValue(cityData, 1) < 0.05 ? 1 : 0)
+      + (this.maxPollutionPct < this.maxPollutionGoalPct ? 1 : 0)
       // percentage of tiles with pollution 0.3 or more under 50%
-      + (percentageOverValue(cityData, 0.3) < 0.5 ? 1 : 0)
+      + (this.highPollutionPct < this.highPollutionGoalPct ? 1 : 0)
       // percentage of residential tiles with pollution 0.2 or more under 50%
-      + (percentageOverValue(residentialData, 0.2) < 0.5 ? 1 : 0)
+      + (this.residentialHighPollutionPct < this.residentialHighPollutionGoalPct ? 1 : 0)
       // percentage of residential tiles with pollution 0.1 or more under 50%
-      + (percentageOverValue(residentialData, 0.1) < 0.5 ? 1 : 0);
+      + (this.residentialMedPollutionPct < this.residentialMedPollutionGoalPct ? 1 : 0);
   }
 
-  getPollutionGoals() {
+  getGoals() {
     return [
       {
         id: 'pollution-city',
         category: 'pollution',
         priority: 1,
+        condition: this.highPollutionPct < this.highPollutionGoalPct,
+        progress: this.goalProgress(1 - this.highPollutionPct, 1 - this.highPollutionGoalPct),
       },
       {
         id: 'pollution-residential',
         category: 'pollution',
         priority: 2,
+        condition: this.residentialMedPollutionPct < this.residentialMedPollutionGoalPct,
+        progress: this.goalProgress(1 - this.residentialMedPollutionPct,
+          1 - this.residentialMedPollutionGoalPct),
       },
       {
         id: 'pollution-max',
         category: 'pollution',
         priority: 3,
+        condition: this.maxPollutionPct < this.maxPollutionGoalPct,
+        progress: this.goalProgress(1 - this.maxPollutionPct, 1 - this.maxPollutionGoalPct),
       },
     ];
   }

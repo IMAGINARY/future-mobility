@@ -2558,6 +2558,12 @@ class DataManager {
       source.calculate();
     });
   }
+
+  getGoals() {
+    return this.sources.reduce((acc, source) => {
+      return acc.concat(source.getGoals());
+    }, []);
+  }
 }
 
 module.exports = DataManager;
@@ -3282,4 +3288,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.ced271d4e85eff020d65.js.map
+//# sourceMappingURL=city.84c1db7c9c2582b5eaf4.js.map

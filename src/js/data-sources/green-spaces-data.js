@@ -11,6 +11,22 @@ class GreenSpacesData extends DataSource {
 
     this.areas = [];
     this.proximities = [];
+
+    this.numGreenSpaces = 0;
+    this.numGreenSpacesGoal = this.config.goals['green-spaces'].num || 20;
+
+    this.largeAreasSum = 0;
+    this.largeAreaThreshold = this.config.goals['green-spaces']['large-spaces-threshold'] || 3;
+    this.largeAreaSumGoal = this.config.goals['green-spaces']['large-spaces-area'] || 16;
+
+    this.medProximity = this.config.goals['green-spaces']['proximity-med'] || 5;
+    this.nearProximity = this.config.goals['green-spaces']['proximity-near'] || 3;
+    this.proximityGoalPercentage = this.config.goals['green-spaces']['proximity-goal-percentage'] || 0.75;
+
+    this.proximityThreshold = 0;
+    this.numMedProximity = 0;
+    this.numNearProximity = 0;
+
     this.index = 1;
   }
 
@@ -19,7 +35,6 @@ class GreenSpacesData extends DataSource {
       'green-spaces-areas': () => this.areas,
       'green-spaces-proximity': () => this.proximities,
       'green-spaces-index': () => this.index,
-      'green-spaces-goals': () => this.getGreenSpacesGoals(),
     };
   }
 
@@ -55,49 +70,59 @@ class GreenSpacesData extends DataSource {
     const waterTileId = getTileTypeId(this.config, 'water');
 
     // Sum of the areas of green spaces with area of 3 or more
-    const largeGreenSpaceArea = this.areas
-      .filter(area => area >= 3).reduce((total, area) => total + area, 0);
+    this.largeAreasSum = this.areas
+      .filter(area => area >= this.largeAreaThreshold)
+      .reduce((total, area) => total + area, 0);
 
     const tileTypeCount = this.city.map.frequencyDistribution();
-    const numGreenSpaces = (tileTypeCount[parkTileId] || 0)
+    this.numGreenSpaces = (tileTypeCount[parkTileId] || 0)
       + (tileTypeCount[waterTileId] || 0);
 
     // Check how many green spaces are within 5 and 3 tiles distance
     // from residential areas
-    let numUnder5 = 0;
-    let numUnder3 = 0;
+    this.numMedProximity = 0;
+    this.numNearProximity = 0;
     this.proximities.forEach((distance) => {
-      if (distance <= 5) {
-        numUnder5 += 1;
+      if (distance <= this.medProximity) {
+        this.numMedProximity += 1;
       }
-      if (distance <= 3) {
-        numUnder3 += 1;
+      if (distance <= this.nearProximity) {
+        this.numNearProximity += 1;
       }
     });
 
+    this.proximityThreshold = Math.floor(this.proximities.length * this.proximityGoalPercentage);
     this.index = 1
-      + (largeGreenSpaceArea > 16 ? 1 : 0)
-      + (numGreenSpaces > 10 ? 1 : 0)
-      + (numGreenSpaces > 20 && numUnder5 >= Math.floor(this.proximities.length * 0.75) ? 1 : 0)
-      + (numGreenSpaces > 30 && numUnder3 >= Math.floor(this.proximities.length * 0.75) ? 1 : 0);
+      + (this.largeAreasSum > this.largeAreaSumGoal ? 1 : 0)
+      + (this.numGreenSpaces > this.numGreenSpacesGoal ? 1 : 0)
+      + ((this.numGreenSpaces > this.numGreenSpacesGoal
+        && this.numMedProximity >= this.proximityThreshold) ? 1 : 0)
+      + ((this.numGreenSpaces > this.numGreenSpacesGoal
+        && this.numNearProximity >= this.proximityThreshold) ? 1 : 0);
   }
 
-  getGreenSpacesGoals() {
+  getGoals() {
     return [
       {
         id: 'green-spaces-count',
         category: 'green-spaces',
         priority: 1,
+        condition: this.numGreenSpaces > this.numGreenSpacesGoal,
+        progress: this.goalProgress(this.numGreenSpaces, this.numGreenSpacesGoal),
       },
       {
         id: 'green-spaces-large-spaces-area',
         category: 'green-spaces',
         priority: 2,
+        condition: this.largeAreasSum > this.largeAreaSumGoal,
+        progress: this.goalProgress(this.largeAreasSum, this.largeAreaSumGoal),
       },
       {
         id: 'green-spaces-proximity',
         category: 'green-spaces',
         priority: 3,
+        condition: this.numNearProximity >= this.proximityThreshold,
+        progress: this.goalProgress(this.numNearProximity, this.proximityThreshold),
       },
     ];
   }

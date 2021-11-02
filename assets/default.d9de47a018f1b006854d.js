@@ -5894,6 +5894,21 @@ function percentageOverValue(data, k) {
   return data.length > 0 ? numberOverValue(data, k) / data.length : 1;
 }
 
+function numberOverEqValue(data, k) {
+  let count = 0;
+  for (let i = 0; i < data.length; i += 1) {
+    if (data[i] >= k) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+function percentageOverEqValue(data, k) {
+  return data.length > 0 ? numberOverEqValue(data, k) / data.length : 1;
+}
+
 function numberEqualValue(data, k) {
   let count = 0;
   for (let i = 0; i < data.length; i += 1) {
@@ -5923,6 +5938,8 @@ module.exports = {
   percentageUnderValue,
   numberOverValue,
   percentageOverValue,
+  numberOverEqValue,
+  percentageOverEqValue,
   numberEqualValue,
   percentageEqualValue,
 };
@@ -7170,6 +7187,12 @@ class DataManager {
       source.calculate();
     });
   }
+
+  getGoals() {
+    return this.sources.reduce((acc, source) => {
+      return acc.concat(source.getGoals());
+    }, []);
+  }
 }
 
 module.exports = DataManager;
@@ -7201,6 +7224,18 @@ class DataSource {
    */
   calculate() {
   }
+
+  /**
+   * Gets the list of goals provided by this data source.
+   * @return {*[]}
+   */
+  getGoals() {
+    return [];
+  }
+
+  goalProgress(currValue, goal) {
+    return Math.max(0, Math.min(1, (currValue / goal) || 0));
+  }
 }
 
 module.exports = DataSource;
@@ -7227,6 +7262,22 @@ class GreenSpacesData extends DataSource {
 
     this.areas = [];
     this.proximities = [];
+
+    this.numGreenSpaces = 0;
+    this.numGreenSpacesGoal = this.config.goals['green-spaces'].num || 20;
+
+    this.largeAreasSum = 0;
+    this.largeAreaThreshold = this.config.goals['green-spaces']['large-spaces-threshold'] || 3;
+    this.largeAreaSumGoal = this.config.goals['green-spaces']['large-spaces-area'] || 16;
+
+    this.medProximity = this.config.goals['green-spaces']['proximity-med'] || 5;
+    this.nearProximity = this.config.goals['green-spaces']['proximity-near'] || 3;
+    this.proximityGoalPercentage = this.config.goals['green-spaces']['proximity-goal-percentage'] || 0.75;
+
+    this.proximityThreshold = 0;
+    this.numMedProximity = 0;
+    this.numNearProximity = 0;
+
     this.index = 1;
   }
 
@@ -7235,7 +7286,6 @@ class GreenSpacesData extends DataSource {
       'green-spaces-areas': () => this.areas,
       'green-spaces-proximity': () => this.proximities,
       'green-spaces-index': () => this.index,
-      'green-spaces-goals': () => this.getGreenSpacesGoals(),
     };
   }
 
@@ -7271,49 +7321,59 @@ class GreenSpacesData extends DataSource {
     const waterTileId = getTileTypeId(this.config, 'water');
 
     // Sum of the areas of green spaces with area of 3 or more
-    const largeGreenSpaceArea = this.areas
-      .filter(area => area >= 3).reduce((total, area) => total + area, 0);
+    this.largeAreasSum = this.areas
+      .filter(area => area >= this.largeAreaThreshold)
+      .reduce((total, area) => total + area, 0);
 
     const tileTypeCount = this.city.map.frequencyDistribution();
-    const numGreenSpaces = (tileTypeCount[parkTileId] || 0)
+    this.numGreenSpaces = (tileTypeCount[parkTileId] || 0)
       + (tileTypeCount[waterTileId] || 0);
 
     // Check how many green spaces are within 5 and 3 tiles distance
     // from residential areas
-    let numUnder5 = 0;
-    let numUnder3 = 0;
+    this.numMedProximity = 0;
+    this.numNearProximity = 0;
     this.proximities.forEach((distance) => {
-      if (distance <= 5) {
-        numUnder5 += 1;
+      if (distance <= this.medProximity) {
+        this.numMedProximity += 1;
       }
-      if (distance <= 3) {
-        numUnder3 += 1;
+      if (distance <= this.nearProximity) {
+        this.numNearProximity += 1;
       }
     });
 
+    this.proximityThreshold = Math.floor(this.proximities.length * this.proximityGoalPercentage);
     this.index = 1
-      + (largeGreenSpaceArea > 16 ? 1 : 0)
-      + (numGreenSpaces > 10 ? 1 : 0)
-      + (numGreenSpaces > 20 && numUnder5 >= Math.floor(this.proximities.length * 0.75) ? 1 : 0)
-      + (numGreenSpaces > 30 && numUnder3 >= Math.floor(this.proximities.length * 0.75) ? 1 : 0);
+      + (this.largeAreasSum > this.largeAreaSumGoal ? 1 : 0)
+      + (this.numGreenSpaces > this.numGreenSpacesGoal ? 1 : 0)
+      + ((this.numGreenSpaces > this.numGreenSpacesGoal
+        && this.numMedProximity >= this.proximityThreshold) ? 1 : 0)
+      + ((this.numGreenSpaces > this.numGreenSpacesGoal
+        && this.numNearProximity >= this.proximityThreshold) ? 1 : 0);
   }
 
-  getGreenSpacesGoals() {
+  getGoals() {
     return [
       {
         id: 'green-spaces-count',
         category: 'green-spaces',
         priority: 1,
+        condition: this.numGreenSpaces > this.numGreenSpacesGoal,
+        progress: this.goalProgress(this.numGreenSpaces, this.numGreenSpacesGoal),
       },
       {
         id: 'green-spaces-large-spaces-area',
         category: 'green-spaces',
         priority: 2,
+        condition: this.largeAreasSum > this.largeAreaSumGoal,
+        progress: this.goalProgress(this.largeAreasSum, this.largeAreaSumGoal),
       },
       {
         id: 'green-spaces-proximity',
         category: 'green-spaces',
         priority: 3,
+        condition: this.numNearProximity >= this.proximityThreshold,
+        progress: this.goalProgress(this.numNearProximity, this.proximityThreshold),
       },
     ];
   }
@@ -7333,92 +7393,109 @@ module.exports = GreenSpacesData;
 const DataSource = __webpack_require__(/*! ../data-source */ "./src/js/data-source.js");
 const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
 const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
-const { percentageEqualValue, percentageOverValue } = __webpack_require__(/*! ../aux/statistics */ "./src/js/aux/statistics.js");
+const { percentageEqualValue, percentageOverEqValue } = __webpack_require__(/*! ../aux/statistics */ "./src/js/aux/statistics.js");
 
 class NoiseData extends DataSource {
   constructor(city, config) {
     super();
     this.city = city;
     this.config = config;
-    this.data = Array2D.create(this.city.map.width, this.city.map.height);
+    this.noiseMap = Array2D.create(this.city.map.width, this.city.map.height);
+    this.noise = [];
+    this.residentialNoise = [];
+
+    this.maxLevel = this.config.goals.noise['max-noise-level'] || 1;
+    this.highLevel = this.config.goals.noise['high-noise-level'] || 0.5;
+    this.medLevel = this.config.goals.noise['med-noise-level'] || 0.25;
+
+    this.maxNoiseGoalPct = this.config.goals.noise['max-noise-goal-percentage'] || 0.05;
+    this.highNoiseGoalPct = this.config.goals.noise['high-noise-goal-percentage'] || 0.5;
+    this.residentialHighNoiseGoalPct = this.config.goals
+      .noise['residential-high-noise-goal-percentage'] || 0.5;
+    this.residentialMedNoiseGoalPct = this.config.goals
+      .noise['residential-med-noise-goal-percentage'] || 0.5;
+
+    this.maxNoisePct = 0;
+    this.highNoisePct = 0;
+    this.highNoiseResidentialPct = 0;
+    this.medNoiseResidentialPct = 0;
   }
 
   getVariables() {
     return {
-      noise: this.getNoise.bind(this),
-      'noise-residential': this.getResidentialNoise.bind(this),
-      'noise-map': this.getNoiseMap.bind(this),
-      'noise-index': this.getNoiseIndex.bind(this),
-      'noise-goals': () => this.getNoiseGoals(),
+      noise: () => this.noise,
+      'noise-residential': () => this.residentialNoise,
+      'noise-map': () => this.noiseMap,
+      'noise-index': () => this.getNoiseIndex(),
     };
   }
 
   calculate() {
-    Array2D.setAll(this.data, 0);
+    Array2D.setAll(this.noiseMap, 0);
     Array2D.forEach(this.city.map.cells, (v, x, y) => {
       const noise = (this.config.tileTypes[v] && this.config.tileTypes[v].noise) || 0;
       if (noise !== 0) {
-        this.data[y][x] += noise;
+        this.noiseMap[y][x] += noise;
         this.city.map.nearbyCoords(x, y, 1).forEach(([nx, ny]) => {
-          this.data[ny][nx] += noise * 0.5;
+          this.noiseMap[ny][nx] += noise * 0.5;
         });
       }
     });
-    Array2D.forEach(this.data, (v, x, y) => {
-      this.data[y][x] = Math.min(NoiseData.MaxValue, Math.max(NoiseData.MinValue, v));
+    Array2D.forEach(this.noiseMap, (v, x, y) => {
+      this.noiseMap[y][x] = Math.min(NoiseData.MaxValue, Math.max(NoiseData.MinValue, v));
     });
-  }
 
-  getNoiseMap() {
-    return this.data;
-  }
+    this.noise = Array2D.flatten(this.noiseMap);
 
-  getNoise() {
-    return Array2D.flatten(this.data);
-  }
-
-  getResidentialNoise() {
-    const answer = [];
-    const tileTypeId = getTileTypeId(this.config, 'residential');
-    Array2D.zip(this.city.map.cells, this.data, (tile, value) => {
-      if (tile === tileTypeId) {
-        answer.push(value);
+    this.residentialNoise = [];
+    const residentialTileId = getTileTypeId(this.config, 'residential');
+    Array2D.zip(this.city.map.cells, this.noiseMap, (tile, value) => {
+      if (tile === residentialTileId) {
+        this.residentialNoise.push(value);
       }
     });
-    return answer;
+
+    this.maxNoisePct = percentageEqualValue(this.noise, this.maxLevel);
+    this.highNoisePct = percentageOverEqValue(this.noise, this.highLevel);
+    this.highNoiseResidentialPct = percentageOverEqValue(this.residentialNoise, this.highLevel);
+    this.medNoiseResidentialPct = percentageOverEqValue(this.residentialNoise, this.medLevel);
   }
 
   getNoiseIndex() {
-    const cityData = this.getNoise();
-    const residentialData = this.getResidentialNoise();
-
     return 1
       // percentage of tiles with max noise under 5%
-      + (percentageEqualValue(cityData, 1) < 0.05 ? 1 : 0)
+      + (this.maxNoisePct < this.maxNoiseGoalPct ? 1 : 0)
       // percentage of tiles with noise 0.5 or more under 50%
-      + (percentageOverValue(cityData, 0.49) < 0.5 ? 1 : 0)
+      + (this.highNoisePct < this.highNoiseGoalPct ? 1 : 0)
       // percentage of residential tiles with noise 0.5 or more under 50%
-      + (percentageOverValue(residentialData, 0.49) < 0.5 ? 1 : 0)
+      + (this.highNoiseResidentialPct < this.residentialHighNoiseGoalPct ? 1 : 0)
       // percentage of residential tiles with noise 0.25 or more under 50%
-      + (percentageOverValue(residentialData, 0.25) < 0.5 ? 1 : 0);
+      + (this.medNoiseResidentialPct < this.residentialMedNoiseGoalPct ? 1 : 0);
   }
 
-  getNoiseGoals() {
+  getGoals() {
     return [
       {
         id: 'noise-city',
         category: 'noise',
         priority: 1,
+        condition: this.highNoisePct < this.highNoiseGoalPct,
+        progress: this.goalProgress(1 - this.highNoisePct, 1 - this.highNoiseGoalPct),
       },
       {
         id: 'noise-residential',
         category: 'noise',
         priority: 2,
+        condition: this.medNoiseResidentialPct < this.residentialMedNoiseGoalPct,
+        progress: this.goalProgress(1 - this.medNoiseResidentialPct,
+          1 - this.residentialMedNoiseGoalPct),
       },
       {
         id: 'noise-max',
         category: 'noise',
         priority: 3,
+        condition: this.maxNoisePct < this.maxNoiseGoalPct,
+        progress: this.goalProgress(1 - this.maxNoisePct, 1 - this.maxNoiseGoalPct),
       },
     ];
   }
@@ -7448,88 +7525,110 @@ class PollutionData extends DataSource {
     super();
     this.city = city;
     this.config = config;
-    this.data = Array2D.create(this.city.map.width, this.city.map.height);
+
+    this.pollutionMap = Array2D.create(this.city.map.width, this.city.map.height);
+    this.pollution = [];
+    this.residentialPollution = [];
+
+    this.maxLevel = this.config.goals.pollution['max-pollution-level'] || 1;
+    this.highLevel = this.config.goals.pollution['high-pollution-level'] || 0.3;
+    this.highResidentialLevel = this.config.goals.pollution['high-residential-pollution-level'] || 0.2;
+    this.medResidentialLevel = this.config.goals.pollution['med-residential-pollution-level'] || 0.1;
+
+    this.maxPollutionGoalPct = this.config.goals.pollution['max-pollution-goal-percentage'] || 0.05;
+    this.highPollutionGoalPct = this.config.goals.pollution['high-pollution-goal-percentage'] || 0.5;
+    this.residentialHighPollutionGoalPct = this.config.goals
+      .pollution['residential-high-pollution-goal-percentage'] || 0.5;
+    this.residentialMedPollutionGoalPct = this.config.goals
+      .pollution['residential-med-pollution-goal-percentage'] || 0.5;
+
+    this.maxPollutionPct = 0;
+    this.highPollutionPct = 0;
+    this.residentialHighPollutionPct = 0;
+    this.residentialMedPollutionPct = 0;
   }
 
   getVariables() {
     return {
-      pollution: this.getPollution.bind(this),
-      'pollution-residential': this.getResidentialPollution.bind(this),
-      'pollution-map': this.getPollutionMap.bind(this),
-      'pollution-index': this.getPollutionIndex.bind(this),
-      'pollution-goals': () => this.getPollutionGoals(),
+      pollution: () => this.pollution,
+      'pollution-residential': () => this.residentialPollution,
+      'pollution-map': () => this.pollutionMap,
+      'pollution-index': () => this.getPollutionIndex(),
     };
   }
 
   calculate() {
-    Array2D.setAll(this.data, 0);
+    Array2D.setAll(this.pollutionMap, 0);
     Array2D.forEach(this.city.map.cells, (v, x, y) => {
       const emissions = (this.config.tileTypes[v] && this.config.tileTypes[v].emissions) || 0;
       if (emissions !== 0) {
-        this.data[y][x] += emissions;
+        this.pollutionMap[y][x] += emissions;
         this.city.map.nearbyCoords(x, y, 1).forEach(([nx, ny]) => {
-          this.data[ny][nx] += emissions * 0.5;
+          this.pollutionMap[ny][nx] += emissions * 0.5;
         });
         this.city.map.nearbyCoords(x, y, 2).forEach(([nx, ny]) => {
-          this.data[ny][nx] += emissions * 0.25;
+          this.pollutionMap[ny][nx] += emissions * 0.25;
         });
       }
     });
-    Array2D.forEach(this.data, (v, x, y) => {
-      this.data[y][x] = Math.min(PollutionData.MaxValue, Math.max(PollutionData.MinValue, v));
+    Array2D.forEach(this.pollutionMap, (v, x, y) => {
+      this.pollutionMap[y][x] = Math.min(PollutionData.MaxValue,
+        Math.max(PollutionData.MinValue, v));
     });
-  }
 
-  getPollutionMap() {
-    return this.data;
-  }
+    this.pollution = Array2D.flatten(this.pollutionMap);
 
-  getPollution() {
-    return Array2D.flatten(this.data);
-  }
-
-  getResidentialPollution() {
-    const answer = [];
-    const tileTypeId = getTileTypeId(this.config, 'residential');
-    Array2D.zip(this.city.map.cells, this.data, (tile, value) => {
-      if (tile === tileTypeId) {
-        answer.push(value);
+    this.residentialPollution = [];
+    const residentialTileId = getTileTypeId(this.config, 'residential');
+    Array2D.zip(this.city.map.cells, this.pollutionMap, (tile, value) => {
+      if (tile === residentialTileId) {
+        this.residentialPollution.push(value);
       }
     });
-    return answer;
+
+    this.maxPollutionPct = percentageEqualValue(this.pollution, this.maxLevel);
+    this.highPollutionPct = percentageOverValue(this.pollution, this.highLevel);
+    this.residentialHighPollutionPct = percentageOverValue(this.residentialPollution,
+      this.highResidentialLevel);
+    this.residentialMedPollutionPct = percentageOverValue(this.residentialPollution,
+      this.medResidentialLevel);
   }
 
   getPollutionIndex() {
-    const cityData = this.getPollution();
-    const residentialData = this.getResidentialPollution();
-
     return 1
       // percentage of tiles with max pollution under 5%
-      + (percentageEqualValue(cityData, 1) < 0.05 ? 1 : 0)
+      + (this.maxPollutionPct < this.maxPollutionGoalPct ? 1 : 0)
       // percentage of tiles with pollution 0.3 or more under 50%
-      + (percentageOverValue(cityData, 0.3) < 0.5 ? 1 : 0)
+      + (this.highPollutionPct < this.highPollutionGoalPct ? 1 : 0)
       // percentage of residential tiles with pollution 0.2 or more under 50%
-      + (percentageOverValue(residentialData, 0.2) < 0.5 ? 1 : 0)
+      + (this.residentialHighPollutionPct < this.residentialHighPollutionGoalPct ? 1 : 0)
       // percentage of residential tiles with pollution 0.1 or more under 50%
-      + (percentageOverValue(residentialData, 0.1) < 0.5 ? 1 : 0);
+      + (this.residentialMedPollutionPct < this.residentialMedPollutionGoalPct ? 1 : 0);
   }
 
-  getPollutionGoals() {
+  getGoals() {
     return [
       {
         id: 'pollution-city',
         category: 'pollution',
         priority: 1,
+        condition: this.highPollutionPct < this.highPollutionGoalPct,
+        progress: this.goalProgress(1 - this.highPollutionPct, 1 - this.highPollutionGoalPct),
       },
       {
         id: 'pollution-residential',
         category: 'pollution',
         priority: 2,
+        condition: this.residentialMedPollutionPct < this.residentialMedPollutionGoalPct,
+        progress: this.goalProgress(1 - this.residentialMedPollutionPct,
+          1 - this.residentialMedPollutionGoalPct),
       },
       {
         id: 'pollution-max',
         category: 'pollution',
         priority: 3,
+        condition: this.maxPollutionPct < this.maxPollutionGoalPct,
+        progress: this.goalProgress(1 - this.maxPollutionPct, 1 - this.maxPollutionGoalPct),
       },
     ];
   }
@@ -7628,6 +7727,34 @@ class ZoneBalanceData extends DataSource {
       industrial: getTileTypeId(this.config, 'industrial'),
     };
 
+    this.idealPct = {
+      residential: this.config.goals['zone-balance']['ideal-residential-percentage'] || 0.5,
+      commercial: this.config.goals['zone-balance']['ideal-commercial-percentage'] || 0.25,
+      industrial: this.config.goals['zone-balance']['ideal-industrial-percentage'] || 0.25,
+    };
+
+    this.undervelopedPct = this.config.goals['zone-balance']['underdeveloped-percentage'] || 0.35;
+    this.overdevelopedPct = this.config.goals['zone-balance']['overdeveloped-percentage'] || 0.47;
+    this.acceptablePctDiff = this.config.goals['zone-balance']['acceptable-percentage-difference'] || 0.25;
+
+    this.amount = {
+      residential: 0,
+      commercial: 0,
+      industrial: 0,
+    };
+    this.underDevThreshold = {};
+    this.overDevThreshold = {};
+    const tileCount = this.city.map.width * this.city.map.height;
+
+    Object.keys(this.tileTypeIds).forEach((type) => {
+      this.underDevThreshold[type] = Math.round(
+        this.idealPct[type] * this.undervelopedPct * tileCount
+      );
+      this.overDevThreshold[type] = Math.round(
+        this.idealPct[type] * this.overdevelopedPct * tileCount
+      );
+    });
+
     this.percentage = {
       residential: 0,
       commercial: 0,
@@ -7653,17 +7780,19 @@ class ZoneBalanceData extends DataSource {
   }
 
   calculate() {
-    const total = Object.keys(this.tileTypeIds)
-      .reduce((sum, type) => sum
-        + this.city.stats.get(`zones-${type}-count`), 0);
+    Object.keys(this.tileTypeIds).forEach((type) => {
+      this.amount[type] = this.city.stats.get(`zones-${type}-count`);
+    });
+
+    const total = Object.values(this.amount)
+      .reduce((value, sum) => sum + value, 0);
 
     Object.keys(this.tileTypeIds).forEach((type) => {
-      this.percentage[type] = total === 0 ? ZoneBalanceData.IdealPercentage[type]
+      this.percentage[type] = total === 0 ? this.idealPct[type]
         : (this.city.stats.get(`zones-${type}-count`) / total);
 
       this.difference[type] = Math.min(
-        (this.percentage[type] - ZoneBalanceData.IdealPercentage[type])
-          / ZoneBalanceData.IdealPercentage[type],
+        (this.percentage[type] - this.idealPct[type]) / this.idealPct[type],
         1
       );
     });
@@ -7675,26 +7804,59 @@ class ZoneBalanceData extends DataSource {
         id: 'zone-balance-r-low',
         category: 'zone-balance',
         priority: 1,
+        condition: this.amount.residential >= this.underDevThreshold.residential,
+        progress:
+          (this.amount.residential >= this.underDevThreshold.residential)
+          || this.goalProgress(1 + this.difference.residential, 1 - this.acceptablePctDiff),
       },
       {
         id: 'zone-balance-i-low',
         category: 'zone-balance',
         priority: 1,
+        condition: this.amount.industrial >= this.underDevThreshold.industrial,
+        progress:
+          (this.amount.industrial >= this.underDevThreshold.industrial)
+          || this.goalProgress(1 + this.difference.industrial, 1 - this.acceptablePctDiff),
       },
       {
         id: 'zone-balance-c-low',
         category: 'zone-balance',
         priority: 1,
+        condition: this.amount.commercial >= this.underDevThreshold.commercial,
+        progress:
+          (this.amount.commercial >= this.underDevThreshold.commercial)
+          || this.goalProgress(1 + this.difference.commercial, 1 - this.acceptablePctDiff),
+      },
+      {
+        id: 'zone-balance-r-high',
+        category: 'zone-balance',
+        priority: 2,
+        condition: this.amount.residential <= this.overDevThreshold.residential,
+        progress:
+          (this.amount.residential <= this.overDevThreshold.residential)
+          || this.goalProgress(1 - this.difference.residential, 1 - this.acceptablePctDiff),
+      },
+      {
+        id: 'zone-balance-i-high',
+        category: 'zone-balance',
+        priority: 2,
+        condition: this.amount.industrial <= this.overDevThreshold.industrial,
+        progress:
+          (this.amount.industrial <= this.overDevThreshold.industrial)
+          || this.goalProgress(1 - this.difference.industrial, 1 - this.acceptablePctDiff),
+      },
+      {
+        id: 'zone-balance-c-high',
+        category: 'zone-balance',
+        priority: 2,
+        condition: this.amount.commercial <= this.overDevThreshold.commercial,
+        progress:
+          (this.amount.commercial <= this.overDevThreshold.commercial)
+          || this.goalProgress(1 - this.difference.commercial, 1 - this.acceptablePctDiff),
       },
     ];
   }
 }
-
-ZoneBalanceData.IdealPercentage = {
-  residential: 0.5,
-  commercial: 0.25,
-  industrial: 0.25,
-};
 
 module.exports = ZoneBalanceData;
 
@@ -8381,6 +8543,57 @@ class ObjectStore {
 }
 
 module.exports = ObjectStore;
+
+
+/***/ }),
+
+/***/ "./src/js/goal-debug-view.js":
+/*!***********************************!*\
+  !*** ./src/js/goal-debug-view.js ***!
+  \***********************************/
+/***/ ((module) => {
+
+class GoalDebugView {
+  constructor(goals) {
+    this.$element = $('<div></div>')
+      .addClass('goal-debug');
+
+    this.progress = Object.fromEntries(
+      goals.map(goal => [goal.id, $('<span></span>')
+        .addClass('goal-progress')])
+    );
+
+    this.items = Object.fromEntries(
+      goals.map(goal => [goal.id, $('<div></div>')
+        .append($('<span></span>').addClass('id').text(goal.id))
+        .append(this.progress[goal.id])
+        .appendTo(this.$element)])
+    );
+
+    this.values = Object.fromEntries(
+      goals.map(goal => [goal.id, {
+        met: null,
+        progress: null,
+      }])
+    );
+  }
+
+  setValues(goals) {
+    goals.forEach((goal) => {
+      if (this.values[goal.id].met !== goal.condition) {
+        this.values[goal.id].met = goal.condition;
+        this.items[goal.id].removeClass();
+        this.items[goal.id].addClass(goal.condition ? 'text-success' : 'text-danger');
+      }
+      if (this.values[goal.id].progress !== goal.progress) {
+        this.values[goal.id].progress = goal.progress;
+        this.progress[goal.id].text(` (${Math.round(goal.progress * 100)}%)`);
+      }
+    });
+  }
+}
+
+module.exports = GoalDebugView;
 
 
 /***/ }),
@@ -9381,6 +9594,7 @@ const GreenSpacesData = __webpack_require__(/*! ./data-sources/green-spaces-data
 const TravelTimesData = __webpack_require__(/*! ./data-sources/travel-times-data */ "./src/js/data-sources/travel-times-data.js");
 const ZoningData = __webpack_require__(/*! ./data-sources/zoning-data */ "./src/js/data-sources/zoning-data.js");
 const ZoneBalanceData = __webpack_require__(/*! ./data-sources/zone-balance-data */ "./src/js/data-sources/zone-balance-data.js");
+const GoalDebugView = __webpack_require__(/*! ./goal-debug-view */ "./src/js/goal-debug-view.js");
 
 
 const qs = new URLSearchParams(window.location.search);
@@ -9391,6 +9605,7 @@ cfgLoader.load([
   'config/city.yml',
   'config/tiles.yml',
   'config/variables.yml',
+  'config/goals.yml',
   'config/cars.yml',
   './settings.yml',
 ])
@@ -9525,6 +9740,9 @@ cfgLoader.load([
       });
       window.variableRankListView = variableRankListView;
 
+      const goalDebugView = new GoalDebugView(city.stats.getGoals());
+      $('[data-component="goal-debug-container"]').append(goalDebugView.$element);
+
       let indexesDirty = true;
       let indexesCooldownTimer = null;
       const indexesCooldownTime = 1000;
@@ -9537,6 +9755,7 @@ cfgLoader.load([
             pollution: city.stats.get('pollution-index'),
             noise: city.stats.get('noise-index'),
           });
+          goalDebugView.setValues(city.stats.getGoals());
           indexesDirty = false;
           indexesCooldownTimer = setTimeout(() => {
             indexesCooldownTimer = null;
@@ -9545,6 +9764,7 @@ cfgLoader.load([
             }
           }, indexesCooldownTime);
         }
+
       }
 
       city.map.events.on('update', () => {
@@ -9568,4 +9788,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.d3dd3da7d51ab0e10b82.js.map
+//# sourceMappingURL=default.d9de47a018f1b006854d.js.map

@@ -1,0 +1,59 @@
+goals:
+  green-spaces:
+    # Number of green spaces a city should have (at least)
+    num: 20
+    # Minimum number of tiles a green space needs to have to qualify as "large"
+    large-spaces-threshold: 3
+    # Total area of large green spaces a city should have (at least)
+    large-spaces-area: 16
+    # Distance (in tiles) a park needs to be from a residential area to qualify as "medium" proximity.
+    proximity-med: 5
+    # Distance (in tiles) a park needs to be from a residential area to qualify as "near" proximity.
+    proximity-near: 3
+    # Percentage of residential areas that need to be closer than the threshold (as fraction, 1 = 100%).
+    proximity-goal-percentage: 0.75
+  noise:
+    # Maximum noise level (in [0,1])
+    max-noise-level: 1
+    # High noise level (in [0,1])
+    high-noise-level: 0.5
+    # Medium noise level (in [0,1])
+    med-noise-level: 0.25
+    # Maximum percentage of tiles that can have noise level above the max noise level (as fraction, 1 = 100%).
+    max-noise-goal-percentage: 0.05
+    # Maximum percentage of tiles that can have noise level above the high noise level (as fraction, 1 = 100%).
+    high-noise-goal-percentage: 0.5
+    # Maximum percentage of residential areas that can have noise level above the high noise level (as fraction, 1 = 100%).
+    residential-high-noise-goal-percentage: 0.5
+    # Maximum percentage of residential areas that can have noise level above the med noise level (as fraction, 1 = 100%).
+    residential-med-noise-goal-percentage: 0.5
+  pollution:
+    # Maximum pollution level (in [0,1])
+    max-pollution-level: 1
+    # High pollution level (in [0,1])
+    high-pollution-level: 0.3
+    # High residential pollution level (in [0,1])
+    high-residential-pollution-level: 0.2
+    # Medium residential pollution level (in [0,1])
+    med-residential-pollution-level: 0.1
+    # Maximum percentage of tiles that can have pollution level above the max pollution level (as fraction, 1 = 100%).
+    max-pollution-goal-percentage: 0.05
+    # Maximum percentage of tiles that can have pollution level above the high pollution level (as fraction, 1 = 100%).
+    high-pollution-goal-percentage: 0.5
+    # Maximum percentage of residential areas that can have pollution level above the high pollution level (as fraction, 1 = 100%).
+    residential-high-pollution-goal-percentage: 0.5
+    # Maximum percentage of residential areas that can have pollution level above the med pollution level (as fraction, 1 = 100%).
+    residential-med-pollution-goal-percentage: 0.5
+  zone-balance:
+    # Percentage of zoned areas that should (ideally) be residential
+    ideal-residential-percentage: 0.5
+    # Percentage of zoned areas that should (ideally) be commercial
+    ideal-commercial-percentage: 0.25
+    # Percentage of zoned areas that should (ideally) be industrial
+    ideal-industrial-percentage: 0.25
+    # Minimum percentage of tiles that should be zoned areas
+    underdeveloped-percentage: 0.35
+    # Maximum percentage of tiles that should be zoned areas
+    overdeveloped-percentage: 0.47
+    # Difference from the ideal percentage that is acceptable (as fraction, 1 = 100%).
+    acceptable-percentage-difference: 0.25

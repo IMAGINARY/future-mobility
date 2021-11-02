@@ -18,6 +18,7 @@ const GreenSpacesData = require('./data-sources/green-spaces-data');
 const TravelTimesData = require('./data-sources/travel-times-data');
 const ZoningData = require('./data-sources/zoning-data');
 const ZoneBalanceData = require('./data-sources/zone-balance-data');
+const GoalDebugView = require('./goal-debug-view');
 
 
 const qs = new URLSearchParams(window.location.search);
@@ -28,6 +29,7 @@ cfgLoader.load([
   'config/city.yml',
   'config/tiles.yml',
   'config/variables.yml',
+  'config/goals.yml',
   'config/cars.yml',
   './settings.yml',
 ])
@@ -162,6 +164,9 @@ cfgLoader.load([
       });
       window.variableRankListView = variableRankListView;
 
+      const goalDebugView = new GoalDebugView(city.stats.getGoals());
+      $('[data-component="goal-debug-container"]').append(goalDebugView.$element);
+
       let indexesDirty = true;
       let indexesCooldownTimer = null;
       const indexesCooldownTime = 1000;
@@ -174,6 +179,7 @@ cfgLoader.load([
             pollution: city.stats.get('pollution-index'),
             noise: city.stats.get('noise-index'),
           });
+          goalDebugView.setValues(city.stats.getGoals());
           indexesDirty = false;
           indexesCooldownTimer = setTimeout(() => {
             indexesCooldownTimer = null;
@@ -182,6 +188,7 @@ cfgLoader.load([
             }
           }, indexesCooldownTime);
         }
+
       }
 
       city.map.events.on('update', () => {

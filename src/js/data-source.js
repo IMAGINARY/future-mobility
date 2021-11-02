@@ -16,6 +16,18 @@ class DataSource {
    */
   calculate() {
   }
+
+  /**
+   * Gets the list of goals provided by this data source.
+   * @return {*[]}
+   */
+  getGoals() {
+    return [];
+  }
+
+  goalProgress(currValue, goal) {
+    return Math.max(0, Math.min(1, (currValue / goal) || 0));
+  }
 }
 
 module.exports = DataSource;

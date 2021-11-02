@@ -22,6 +22,7 @@ cfgLoader.load([
   '../config/city.yml',
   '../config/tiles.yml',
   '../config/variables.yml',
+  '../config/goals.yml',
   '../config/cars.yml',
   settingsFile,
 ])
