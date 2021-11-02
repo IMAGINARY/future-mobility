@@ -1,5 +1,6 @@
 /* globals describe, it, expect, beforeAll */
 
+const yaml = require('js-yaml');
 const request = require('supertest');
 const initApp = require('../app');
 const CfgLoader = require('../../src/js/cfg-loader');
@@ -8,7 +9,7 @@ const CfgReaderFile = require('../../src/js/cfg-reader-file');
 let app = null;
 
 beforeAll(() => {
-  const cfgLoader = new CfgLoader(CfgReaderFile);
+  const cfgLoader = new CfgLoader(CfgReaderFile, yaml.load);
   return cfgLoader.load([
     '../config/city.yml',
     '../config/tiles.yml',

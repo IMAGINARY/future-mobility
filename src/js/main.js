@@ -1,4 +1,5 @@
 /* globals PIXI */
+const yaml = require('js-yaml');
 const CfgReaderFetch = require('./cfg-reader-fetch');
 const CfgLoader = require('./cfg-loader');
 const City = require('./city');
@@ -24,7 +25,7 @@ const GoalDebugView = require('./goal-debug-view');
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
 
-const cfgLoader = new CfgLoader(CfgReaderFetch);
+const cfgLoader = new CfgLoader(CfgReaderFetch, yaml.load);
 cfgLoader.load([
   'config/city.yml',
   'config/tiles.yml',

@@ -6949,13 +6949,12 @@ module.exports = TrafficLights;
 /*!******************************!*\
   !*** ./src/js/cfg-loader.js ***!
   \******************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const yaml = __webpack_require__(/*! js-yaml */ "./node_modules/js-yaml/index.js");
+/***/ ((module) => {
 
 class CfgLoader {
-  constructor(cfgReader) {
+  constructor(cfgReader, cfgParser) {
     this.reader = cfgReader;
+    this.parser = cfgParser;
   }
 
   async load(files) {
@@ -6965,7 +6964,7 @@ class CfgLoader {
     files.forEach((file, i) => {
       promises.push(
         this.reader(file)
-          .then(cfgText => yaml.load(cfgText))
+          .then(cfgText => this.parser(cfgText))
           .then((cfgSegment) => {
             // We keep the segments in order
             segments[i] = cfgSegment;
@@ -9575,6 +9574,7 @@ var __webpack_exports__ = {};
   !*** ./src/js/main.js ***!
   \************************/
 /* globals PIXI */
+const yaml = __webpack_require__(/*! js-yaml */ "./node_modules/js-yaml/index.js");
 const CfgReaderFetch = __webpack_require__(/*! ./cfg-reader-fetch */ "./src/js/cfg-reader-fetch.js");
 const CfgLoader = __webpack_require__(/*! ./cfg-loader */ "./src/js/cfg-loader.js");
 const City = __webpack_require__(/*! ./city */ "./src/js/city.js");
@@ -9600,7 +9600,7 @@ const GoalDebugView = __webpack_require__(/*! ./goal-debug-view */ "./src/js/goa
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
 
-const cfgLoader = new CfgLoader(CfgReaderFetch);
+const cfgLoader = new CfgLoader(CfgReaderFetch, yaml.load);
 cfgLoader.load([
   'config/city.yml',
   'config/tiles.yml',
@@ -9788,4 +9788,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.d9de47a018f1b006854d.js.map
+//# sourceMappingURL=default.f6d431688dd2c999a4aa.js.map

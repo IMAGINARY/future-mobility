@@ -1,4 +1,5 @@
 /* globals describe, it, expect, beforeEach, afterEach, beforeAll */
+const yaml = require('js-yaml');
 const WebSocket = require('ws');
 const createServer = require('../server');
 const CfgLoader = require('../../src/js/cfg-loader');
@@ -9,7 +10,7 @@ const TEST_PORT = 3012;
 let config = null;
 
 beforeAll(() => {
-  const cfgLoader = new CfgLoader(CfgReaderFile);
+  const cfgLoader = new CfgLoader(CfgReaderFile, yaml.load);
   return cfgLoader.load([
     '../config/city.yml',
     '../config/tiles.yml',

@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 const yargs = require('yargs');
+const yaml = require('js-yaml');
 const { hideBin } = require('yargs/helpers');
 const createServer = require('./server');
 const CfgLoader = require('../src/js/cfg-loader');
@@ -17,7 +18,7 @@ const { port, settingsFile } = yargs(hideBin(process.argv))
   })
   .argv;
 
-const cfgLoader = new CfgLoader(CfgReaderFile);
+const cfgLoader = new CfgLoader(CfgReaderFile, yaml.load);
 cfgLoader.load([
   '../config/city.yml',
   '../config/tiles.yml',

@@ -1,8 +1,7 @@
-const yaml = require('js-yaml');
-
 class CfgLoader {
-  constructor(cfgReader) {
+  constructor(cfgReader, cfgParser) {
     this.reader = cfgReader;
+    this.parser = cfgParser;
   }
 
   async load(files) {
@@ -12,7 +11,7 @@ class CfgLoader {
     files.forEach((file, i) => {
       promises.push(
         this.reader(file)
-          .then(cfgText => yaml.load(cfgText))
+          .then(cfgText => this.parser(cfgText))
           .then((cfgSegment) => {
             // We keep the segments in order
             segments[i] = cfgSegment;
