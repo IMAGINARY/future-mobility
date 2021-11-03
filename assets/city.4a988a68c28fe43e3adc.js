@@ -2401,16 +2401,10 @@ module.exports = TrafficLights;
 
 const Grid = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
 const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
-const DataManager = __webpack_require__(/*! ./data-manager */ "./src/js/data-manager.js");
 
 class City {
   constructor(width, height, cells = null) {
     this.map = new Grid(width, height, cells);
-    this.stats = new DataManager();
-
-    this.map.events.on('update', () => {
-      this.stats.calculateAll();
-    });
   }
 
   toJSON() {
@@ -2505,68 +2499,6 @@ class ConnectionStateView {
 }
 
 module.exports = ConnectionStateView;
-
-
-/***/ }),
-
-/***/ "./src/js/data-manager.js":
-/*!********************************!*\
-  !*** ./src/js/data-manager.js ***!
-  \********************************/
-/***/ ((module) => {
-
-class DataManager {
-  constructor() {
-    this.sources = [];
-    this.variables = {};
-  }
-
-  /**
-   * Add a new data source to the data manager.
-   *
-   * @param {DataSource} dataSource
-   */
-  registerSource(dataSource) {
-    if (this.sources.includes(dataSource)) {
-      throw new Error(`Source ${dataSource.constructor.name} already registered.`);
-    }
-    this.sources.push(dataSource);
-
-    Object.entries(dataSource.getVariables()).forEach(([id, callback]) => {
-      if (this.variables[id] !== undefined) {
-        throw new Error(`Source ${dataSource.constructor.name} registering already registered variable ${id}.`);
-      }
-      this.variables[id] = callback;
-    });
-  }
-
-  /**
-   * Get the value of a variable.
-   *
-   * @param {string} variableId
-   * @return {*}
-   */
-  get(variableId) {
-    if (this.variables[variableId] === undefined) {
-      throw new Error(`Requested unknown variable ${variableId}.`);
-    }
-    return this.variables[variableId]();
-  }
-
-  calculateAll() {
-    this.sources.forEach((source) => {
-      source.calculate();
-    });
-  }
-
-  getGoals() {
-    return this.sources.reduce((acc, source) => {
-      return acc.concat(source.getGoals());
-    }, []);
-  }
-}
-
-module.exports = DataManager;
 
 
 /***/ }),
@@ -3063,6 +2995,9 @@ class ServerSocketConnector {
     if (message.type === 'map_update') {
       this.events.emit('map_update', message.cells);
     }
+    else if (message.type === 'vars_update') {
+      this.events.emit('vars_update', message.variables);
+    }
     else if (message.type === 'pong') {
       this.handlePong();
     }
@@ -3124,6 +3059,10 @@ class ServerSocketConnector {
       type: 'set_map',
       cells,
     });
+  }
+
+  getVars() {
+    this.send('get_vars');
   }
 }
 
@@ -3288,4 +3227,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.84c1db7c9c2582b5eaf4.js.map
+//# sourceMappingURL=city.4a988a68c28fe43e3adc.js.map

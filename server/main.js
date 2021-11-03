@@ -25,6 +25,7 @@ cfgLoader.load([
   '../config/variables.yml',
   '../config/goals.yml',
   '../config/cars.yml',
+  '../config/default-settings.yml',
   settingsFile,
 ])
   .catch((err) => {

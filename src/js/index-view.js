@@ -23,7 +23,6 @@ class IndexView {
       }
       this.value = value;
       this.$element.addClass(`value-${this.value}`);
-      this.$valueElement.text(value);
     }
   }
 }

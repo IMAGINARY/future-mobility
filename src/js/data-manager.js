@@ -1,7 +1,14 @@
+const EventEmitter = require('events');
+
 class DataManager {
-  constructor() {
+  constructor(userOptions = {}) {
+    this.options = Object.assign({}, DataManager.DefaultOptions, userOptions);
     this.sources = [];
     this.variables = {};
+    this.events = new EventEmitter();
+
+    this.calculationPending = false;
+    this.cooldownTimer = null;
   }
 
   /**
@@ -14,6 +21,7 @@ class DataManager {
       throw new Error(`Source ${dataSource.constructor.name} already registered.`);
     }
     this.sources.push(dataSource);
+    dataSource.dataManager = this;
 
     Object.entries(dataSource.getVariables()).forEach(([id, callback]) => {
       if (this.variables[id] !== undefined) {
@@ -36,17 +44,34 @@ class DataManager {
     return this.variables[variableId]();
   }
 
+  throttledCalculateAll() {
+    this.calculationPending = true;
+    if (this.cooldownTimer === null) {
+      this.cooldownTimer = setTimeout(() => {
+        this.cooldownTimer = null;
+        if (this.calculationPending) {
+          this.throttledCalculateAll();
+        }
+      }, this.options.throttleTime);
+      this.calculateAll();
+      this.calculationPending = false;
+    }
+  }
+
   calculateAll() {
     this.sources.forEach((source) => {
       source.calculate();
     });
+    this.events.emit('update');
   }
 
   getGoals() {
-    return this.sources.reduce((acc, source) => {
-      return acc.concat(source.getGoals());
-    }, []);
+    return this.sources.reduce((acc, source) => acc.concat(source.getGoals()), []);
   }
 }
+
+DataManager.DefaultOptions = {
+  throttleTime: 1000,
+};
 
 module.exports = DataManager;

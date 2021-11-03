@@ -287,13 +287,13 @@ body > .tile-counter {
     margin-bottom: 0.75em; }
     .index-list .index .description {
       display: inline-block;
-      width: calc(100% - (80px));
+      width: calc(100% - (5em));
       text-overflow: clip;
       background-repeat: no-repeat;
       background-position: left center;
-      background-size: 40px 40px;
-      padding-left: 60px;
-      min-height: 40px; }
+      background-size: 2.5em 2.5em;
+      padding-left: 3.75em;
+      min-height: 2.5em; }
       .index-list .index .description .name {
         font-weight: bold; }
       .index-list .index .description .name-tr {
@@ -302,19 +302,18 @@ body > .tile-counter {
       position: relative;
       display: inline-block;
       vertical-align: top;
-      margin-top: -8px;
-      font-size: 0;
-      width: 60px;
-      height: 60px;
-      margin-left: 20px; }
+      margin-top: -0.5em;
+      width: 3.75em;
+      height: 3.75em;
+      margin-left: 1.25em; }
       .index-list .index .value:before {
         content: " ";
         display: block;
         position: absolute;
-        width: 40px;
-        height: 40px;
-        top: 10px;
-        left: 10px;
+        width: 2.5em;
+        height: 2.5em;
+        top: 0.625em;
+        left: 0.625em;
         border-radius: 50%;
         background-color: transparent;
         transition: background-color 0.5s; }
@@ -325,8 +324,8 @@ body > .tile-counter {
         background-size: contain;
         background-repeat: no-repeat;
         background-position: center left;
-        width: 60px;
-        height: 60px; }
+        width: 3.75em;
+        height: 3.75em; }
     .index-list .index.value-0 .description {
       opacity: 0.5; }
     .index-list .index.value-0 .value:before {
@@ -367,5 +366,10 @@ body > .tile-counter {
   .index-list .index-green-spaces .description {
     background-image: url(1046d3ab27581bd9a7ba.svg); }
 
+body.dashboard {
+  background-color: #fff; }
+  body.dashboard .index-list {
+    font-size: 1.9em; }
 
-/*# sourceMappingURL=city.ddb1ec692c597f1c743a.css.map*/
+
+/*# sourceMappingURL=dashboard.6c7895b631f4b7f5b051.css.map*/

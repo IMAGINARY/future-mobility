@@ -20,6 +20,7 @@ const TravelTimesData = require('./data-sources/travel-times-data');
 const ZoningData = require('./data-sources/zoning-data');
 const ZoneBalanceData = require('./data-sources/zone-balance-data');
 const GoalDebugView = require('./goal-debug-view');
+const DataManager = require('./data-manager');
 
 
 const qs = new URLSearchParams(window.location.search);
@@ -32,6 +33,7 @@ cfgLoader.load([
   'config/variables.yml',
   'config/goals.yml',
   'config/cars.yml',
+  'config/default-settings.yml',
   './settings.yml',
 ])
   .catch((err) => {
@@ -44,12 +46,16 @@ cfgLoader.load([
       ? City.fromJSON(testScenario.city)
       : new City(config.cityWidth, config.cityHeight);
 
-    city.stats.registerSource(new ZoningData(city, config));
-    city.stats.registerSource(new ZoneBalanceData(city, config));
-    city.stats.registerSource(new PollutionData(city, config));
-    city.stats.registerSource(new NoiseData(city, config));
-    city.stats.registerSource(new GreenSpacesData(city, config));
-    city.stats.registerSource(new TravelTimesData(city, config));
+    const stats = new DataManager();
+    stats.registerSource(new ZoningData(city, config));
+    stats.registerSource(new ZoneBalanceData(city, config));
+    stats.registerSource(new PollutionData(city, config));
+    stats.registerSource(new NoiseData(city, config));
+    stats.registerSource(new GreenSpacesData(city, config));
+    stats.registerSource(new TravelTimesData(city, config));
+    city.map.events.on('update', () => {
+      stats.calculateAll();
+    });
 
     const app = new PIXI.Application({
       width: 3840,
@@ -100,18 +106,18 @@ cfgLoader.load([
       noiseVarViewer.displayObject.x = 1920 + 40;
       noiseVarViewer.displayObject.y = 960;
 
-      city.map.events.on('update', () => {
-        emissionsVarViewer.update(city.stats.get('pollution-map'));
-        noiseVarViewer.update(city.stats.get('noise-map'));
+      stats.events.on('update', () => {
+        emissionsVarViewer.update(stats.get('pollution-map'));
+        noiseVarViewer.update(stats.get('noise-map'));
       });
 
       const counterPane = $('<div></div>').addClass('counters');
       $('body').append(counterPane);
 
-      const counterView = new TileCounterView(city, config);
+      const counterView = new TileCounterView(stats, config);
       counterPane.append(counterView.$element);
 
-      const zoneBalanceView = new ZoneBalanceView(city, config);
+      const zoneBalanceView = new ZoneBalanceView(stats, config);
       counterPane.append(zoneBalanceView.$element);
 
       const dataInspectorView = new DataInspectorView();
@@ -143,7 +149,7 @@ cfgLoader.load([
           .on('click', () => {
             const varName = varSelector.val();
             const varData = typeof variables[varName] === 'string'
-              ? city.stats.get(variables[varName]) : variables[varName].calculate();
+              ? stats.get(variables[varName]) : variables[varName].calculate();
             dataInspectorView.display({
               title: varName,
               values: varData,
@@ -165,7 +171,7 @@ cfgLoader.load([
       });
       window.variableRankListView = variableRankListView;
 
-      const goalDebugView = new GoalDebugView(city.stats.getGoals());
+      const goalDebugView = new GoalDebugView(stats.getGoals());
       $('[data-component="goal-debug-container"]').append(goalDebugView.$element);
 
       let indexesDirty = true;
@@ -176,11 +182,11 @@ cfgLoader.load([
         indexesDirty = true;
         if (indexesCooldownTimer === null) {
           variableRankListView.setValues({
-            'green-spaces': city.stats.get('green-spaces-index'),
-            pollution: city.stats.get('pollution-index'),
-            noise: city.stats.get('noise-index'),
+            'green-spaces': stats.get('green-spaces-index'),
+            pollution: stats.get('pollution-index'),
+            noise: stats.get('noise-index'),
           });
-          goalDebugView.setValues(city.stats.getGoals());
+          goalDebugView.setValues(stats.getGoals());
           indexesDirty = false;
           indexesCooldownTimer = setTimeout(() => {
             indexesCooldownTimer = null;
@@ -189,10 +195,9 @@ cfgLoader.load([
             }
           }, indexesCooldownTime);
         }
-
       }
 
-      city.map.events.on('update', () => {
+      stats.events.on('update', () => {
         recalculateIndexes();
       });
       recalculateIndexes();

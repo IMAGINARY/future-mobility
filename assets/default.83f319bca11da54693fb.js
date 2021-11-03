@@ -7005,16 +7005,10 @@ module.exports = CfgReaderFetch;
 
 const Grid = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
 const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
-const DataManager = __webpack_require__(/*! ./data-manager */ "./src/js/data-manager.js");
 
 class City {
   constructor(width, height, cells = null) {
     this.map = new Grid(width, height, cells);
-    this.stats = new DataManager();
-
-    this.map.events.on('update', () => {
-      this.stats.calculateAll();
-    });
   }
 
   toJSON() {
@@ -7141,12 +7135,19 @@ module.exports = DataInspectorView;
 /*!********************************!*\
   !*** ./src/js/data-manager.js ***!
   \********************************/
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
 
 class DataManager {
-  constructor() {
+  constructor(userOptions = {}) {
+    this.options = Object.assign({}, DataManager.DefaultOptions, userOptions);
     this.sources = [];
     this.variables = {};
+    this.events = new EventEmitter();
+
+    this.calculationPending = false;
+    this.cooldownTimer = null;
   }
 
   /**
@@ -7159,6 +7160,7 @@ class DataManager {
       throw new Error(`Source ${dataSource.constructor.name} already registered.`);
     }
     this.sources.push(dataSource);
+    dataSource.dataManager = this;
 
     Object.entries(dataSource.getVariables()).forEach(([id, callback]) => {
       if (this.variables[id] !== undefined) {
@@ -7181,18 +7183,35 @@ class DataManager {
     return this.variables[variableId]();
   }
 
+  throttledCalculateAll() {
+    this.calculationPending = true;
+    if (this.cooldownTimer === null) {
+      this.cooldownTimer = setTimeout(() => {
+        this.cooldownTimer = null;
+        if (this.calculationPending) {
+          this.throttledCalculateAll();
+        }
+      }, this.options.throttleTime);
+      this.calculateAll();
+      this.calculationPending = false;
+    }
+  }
+
   calculateAll() {
     this.sources.forEach((source) => {
       source.calculate();
     });
+    this.events.emit('update');
   }
 
   getGoals() {
-    return this.sources.reduce((acc, source) => {
-      return acc.concat(source.getGoals());
-    }, []);
+    return this.sources.reduce((acc, source) => acc.concat(source.getGoals()), []);
   }
 }
+
+DataManager.DefaultOptions = {
+  throttleTime: 1000,
+};
 
 module.exports = DataManager;
 
@@ -7780,7 +7799,7 @@ class ZoneBalanceData extends DataSource {
 
   calculate() {
     Object.keys(this.tileTypeIds).forEach((type) => {
-      this.amount[type] = this.city.stats.get(`zones-${type}-count`);
+      this.amount[type] = this.dataManager.get(`zones-${type}-count`);
     });
 
     const total = Object.values(this.amount)
@@ -7788,7 +7807,7 @@ class ZoneBalanceData extends DataSource {
 
     Object.keys(this.tileTypeIds).forEach((type) => {
       this.percentage[type] = total === 0 ? this.idealPct[type]
-        : (this.city.stats.get(`zones-${type}-count`) / total);
+        : (this.dataManager.get(`zones-${type}-count`) / total);
 
       this.difference[type] = Math.min(
         (this.percentage[type] - this.idealPct[type]) / this.idealPct[type],
@@ -8883,7 +8902,6 @@ class IndexView {
       }
       this.value = value;
       this.$element.addClass(`value-${this.value}`);
-      this.$valueElement.text(value);
     }
   }
 }
@@ -9324,11 +9342,11 @@ module.exports = {
 /***/ ((module) => {
 
 class TileCounterView {
-  constructor(city, config) {
-    this.city = city;
+  constructor(stats, config) {
+    this.stats = stats;
     this.config = config;
 
-    this.city.map.events.on('update', this.handleUpdate.bind(this));
+    this.stats.events.on('update', this.handleUpdate.bind(this));
 
     this.$element = $('<div></div>')
       .addClass('tile-counter');
@@ -9349,7 +9367,7 @@ class TileCounterView {
         )
     );
 
-    this.total = this.city.stats.get('zones-total');
+    this.total = this.stats.get('zones-total');
 
     this.handleUpdate();
   }
@@ -9357,7 +9375,7 @@ class TileCounterView {
   handleUpdate() {
     Object.keys(this.config.tileTypes).forEach((id) => {
       const { type } = this.config.tileTypes[id];
-      const count = this.city.stats.get(`zones-${type}-count`);
+      const count = this.stats.get(`zones-${type}-count`);
       this.fields[id].text(`${count} (${((count / this.total) * 100).toFixed(1)}%)`);
     });
   }
@@ -9429,10 +9447,10 @@ module.exports = VariableMapView;
 /***/ ((module) => {
 
 class ZoneBalanceView {
-  constructor(city, config) {
-    this.city = city;
+  constructor(stats, config) {
+    this.stats = stats;
     this.config = config;
-    this.city.map.events.on('update', this.handleUpdate.bind(this));
+    this.stats.events.on('update', this.handleUpdate.bind(this));
 
     this.$element = $('<div></div>')
       .addClass('zone-balance');
@@ -9465,7 +9483,7 @@ class ZoneBalanceView {
 
   handleUpdate() {
     Object.entries(this.levels).forEach(([type, level]) => {
-      const diff = this.city.stats.get(`${type}-difference`);
+      const diff = this.stats.get(`${type}-difference`);
       const currLevel = Math.sign(diff) * (Math.ceil(Math.abs(diff) / 0.25) - 1);
       if (currLevel !== level) {
         const oldClass = ZoneBalanceView.levelAsClass(level);
@@ -9595,6 +9613,7 @@ const TravelTimesData = __webpack_require__(/*! ./data-sources/travel-times-data
 const ZoningData = __webpack_require__(/*! ./data-sources/zoning-data */ "./src/js/data-sources/zoning-data.js");
 const ZoneBalanceData = __webpack_require__(/*! ./data-sources/zone-balance-data */ "./src/js/data-sources/zone-balance-data.js");
 const GoalDebugView = __webpack_require__(/*! ./goal-debug-view */ "./src/js/goal-debug-view.js");
+const DataManager = __webpack_require__(/*! ./data-manager */ "./src/js/data-manager.js");
 
 
 const qs = new URLSearchParams(window.location.search);
@@ -9607,6 +9626,7 @@ cfgLoader.load([
   'config/variables.yml',
   'config/goals.yml',
   'config/cars.yml',
+  'config/default-settings.yml',
   './settings.yml',
 ])
   .catch((err) => {
@@ -9619,12 +9639,16 @@ cfgLoader.load([
       ? City.fromJSON(testScenario.city)
       : new City(config.cityWidth, config.cityHeight);
 
-    city.stats.registerSource(new ZoningData(city, config));
-    city.stats.registerSource(new ZoneBalanceData(city, config));
-    city.stats.registerSource(new PollutionData(city, config));
-    city.stats.registerSource(new NoiseData(city, config));
-    city.stats.registerSource(new GreenSpacesData(city, config));
-    city.stats.registerSource(new TravelTimesData(city, config));
+    const stats = new DataManager();
+    stats.registerSource(new ZoningData(city, config));
+    stats.registerSource(new ZoneBalanceData(city, config));
+    stats.registerSource(new PollutionData(city, config));
+    stats.registerSource(new NoiseData(city, config));
+    stats.registerSource(new GreenSpacesData(city, config));
+    stats.registerSource(new TravelTimesData(city, config));
+    city.map.events.on('update', () => {
+      stats.calculateAll();
+    });
 
     const app = new PIXI.Application({
       width: 3840,
@@ -9675,18 +9699,18 @@ cfgLoader.load([
       noiseVarViewer.displayObject.x = 1920 + 40;
       noiseVarViewer.displayObject.y = 960;
 
-      city.map.events.on('update', () => {
-        emissionsVarViewer.update(city.stats.get('pollution-map'));
-        noiseVarViewer.update(city.stats.get('noise-map'));
+      stats.events.on('update', () => {
+        emissionsVarViewer.update(stats.get('pollution-map'));
+        noiseVarViewer.update(stats.get('noise-map'));
       });
 
       const counterPane = $('<div></div>').addClass('counters');
       $('body').append(counterPane);
 
-      const counterView = new TileCounterView(city, config);
+      const counterView = new TileCounterView(stats, config);
       counterPane.append(counterView.$element);
 
-      const zoneBalanceView = new ZoneBalanceView(city, config);
+      const zoneBalanceView = new ZoneBalanceView(stats, config);
       counterPane.append(zoneBalanceView.$element);
 
       const dataInspectorView = new DataInspectorView();
@@ -9718,7 +9742,7 @@ cfgLoader.load([
           .on('click', () => {
             const varName = varSelector.val();
             const varData = typeof variables[varName] === 'string'
-              ? city.stats.get(variables[varName]) : variables[varName].calculate();
+              ? stats.get(variables[varName]) : variables[varName].calculate();
             dataInspectorView.display({
               title: varName,
               values: varData,
@@ -9740,7 +9764,7 @@ cfgLoader.load([
       });
       window.variableRankListView = variableRankListView;
 
-      const goalDebugView = new GoalDebugView(city.stats.getGoals());
+      const goalDebugView = new GoalDebugView(stats.getGoals());
       $('[data-component="goal-debug-container"]').append(goalDebugView.$element);
 
       let indexesDirty = true;
@@ -9751,11 +9775,11 @@ cfgLoader.load([
         indexesDirty = true;
         if (indexesCooldownTimer === null) {
           variableRankListView.setValues({
-            'green-spaces': city.stats.get('green-spaces-index'),
-            pollution: city.stats.get('pollution-index'),
-            noise: city.stats.get('noise-index'),
+            'green-spaces': stats.get('green-spaces-index'),
+            pollution: stats.get('pollution-index'),
+            noise: stats.get('noise-index'),
           });
-          goalDebugView.setValues(city.stats.getGoals());
+          goalDebugView.setValues(stats.getGoals());
           indexesDirty = false;
           indexesCooldownTimer = setTimeout(() => {
             indexesCooldownTimer = null;
@@ -9764,10 +9788,9 @@ cfgLoader.load([
             }
           }, indexesCooldownTime);
         }
-
       }
 
-      city.map.events.on('update', () => {
+      stats.events.on('update', () => {
         recalculateIndexes();
       });
       recalculateIndexes();
@@ -9788,4 +9811,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.f6d431688dd2c999a4aa.js.map
+//# sourceMappingURL=default.83f319bca11da54693fb.js.map

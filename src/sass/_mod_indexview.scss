@@ -1,10 +1,10 @@
-$index-description-icon-width: 40px;
-$index-description-icon-height: 40px;
+$index-description-icon-width: 2.5em;
+$index-description-icon-height: 2.5em;
 
-$index-value-icon-width: 60px;
-$index-value-icon-height: 60px;
+$index-value-icon-width: 3.75em;
+$index-value-icon-height: 3.75em;
 $index-value-icon-face-ratio: 2/3;
-$index-value-icon-margin: 20px;
+$index-value-icon-margin: 1.25em;
 
 $index-value-icon-face-width: $index-value-icon-width * $index-value-icon-face-ratio;
 $index-value-icon-face-height: $index-value-icon-height * $index-value-icon-face-ratio;
@@ -26,7 +26,7 @@ $index-value-icon-face-py: ($index-value-icon-height - $index-value-icon-face-he
       background-repeat: no-repeat;
       background-position: left center;
       background-size: $index-description-icon-width $index-description-icon-height;
-      padding-left: $index-description-icon-width + 20px;
+      padding-left: $index-description-icon-width + 1.25em;
       min-height: $index-description-icon-height;
 
       .name {
@@ -41,8 +41,7 @@ $index-value-icon-face-py: ($index-value-icon-height - $index-value-icon-face-he
       position: relative;
       display: inline-block;
       vertical-align: top;
-      margin-top: -8px;
-      font-size: 0;
+      margin-top: -0.5em;
       width: $index-value-icon-width;
       height: $index-value-icon-height;
       margin-left: $index-value-icon-margin;

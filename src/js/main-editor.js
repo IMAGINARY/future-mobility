@@ -8,6 +8,7 @@ const ConnectionStateView = require('./connection-state-view');
 const showFatalError = require('./aux/show-fatal-error');
 const PollutionData = require('./data-sources/pollution-data');
 const NoiseData = require('./data-sources/noise-data');
+const DataManager = require('./data-manager');
 
 fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -15,8 +16,12 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
     // const city = City.fromJSON(Cities.cities[0]);
     const city = new City(config.cityWidth, config.cityHeight);
 
-    city.stats.registerSource(new PollutionData(city, config));
-    city.stats.registerSource(new NoiseData(city, config));
+    const stats = new DataManager();
+    stats.registerSource(new PollutionData(city, config));
+    stats.registerSource(new NoiseData(city, config));
+    city.map.events.on('update', () => {
+      stats.calculateAll();
+    });
 
     const app = new PIXI.Application({
       width: 3840,
@@ -61,8 +66,8 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
       noiseVarViewer.displayObject.y = 960;
 
       city.map.events.on('update', () => {
-        emissionsVarViewer.update(city.stats.get('pollution-map'));
-        noiseVarViewer.update(city.stats.get('noise-map'));
+        emissionsVarViewer.update(stats.get('pollution-map'));
+        noiseVarViewer.update(stats.get('noise-map'));
       });
 
       const connector = new ServerSocketConnector(process.env.SERVER_SOCKET_URI);

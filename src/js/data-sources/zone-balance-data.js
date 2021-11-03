@@ -67,7 +67,7 @@ class ZoneBalanceData extends DataSource {
 
   calculate() {
     Object.keys(this.tileTypeIds).forEach((type) => {
-      this.amount[type] = this.city.stats.get(`zones-${type}-count`);
+      this.amount[type] = this.dataManager.get(`zones-${type}-count`);
     });
 
     const total = Object.values(this.amount)
@@ -75,7 +75,7 @@ class ZoneBalanceData extends DataSource {
 
     Object.keys(this.tileTypeIds).forEach((type) => {
       this.percentage[type] = total === 0 ? this.idealPct[type]
-        : (this.city.stats.get(`zones-${type}-count`) / total);
+        : (this.dataManager.get(`zones-${type}-count`) / total);
 
       this.difference[type] = Math.min(
         (this.percentage[type] - this.idealPct[type]) / this.idealPct[type],

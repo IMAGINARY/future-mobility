@@ -4,10 +4,29 @@ const ws = require('ws');
 const cors = require('cors');
 const OpenApiValidator = require('express-openapi-validator');
 const City = require('../src/js/city');
+const DataManager = require('../src/js/data-manager');
+const ZoningData = require('../src/js/data-sources/zoning-data');
+const ZoneBalanceData = require('../src/js/data-sources/zone-balance-data');
+const PollutionData = require('../src/js/data-sources/pollution-data');
+const NoiseData = require('../src/js/data-sources/noise-data');
+const GreenSpacesData = require('../src/js/data-sources/green-spaces-data');
+const TravelTimesData = require('../src/js/data-sources/travel-times-data');
 
 function initApp(config) {
   console.log(`Initializing ${config.cityWidth} x ${config.cityHeight} city.`);
   const city = new City(config.cityWidth, config.cityHeight);
+  const stats = new DataManager({
+    throttleTime: config.dataManager.throttleTime,
+  });
+  stats.registerSource(new ZoningData(city, config));
+  stats.registerSource(new ZoneBalanceData(city, config));
+  stats.registerSource(new PollutionData(city, config));
+  stats.registerSource(new NoiseData(city, config));
+  stats.registerSource(new GreenSpacesData(city, config));
+  stats.registerSource(new TravelTimesData(city, config));
+  city.map.events.on('update', () => {
+    stats.throttledCalculateAll();
+  });
 
   const app = express();
   app.use(cors());
@@ -56,6 +75,17 @@ function initApp(config) {
       }));
     }
 
+    function sendVariablesMessage() {
+      socket.send(JSON.stringify({
+        type: 'vars_update',
+        variables: {
+          'green-spaces': stats.get('green-spaces-index'),
+          pollution: stats.get('pollution-index'),
+          noise: stats.get('noise-index'),
+        },
+      }));
+    }
+
     function sendPong() {
       socket.send(JSON.stringify({
         type: 'pong',
@@ -72,6 +102,9 @@ function initApp(config) {
           case 'set_map':
             city.map.replace(message.cells);
             break;
+          case 'get_vars':
+            sendVariablesMessage();
+            break;
           case 'ping':
             sendPong();
             break;
@@ -87,6 +120,10 @@ function initApp(config) {
 
     city.map.events.on('update', () => {
       sendMapUpdateMessage();
+    });
+
+    stats.events.on('update', () => {
+      sendVariablesMessage();
     });
   });
 

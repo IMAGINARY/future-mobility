@@ -8,6 +8,7 @@ module.exports = {
   entry: {
     default: './src/js/main.js',
     city: './src/js/main-city.js',
+    dashboard: './src/js/main-dashboard.js',
     editor: './src/js/main-editor.js',
   },
   output: {
@@ -67,6 +68,12 @@ module.exports = {
       template: path.resolve(__dirname, 'src/html/editor.html'),
       filename: path.resolve(__dirname, 'editor.html'),
       chunks: ['editor'],
+      minify: true,
+    }),
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'src/html/dashboard.html'),
+      filename: path.resolve(__dirname, 'dashboard.html'),
+      chunks: ['dashboard'],
       minify: true,
     }),
     new CleanWebpackPlugin({

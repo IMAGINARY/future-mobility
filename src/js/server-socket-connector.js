@@ -78,6 +78,9 @@ class ServerSocketConnector {
     if (message.type === 'map_update') {
       this.events.emit('map_update', message.cells);
     }
+    else if (message.type === 'vars_update') {
+      this.events.emit('vars_update', message.variables);
+    }
     else if (message.type === 'pong') {
       this.handlePong();
     }
@@ -139,6 +142,10 @@ class ServerSocketConnector {
       type: 'set_map',
       cells,
     });
+  }
+
+  getVars() {
+    this.send('get_vars');
   }
 }
 

@@ -1091,16 +1091,10 @@ module.exports = travelTimes;
 
 const Grid = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
 const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
-const DataManager = __webpack_require__(/*! ./data-manager */ "./src/js/data-manager.js");
 
 class City {
   constructor(width, height, cells = null) {
     this.map = new Grid(width, height, cells);
-    this.stats = new DataManager();
-
-    this.map.events.on('update', () => {
-      this.stats.calculateAll();
-    });
   }
 
   toJSON() {
@@ -1203,12 +1197,19 @@ module.exports = ConnectionStateView;
 /*!********************************!*\
   !*** ./src/js/data-manager.js ***!
   \********************************/
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
 
 class DataManager {
-  constructor() {
+  constructor(userOptions = {}) {
+    this.options = Object.assign({}, DataManager.DefaultOptions, userOptions);
     this.sources = [];
     this.variables = {};
+    this.events = new EventEmitter();
+
+    this.calculationPending = false;
+    this.cooldownTimer = null;
   }
 
   /**
@@ -1221,6 +1222,7 @@ class DataManager {
       throw new Error(`Source ${dataSource.constructor.name} already registered.`);
     }
     this.sources.push(dataSource);
+    dataSource.dataManager = this;
 
     Object.entries(dataSource.getVariables()).forEach(([id, callback]) => {
       if (this.variables[id] !== undefined) {
@@ -1243,18 +1245,35 @@ class DataManager {
     return this.variables[variableId]();
   }
 
+  throttledCalculateAll() {
+    this.calculationPending = true;
+    if (this.cooldownTimer === null) {
+      this.cooldownTimer = setTimeout(() => {
+        this.cooldownTimer = null;
+        if (this.calculationPending) {
+          this.throttledCalculateAll();
+        }
+      }, this.options.throttleTime);
+      this.calculateAll();
+      this.calculationPending = false;
+    }
+  }
+
   calculateAll() {
     this.sources.forEach((source) => {
       source.calculate();
     });
+    this.events.emit('update');
   }
 
   getGoals() {
-    return this.sources.reduce((acc, source) => {
-      return acc.concat(source.getGoals());
-    }, []);
+    return this.sources.reduce((acc, source) => acc.concat(source.getGoals()), []);
   }
 }
+
+DataManager.DefaultOptions = {
+  throttleTime: 1000,
+};
 
 module.exports = DataManager;
 
@@ -2844,6 +2863,9 @@ class ServerSocketConnector {
     if (message.type === 'map_update') {
       this.events.emit('map_update', message.cells);
     }
+    else if (message.type === 'vars_update') {
+      this.events.emit('vars_update', message.variables);
+    }
     else if (message.type === 'pong') {
       this.handlePong();
     }
@@ -2905,6 +2927,10 @@ class ServerSocketConnector {
       type: 'set_map',
       cells,
     });
+  }
+
+  getVars() {
+    this.send('get_vars');
   }
 }
 
@@ -3065,6 +3091,7 @@ const ConnectionStateView = __webpack_require__(/*! ./connection-state-view */ "
 const showFatalError = __webpack_require__(/*! ./aux/show-fatal-error */ "./src/js/aux/show-fatal-error.js");
 const PollutionData = __webpack_require__(/*! ./data-sources/pollution-data */ "./src/js/data-sources/pollution-data.js");
 const NoiseData = __webpack_require__(/*! ./data-sources/noise-data */ "./src/js/data-sources/noise-data.js");
+const DataManager = __webpack_require__(/*! ./data-manager */ "./src/js/data-manager.js");
 
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -3072,8 +3099,12 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
     // const city = City.fromJSON(Cities.cities[0]);
     const city = new City(config.cityWidth, config.cityHeight);
 
-    city.stats.registerSource(new PollutionData(city, config));
-    city.stats.registerSource(new NoiseData(city, config));
+    const stats = new DataManager();
+    stats.registerSource(new PollutionData(city, config));
+    stats.registerSource(new NoiseData(city, config));
+    city.map.events.on('update', () => {
+      stats.calculateAll();
+    });
 
     const app = new PIXI.Application({
       width: 3840,
@@ -3118,8 +3149,8 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
       noiseVarViewer.displayObject.y = 960;
 
       city.map.events.on('update', () => {
-        emissionsVarViewer.update(city.stats.get('pollution-map'));
-        noiseVarViewer.update(city.stats.get('noise-map'));
+        emissionsVarViewer.update(stats.get('pollution-map'));
+        noiseVarViewer.update(stats.get('noise-map'));
       });
 
       const connector = new ServerSocketConnector("ws://localhost:4848");
@@ -3146,4 +3177,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.55bc2ef05fd939063983.js.map
+//# sourceMappingURL=editor.4abb1ae3c711f2ff5679.js.map

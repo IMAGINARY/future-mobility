@@ -1,8 +1,8 @@
 class ZoneBalanceView {
-  constructor(city, config) {
-    this.city = city;
+  constructor(stats, config) {
+    this.stats = stats;
     this.config = config;
-    this.city.map.events.on('update', this.handleUpdate.bind(this));
+    this.stats.events.on('update', this.handleUpdate.bind(this));
 
     this.$element = $('<div></div>')
       .addClass('zone-balance');
@@ -35,7 +35,7 @@ class ZoneBalanceView {
 
   handleUpdate() {
     Object.entries(this.levels).forEach(([type, level]) => {
-      const diff = this.city.stats.get(`${type}-difference`);
+      const diff = this.stats.get(`${type}-difference`);
       const currLevel = Math.sign(diff) * (Math.ceil(Math.abs(diff) / 0.25) - 1);
       if (currLevel !== level) {
         const oldClass = ZoneBalanceView.levelAsClass(level);
