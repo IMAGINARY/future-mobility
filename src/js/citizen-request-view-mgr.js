@@ -69,12 +69,10 @@ class CitizenRequestViewMgr {
     const timeSinceShow = now - this.lastShowTime[goal.id];
     const cooldownEnter = this.maxTime;
     const cooldownExit = cooldownEnter + this.cooldownTime;
-    console.log(`timeSinceShow: ${timeSinceShow}`);
     if (timeSinceShow < this.minTime) {
       return CitizenRequestViewMgr.Timing.UNDER_MIN_TIME;
     }
     if ((timeSinceShow > cooldownEnter) && (timeSinceShow < cooldownExit)) {
-      console.log(`${goal.id} in cooldown`);
       return CitizenRequestViewMgr.Timing.IN_COOLDOWN;
     }
     return CitizenRequestViewMgr.Timing.NORMAL;
