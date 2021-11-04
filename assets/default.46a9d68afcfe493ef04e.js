@@ -5452,7 +5452,12 @@ function getTileTypeId(config, type) {
   return entry ? Number(entry[0]) : null;
 }
 
-module.exports = { getTileTypeId };
+function getTileType(config, type) {
+  const entry = Object.entries(config.tileTypes).find(([, props]) => props.type === type);
+  return entry ? entry[1] : null;
+}
+
+module.exports = { getTileTypeId, getTileType };
 
 
 /***/ }),
@@ -6997,6 +7002,134 @@ module.exports = CfgReaderFetch;
 
 /***/ }),
 
+/***/ "./src/js/citizen-request-view-mgr.js":
+/*!********************************************!*\
+  !*** ./src/js/citizen-request-view-mgr.js ***!
+  \********************************************/
+/***/ ((module) => {
+
+class CitizenRequestViewMgr {
+  constructor(citizenRequestView, requestCount = 3) {
+    this.view = citizenRequestView;
+    this.requestCount = requestCount;
+  }
+
+  handleUpdate(goals) {
+    // Remove goals that were completed
+    goals.forEach((goal) => {
+      if (goal.condition === true && this.view.requests[goal.id] !== undefined) {
+        this.view.removeRequest(goal.id);
+      }
+    });
+
+    // Add elegible goals
+    if (Object.keys(this.view.requests).length < this.requestCount) {
+      this.selectElegibleGoals(goals)
+        .filter(goal => this.view.requests[goal.id] === undefined)
+        .slice(0, this.requestCount - Object.keys(this.view.requests).length)
+        .forEach((goal) => {
+          this.view.displayRequest(goal.id);
+        });
+    }
+  }
+
+  selectElegibleGoals(goals) {
+    return goals
+      .filter(goal => goal.condition === false)
+      .sort((a, b) => {
+        // Sort by priority first, by progress (DESC) second
+        if (a.priority === b.priority) {
+          return b.progress - a.progress;
+        }
+        return a.priority - b.priority;
+      });
+  }
+}
+
+module.exports = CitizenRequestViewMgr;
+
+
+/***/ }),
+
+/***/ "./src/js/citizen-request-view.js":
+/*!****************************************!*\
+  !*** ./src/js/citizen-request-view.js ***!
+  \****************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const { randomItem } = __webpack_require__(/*! ./aux/random */ "./src/js/aux/random.js");
+const { getTileType } = __webpack_require__(/*! ./aux/config-helpers */ "./src/js/aux/config-helpers.js");
+
+class CitizenRequestView {
+  constructor(config) {
+    this.config = config;
+    this.$element = $('<div></div>')
+      .addClass('citizen-requests');
+
+    this.requests = {};
+
+    this.tileColors = Object.fromEntries(
+      Object.entries(CitizenRequestView.tileReferences)
+        .map(([key, type]) => [key, getTileType(this.config, type).color])
+    );
+  }
+
+  displayRequest(goalId) {
+    if (this.requests[goalId] === undefined && this.config.citizenRequests[goalId] !== undefined) {
+      this.requests[goalId] = $('<div></div>')
+        .addClass('request')
+        .append($('<div></div>').addClass('request-person')
+          .css({
+            'background-image': `url(${this.getRandomCitizenIcon(goalId)})`,
+          }))
+        .append($('<div></div>').addClass('request-balloon')
+          .append($('<div></div>').addClass('request-text-de')
+            .html(this.formatRequestText(this.config.citizenRequests[goalId].de)))
+          .append($('<div></div>').addClass('request-text-en')
+            .html(this.formatRequestText(this.config.citizenRequests[goalId].en))))
+        .appendTo(this.$element);
+    }
+  }
+
+  removeRequest(goalId) {
+    if (this.requests[goalId] !== undefined) {
+      this.requests[goalId].remove();
+      delete this.requests[goalId];
+    }
+  }
+
+  getRandomCitizenIcon(goalId) {
+    const urgent = this.config.citizenRequests[goalId].urgent || false;
+    const icons = urgent ? this.config.citizenIcons.urgent : this.config.citizenIcons.regular;
+    return randomItem(icons);
+  }
+
+  formatRequestText(text) {
+    return text.replaceAll(CitizenRequestView.tileRefRegexp, (match, tileSpec, innerText) => (
+      `<span class="tileref tileref-${CitizenRequestView.tileReferences[tileSpec]}">
+<span class="tileref-stub" style="background-color: ${this.tileColors[tileSpec]}"></span> ${innerText}
+</span>`
+    ));
+  }
+}
+
+CitizenRequestView.tileReferences = {
+  W: 'water',
+  P: 'park',
+  R: 'residential',
+  C: 'commercial',
+  I: 'industrial',
+  X: 'road',
+};
+CitizenRequestView.tileRefRegexp = new RegExp(
+  `([${Object.keys(CitizenRequestView.tileReferences).join('')}])\\[([^\\]]+)\\]`, 'g'
+);
+
+module.exports = CitizenRequestView;
+
+
+/***/ }),
+
 /***/ "./src/js/city.js":
 /*!************************!*\
   !*** ./src/js/city.js ***!
@@ -7823,54 +7956,42 @@ class ZoneBalanceData extends DataSource {
         category: 'zone-balance',
         priority: 1,
         condition: this.amount.residential >= this.underDevThreshold.residential,
-        progress:
-          (this.amount.residential >= this.underDevThreshold.residential)
-          || this.goalProgress(1 + this.difference.residential, 1 - this.acceptablePctDiff),
+        progress: this.goalProgress(1 + this.difference.residential, 1 - this.acceptablePctDiff),
       },
       {
         id: 'zone-balance-i-low',
         category: 'zone-balance',
         priority: 1,
         condition: this.amount.industrial >= this.underDevThreshold.industrial,
-        progress:
-          (this.amount.industrial >= this.underDevThreshold.industrial)
-          || this.goalProgress(1 + this.difference.industrial, 1 - this.acceptablePctDiff),
+        progress: this.goalProgress(1 + this.difference.industrial, 1 - this.acceptablePctDiff),
       },
       {
         id: 'zone-balance-c-low',
         category: 'zone-balance',
         priority: 1,
         condition: this.amount.commercial >= this.underDevThreshold.commercial,
-        progress:
-          (this.amount.commercial >= this.underDevThreshold.commercial)
-          || this.goalProgress(1 + this.difference.commercial, 1 - this.acceptablePctDiff),
+        progress: this.goalProgress(1 + this.difference.commercial, 1 - this.acceptablePctDiff),
       },
       {
         id: 'zone-balance-r-high',
         category: 'zone-balance',
         priority: 2,
         condition: this.amount.residential <= this.overDevThreshold.residential,
-        progress:
-          (this.amount.residential <= this.overDevThreshold.residential)
-          || this.goalProgress(1 - this.difference.residential, 1 - this.acceptablePctDiff),
+        progress: this.goalProgress(1 - this.difference.residential, 1 - this.acceptablePctDiff),
       },
       {
         id: 'zone-balance-i-high',
         category: 'zone-balance',
         priority: 2,
         condition: this.amount.industrial <= this.overDevThreshold.industrial,
-        progress:
-          (this.amount.industrial <= this.overDevThreshold.industrial)
-          || this.goalProgress(1 - this.difference.industrial, 1 - this.acceptablePctDiff),
+        progress: this.goalProgress(1 - this.difference.industrial, 1 - this.acceptablePctDiff),
       },
       {
         id: 'zone-balance-c-high',
         category: 'zone-balance',
         priority: 2,
         condition: this.amount.commercial <= this.overDevThreshold.commercial,
-        progress:
-          (this.amount.commercial <= this.overDevThreshold.commercial)
-          || this.goalProgress(1 - this.difference.commercial, 1 - this.acceptablePctDiff),
+        progress: this.goalProgress(1 - this.difference.commercial, 1 - this.acceptablePctDiff),
       },
     ];
   }
@@ -9614,6 +9735,8 @@ const ZoningData = __webpack_require__(/*! ./data-sources/zoning-data */ "./src/
 const ZoneBalanceData = __webpack_require__(/*! ./data-sources/zone-balance-data */ "./src/js/data-sources/zone-balance-data.js");
 const GoalDebugView = __webpack_require__(/*! ./goal-debug-view */ "./src/js/goal-debug-view.js");
 const DataManager = __webpack_require__(/*! ./data-manager */ "./src/js/data-manager.js");
+const CitizenRequestView = __webpack_require__(/*! ./citizen-request-view */ "./src/js/citizen-request-view.js");
+const CitizenRequestViewMgr = __webpack_require__(/*! ./citizen-request-view-mgr */ "./src/js/citizen-request-view-mgr.js");
 
 
 const qs = new URLSearchParams(window.location.search);
@@ -9625,6 +9748,7 @@ cfgLoader.load([
   'config/tiles.yml',
   'config/variables.yml',
   'config/goals.yml',
+  'config/citizen-requests.yml',
   'config/cars.yml',
   'config/default-settings.yml',
   './settings.yml',
@@ -9795,6 +9919,14 @@ cfgLoader.load([
       });
       recalculateIndexes();
 
+      const citizenRequestView = new CitizenRequestView(config);
+      $('[data-component=citizen-request-container]').append(citizenRequestView.$element);
+      const citizenRequestViewMgr = new CitizenRequestViewMgr(citizenRequestView);
+      citizenRequestViewMgr.handleUpdate(stats.getGoals());
+      stats.events.on('update', () => {
+        citizenRequestViewMgr.handleUpdate(stats.getGoals());
+      });
+
       if (testScenario) {
         testScenario(city, carOverlay);
         if (!window.test) {
@@ -9811,4 +9943,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.83f319bca11da54693fb.js.map
+//# sourceMappingURL=default.46a9d68afcfe493ef04e.js.map

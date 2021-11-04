@@ -1287,7 +1287,12 @@ function getTileTypeId(config, type) {
   return entry ? Number(entry[0]) : null;
 }
 
-module.exports = { getTileTypeId };
+function getTileType(config, type) {
+  const entry = Object.entries(config.tileTypes).find(([, props]) => props.type === type);
+  return entry ? entry[1] : null;
+}
+
+module.exports = { getTileTypeId, getTileType };
 
 
 /***/ }),
@@ -2998,6 +3003,9 @@ class ServerSocketConnector {
     else if (message.type === 'vars_update') {
       this.events.emit('vars_update', message.variables);
     }
+    else if (message.type === 'goals_update') {
+      this.events.emit('goals_update', message.goals);
+    }
     else if (message.type === 'pong') {
       this.handlePong();
     }
@@ -3063,6 +3071,10 @@ class ServerSocketConnector {
 
   getVars() {
     this.send('get_vars');
+  }
+
+  getGoals() {
+    this.send('get_goals');
   }
 }
 
@@ -3227,4 +3239,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.4a988a68c28fe43e3adc.js.map
+//# sourceMappingURL=city.eb20b277510c0ae0b87b.js.map

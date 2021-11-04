@@ -1,0 +1,81 @@
+citizenRequests:
+  green-spaces-large-spaces-area:
+   en: We want large P[parks], W[lakes] or a W[river] in our city.
+   de: Wir wollen große P[Parks], W[Seen] oder einen W[Fluss] in unserer Stadt.
+   urgent: false
+  green-spaces-count:
+   en: We need more P[parks] and W[bodies of water] in our city. They will make the city more beautiful and help with pollution.
+   de: Wir brauchen mehr P[Parks] und W[Wasserflächen] in unserer Stadt. Sie machen die Stadt schöner und helfen gegen die Luftverschmutzung.
+   urgent: false
+  green-spaces-proximity:
+   en: We want P[parks] and W[bodies of water] closer to our homes, so we can walk or bike to them.
+   de: Wir wollen P[Parks] und W[Gewässer] näher an unseren Häusern, damit wir sie zu Fuß oder mit dem Fahrrad erreichen können.
+   urgent: false
+  noise-residential:
+   en: Too much noise from C[commercial zones] and X[roads] reaches our homes! We need R[residential zones] in quieter parts of the city.
+   de: Zu viel Lärm aus den C[Gewerbegebieten] und von den X[Straßen] dringt in unsere Häuser! Wir brauchen R[Wohngebiete] in ruhigeren Gegenden der Stadt.
+   urgent: true
+  noise-city:
+   en: Our city is too noisy! C[Commercial zones] and X[roads] should be more spread.
+   de: Unsere Stadt ist zu laut! Die C[Gewerbegebiete] und X[Straßen] sollten breiter angelegt sein.
+   urgent: true
+  noise-max:
+   en: The noise in some areas of the city is at very harmful levels. C[Commercial zones] should not be concentrated.
+   de: Die Lärmbelastung in einigen Teilen der Stadt ist sehr schädlich. C[Gewerbegebiete] sollten nicht konzentriert werden.
+   urgent: true
+  pollution-city:
+   en: Our city is too polluted! I[Industrial zones] should not be concentrated.
+   de: Unsere Stadt ist zu sehr verschmutzt! I[Industriegebiete] sollten nicht konzentriert werden.
+   urgent: true
+  pollution-residential:
+   en: The air quality in our homes is very bad! We need R[residential zones] in less polluted parts of the city.
+   de: Die Luftqualität in unseren Wohnungen ist sehr schlecht! Wir brauchen R[Wohngebiete] in weniger verschmutzten Zonen.
+   urgent: true
+  pollution-max:
+   en: The pollution in some parts of the city is at very harmful levels. I[Industrial zones] should not be concentrated.
+   de: Die Umweltverschmutzung in einigen Teilen der Stadt hat ein sehr schädliches Niveau erreicht. I[Industriegebiete] sollten nicht konzentriert werden.
+   urgent: true
+  zone-balance-r-low:
+   en: Finding homes in the city is hard! We need more R[residential zones] to live in.
+   de: Es ist schwer, in der Stadt eine Wohnung zu finden! Wir brauchen mehr R[Wohngebiete], in denen wir leben können.
+   urgent: true
+  zone-balance-c-low:
+   en: We need more C[commercial zones] to shop, work, and go out with friends.
+   de: Wir brauchen mehr C[Gewerbegebiete] zum Einkaufen, Arbeiten und Ausgehen mit Freunden.
+   urgent: false
+  zone-balance-i-low:
+   en: We need more I[industrial zones]. They will create new jobs for citizens.
+   de: Wir brauchen mehr I[Industriegebiete]. Sie werden neue Arbeitsplätze für die Bürger schaffen.
+   urgent: false
+  zone-balance-r-high:
+   en: There are too many R[residential zones]. Some houses are vacant.
+   de: Es gibt zu viele R[Wohngebiete]. Einige Häuser stehen leer.
+   urgent: false
+  zone-balance-c-high:
+   en: There are too many C[commercial zones]. Many office spaces and shops are not being rented.
+   de: Es gibt zu viele C[Gewerbegebiete]. Viele Büroflächen und Geschäfte werden nicht vermietet.
+   urgent: false
+  zone-balance-i-high:
+   en: There are too many I[industrial zones]. Factories are not working at full capacity.
+   de: Es gibt zu viele I[Industriegebiete]. Die Fabriken arbeiten nicht mit voller Kapazität.
+   urgent: false
+citizenIcons:
+  regular:
+    - static/openmoji/bw/man-beard.svg
+    - static/openmoji/bw/man-older.svg
+    - static/openmoji/bw/man-raising-hand.svg
+    - static/openmoji/bw/man.svg
+    - static/openmoji/bw/person-bald.svg
+    - static/openmoji/bw/person.svg
+    - static/openmoji/bw/person-raising-hand.svg
+    - static/openmoji/bw/person-older.svg
+    - static/openmoji/bw/person-curly.svg
+    - static/openmoji/bw/woman-older.svg
+    - static/openmoji/bw/woman-raising-hand.svg
+    - static/openmoji/bw/woman.svg
+    - static/openmoji/bw/woman-curly.svg
+    - static/openmoji/bw/woman-headscarf.svg
+  urgent:
+    - static/openmoji/bw/person-frowning.svg
+    - static/openmoji/bw/woman-frowning.svg
+    - static/openmoji/bw/man-frowning.svg

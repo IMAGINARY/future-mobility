@@ -86,6 +86,13 @@ function initApp(config) {
       }));
     }
 
+    function sendGoalsMessage() {
+      socket.send(JSON.stringify({
+        type: 'goals_update',
+        goals: stats.getGoals(),
+      }));
+    }
+
     function sendPong() {
       socket.send(JSON.stringify({
         type: 'pong',
@@ -104,6 +111,9 @@ function initApp(config) {
             break;
           case 'get_vars':
             sendVariablesMessage();
+            break;
+          case 'get_goals':
+            sendGoalsMessage();
             break;
           case 'ping':
             sendPong();
@@ -124,6 +134,7 @@ function initApp(config) {
 
     stats.events.on('update', () => {
       sendVariablesMessage();
+      sendGoalsMessage();
     });
   });
 

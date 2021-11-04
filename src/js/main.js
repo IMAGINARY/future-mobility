@@ -21,6 +21,8 @@ const ZoningData = require('./data-sources/zoning-data');
 const ZoneBalanceData = require('./data-sources/zone-balance-data');
 const GoalDebugView = require('./goal-debug-view');
 const DataManager = require('./data-manager');
+const CitizenRequestView = require('./citizen-request-view');
+const CitizenRequestViewMgr = require('./citizen-request-view-mgr');
 
 
 const qs = new URLSearchParams(window.location.search);
@@ -32,6 +34,7 @@ cfgLoader.load([
   'config/tiles.yml',
   'config/variables.yml',
   'config/goals.yml',
+  'config/citizen-requests.yml',
   'config/cars.yml',
   'config/default-settings.yml',
   './settings.yml',
@@ -201,6 +204,14 @@ cfgLoader.load([
         recalculateIndexes();
       });
       recalculateIndexes();
+
+      const citizenRequestView = new CitizenRequestView(config);
+      $('[data-component=citizen-request-container]').append(citizenRequestView.$element);
+      const citizenRequestViewMgr = new CitizenRequestViewMgr(citizenRequestView);
+      citizenRequestViewMgr.handleUpdate(stats.getGoals());
+      stats.events.on('update', () => {
+        citizenRequestViewMgr.handleUpdate(stats.getGoals());
+      });
 
       if (testScenario) {
         testScenario(city, carOverlay);

@@ -1,0 +1,63 @@
+$person-width: 4.5em;
+$person-height: $person-width;
+$person-margin: 0.5em;
+$balloon-tip-size: 1.3em;
+
+.citizen-requests {
+  background-color: white;
+  padding: 1em;
+
+  .request-person {
+    display: inline-block;
+    vertical-align: top;
+    width: $person-width;
+    height: $person-height;
+    background-repeat: no-repeat;
+    background-size: contain;
+    margin-right: $person-margin;
+  }
+
+  .request-balloon {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    width: calc(100% - (#{$person-width} + #{$person-margin}));
+    border-radius: 0.5em;
+    padding: 0.5em 0.8em;
+    margin-bottom: 1em;
+    background-color: $c-gray-mid;
+    line-height: 1.35;
+
+    &:after {
+      content: " ";
+      display: inline-block;
+      position: absolute;
+      top: $balloon-tip-size * 1.25;
+      left: -1 * $balloon-tip-size;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 $balloon-tip-size $balloon-tip-size 0;
+      border-color: transparent $c-gray-mid transparent transparent;
+    }
+
+    .tileref {
+      display: inline-block;
+
+      .tileref-stub {
+        display: inline-block;
+        width: 0.7em;
+        height: 0.7em;
+        border-radius: 50%;
+        margin-right: 0.15em;
+        margin-left: 0.2em;
+        outline: 0.15em solid white;
+      }
+    }
+  }
+
+  .request-text-de {
+    font-weight: bold;
+    margin-bottom: 0.5em;
+  }
+}

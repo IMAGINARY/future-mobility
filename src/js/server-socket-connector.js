@@ -81,6 +81,9 @@ class ServerSocketConnector {
     else if (message.type === 'vars_update') {
       this.events.emit('vars_update', message.variables);
     }
+    else if (message.type === 'goals_update') {
+      this.events.emit('goals_update', message.goals);
+    }
     else if (message.type === 'pong') {
       this.handlePong();
     }
@@ -146,6 +149,10 @@ class ServerSocketConnector {
 
   getVars() {
     this.send('get_vars');
+  }
+
+  getGoals() {
+    this.send('get_goals');
   }
 }
 

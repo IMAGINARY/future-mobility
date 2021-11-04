@@ -522,6 +522,71 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./src/js/aux/config-helpers.js":
+/*!**************************************!*\
+  !*** ./src/js/aux/config-helpers.js ***!
+  \**************************************/
+/***/ ((module) => {
+
+function getTileTypeId(config, type) {
+  const entry = Object.entries(config.tileTypes).find(([, props]) => props.type === type);
+  return entry ? Number(entry[0]) : null;
+}
+
+function getTileType(config, type) {
+  const entry = Object.entries(config.tileTypes).find(([, props]) => props.type === type);
+  return entry ? entry[1] : null;
+}
+
+module.exports = { getTileTypeId, getTileType };
+
+
+/***/ }),
+
+/***/ "./src/js/aux/random.js":
+/*!******************************!*\
+  !*** ./src/js/aux/random.js ***!
+  \******************************/
+/***/ ((module) => {
+
+/**
+ * Create a function that picks an element from a set where each has a probability weight.
+ *
+ * The returned function can be called repeatedly to pick random elements.
+ *
+ * @param {[any, number]} weightedOptions
+ *  An array of options. Each option is an array where the first
+ *  item is the element, and the second is the weight.
+ * @return {function(): any}
+ *  Returns a function that returns a random element.
+ */
+function weightedRandomizer(weightedOptions) {
+  let last = 0;
+  const ranges = new Array(weightedOptions.length);
+  // ranges = [from, to, value]
+  weightedOptions.forEach(([value, weight], i) => {
+    ranges[i] = [last, last + weight, value];
+    last += weight;
+  });
+
+  return () => {
+    const rndP = Math.random() * last;
+    return ranges.find(([min, max]) => rndP > min && rndP < max)[2];
+  };
+}
+
+function randomItem(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+module.exports = {
+  weightedRandomizer,
+  randomItem,
+};
+
+
+/***/ }),
+
 /***/ "./src/js/aux/show-fatal-error.js":
 /*!****************************************!*\
   !*** ./src/js/aux/show-fatal-error.js ***!
@@ -543,6 +608,134 @@ function showFatalError(text, error) {
 }
 
 module.exports = showFatalError;
+
+
+/***/ }),
+
+/***/ "./src/js/citizen-request-view-mgr.js":
+/*!********************************************!*\
+  !*** ./src/js/citizen-request-view-mgr.js ***!
+  \********************************************/
+/***/ ((module) => {
+
+class CitizenRequestViewMgr {
+  constructor(citizenRequestView, requestCount = 3) {
+    this.view = citizenRequestView;
+    this.requestCount = requestCount;
+  }
+
+  handleUpdate(goals) {
+    // Remove goals that were completed
+    goals.forEach((goal) => {
+      if (goal.condition === true && this.view.requests[goal.id] !== undefined) {
+        this.view.removeRequest(goal.id);
+      }
+    });
+
+    // Add elegible goals
+    if (Object.keys(this.view.requests).length < this.requestCount) {
+      this.selectElegibleGoals(goals)
+        .filter(goal => this.view.requests[goal.id] === undefined)
+        .slice(0, this.requestCount - Object.keys(this.view.requests).length)
+        .forEach((goal) => {
+          this.view.displayRequest(goal.id);
+        });
+    }
+  }
+
+  selectElegibleGoals(goals) {
+    return goals
+      .filter(goal => goal.condition === false)
+      .sort((a, b) => {
+        // Sort by priority first, by progress (DESC) second
+        if (a.priority === b.priority) {
+          return b.progress - a.progress;
+        }
+        return a.priority - b.priority;
+      });
+  }
+}
+
+module.exports = CitizenRequestViewMgr;
+
+
+/***/ }),
+
+/***/ "./src/js/citizen-request-view.js":
+/*!****************************************!*\
+  !*** ./src/js/citizen-request-view.js ***!
+  \****************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const { randomItem } = __webpack_require__(/*! ./aux/random */ "./src/js/aux/random.js");
+const { getTileType } = __webpack_require__(/*! ./aux/config-helpers */ "./src/js/aux/config-helpers.js");
+
+class CitizenRequestView {
+  constructor(config) {
+    this.config = config;
+    this.$element = $('<div></div>')
+      .addClass('citizen-requests');
+
+    this.requests = {};
+
+    this.tileColors = Object.fromEntries(
+      Object.entries(CitizenRequestView.tileReferences)
+        .map(([key, type]) => [key, getTileType(this.config, type).color])
+    );
+  }
+
+  displayRequest(goalId) {
+    if (this.requests[goalId] === undefined && this.config.citizenRequests[goalId] !== undefined) {
+      this.requests[goalId] = $('<div></div>')
+        .addClass('request')
+        .append($('<div></div>').addClass('request-person')
+          .css({
+            'background-image': `url(${this.getRandomCitizenIcon(goalId)})`,
+          }))
+        .append($('<div></div>').addClass('request-balloon')
+          .append($('<div></div>').addClass('request-text-de')
+            .html(this.formatRequestText(this.config.citizenRequests[goalId].de)))
+          .append($('<div></div>').addClass('request-text-en')
+            .html(this.formatRequestText(this.config.citizenRequests[goalId].en))))
+        .appendTo(this.$element);
+    }
+  }
+
+  removeRequest(goalId) {
+    if (this.requests[goalId] !== undefined) {
+      this.requests[goalId].remove();
+      delete this.requests[goalId];
+    }
+  }
+
+  getRandomCitizenIcon(goalId) {
+    const urgent = this.config.citizenRequests[goalId].urgent || false;
+    const icons = urgent ? this.config.citizenIcons.urgent : this.config.citizenIcons.regular;
+    return randomItem(icons);
+  }
+
+  formatRequestText(text) {
+    return text.replaceAll(CitizenRequestView.tileRefRegexp, (match, tileSpec, innerText) => (
+      `<span class="tileref tileref-${CitizenRequestView.tileReferences[tileSpec]}">
+<span class="tileref-stub" style="background-color: ${this.tileColors[tileSpec]}"></span> ${innerText}
+</span>`
+    ));
+  }
+}
+
+CitizenRequestView.tileReferences = {
+  W: 'water',
+  P: 'park',
+  R: 'residential',
+  C: 'commercial',
+  I: 'industrial',
+  X: 'road',
+};
+CitizenRequestView.tileRefRegexp = new RegExp(
+  `([${Object.keys(CitizenRequestView.tileReferences).join('')}])\\[([^\\]]+)\\]`, 'g'
+);
+
+module.exports = CitizenRequestView;
 
 
 /***/ }),
@@ -778,6 +971,9 @@ class ServerSocketConnector {
     else if (message.type === 'vars_update') {
       this.events.emit('vars_update', message.variables);
     }
+    else if (message.type === 'goals_update') {
+      this.events.emit('goals_update', message.goals);
+    }
     else if (message.type === 'pong') {
       this.handlePong();
     }
@@ -844,6 +1040,10 @@ class ServerSocketConnector {
   getVars() {
     this.send('get_vars');
   }
+
+  getGoals() {
+    this.send('get_goals');
+  }
 }
 
 module.exports = ServerSocketConnector;
@@ -901,6 +1101,8 @@ const showFatalError = __webpack_require__(/*! ./aux/show-fatal-error */ "./src/
 const VariableRankListView = __webpack_require__(/*! ./index-list-view */ "./src/js/index-list-view.js");
 const ServerSocketConnector = __webpack_require__(/*! ./server-socket-connector */ "./src/js/server-socket-connector.js");
 const ConnectionStateView = __webpack_require__(/*! ./connection-state-view */ "./src/js/connection-state-view.js");
+const CitizenRequestView = __webpack_require__(/*! ./citizen-request-view */ "./src/js/citizen-request-view.js");
+const CitizenRequestViewMgr = __webpack_require__(/*! ./citizen-request-view-mgr */ "./src/js/citizen-request-view-mgr.js");
 
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -910,8 +1112,12 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
     console.error(err);
   })
   .then((config) => {
+    const citizenRequestView = new CitizenRequestView(config);
+    $('#col-1').append(citizenRequestView.$element);
+    const citizenRequestViewMgr = new CitizenRequestViewMgr(citizenRequestView);
+
     const variableRankListView = new VariableRankListView(config.variables);
-    $('#col-1').append(variableRankListView.$element);
+    $('#col-2').append(variableRankListView.$element);
     variableRankListView.setValues({
       'traffic-density': 0,
       'travel-times': 0,
@@ -925,8 +1131,12 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
     connector.events.on('vars_update', (variables) => {
       variableRankListView.setValues(variables);
     });
+    connector.events.on('goals_update', (goals) => {
+      citizenRequestViewMgr.handleUpdate(goals);
+    });
     connector.events.on('connect', () => {
       connector.getVars();
+      connector.getGoals();
     });
     const connStateView = new ConnectionStateView(connector);
     $('body').append(connStateView.$element);
@@ -936,4 +1146,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=dashboard.13099553b85ff383422b.js.map
+//# sourceMappingURL=dashboard.4fd9bce6b68a70345d18.js.map

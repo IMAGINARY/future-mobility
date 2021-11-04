@@ -91,54 +91,42 @@ class ZoneBalanceData extends DataSource {
         category: 'zone-balance',
         priority: 1,
         condition: this.amount.residential >= this.underDevThreshold.residential,
-        progress:
-          (this.amount.residential >= this.underDevThreshold.residential)
-          || this.goalProgress(1 + this.difference.residential, 1 - this.acceptablePctDiff),
+        progress: this.goalProgress(1 + this.difference.residential, 1 - this.acceptablePctDiff),
       },
       {
         id: 'zone-balance-i-low',
         category: 'zone-balance',
         priority: 1,
         condition: this.amount.industrial >= this.underDevThreshold.industrial,
-        progress:
-          (this.amount.industrial >= this.underDevThreshold.industrial)
-          || this.goalProgress(1 + this.difference.industrial, 1 - this.acceptablePctDiff),
+        progress: this.goalProgress(1 + this.difference.industrial, 1 - this.acceptablePctDiff),
       },
       {
         id: 'zone-balance-c-low',
         category: 'zone-balance',
         priority: 1,
         condition: this.amount.commercial >= this.underDevThreshold.commercial,
-        progress:
-          (this.amount.commercial >= this.underDevThreshold.commercial)
-          || this.goalProgress(1 + this.difference.commercial, 1 - this.acceptablePctDiff),
+        progress: this.goalProgress(1 + this.difference.commercial, 1 - this.acceptablePctDiff),
       },
       {
         id: 'zone-balance-r-high',
         category: 'zone-balance',
         priority: 2,
         condition: this.amount.residential <= this.overDevThreshold.residential,
-        progress:
-          (this.amount.residential <= this.overDevThreshold.residential)
-          || this.goalProgress(1 - this.difference.residential, 1 - this.acceptablePctDiff),
+        progress: this.goalProgress(1 - this.difference.residential, 1 - this.acceptablePctDiff),
       },
       {
         id: 'zone-balance-i-high',
         category: 'zone-balance',
         priority: 2,
         condition: this.amount.industrial <= this.overDevThreshold.industrial,
-        progress:
-          (this.amount.industrial <= this.overDevThreshold.industrial)
-          || this.goalProgress(1 - this.difference.industrial, 1 - this.acceptablePctDiff),
+        progress: this.goalProgress(1 - this.difference.industrial, 1 - this.acceptablePctDiff),
       },
       {
         id: 'zone-balance-c-high',
         category: 'zone-balance',
         priority: 2,
         condition: this.amount.commercial <= this.overDevThreshold.commercial,
-        progress:
-          (this.amount.commercial <= this.overDevThreshold.commercial)
-          || this.goalProgress(1 - this.difference.commercial, 1 - this.acceptablePctDiff),
+        progress: this.goalProgress(1 - this.difference.commercial, 1 - this.acceptablePctDiff),
       },
     ];
   }

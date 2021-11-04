@@ -3,4 +3,9 @@ function getTileTypeId(config, type) {
   return entry ? Number(entry[0]) : null;
 }
 
-module.exports = { getTileTypeId };
+function getTileType(config, type) {
+  const entry = Object.entries(config.tileTypes).find(([, props]) => props.type === type);
+  return entry ? entry[1] : null;
+}
+
+module.exports = { getTileTypeId, getTileType };
