@@ -2745,6 +2745,10 @@ class MapView {
     this.events = new EventEmitter();
     this.pointerActive = false;
     this.roadTileId = getTileTypeId(config, 'road');
+    this.parkTileId = getTileTypeId(config, 'park');
+
+    this.randomizedTerrain = Array2D.create(this.city.map.width, this.city.map.height);
+    Array2D.fill(this.randomizedTerrain, () => Math.random());
 
     this.displayObject = new PIXI.Container();
 
@@ -2840,9 +2844,18 @@ class MapView {
 
   renderTile(x, y) {
     this.renderBasicTile(x, y);
+    if (this.city.map.get(x, y) === this.parkTileId) {
+      this.renderParkTile(x, y);
+    }
     if (this.city.map.get(x, y) === this.roadTileId) {
       this.renderRoadTile(x, y);
     }
+  }
+
+  renderParkTile(x, y) {
+    const textureNumber = 1 + Math.round(this.randomizedTerrain[y][x] * 8);
+    this.getTextureTile(x, y).texture = this.textures[`park-0${textureNumber}`];
+    this.getTextureTile(x, y).visible = true;
   }
 
   renderRoadTile(i, j) {
@@ -3194,12 +3207,14 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
     app.loader.pre((resource, next) => { resource.url += `?t=${Date.now()}`; next(); });
     app.loader.add('./textures/road-textures.json');
     app.loader.add('./textures/car-textures.json');
+    app.loader.add('./textures/park-textures.json');
     app.loader.load((loader, resources) => {
       $('[data-component="app-container"]').append(app.view);
       const textures = Object.assign(
         {},
         resources['./textures/road-textures.json'].textures,
         resources['./textures/car-textures.json'].textures,
+        resources['./textures/park-textures.json'].textures,
       );
 
       // Change the scaling mode for the road textures
@@ -3239,4 +3254,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.eb20b277510c0ae0b87b.js.map
+//# sourceMappingURL=city.aae8ee9fb43870bf66f2.js.map

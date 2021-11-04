@@ -12,6 +12,10 @@ class MapView {
     this.events = new EventEmitter();
     this.pointerActive = false;
     this.roadTileId = getTileTypeId(config, 'road');
+    this.parkTileId = getTileTypeId(config, 'park');
+
+    this.randomizedTerrain = Array2D.create(this.city.map.width, this.city.map.height);
+    Array2D.fill(this.randomizedTerrain, () => Math.random());
 
     this.displayObject = new PIXI.Container();
 
@@ -107,9 +111,18 @@ class MapView {
 
   renderTile(x, y) {
     this.renderBasicTile(x, y);
+    if (this.city.map.get(x, y) === this.parkTileId) {
+      this.renderParkTile(x, y);
+    }
     if (this.city.map.get(x, y) === this.roadTileId) {
       this.renderRoadTile(x, y);
     }
+  }
+
+  renderParkTile(x, y) {
+    const textureNumber = 1 + Math.round(this.randomizedTerrain[y][x] * 8);
+    this.getTextureTile(x, y).texture = this.textures[`park-0${textureNumber}`];
+    this.getTextureTile(x, y).visible = true;
   }
 
   renderRoadTile(i, j) {

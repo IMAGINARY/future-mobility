@@ -21,12 +21,14 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
     app.loader.pre((resource, next) => { resource.url += `?t=${Date.now()}`; next(); });
     app.loader.add('./textures/road-textures.json');
     app.loader.add('./textures/car-textures.json');
+    app.loader.add('./textures/park-textures.json');
     app.loader.load((loader, resources) => {
       $('[data-component="app-container"]').append(app.view);
       const textures = Object.assign(
         {},
         resources['./textures/road-textures.json'].textures,
         resources['./textures/car-textures.json'].textures,
+        resources['./textures/park-textures.json'].textures,
       );
 
       // Change the scaling mode for the road textures
