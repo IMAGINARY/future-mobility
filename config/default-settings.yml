@@ -1,6 +1,13 @@
 mapView:
   # Stroke width (in pixels) of the grid overlay of the map view
   gridOverlay: 0
+citizenRequestView:
+  # Minimum time (in seconds) a citizen request should be shown (as long as it's not been met)
+  minTime: 30
+  # Time (in seconds) after which a citizen request will enter cooldown (losing priority).
+  maxTime: 90
+  # Cooldown time (in seconds) after which a citizen request will regain priority.
+  cooldown: 90
 dataManager:
   # Minimum interval for recalculating the simulation's variables
   throttleTime: 1000
