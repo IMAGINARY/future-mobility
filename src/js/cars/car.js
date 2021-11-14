@@ -13,6 +13,9 @@ const PulledCarDriver = require('./pulled-car-driver');
 const MAX_LIFETIME = 2 * 60 * 60; // Approx. 2 minutes
 const MAX_TIME_STOPPED = 60 * 60; // Approx. 1 minute
 
+const SPRITE_ANCHOR_X = 0.5;
+const SPRITE_ANCHOR_Y = 0.75;
+
 class Car {
   constructor(carOverlay, texture, tileX, tileY, entrySide, lane, maxSpeed = 1) {
     this.overlay = carOverlay;
@@ -42,7 +45,7 @@ class Car {
     sprite.width = texture.width;
     sprite.height = texture.height;
     // sprite.roundPixels = true;
-    sprite.anchor.set(0.5, 0.75);
+    sprite.anchor.set(SPRITE_ANCHOR_X, SPRITE_ANCHOR_Y);
     sprite.visible = true;
     sprite.alpha = 0;
 

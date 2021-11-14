@@ -1,29 +1,157 @@
 carTypes:
-  car-blue:
-    maxSpeed: 1
+  # Cars
+  bug:
+    maxSpeed: 0.5
+    frequency: 0.6
+    variants: [white, yellow, red, blue, aqua]
+  mouse:
+    maxSpeed: 0.5
+    frequency: 0.6
+    variants: [white, green, blue, yellow, red]
+  morty:
+    maxSpeed: 0.6
+    frequency: 0.6
+    variants: [white, gray, yellow, rust]
+  lurch:
+    maxSpeed: 0.55
     frequency: 1
-  car-white:
-    maxSpeed: 1.2
+    variants: [white, blue, rust]
+  pill:
+    maxSpeed: 0.6
+    frequency: 1
+    variants: [white, blue, rust, aqua]
+  boxi:
+    maxSpeed: 0.6
+    frequency: 1
+    variants: [white, gray, blue, rust]
+  posh:
+    maxSpeed: 0.65
     frequency: 0.5
-  car-red:
-    maxSpeed: 1.1
+    variants: [white, gray, red, yellow, blue]
+  sleek:
+    maxSpeed: 0.55
     frequency: 1
-  truck-white:
-    maxSpeed: 0.85
+    variants: [white, gray, green, blue, orange]
+
+  # Heavy cars
+  pickup:
+    maxSpeed: 0.5
+    frequency: 0.3
+    variants: [white, gray, blue, red]
+  pagon:
+    maxSpeed: 0.5
     frequency: 0.2
-    lanes: inner
-  pickup-aqua:
-    maxSpeed: 1
+    variants: [white, blue, red]
+  wagon:
+    maxSpeed: 0.5
+    frequency: 0.3
+    variants: [white, gray, gold]
+  van:
+    maxSpeed: 0.5
     frequency: 0.5
-  van-white:
-    maxSpeed: 1
-    frequency: 0.7
-  bus-yellow:
-    maxSpeed: 0.9
-    frequency: 0.3
-    lanes: outer
-  tram:
-    maxSpeed: 0.8
-    frequency: 0.3
+    variants: [white, blue, yellow, camper, wgreen]
+
+  # Trucks
+  tventi:
+    maxSpeed: 0.45
+    frequency: 0.2
+    variants: [white, gray, red, blue]
+    wagons: [[trventi-white, trventi-orange, trventi-milk, trventi-empty]]
     lanes: inner
-    wagons: [tram, tram]
+  tgrande:
+    maxSpeed: 0.45
+    frequency: 0.2
+    variants: [white, blue]
+    wagons: [[trgrande-aqua, trgrande-orange]]
+    lanes: inner
+  ttall:
+    maxSpeed: 0.5
+    frequency: 0.3
+    variants: [white, blue, gold]
+  tshort:
+    maxSpeed: 0.5
+    frequency: 0.3
+    variants: [blue, yellow]
+
+  # Bicycles
+  bfast:
+    maxSpeed: 0.5
+    frequency: 0.1
+    variants: [a, b, c, d, e, f]
+    lanes: outer
+  bstreet:
+    maxSpeed: 0.4
+    frequency: 0.1
+    variants: [a, b, c, d, e, f]
+    lanes: outer
+  byoung:
+    maxSpeed: 0.4
+    frequency: 0.1
+    variants: [a, b, c]
+    lanes: outer
+  bcargo:
+    maxSpeed: 0.4
+    frequency: 0.05
+    variants: [a, b, c, d, e, f]
+    lanes: outer
+  bdelivery:
+    maxSpeed: 0.45
+    frequency: 0.15
+    variants: [a, b, c]
+    lanes: outer
+
+  # Motorcycles
+  mneon:
+    maxSpeed: 0.6
+    frequency: 0.1
+    variants: [a, b, c, d]
+  mfast:
+    maxSpeed: 0.6
+    frequency: 0.1
+    variants: [a, b, c, d]
+  bruno:
+    maxSpeed: 0.4
+    frequency: 0.1
+    variants: [a, b, c]
+    lanes: outer
+  scoot:
+    maxSpeed: 0.4
+    frequency: 0.1
+    variants: [a, b, c]
+    lanes: outer
+  mdelivery:
+    maxSpeed: 0.5
+    frequency: 0.2
+    variants: [a, b, c, d, e]
+
+  # Public transportation
+  bus:
+    maxSpeed: 0.45
+    frequency: 0.2
+    lanes: outer
+  taxi:
+    maxSpeed: 0.5
+    frequency: 1
+    variants: [a, b, c]
+  tram:
+    maxSpeed: 0.4
+    frequency: 0.2
+    wagons: [tram-middle, tram-middle, tram-back]
+    lanes: inner
+  maas:
+    maxSpeed: 0.4
+    frequency: 0.5
+
+  # Special
+  firetruck:
+    maxSpeed: 0.6
+    frequency: 0.01
+  garbage:
+    maxSpeed: 0.45
+    frequency: 0.1
+  police:
+    maxSpeed: 0.6
+    frequency: 0.1
+  ambulance:
+    maxSpeed: 0.6
+    frequency: 0.1

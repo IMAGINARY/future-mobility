@@ -121,7 +121,7 @@ class MapView {
 
   renderParkTile(x, y) {
     const textureNumber = 1 + Math.round(this.randomizedTerrain[y][x] * 8);
-    this.getTextureTile(x, y).texture = this.textures[`park-0${textureNumber}`];
+    this.getTextureTile(x, y).texture = this.textures.parks[`park-0${textureNumber}`];
     this.getTextureTile(x, y).visible = true;
   }
 
@@ -130,7 +130,7 @@ class MapView {
       .map(([x, y]) => (!this.city.map.isValidCoords(x, y)
       || this.city.map.get(x, y) === this.roadTileId
         ? '1' : '0')).join('');
-    this.getTextureTile(i, j).texture = this.textures[`road${connMask}`];
+    this.getTextureTile(i, j).texture = this.textures.roads[`road${connMask}`];
     this.getTextureTile(i, j).visible = true;
   }
 
@@ -187,6 +187,6 @@ class MapView {
   }
 }
 
-MapView.TILE_SIZE = 120;
+MapView.TILE_SIZE = 72;
 
 module.exports = MapView;

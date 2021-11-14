@@ -23,7 +23,8 @@ const GoalDebugView = require('./goal-debug-view');
 const DataManager = require('./data-manager');
 const CitizenRequestView = require('./citizen-request-view');
 const CitizenRequestViewMgr = require('./citizen-request-view-mgr');
-
+const TextureLoader = require('./texture-loader');
+const CarSpawner = require('./cars/car-spawner');
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -65,164 +66,157 @@ cfgLoader.load([
       height: 1920,
       backgroundColor: 0xf2f2f2,
     });
-    // Add a pre-load middleware that does cache-busting
-    app.loader.pre((resource, next) => { resource.url += `?t=${Date.now()}`; next(); });
-    app.loader.add('./textures/road-textures.json');
-    app.loader.add('./textures/car-textures.json');
-    app.loader.add('./textures/park-textures.json');
-    app.loader.load((loader, resources) => {
-      $('[data-component="app-container"]').append(app.view);
-      const textures = Object.assign(
-        {},
-        resources['./textures/road-textures.json'].textures,
-        resources['./textures/car-textures.json'].textures,
-        resources['./textures/park-textures.json'].textures,
-      );
 
-      // Change the scaling mode for the road textures
-      Object.keys(textures).forEach((id) => {
-        textures[id].baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
-      });
+    const textureLoader = new TextureLoader(app);
+    textureLoader.addSpritesheet('roads');
+    textureLoader.addSpritesheet('parks');
+    textureLoader.addFolder('cars', CarSpawner.allTextureIds(config));
+    textureLoader.load()
+      .then((textures) => {
+        $('[data-component="app-container"]').append(app.view);
 
-      const mapEditor = new MapEditor($('body'), city, config, textures);
-      app.stage.addChild(mapEditor.displayObject);
-      mapEditor.displayObject.width = 1920;
-      mapEditor.displayObject.height = 1920;
-      mapEditor.displayObject.x = 0;
-      mapEditor.displayObject.y = 0;
+        const mapEditor = new MapEditor($('body'), city, config, textures);
+        app.stage.addChild(mapEditor.displayObject);
+        mapEditor.displayObject.width = 1920;
+        mapEditor.displayObject.height = 1920;
+        mapEditor.displayObject.x = 0;
+        mapEditor.displayObject.y = 0;
 
-      const carOverlay = new CarOverlay(mapEditor.mapView, config, textures, {
-        spawn: !testScenario,
-        maxLifetime: !testScenario,
-      });
-      app.ticker.add(time => carOverlay.animate(time));
+        const carOverlay = new CarOverlay(mapEditor.mapView, config, textures, {
+          spawn: !testScenario,
+          maxLifetime: !testScenario,
+        });
+        app.ticker.add(time => carOverlay.animate(time));
 
-      const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x953202);
-      app.stage.addChild(emissionsVarViewer.displayObject);
-      emissionsVarViewer.displayObject.width = 960;
-      emissionsVarViewer.displayObject.height = 960;
-      emissionsVarViewer.displayObject.x = 1920 + 40;
-      emissionsVarViewer.displayObject.y = 0;
+        const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x953202);
+        app.stage.addChild(emissionsVarViewer.displayObject);
+        emissionsVarViewer.displayObject.width = 960;
+        emissionsVarViewer.displayObject.height = 960;
+        emissionsVarViewer.displayObject.x = 1920 + 40;
+        emissionsVarViewer.displayObject.y = 0;
 
-      const noiseVarViewer = new VariableMapView(city.map.width, city.map.height, 0x20e95ff);
-      app.stage.addChild(noiseVarViewer.displayObject);
-      noiseVarViewer.displayObject.width = 960;
-      noiseVarViewer.displayObject.height = 960;
-      noiseVarViewer.displayObject.x = 1920 + 40;
-      noiseVarViewer.displayObject.y = 960;
+        const noiseVarViewer = new VariableMapView(city.map.width, city.map.height, 0x20e95ff);
+        app.stage.addChild(noiseVarViewer.displayObject);
+        noiseVarViewer.displayObject.width = 960;
+        noiseVarViewer.displayObject.height = 960;
+        noiseVarViewer.displayObject.x = 1920 + 40;
+        noiseVarViewer.displayObject.y = 960;
 
-      stats.events.on('update', () => {
-        emissionsVarViewer.update(stats.get('pollution-map'));
-        noiseVarViewer.update(stats.get('noise-map'));
-      });
+        stats.events.on('update', () => {
+          emissionsVarViewer.update(stats.get('pollution-map'));
+          noiseVarViewer.update(stats.get('noise-map'));
+        });
 
-      const counterPane = $('<div></div>').addClass('counters');
-      $('body').append(counterPane);
+        const counterPane = $('<div></div>').addClass('counters');
+        $('body').append(counterPane);
 
-      const counterView = new TileCounterView(stats, config);
-      counterPane.append(counterView.$element);
+        const counterView = new TileCounterView(stats, config);
+        counterPane.append(counterView.$element);
 
-      const zoneBalanceView = new ZoneBalanceView(stats, config);
-      counterPane.append(zoneBalanceView.$element);
+        const zoneBalanceView = new ZoneBalanceView(stats, config);
+        counterPane.append(zoneBalanceView.$element);
 
-      const dataInspectorView = new DataInspectorView();
-      counterPane.append(dataInspectorView.$element);
-      mapEditor.events.on('inspect', data => dataInspectorView.display(data));
+        const dataInspectorView = new DataInspectorView();
+        counterPane.append(dataInspectorView.$element);
+        mapEditor.events.on('inspect', data => dataInspectorView.display(data));
 
-      const variables = {
-        'Travel times': 'travel-times',
-        'Green space prox.': 'green-spaces-proximity',
-        'Green space areas': 'green-spaces-areas',
-        'Pollution (all)': 'pollution',
-        'Pollution (resid.)': 'pollution-residential',
-        'Noise (all)': 'noise',
-        'Noise (resid.)': 'noise-residential',
-      };
+        const variables = {
+          'Travel times': 'travel-times',
+          'Green space prox.': 'green-spaces-proximity',
+          'Green space areas': 'green-spaces-areas',
+          'Pollution (all)': 'pollution',
+          'Pollution (resid.)': 'pollution-residential',
+          'Noise (all)': 'noise',
+          'Noise (resid.)': 'noise-residential',
+        };
 
-      const varSelector = $('<select></select>')
-        .addClass(['form-control', 'mr-2'])
-        .append(Object.keys(variables).map(name => (
-          $('<option></option>').text(name).attr('value', name)
-        )));
+        const varSelector = $('<select></select>')
+          .addClass(['form-control', 'mr-2'])
+          .append(Object.keys(variables).map(name => (
+            $('<option></option>').text(name).attr('value', name)
+          )));
 
-      $('<div></div>').addClass(['form-inline', 'mt-2'])
-        .append(varSelector)
-        .append($('<button></button>')
-          .attr('type', 'button')
-          .addClass(['btn', 'btn-primary', 'btn-sm'])
-          .text('Calculate')
-          .on('click', () => {
-            const varName = varSelector.val();
-            const varData = typeof variables[varName] === 'string'
-              ? stats.get(variables[varName]) : variables[varName].calculate();
-            dataInspectorView.display({
-              title: varName,
-              values: varData,
-              fractional: (Math.max(...varData) <= 1),
+        $('<div></div>').addClass(['form-inline', 'mt-2'])
+          .append(varSelector)
+          .append($('<button></button>')
+            .attr('type', 'button')
+            .addClass(['btn', 'btn-primary', 'btn-sm'])
+            .text('Calculate')
+            .on('click', () => {
+              const varName = varSelector.val();
+              const varData = typeof variables[varName] === 'string'
+                ? stats.get(variables[varName]) : variables[varName].calculate();
+              dataInspectorView.display({
+                title: varName,
+                values: varData,
+                fractional: (Math.max(...varData) <= 1),
+              });
+            }))
+          .appendTo(counterPane);
+
+        const variableRankListView = new VariableRankListView(config.variables);
+        // Todo: Remove the lines below
+        $('[data-component="data-container"]').append(variableRankListView.$element);
+        variableRankListView.setValues({
+          'traffic-density': 0,
+          'travel-times': 0,
+          safety: 0,
+          pollution: 0,
+          noise: 0,
+          'green-spaces': 0,
+        });
+        window.variableRankListView = variableRankListView;
+
+        const goalDebugView = new GoalDebugView(stats.getGoals());
+        $('[data-component="goal-debug-container"]').append(goalDebugView.$element);
+
+        let indexesDirty = true;
+        let indexesCooldownTimer = null;
+        const indexesCooldownTime = 1000;
+
+        function recalculateIndexes() {
+          indexesDirty = true;
+          if (indexesCooldownTimer === null) {
+            variableRankListView.setValues({
+              'green-spaces': stats.get('green-spaces-index'),
+              pollution: stats.get('pollution-index'),
+              noise: stats.get('noise-index'),
             });
-          }))
-        .appendTo(counterPane);
-
-      const variableRankListView = new VariableRankListView(config.variables);
-      // Todo: Remove the lines below
-      $('[data-component="data-container"]').append(variableRankListView.$element);
-      variableRankListView.setValues({
-        'traffic-density': 0,
-        'travel-times': 0,
-        safety: 0,
-        pollution: 0,
-        noise: 0,
-        'green-spaces': 0,
-      });
-      window.variableRankListView = variableRankListView;
-
-      const goalDebugView = new GoalDebugView(stats.getGoals());
-      $('[data-component="goal-debug-container"]').append(goalDebugView.$element);
-
-      let indexesDirty = true;
-      let indexesCooldownTimer = null;
-      const indexesCooldownTime = 1000;
-
-      function recalculateIndexes() {
-        indexesDirty = true;
-        if (indexesCooldownTimer === null) {
-          variableRankListView.setValues({
-            'green-spaces': stats.get('green-spaces-index'),
-            pollution: stats.get('pollution-index'),
-            noise: stats.get('noise-index'),
-          });
-          goalDebugView.setValues(stats.getGoals());
-          indexesDirty = false;
-          indexesCooldownTimer = setTimeout(() => {
-            indexesCooldownTimer = null;
-            if (indexesDirty) {
-              recalculateIndexes();
-            }
-          }, indexesCooldownTime);
+            goalDebugView.setValues(stats.getGoals());
+            indexesDirty = false;
+            indexesCooldownTimer = setTimeout(() => {
+              indexesCooldownTimer = null;
+              if (indexesDirty) {
+                recalculateIndexes();
+              }
+            }, indexesCooldownTime);
+          }
         }
-      }
 
-      stats.events.on('update', () => {
+        stats.events.on('update', () => {
+          recalculateIndexes();
+        });
         recalculateIndexes();
-      });
-      recalculateIndexes();
 
-      const citizenRequestView = new CitizenRequestView(config);
-      $('[data-component=citizen-request-container]').append(citizenRequestView.$element);
-      const citizenRequestViewMgr = new CitizenRequestViewMgr(citizenRequestView);
-      citizenRequestViewMgr.handleUpdate(stats.getGoals());
-      stats.events.on('update', () => {
+        const citizenRequestView = new CitizenRequestView(config);
+        $('[data-component=citizen-request-container]').append(citizenRequestView.$element);
+        const citizenRequestViewMgr = new CitizenRequestViewMgr(citizenRequestView);
         citizenRequestViewMgr.handleUpdate(stats.getGoals());
-      });
+        stats.events.on('update', () => {
+          citizenRequestViewMgr.handleUpdate(stats.getGoals());
+        });
 
-      if (testScenario) {
-        testScenario(city, carOverlay);
-        if (!window.test) {
-          window.test = {};
+        if (testScenario) {
+          testScenario(city, carOverlay);
+          if (!window.test) {
+            window.test = {};
+          }
+          window.test.city = city;
+          window.test.carOverlay = carOverlay;
+          window.test.cars = carOverlay.cars;
         }
-        window.test.city = city;
-        window.test.carOverlay = carOverlay;
-        window.test.cars = carOverlay.cars;
-      }
-    });
+      })
+      .catch((err) => {
+        showFatalError('Error loading textures', err);
+      });
   });

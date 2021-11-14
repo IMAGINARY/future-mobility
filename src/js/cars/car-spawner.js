@@ -19,6 +19,28 @@ class CarSpawner {
     this.throttleTimer = Math.random() * THROTTLE_TIME;
   }
 
+  /**
+   * Returns of all the texture ids of the cars in the config file
+   */
+  static allTextureIds(config) {
+    const textures = {};
+    Object.entries(config.carTypes).forEach(([id, props]) => {
+      if (props.variants) {
+        Object.assign(textures,
+          Object.fromEntries(props.variants.map(variant => [`${id}-${variant}`, true])));
+      } else {
+        textures[id] = true;
+      }
+
+      if (props.wagons) {
+        Object.assign(textures,
+          Object.fromEntries(props.wagons.flat().map(wagonId => [wagonId, true])));
+      }
+    });
+
+    return Object.keys(textures);
+  }
+
   maybeSpawn() {
     const maxCars = this.overlay.roads.roadCount() * CARS_PER_ROAD;
     if (this.overlay.cars.length < maxCars) {
@@ -60,7 +82,7 @@ class CarSpawner {
 
   getRandomMaxSpeed(carType, lane) {
     const base = this.config.carTypes[carType].maxSpeed || 1;
-    const deviation = Math.random() * 0.4 - 0.2;
+    const deviation = Math.random() * 0.2 - 0.1;
     return lane === RoadTile.OUTER_LANE
       ? base * 0.8 + deviation
       : base + deviation;
@@ -74,12 +96,26 @@ class CarSpawner {
     return options.length === 1 ? options[0] : randomItem(options);
   }
 
+  getRandomTexture(carType) {
+    const options = (this.config.carTypes[carType].variants
+      ? this.config.carTypes[carType].variants.map(variant => `${carType}-${variant}`)
+      : [carType]);
+
+    return this.overlay.textures.cars[randomItem(options)];
+  }
+
+  getRandomWagonTextures(carType) {
+    return this.config.carTypes[carType].wagons.map(wagonDef => (
+      Array.isArray(wagonDef) ? randomItem(wagonDef) : wagonDef
+    ));
+  }
+
   spawn() {
     const tile = this.getRandomTile();
     if (tile) {
       const entrySide = this.getRandomEntrySide(tile.x, tile.y);
       const carType = this.carRandomizer();
-      const texture = this.overlay.textures[carType];
+      const texture = this.getRandomTexture(carType);
       const lane = this.getRandomLane(carType);
       const maxSpeed = this.getRandomMaxSpeed(carType, lane);
 
@@ -88,8 +124,8 @@ class CarSpawner {
 
       if (this.config.carTypes[carType].wagons) {
         let lastWagon = car;
-        this.config.carTypes[carType].wagons.forEach((wagonType) => {
-          const wagonTexture = this.overlay.textures[wagonType];
+        this.getRandomWagonTextures(carType).forEach((wagonTextureId) => {
+          const wagonTexture = this.overlay.textures.cars[wagonTextureId];
           const wagon = new Car(
             this.overlay, wagonTexture, tile.x, tile.y, entrySide, lane, maxSpeed
           );

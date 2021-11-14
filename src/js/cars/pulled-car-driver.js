@@ -1,4 +1,8 @@
 const CarDriver = require('./car-driver');
+const Car = require('./car');
+
+console.log(`No encuentro esto? ${Car.SpriteAnchorX} ${Car.SpriteAnchorY}`);
+console.trace(Car);
 
 class PulledCarDriver extends CarDriver {
   chooseExitSide() {
@@ -17,12 +21,13 @@ class PulledCarDriver extends CarDriver {
     const position = this.car.getSpritePosition();
     const { frontWagon } = this.car;
 
-    const overlapDistance = this.car.sprite.height / 2 + frontWagon.sprite.height / 2;
-    const wagonDistance = overlapDistance;
+    const overlapDistance = this.car.sprite.height * (1 - this.car.sprite.anchor.y)
+      + (frontWagon.sprite.height * this.car.sprite.anchor.y);
+
     const distanceToCarInFront = frontWagon
       .getSpritePosition()
-      .distance(position) - overlapDistance;
-    if (distanceToCarInFront <= -this.car.sprite.height / 5) {
+      .distance(position);
+    if (distanceToCarInFront < overlapDistance - 2) {
       this.car.speed = 0;
     } else {
       // Deaccelerate to maintain the safe distance
