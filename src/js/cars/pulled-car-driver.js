@@ -1,8 +1,4 @@
 const CarDriver = require('./car-driver');
-const Car = require('./car');
-
-console.log(`No encuentro esto? ${Car.SpriteAnchorX} ${Car.SpriteAnchorY}`);
-console.trace(Car);
 
 class PulledCarDriver extends CarDriver {
   chooseExitSide() {
