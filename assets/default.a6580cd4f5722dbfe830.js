@@ -6702,10 +6702,6 @@ module.exports = PathStraight;
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const CarDriver = __webpack_require__(/*! ./car-driver */ "./src/js/cars/car-driver.js");
-const Car = __webpack_require__(/*! ./car */ "./src/js/cars/car.js");
-
-console.log(`No encuentro esto? ${Car.SpriteAnchorX} ${Car.SpriteAnchorY}`);
-console.trace(Car);
 
 class PulledCarDriver extends CarDriver {
   chooseExitSide() {
@@ -10029,17 +10025,15 @@ cfgLoader.load([
           noiseVarViewer.update(stats.get('noise-map'));
         });
 
-        const counterPane = $('<div></div>').addClass('counters');
-        $('body').append(counterPane);
-
         const counterView = new TileCounterView(stats, config);
-        counterPane.append(counterView.$element);
-
         const zoneBalanceView = new ZoneBalanceView(stats, config);
-        counterPane.append(zoneBalanceView.$element);
+        $('[data-component=counters]').append([
+          counterView.$element,
+          zoneBalanceView.$element,
+        ]);
 
         const dataInspectorView = new DataInspectorView();
-        counterPane.append(dataInspectorView.$element);
+        $('[data-component=dataInspector]').append(dataInspectorView.$element);
         mapEditor.events.on('inspect', data => dataInspectorView.display(data));
 
         const variables = {
@@ -10074,7 +10068,7 @@ cfgLoader.load([
                 fractional: (Math.max(...varData) <= 1),
               });
             }))
-          .appendTo(counterPane);
+          .appendTo($('[data-component=dataInspector]'));
 
         const variableRankListView = new VariableRankListView(config.variables);
         // Todo: Remove the lines below
@@ -10147,4 +10141,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.edc21b53d1338b809b76.js.map
+//# sourceMappingURL=default.a6580cd4f5722dbfe830.js.map

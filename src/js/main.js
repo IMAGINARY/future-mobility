@@ -107,17 +107,15 @@ cfgLoader.load([
           noiseVarViewer.update(stats.get('noise-map'));
         });
 
-        const counterPane = $('<div></div>').addClass('counters');
-        $('body').append(counterPane);
-
         const counterView = new TileCounterView(stats, config);
-        counterPane.append(counterView.$element);
-
         const zoneBalanceView = new ZoneBalanceView(stats, config);
-        counterPane.append(zoneBalanceView.$element);
+        $('[data-component=counters]').append([
+          counterView.$element,
+          zoneBalanceView.$element,
+        ]);
 
         const dataInspectorView = new DataInspectorView();
-        counterPane.append(dataInspectorView.$element);
+        $('[data-component=dataInspector]').append(dataInspectorView.$element);
         mapEditor.events.on('inspect', data => dataInspectorView.display(data));
 
         const variables = {
@@ -152,7 +150,7 @@ cfgLoader.load([
                 fractional: (Math.max(...varData) <= 1),
               });
             }))
-          .appendTo(counterPane);
+          .appendTo($('[data-component=dataInspector]'));
 
         const variableRankListView = new VariableRankListView(config.variables);
         // Todo: Remove the lines below

@@ -2150,10 +2150,6 @@ module.exports = PathStraight;
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const CarDriver = __webpack_require__(/*! ./car-driver */ "./src/js/cars/car-driver.js");
-const Car = __webpack_require__(/*! ./car */ "./src/js/cars/car.js");
-
-console.log(`No encuentro esto? ${Car.SpriteAnchorX} ${Car.SpriteAnchorY}`);
-console.trace(Car);
 
 class PulledCarDriver extends CarDriver {
   chooseExitSide() {
@@ -3363,4 +3359,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.15e18124b7e1a916de6c.js.map
+//# sourceMappingURL=city.dcbc4edf973a4b5c4eff.js.map
