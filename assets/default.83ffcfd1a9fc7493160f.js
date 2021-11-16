@@ -8289,28 +8289,27 @@ class MapEditorPalette {
 
     this.buttons.push($('<div class="separator"></div>'));
 
-    this.toolButtons = [
-      $('<button></button>')
-        .attr({type: 'button', title: 'Measure distance'})
-        .addClass([
-          'editor-palette-button',
-          'editor-palette-button-tool',
-          'editor-palette-button-tool-distance',
-        ])
-        .css({
-          backgroundImage: 'url(\'static/fa/ruler-horizontal-solid.svg\')',
-        })
-        .on('click', (ev) => {
-          if (this.activeButton) {
-            this.activeButton.removeClass('active');
-          }
-          this.activeButton = $(ev.target);
-          this.activeButton.addClass('active');
-          this.tileId = null;
-          this.events.emit('change', 'measureDistance');
-          // this.events.emit('action', 'measureDistance',);
-        }),
-    ];
+    this.toolButtons = MapEditorPalette.Tools.map(tool => $('<button></button>')
+      .attr({
+        type: 'button',
+        title: tool.title,
+      })
+      .addClass([
+        'editor-palette-button',
+        'editor-palette-button-tool',
+        `editor-palette-button-tool-${tool.id}`,
+      ])
+      .css({
+        backgroundImage: `url(${tool.icon})`,
+      })
+      .on('click', (ev) => {
+        if (this.activeButton) {
+          this.activeButton.removeClass('active');
+        }
+        this.activeButton = $(ev.target);
+        this.activeButton.addClass('active');
+        this.events.emit('change', tool.id);
+      }));
 
     this.buttons.push(...this.toolButtons);
 
@@ -8365,6 +8364,24 @@ MapEditorPalette.Actions = [
   },
 ];
 
+MapEditorPalette.Tools = [
+  {
+    id: 'measureDistance',
+    title: 'Measure distance',
+    icon: 'static/fa/ruler-horizontal-solid.svg',
+  },
+  {
+    id: 'showPollution',
+    title: 'Show pollution',
+    icon: 'static/fa/smog-solid.svg',
+  },
+  {
+    id: 'showNoise',
+    title: 'Show noise',
+    icon: 'static/fa/drum-solid.svg',
+  }
+];
+
 module.exports = MapEditorPalette;
 
 
@@ -8389,18 +8406,22 @@ const MapTextOverlay = __webpack_require__(/*! ../map-text-overlay */ "./src/js/
 const travelTimes = __webpack_require__(/*! ../aux/travel-times */ "./src/js/aux/travel-times.js");
 const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
 const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
+const VariableMapOverlay = __webpack_require__(/*! ../variable-map-overlay */ "./src/js/variable-map-overlay.js");
 
 class MapEditor {
-  constructor($element, city, config, textures) {
+  constructor($element, city, config, textures, dataManager) {
     this.$element = $element;
     this.city = city;
     this.config = config;
+    this.dataManager = dataManager;
 
     this.events = new EventEmitter();
     this.mapView = new MapView(city, config, textures);
     this.mapView.enableTileInteractivity();
     this.displayObject = this.mapView.displayObject;
     this.textOverlay = new MapTextOverlay(this.mapView);
+
+    this.variableMapOverlay = new VariableMapOverlay(this.mapView, this.config);
 
     this.palette = new MapEditorPalette($('<div></div>').appendTo(this.$element), config);
 
@@ -8519,7 +8540,33 @@ class MapEditor {
           });
         },
       },
+      showPollution: {
+        start: () => {
+          this.variableMapOverlay.show(
+            this.dataManager.get('pollution-map'),
+            this.config.variableMapOverlay.pollutionColor,
+          );
+        },
+        end: () => {
+          this.variableMapOverlay.hide();
+        },
+      },
+      showNoise: {
+        start: () => {
+          this.variableMapOverlay.show(
+            this.dataManager.get('noise-map'),
+            this.config.variableMapOverlay.noiseColor,
+          );
+        },
+        end: () => {
+          this.variableMapOverlay.hide();
+        },
+      },
     };
+  }
+
+  animate(time) {
+    this.variableMapOverlay.animate(time);
   }
 }
 
@@ -9167,7 +9214,7 @@ class MapTextOverlay {
   constructor(mapView) {
     this.mapView = mapView;
     this.visible = false;
-    this.fontSize = 32;
+    this.fontSize = (18 / 72) * MapView.TILE_SIZE;
     this.texts = Array2D.create(
       this.mapView.city.map.width,
       this.mapView.city.map.height,
@@ -9280,8 +9327,12 @@ class MapView {
       this.renderTile(x, y);
     });
 
-    this.displayObject.addChild(...Array2D.flatten(this.bgTiles));
-    this.displayObject.addChild(...Array2D.flatten(this.textureTiles));
+    this.zoningLayer = new PIXI.Container();
+    this.zoningLayer.addChild(...Array2D.flatten(this.bgTiles));
+    this.displayObject.addChild(this.zoningLayer);
+    this.tileTextureLayer = new PIXI.Container();
+    this.tileTextureLayer.addChild(...Array2D.flatten(this.textureTiles));
+    this.displayObject.addChild(this.tileTextureLayer);
     this.overlayContainer = new PIXI.Container();
     this.displayObject.addChild(this.overlayContainer);
     this.gridOverlay = this.createGridOverlay();
@@ -9711,6 +9762,108 @@ module.exports = TileCounterView;
 
 /***/ }),
 
+/***/ "./src/js/variable-map-overlay.js":
+/*!****************************************!*\
+  !*** ./src/js/variable-map-overlay.js ***!
+  \****************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const VariableMapView = __webpack_require__(/*! ./variable-map-view */ "./src/js/variable-map-view.js");
+
+class VariableMapOverlayTransition {
+  constructor(duration, inView, outView, onCompleteCallback) {
+    this.duration = duration;
+    this.elapsed = 0;
+    this.inView = inView;
+    this.outView = outView;
+    this.onCompletCallback = onCompleteCallback;
+    this.finished = false;
+  }
+
+  animate(time) {
+    if (!this.finished) {
+      this.elapsed += time;
+
+      this.outView.alpha = 1 - Math.min(this.elapsed / this.duration, 1);
+      this.inView.alpha = Math.min(this.elapsed / this.duration, 1);
+      if (this.elapsed > this.duration) {
+        this.finished = true;
+        this.onCompletCallback();
+      }
+    }
+  }
+
+  finish() {
+    if (!this.finished) {
+      this.elapsed = this.duration;
+      this.outView.alpha = 0;
+      this.inView.alpha = 1;
+      this.finished = true;
+      this.onCompletCallback();
+    }
+  }
+}
+
+class VariableMapOverlay {
+  constructor(mapView, config) {
+    this.mapView = mapView;
+    this.config = config;
+
+    this.transition = null;
+    const parentBounds = mapView.displayObject.getLocalBounds();
+    this.view = new VariableMapView(
+      mapView.city.map.width,
+      mapView.city.map.height
+    );
+    this.view.displayObject.width = parentBounds.width;
+    this.view.displayObject.height = parentBounds.height;
+    this.view.displayObject.zIndex = 200;
+    this.view.displayObject.alpha = 0;
+
+    this.mapView.addOverlay(this.view.displayObject);
+  }
+
+  show(data, color) {
+    if (this.transition !== null) {
+      this.transition.finish();
+    }
+    this.view.update(data, color);
+    this.transition = new VariableMapOverlayTransition(
+      this.config.variableMapOverlay.transitionDuration,
+      this.view.displayObject,
+      this.mapView.zoningLayer,
+      () => {
+        this.transition = null;
+      }
+    );
+  }
+
+  hide() {
+    if (this.transition) {
+      this.transition.finish();
+    }
+    this.transition = new VariableMapOverlayTransition(
+      this.config.variableMapOverlay.transitionDuration,
+      this.mapView.zoningLayer,
+      this.view.displayObject,
+      () => {
+        this.transition = null;
+      }
+    );
+  }
+
+  animate(time) {
+    if (this.transition !== null) {
+      this.transition.animate(time);
+    }
+  }
+}
+
+module.exports = VariableMapOverlay;
+
+
+/***/ }),
+
 /***/ "./src/js/variable-map-view.js":
 /*!*************************************!*\
   !*** ./src/js/variable-map-view.js ***!
@@ -9723,9 +9876,9 @@ const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d
 const TILE_SIZE = 10;
 
 class VariableMapView {
-  constructor(width, height, color) {
+  constructor(width, height, defaultColor = 0xff0000) {
     this.displayObject = new PIXI.Container();
-    this.color = color;
+    this.defaultColor = defaultColor;
     this.tiles = Array2D.create(width, height, null);
     this.values = Array2D.create(width, height, 0);
 
@@ -9742,19 +9895,19 @@ class VariableMapView {
     });
   }
 
-  renderTile(x, y) {
+  renderTile(x, y, color) {
     this.tiles[y][x]
       .clear()
-      .beginFill(this.color, this.values[y][x])
+      .beginFill(color, this.values[y][x] * 0.95)
       .drawRect(0, 0, TILE_SIZE, TILE_SIZE)
       .endFill();
   }
 
-  update(data) {
+  update(data, color = null) {
     Array2D.zip(this.values, data, (value, newValue, x, y) => {
       if (value !== newValue) {
         this.values[y][x] = newValue;
-        this.renderTile(x, y);
+        this.renderTile(x, y, color || this.defaultColor);
       }
     });
   }
@@ -9983,6 +10136,7 @@ cfgLoader.load([
       width: 3840,
       height: 1920,
       backgroundColor: 0xf2f2f2,
+      // backgroundColor: 0xffffff,
     });
 
     const textureLoader = new TextureLoader(app);
@@ -9993,12 +10147,13 @@ cfgLoader.load([
       .then((textures) => {
         $('[data-component="app-container"]').append(app.view);
 
-        const mapEditor = new MapEditor($('body'), city, config, textures);
+        const mapEditor = new MapEditor($('body'), city, config, textures, stats);
         app.stage.addChild(mapEditor.displayObject);
         mapEditor.displayObject.width = 1920;
         mapEditor.displayObject.height = 1920;
         mapEditor.displayObject.x = 0;
         mapEditor.displayObject.y = 0;
+        app.ticker.add(time => mapEditor.animate(time));
 
         const carOverlay = new CarOverlay(mapEditor.mapView, config, textures, {
           spawn: !testScenario,
@@ -10006,13 +10161,39 @@ cfgLoader.load([
         });
         app.ticker.add(time => carOverlay.animate(time));
 
-        const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x953202);
+
+        // console.log(`width: ${mapEditor.mapView.displayObject.width}`);
+        // console.log(`local bounds width: ${mapEditor.mapView.displayObject.getLocalBounds().width}`);
+        //
+        // const pollutionOverlay = new VariableMapView(city.map.width, city.map.height, 0x7a1600);
+        // pollutionOverlay.displayObject.x = 0;
+        // pollutionOverlay.displayObject.y = 0;
+        // pollutionOverlay.displayObject.width = MapView.TILE_SIZE * city.map.width;
+        // pollutionOverlay.displayObject.height = MapView.TILE_SIZE * city.map.height;
+        // pollutionOverlay.displayObject.zIndex = 200;
+        // pollutionOverlay.displayObject.alpha = 0;
+        // mapEditor.mapView.addOverlay(pollutionOverlay.displayObject);
+        // stats.events.on('update', () => {
+        //   pollutionOverlay.update(stats.get('pollution-map'));
+        // });
+        // setTimeout(() => {
+        //   let elapsed = 0;
+        //   const total = 60;
+        //   app.ticker.add((time) => {
+        //     elapsed += time;
+        //     mapEditor.mapView.zoningLayer.alpha = 1 - Math.min(elapsed / total, 1);
+        //     pollutionOverlay.displayObject.alpha = Math.min(elapsed / total, 1);
+        //   });
+        // }, 5000);
+
+        const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
         app.stage.addChild(emissionsVarViewer.displayObject);
         emissionsVarViewer.displayObject.width = 960;
         emissionsVarViewer.displayObject.height = 960;
         emissionsVarViewer.displayObject.x = 1920 + 40;
         emissionsVarViewer.displayObject.y = 0;
 
+        const myColor = '#3100c2';
         const noiseVarViewer = new VariableMapView(city.map.width, city.map.height, 0x20e95ff);
         app.stage.addChild(noiseVarViewer.displayObject);
         noiseVarViewer.displayObject.width = 960;
@@ -10141,4 +10322,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.a6580cd4f5722dbfe830.js.map
+//# sourceMappingURL=default.83ffcfd1a9fc7493160f.js.map

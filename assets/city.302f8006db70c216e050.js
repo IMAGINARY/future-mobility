@@ -2811,8 +2811,12 @@ class MapView {
       this.renderTile(x, y);
     });
 
-    this.displayObject.addChild(...Array2D.flatten(this.bgTiles));
-    this.displayObject.addChild(...Array2D.flatten(this.textureTiles));
+    this.zoningLayer = new PIXI.Container();
+    this.zoningLayer.addChild(...Array2D.flatten(this.bgTiles));
+    this.displayObject.addChild(this.zoningLayer);
+    this.tileTextureLayer = new PIXI.Container();
+    this.tileTextureLayer.addChild(...Array2D.flatten(this.textureTiles));
+    this.displayObject.addChild(this.tileTextureLayer);
     this.overlayContainer = new PIXI.Container();
     this.displayObject.addChild(this.overlayContainer);
     this.gridOverlay = this.createGridOverlay();
@@ -3359,4 +3363,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.dcbc4edf973a4b5c4eff.js.map
+//# sourceMappingURL=city.302f8006db70c216e050.js.map

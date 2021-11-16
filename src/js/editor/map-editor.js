@@ -11,18 +11,22 @@ const MapTextOverlay = require('../map-text-overlay');
 const travelTimes = require('../aux/travel-times');
 const { getTileTypeId } = require('../aux/config-helpers');
 const Array2D = require('../aux/array-2d');
+const VariableMapOverlay = require('../variable-map-overlay');
 
 class MapEditor {
-  constructor($element, city, config, textures) {
+  constructor($element, city, config, textures, dataManager) {
     this.$element = $element;
     this.city = city;
     this.config = config;
+    this.dataManager = dataManager;
 
     this.events = new EventEmitter();
     this.mapView = new MapView(city, config, textures);
     this.mapView.enableTileInteractivity();
     this.displayObject = this.mapView.displayObject;
     this.textOverlay = new MapTextOverlay(this.mapView);
+
+    this.variableMapOverlay = new VariableMapOverlay(this.mapView, this.config);
 
     this.palette = new MapEditorPalette($('<div></div>').appendTo(this.$element), config);
 
@@ -141,7 +145,33 @@ class MapEditor {
           });
         },
       },
+      showPollution: {
+        start: () => {
+          this.variableMapOverlay.show(
+            this.dataManager.get('pollution-map'),
+            this.config.variableMapOverlay.pollutionColor,
+          );
+        },
+        end: () => {
+          this.variableMapOverlay.hide();
+        },
+      },
+      showNoise: {
+        start: () => {
+          this.variableMapOverlay.show(
+            this.dataManager.get('noise-map'),
+            this.config.variableMapOverlay.noiseColor,
+          );
+        },
+        end: () => {
+          this.variableMapOverlay.hide();
+        },
+      },
     };
+  }
+
+  animate(time) {
+    this.variableMapOverlay.animate(time);
   }
 }
 

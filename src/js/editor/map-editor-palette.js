@@ -36,28 +36,27 @@ class MapEditorPalette {
 
     this.buttons.push($('<div class="separator"></div>'));
 
-    this.toolButtons = [
-      $('<button></button>')
-        .attr({type: 'button', title: 'Measure distance'})
-        .addClass([
-          'editor-palette-button',
-          'editor-palette-button-tool',
-          'editor-palette-button-tool-distance',
-        ])
-        .css({
-          backgroundImage: 'url(\'static/fa/ruler-horizontal-solid.svg\')',
-        })
-        .on('click', (ev) => {
-          if (this.activeButton) {
-            this.activeButton.removeClass('active');
-          }
-          this.activeButton = $(ev.target);
-          this.activeButton.addClass('active');
-          this.tileId = null;
-          this.events.emit('change', 'measureDistance');
-          // this.events.emit('action', 'measureDistance',);
-        }),
-    ];
+    this.toolButtons = MapEditorPalette.Tools.map(tool => $('<button></button>')
+      .attr({
+        type: 'button',
+        title: tool.title,
+      })
+      .addClass([
+        'editor-palette-button',
+        'editor-palette-button-tool',
+        `editor-palette-button-tool-${tool.id}`,
+      ])
+      .css({
+        backgroundImage: `url(${tool.icon})`,
+      })
+      .on('click', (ev) => {
+        if (this.activeButton) {
+          this.activeButton.removeClass('active');
+        }
+        this.activeButton = $(ev.target);
+        this.activeButton.addClass('active');
+        this.events.emit('change', tool.id);
+      }));
 
     this.buttons.push(...this.toolButtons);
 
@@ -110,6 +109,24 @@ MapEditorPalette.Actions = [
     title: 'Export map',
     icon: 'static/fa/file-export-solid.svg',
   },
+];
+
+MapEditorPalette.Tools = [
+  {
+    id: 'measureDistance',
+    title: 'Measure distance',
+    icon: 'static/fa/ruler-horizontal-solid.svg',
+  },
+  {
+    id: 'showPollution',
+    title: 'Show pollution',
+    icon: 'static/fa/smog-solid.svg',
+  },
+  {
+    id: 'showNoise',
+    title: 'Show noise',
+    icon: 'static/fa/drum-solid.svg',
+  }
 ];
 
 module.exports = MapEditorPalette;

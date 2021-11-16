@@ -11,3 +11,10 @@ citizenRequestView:
 dataManager:
   # Minimum interval for recalculating the simulation's variables
   throttleTime: 1000
+variableMapOverlay:
+  # Color used for showing pollution (with alpha 0.9 for max pollution)
+  pollutionColor: 0x7a1600
+  # Color used for showing noise (with alpha 0.9 for max noise)
+  noiseColor: 0x3100c2
+  # Duration of the fade-in or out transition (in PIXIjs ticker units, 60 is approx. 1 second)
+  transitionDuration: 60

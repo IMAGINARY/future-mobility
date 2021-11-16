@@ -65,6 +65,7 @@ cfgLoader.load([
       width: 3840,
       height: 1920,
       backgroundColor: 0xf2f2f2,
+      // backgroundColor: 0xffffff,
     });
 
     const textureLoader = new TextureLoader(app);
@@ -75,12 +76,13 @@ cfgLoader.load([
       .then((textures) => {
         $('[data-component="app-container"]').append(app.view);
 
-        const mapEditor = new MapEditor($('body'), city, config, textures);
+        const mapEditor = new MapEditor($('body'), city, config, textures, stats);
         app.stage.addChild(mapEditor.displayObject);
         mapEditor.displayObject.width = 1920;
         mapEditor.displayObject.height = 1920;
         mapEditor.displayObject.x = 0;
         mapEditor.displayObject.y = 0;
+        app.ticker.add(time => mapEditor.animate(time));
 
         const carOverlay = new CarOverlay(mapEditor.mapView, config, textures, {
           spawn: !testScenario,
@@ -88,13 +90,39 @@ cfgLoader.load([
         });
         app.ticker.add(time => carOverlay.animate(time));
 
-        const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x953202);
+
+        // console.log(`width: ${mapEditor.mapView.displayObject.width}`);
+        // console.log(`local bounds width: ${mapEditor.mapView.displayObject.getLocalBounds().width}`);
+        //
+        // const pollutionOverlay = new VariableMapView(city.map.width, city.map.height, 0x7a1600);
+        // pollutionOverlay.displayObject.x = 0;
+        // pollutionOverlay.displayObject.y = 0;
+        // pollutionOverlay.displayObject.width = MapView.TILE_SIZE * city.map.width;
+        // pollutionOverlay.displayObject.height = MapView.TILE_SIZE * city.map.height;
+        // pollutionOverlay.displayObject.zIndex = 200;
+        // pollutionOverlay.displayObject.alpha = 0;
+        // mapEditor.mapView.addOverlay(pollutionOverlay.displayObject);
+        // stats.events.on('update', () => {
+        //   pollutionOverlay.update(stats.get('pollution-map'));
+        // });
+        // setTimeout(() => {
+        //   let elapsed = 0;
+        //   const total = 60;
+        //   app.ticker.add((time) => {
+        //     elapsed += time;
+        //     mapEditor.mapView.zoningLayer.alpha = 1 - Math.min(elapsed / total, 1);
+        //     pollutionOverlay.displayObject.alpha = Math.min(elapsed / total, 1);
+        //   });
+        // }, 5000);
+
+        const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
         app.stage.addChild(emissionsVarViewer.displayObject);
         emissionsVarViewer.displayObject.width = 960;
         emissionsVarViewer.displayObject.height = 960;
         emissionsVarViewer.displayObject.x = 1920 + 40;
         emissionsVarViewer.displayObject.y = 0;
 
+        const myColor = '#3100c2';
         const noiseVarViewer = new VariableMapView(city.map.width, city.map.height, 0x20e95ff);
         app.stage.addChild(noiseVarViewer.displayObject);
         noiseVarViewer.displayObject.width = 960;

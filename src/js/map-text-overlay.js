@@ -7,7 +7,7 @@ class MapTextOverlay {
   constructor(mapView) {
     this.mapView = mapView;
     this.visible = false;
-    this.fontSize = 32;
+    this.fontSize = (18 / 72) * MapView.TILE_SIZE;
     this.texts = Array2D.create(
       this.mapView.city.map.width,
       this.mapView.city.map.height,

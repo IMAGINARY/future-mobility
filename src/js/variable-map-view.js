@@ -4,9 +4,9 @@ const Array2D = require('./aux/array-2d');
 const TILE_SIZE = 10;
 
 class VariableMapView {
-  constructor(width, height, color) {
+  constructor(width, height, defaultColor = 0xff0000) {
     this.displayObject = new PIXI.Container();
-    this.color = color;
+    this.defaultColor = defaultColor;
     this.tiles = Array2D.create(width, height, null);
     this.values = Array2D.create(width, height, 0);
 
@@ -23,19 +23,19 @@ class VariableMapView {
     });
   }
 
-  renderTile(x, y) {
+  renderTile(x, y, color) {
     this.tiles[y][x]
       .clear()
-      .beginFill(this.color, this.values[y][x])
+      .beginFill(color, this.values[y][x] * 0.95)
       .drawRect(0, 0, TILE_SIZE, TILE_SIZE)
       .endFill();
   }
 
-  update(data) {
+  update(data, color = null) {
     Array2D.zip(this.values, data, (value, newValue, x, y) => {
       if (value !== newValue) {
         this.values[y][x] = newValue;
-        this.renderTile(x, y);
+        this.renderTile(x, y, color || this.defaultColor);
       }
     });
   }
