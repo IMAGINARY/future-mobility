@@ -1958,6 +1958,7 @@ class MapEditor {
       },
       showPollution: {
         start: () => {
+          this.mapView.setInspectCursor();
           this.variableMapOverlay.show(
             this.dataManager.get('pollution-map'),
             this.config.variableMapOverlay.pollutionColor,
@@ -1966,9 +1967,11 @@ class MapEditor {
         end: () => {
           this.variableMapOverlay.hide();
         },
+        action: () => {},
       },
       showNoise: {
         start: () => {
+          this.mapView.setInspectCursor();
           this.variableMapOverlay.show(
             this.dataManager.get('noise-map'),
             this.config.variableMapOverlay.noiseColor,
@@ -1977,6 +1980,7 @@ class MapEditor {
         end: () => {
           this.variableMapOverlay.hide();
         },
+        action: () => {},
       },
     };
   }
@@ -2931,14 +2935,13 @@ class ServerSocketConnector {
     const message = JSON.parse(ev.data);
     if (message.type === 'map_update') {
       this.events.emit('map_update', message.cells);
-    }
-    else if (message.type === 'vars_update') {
+    } else if (message.type === 'vars_update') {
       this.events.emit('vars_update', message.variables);
-    }
-    else if (message.type === 'goals_update') {
+    } else if (message.type === 'goals_update') {
       this.events.emit('goals_update', message.goals);
-    }
-    else if (message.type === 'pong') {
+    } else if (message.type === 'view_show_map_var') {
+      this.events.emit('view_show_map_var', message.variable, message.data);
+    } else if (message.type === 'pong') {
       this.handlePong();
     }
   }
@@ -3007,6 +3010,13 @@ class ServerSocketConnector {
 
   getGoals() {
     this.send('get_goals');
+  }
+
+  viewShowMapVariable(variable) {
+    this.send({
+      type: 'view_show_map_var',
+      variable,
+    });
   }
 }
 
@@ -3153,7 +3163,7 @@ class VariableMapOverlay {
     }
     this.view.update(data, color);
     this.transition = new VariableMapOverlayTransition(
-      this.config.variableMapOverlay.transitionDuration,
+      this.config.variableMapOverlay.transitionDuration * 60,
       this.view.displayObject,
       this.mapView.zoningLayer,
       () => {
@@ -3167,7 +3177,7 @@ class VariableMapOverlay {
       this.transition.finish();
     }
     this.transition = new VariableMapOverlayTransition(
-      this.config.variableMapOverlay.transitionDuration,
+      this.config.variableMapOverlay.transitionDuration * 60,
       this.mapView.zoningLayer,
       this.view.displayObject,
       () => {
@@ -3421,4 +3431,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.2e49c5e671481c821e57.js.map
+//# sourceMappingURL=editor.366728312bf563d47cd1.js.map

@@ -9,3 +9,32 @@ body.dashboard {
     font-size: 1.9em;
   }
 }
+
+.btn-dashboard-action {
+  font-size: 1.8em;
+  line-height: 1.1;
+  border-radius: 6em;
+  padding: 0.8em 0.5em;
+
+  .text {
+    display: block;
+  }
+
+  .text-de {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-bottom: 0.2em;
+  }
+
+  &.disabled {
+    color: rgba(255, 255, 255, 0.65)!important;
+  }
+}
+
+.btn-show-pollution {
+  @include button-variant(#ffffff, #e34205, #e34205);
+}
+
+.btn-show-noise {
+  @include button-variant(#ffffff, #7d1dff, #7d1dff);
+}

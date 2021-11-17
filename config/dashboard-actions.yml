@@ -1,0 +1,10 @@
+dashboardActions:
+  buttons:
+    - id: show-pollution
+      text:
+        de: "Luftverschmutzung<br>anzeigen"
+        en: "Show pollution"
+    - id: show-noise
+      text:
+        de: "Lärmbelastung<br>anzeigen"
+        en: "Show noise"

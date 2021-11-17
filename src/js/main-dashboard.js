@@ -5,6 +5,7 @@ const ServerSocketConnector = require('./server-socket-connector');
 const ConnectionStateView = require('./connection-state-view');
 const CitizenRequestView = require('./citizen-request-view');
 const CitizenRequestViewMgr = require('./citizen-request-view-mgr');
+const ActionsPane = require('./dashboard/actions-pane');
 
 fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -14,6 +15,8 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
     console.error(err);
   })
   .then((config) => {
+    const connector = new ServerSocketConnector(process.env.SERVER_SOCKET_URI);
+
     const citizenRequestView = new CitizenRequestView(config);
     $('#col-1').append(citizenRequestView.$element);
     const citizenRequestViewMgr = new CitizenRequestViewMgr(citizenRequestView);
@@ -29,7 +32,19 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
       'green-spaces': 0,
     });
 
-    const connector = new ServerSocketConnector(process.env.SERVER_SOCKET_URI);
+    const actionsPane = new ActionsPane(config);
+    $('#col-actions').append(actionsPane.$element);
+    actionsPane.events.on('action', (actionId) => {
+      if (actionId === 'show-pollution' || actionId === 'show-noise') {
+        connector.viewShowMapVariable(actionId.replace('show-', ''));
+        actionsPane.disableAll();
+        setTimeout(() => {
+          actionsPane.enableAll();
+        }, (config.variableMapOverlay.overlayDuration
+          + config.variableMapOverlay.transitionDuration) * 1000);
+      }
+    });
+
     connector.events.on('vars_update', (variables) => {
       variableRankListView.setValues(variables);
     });
@@ -39,6 +54,7 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
     connector.events.on('connect', () => {
       connector.getVars();
       connector.getGoals();
+      actionsPane.enableAll();
     });
     const connStateView = new ConnectionStateView(connector);
     $('body').append(connStateView.$element);

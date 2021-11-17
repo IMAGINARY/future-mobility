@@ -147,6 +147,7 @@ class MapEditor {
       },
       showPollution: {
         start: () => {
+          this.mapView.setInspectCursor();
           this.variableMapOverlay.show(
             this.dataManager.get('pollution-map'),
             this.config.variableMapOverlay.pollutionColor,
@@ -155,9 +156,11 @@ class MapEditor {
         end: () => {
           this.variableMapOverlay.hide();
         },
+        action: () => {},
       },
       showNoise: {
         start: () => {
+          this.mapView.setInspectCursor();
           this.variableMapOverlay.show(
             this.dataManager.get('noise-map'),
             this.config.variableMapOverlay.noiseColor,
@@ -166,6 +169,7 @@ class MapEditor {
         end: () => {
           this.variableMapOverlay.hide();
         },
+        action: () => {},
       },
     };
   }

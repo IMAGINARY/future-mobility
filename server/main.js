@@ -25,6 +25,7 @@ cfgLoader.load([
   '../config/variables.yml',
   '../config/goals.yml',
   '../config/citizen-requests.yml',
+  '../config/dashboard-actions.yml',
   '../config/cars.yml',
   '../config/default-settings.yml',
   settingsFile,

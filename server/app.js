@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+const EventEmitter = require('events');
 const express = require('express');
 const ws = require('ws');
 const cors = require('cors');
@@ -64,6 +65,7 @@ function initApp(config) {
   });
 
   const wss = new ws.Server({ noServer: true });
+  const viewRepeater = new EventEmitter();
 
   wss.on('connection', (socket) => {
     console.log('Connected');
@@ -93,6 +95,14 @@ function initApp(config) {
       }));
     }
 
+    function sendViewShowMapVar(variable) {
+      socket.send(JSON.stringify({
+        type: 'view_show_map_var',
+        variable,
+        data: stats.get(`${variable}-map`),
+      }));
+    }
+
     function sendPong() {
       socket.send(JSON.stringify({
         type: 'pong',
@@ -115,6 +125,9 @@ function initApp(config) {
           case 'get_goals':
             sendGoalsMessage();
             break;
+          case 'view_show_map_var':
+            viewRepeater.emit('view_show_map_var', message.variable);
+            break;
           case 'ping':
             sendPong();
             break;
@@ -135,6 +148,10 @@ function initApp(config) {
     stats.events.on('update', () => {
       sendVariablesMessage();
       sendGoalsMessage();
+    });
+
+    viewRepeater.on('view_show_map_var', (variable) => {
+      sendViewShowMapVar(variable);
     });
   });
 

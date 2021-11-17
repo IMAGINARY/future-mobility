@@ -884,6 +884,63 @@ module.exports = ConnectionStateView;
 
 /***/ }),
 
+/***/ "./src/js/dashboard/actions-pane.js":
+/*!******************************************!*\
+  !*** ./src/js/dashboard/actions-pane.js ***!
+  \******************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+
+class ActionsPane {
+  constructor(config) {
+    this.config = config;
+    this.$element = $('<div></div>').addClass('actions-pane');
+    this.events = new EventEmitter();
+    this.disabled = false;
+
+    this.buttons = this.config.dashboardActions.buttons.map(button => (
+      $('<button></button>')
+        .attr('type', 'button')
+        .addClass(`btn btn-block btn-dashboard-action btn-${button.id}`)
+        .append($('<span></span>').addClass('text text-de')
+          .html(button.text.de))
+        .append($('<span></span>').addClass('text text-en')
+          .html(button.text.en))
+        .on('click', () => {
+          if (!this.disabled) {
+            this.events.emit('action', button.id);
+          }
+        })
+    ));
+
+    this.$element.append(
+      $('<div></div>').addClass('row justify-content-center align-items-center')
+        .append(
+          this.buttons.map(button => (
+            $('<div>')
+              .addClass('col-3')
+              .append(button)))
+        )
+    );
+  }
+
+  disableAll() {
+    this.disabled = true;
+    this.buttons.forEach(button => button.addClass('disabled'));
+  }
+
+  enableAll() {
+    this.disabled = false;
+    this.buttons.forEach(button => button.removeClass('disabled'));
+  }
+}
+
+module.exports = ActionsPane;
+
+
+/***/ }),
+
 /***/ "./src/js/index-list-view.js":
 /*!***********************************!*\
   !*** ./src/js/index-list-view.js ***!
@@ -1047,14 +1104,13 @@ class ServerSocketConnector {
     const message = JSON.parse(ev.data);
     if (message.type === 'map_update') {
       this.events.emit('map_update', message.cells);
-    }
-    else if (message.type === 'vars_update') {
+    } else if (message.type === 'vars_update') {
       this.events.emit('vars_update', message.variables);
-    }
-    else if (message.type === 'goals_update') {
+    } else if (message.type === 'goals_update') {
       this.events.emit('goals_update', message.goals);
-    }
-    else if (message.type === 'pong') {
+    } else if (message.type === 'view_show_map_var') {
+      this.events.emit('view_show_map_var', message.variable, message.data);
+    } else if (message.type === 'pong') {
       this.handlePong();
     }
   }
@@ -1124,6 +1180,13 @@ class ServerSocketConnector {
   getGoals() {
     this.send('get_goals');
   }
+
+  viewShowMapVariable(variable) {
+    this.send({
+      type: 'view_show_map_var',
+      variable,
+    });
+  }
 }
 
 module.exports = ServerSocketConnector;
@@ -1183,6 +1246,7 @@ const ServerSocketConnector = __webpack_require__(/*! ./server-socket-connector 
 const ConnectionStateView = __webpack_require__(/*! ./connection-state-view */ "./src/js/connection-state-view.js");
 const CitizenRequestView = __webpack_require__(/*! ./citizen-request-view */ "./src/js/citizen-request-view.js");
 const CitizenRequestViewMgr = __webpack_require__(/*! ./citizen-request-view-mgr */ "./src/js/citizen-request-view-mgr.js");
+const ActionsPane = __webpack_require__(/*! ./dashboard/actions-pane */ "./src/js/dashboard/actions-pane.js");
 
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -1192,6 +1256,8 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
     console.error(err);
   })
   .then((config) => {
+    const connector = new ServerSocketConnector("ws://localhost:4848");
+
     const citizenRequestView = new CitizenRequestView(config);
     $('#col-1').append(citizenRequestView.$element);
     const citizenRequestViewMgr = new CitizenRequestViewMgr(citizenRequestView);
@@ -1207,7 +1273,19 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
       'green-spaces': 0,
     });
 
-    const connector = new ServerSocketConnector("ws://localhost:4848");
+    const actionsPane = new ActionsPane(config);
+    $('#col-actions').append(actionsPane.$element);
+    actionsPane.events.on('action', (actionId) => {
+      if (actionId === 'show-pollution' || actionId === 'show-noise') {
+        connector.viewShowMapVariable(actionId.replace('show-', ''));
+        actionsPane.disableAll();
+        setTimeout(() => {
+          actionsPane.enableAll();
+        }, (config.variableMapOverlay.overlayDuration
+          + config.variableMapOverlay.transitionDuration) * 1000);
+      }
+    });
+
     connector.events.on('vars_update', (variables) => {
       variableRankListView.setValues(variables);
     });
@@ -1217,6 +1295,7 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
     connector.events.on('connect', () => {
       connector.getVars();
       connector.getGoals();
+      actionsPane.enableAll();
     });
     const connStateView = new ConnectionStateView(connector);
     $('body').append(connStateView.$element);
@@ -1226,4 +1305,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=dashboard.aa290fd75a200089f9fe.js.map
+//# sourceMappingURL=dashboard.f8fcf627e60aeef6b1a7.js.map

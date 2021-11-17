@@ -3056,14 +3056,13 @@ class ServerSocketConnector {
     const message = JSON.parse(ev.data);
     if (message.type === 'map_update') {
       this.events.emit('map_update', message.cells);
-    }
-    else if (message.type === 'vars_update') {
+    } else if (message.type === 'vars_update') {
       this.events.emit('vars_update', message.variables);
-    }
-    else if (message.type === 'goals_update') {
+    } else if (message.type === 'goals_update') {
       this.events.emit('goals_update', message.goals);
-    }
-    else if (message.type === 'pong') {
+    } else if (message.type === 'view_show_map_var') {
+      this.events.emit('view_show_map_var', message.variable, message.data);
+    } else if (message.type === 'pong') {
       this.handlePong();
     }
   }
@@ -3132,6 +3131,13 @@ class ServerSocketConnector {
 
   getGoals() {
     this.send('get_goals');
+  }
+
+  viewShowMapVariable(variable) {
+    this.send({
+      type: 'view_show_map_var',
+      variable,
+    });
   }
 }
 
@@ -3207,6 +3213,162 @@ class TextureLoader {
 }
 
 module.exports = TextureLoader;
+
+
+/***/ }),
+
+/***/ "./src/js/variable-map-overlay.js":
+/*!****************************************!*\
+  !*** ./src/js/variable-map-overlay.js ***!
+  \****************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const VariableMapView = __webpack_require__(/*! ./variable-map-view */ "./src/js/variable-map-view.js");
+
+class VariableMapOverlayTransition {
+  constructor(duration, inView, outView, onCompleteCallback) {
+    this.duration = duration;
+    this.elapsed = 0;
+    this.inView = inView;
+    this.outView = outView;
+    this.onCompletCallback = onCompleteCallback;
+    this.finished = false;
+  }
+
+  animate(time) {
+    if (!this.finished) {
+      this.elapsed += time;
+
+      this.outView.alpha = 1 - Math.min(this.elapsed / this.duration, 1);
+      this.inView.alpha = Math.min(this.elapsed / this.duration, 1);
+      if (this.elapsed > this.duration) {
+        this.finished = true;
+        this.onCompletCallback();
+      }
+    }
+  }
+
+  finish() {
+    if (!this.finished) {
+      this.elapsed = this.duration;
+      this.outView.alpha = 0;
+      this.inView.alpha = 1;
+      this.finished = true;
+      this.onCompletCallback();
+    }
+  }
+}
+
+class VariableMapOverlay {
+  constructor(mapView, config) {
+    this.mapView = mapView;
+    this.config = config;
+
+    this.transition = null;
+    const parentBounds = mapView.displayObject.getLocalBounds();
+    this.view = new VariableMapView(
+      mapView.city.map.width,
+      mapView.city.map.height
+    );
+    this.view.displayObject.width = parentBounds.width;
+    this.view.displayObject.height = parentBounds.height;
+    this.view.displayObject.zIndex = 200;
+    this.view.displayObject.alpha = 0;
+
+    this.mapView.addOverlay(this.view.displayObject);
+  }
+
+  show(data, color) {
+    if (this.transition !== null) {
+      this.transition.finish();
+    }
+    this.view.update(data, color);
+    this.transition = new VariableMapOverlayTransition(
+      this.config.variableMapOverlay.transitionDuration * 60,
+      this.view.displayObject,
+      this.mapView.zoningLayer,
+      () => {
+        this.transition = null;
+      }
+    );
+  }
+
+  hide() {
+    if (this.transition) {
+      this.transition.finish();
+    }
+    this.transition = new VariableMapOverlayTransition(
+      this.config.variableMapOverlay.transitionDuration * 60,
+      this.mapView.zoningLayer,
+      this.view.displayObject,
+      () => {
+        this.transition = null;
+      }
+    );
+  }
+
+  animate(time) {
+    if (this.transition !== null) {
+      this.transition.animate(time);
+    }
+  }
+}
+
+module.exports = VariableMapOverlay;
+
+
+/***/ }),
+
+/***/ "./src/js/variable-map-view.js":
+/*!*************************************!*\
+  !*** ./src/js/variable-map-view.js ***!
+  \*************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+/* globals PIXI */
+const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+
+const TILE_SIZE = 10;
+
+class VariableMapView {
+  constructor(width, height, defaultColor = 0xff0000) {
+    this.displayObject = new PIXI.Container();
+    this.defaultColor = defaultColor;
+    this.tiles = Array2D.create(width, height, null);
+    this.values = Array2D.create(width, height, 0);
+
+    Array2D.fill(this.tiles, (x, y) => {
+      const newTile = new PIXI.Graphics();
+      newTile.x = x * TILE_SIZE;
+      newTile.y = y * TILE_SIZE;
+      return newTile;
+    });
+
+    this.displayObject.addChild(...Array2D.flatten(this.tiles));
+    Array2D.forEach(this.values, (value, x, y) => {
+      this.renderTile(x, y);
+    });
+  }
+
+  renderTile(x, y, color) {
+    this.tiles[y][x]
+      .clear()
+      .beginFill(color, this.values[y][x] * 0.95)
+      .drawRect(0, 0, TILE_SIZE, TILE_SIZE)
+      .endFill();
+  }
+
+  update(data, color = null) {
+    Array2D.zip(this.values, data, (value, newValue, x, y) => {
+      if (value !== newValue) {
+        this.values[y][x] = newValue;
+        this.renderTile(x, y, color || this.defaultColor);
+      }
+    });
+  }
+}
+
+module.exports = VariableMapView;
 
 
 /***/ }),
@@ -3310,6 +3472,7 @@ const showFatalError = __webpack_require__(/*! ./aux/show-fatal-error */ "./src/
 const CarOverlay = __webpack_require__(/*! ./cars/car-overlay */ "./src/js/cars/car-overlay.js");
 const TextureLoader = __webpack_require__(/*! ./texture-loader */ "./src/js/texture-loader.js");
 const CarSpawner = __webpack_require__(/*! ./cars/car-spawner */ "./src/js/cars/car-spawner.js");
+const VariableMapOverlay = __webpack_require__(/*! ./variable-map-overlay */ "./src/js/variable-map-overlay.js");
 
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -3339,12 +3502,22 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
         const carOverlay = new CarOverlay(mapView, config, textures);
         app.ticker.add(time => carOverlay.animate(time));
 
+        const variableMapOverlay = new VariableMapOverlay(mapView, config);
+        app.ticker.add(time => variableMapOverlay.animate(time));
+
         const connector = new ServerSocketConnector("ws://localhost:4848");
         connector.events.on('map_update', (cells) => {
           city.map.replace(cells);
         });
         connector.events.on('connect', () => {
           connector.getMap();
+        });
+        connector.events.on('view_show_map_var', (variable, data) => {
+          variableMapOverlay.show(data,
+            config.variableMapOverlay.colors[variable] || 0x000000);
+          setTimeout(() => {
+            variableMapOverlay.hide();
+          }, config.variableMapOverlay.overlayDuration * 1000);
         });
         const connStateView = new ConnectionStateView(connector);
         $('body').append(connStateView.$element);
@@ -3363,4 +3536,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.302f8006db70c216e050.js.map
+//# sourceMappingURL=city.5f09634257650cfd8756.js.map

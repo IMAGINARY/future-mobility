@@ -59,7 +59,7 @@ class VariableMapOverlay {
     }
     this.view.update(data, color);
     this.transition = new VariableMapOverlayTransition(
-      this.config.variableMapOverlay.transitionDuration,
+      this.config.variableMapOverlay.transitionDuration * 60,
       this.view.displayObject,
       this.mapView.zoningLayer,
       () => {
@@ -73,7 +73,7 @@ class VariableMapOverlay {
       this.transition.finish();
     }
     this.transition = new VariableMapOverlayTransition(
-      this.config.variableMapOverlay.transitionDuration,
+      this.config.variableMapOverlay.transitionDuration * 60,
       this.mapView.zoningLayer,
       this.view.displayObject,
       () => {

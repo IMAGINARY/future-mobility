@@ -9,6 +9,7 @@ const showFatalError = require('./aux/show-fatal-error');
 const CarOverlay = require('./cars/car-overlay');
 const TextureLoader = require('./texture-loader');
 const CarSpawner = require('./cars/car-spawner');
+const VariableMapOverlay = require('./variable-map-overlay');
 
 fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -38,12 +39,22 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
         const carOverlay = new CarOverlay(mapView, config, textures);
         app.ticker.add(time => carOverlay.animate(time));
 
+        const variableMapOverlay = new VariableMapOverlay(mapView, config);
+        app.ticker.add(time => variableMapOverlay.animate(time));
+
         const connector = new ServerSocketConnector(process.env.SERVER_SOCKET_URI);
         connector.events.on('map_update', (cells) => {
           city.map.replace(cells);
         });
         connector.events.on('connect', () => {
           connector.getMap();
+        });
+        connector.events.on('view_show_map_var', (variable, data) => {
+          variableMapOverlay.show(data,
+            config.variableMapOverlay.colors[variable] || 0x000000);
+          setTimeout(() => {
+            variableMapOverlay.hide();
+          }, config.variableMapOverlay.overlayDuration * 1000);
         });
         const connStateView = new ConnectionStateView(connector);
         $('body').append(connStateView.$element);
