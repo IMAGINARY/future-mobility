@@ -9,6 +9,7 @@ class VariableMapView {
     this.defaultColor = defaultColor;
     this.tiles = Array2D.create(width, height, null);
     this.values = Array2D.create(width, height, 0);
+    this.lastColor = null;
 
     Array2D.fill(this.tiles, (x, y) => {
       const newTile = new PIXI.Graphics();
@@ -33,11 +34,12 @@ class VariableMapView {
 
   update(data, color = null) {
     Array2D.zip(this.values, data, (value, newValue, x, y) => {
-      if (value !== newValue) {
+      if (value !== newValue || color !== this.lastColor) {
         this.values[y][x] = newValue;
         this.renderTile(x, y, color || this.defaultColor);
       }
     });
+    this.lastColor = color;
   }
 }
 
