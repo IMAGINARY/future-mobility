@@ -66,3 +66,5 @@ goals:
     slow-travel-time: 10
     # Minimum length a trip should have to be considered as having a long travel time
     travel-time-long: 27
+    # Travel times levels (percentage of trips with long travel time)
+    travel-time-levels: [0.75, 0.55, 0.40, 0.25]

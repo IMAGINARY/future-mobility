@@ -2,6 +2,7 @@ const DataSource = require('../data-source');
 const { getTileTypeId } = require('../aux/config-helpers');
 const Array2D = require('../aux/array-2d');
 const TravelTimeCalculator = require('../aux/travel-times');
+const { percentageEqualValue, percentageOverValue } = require('../aux/statistics');
 
 class TravelTimesData extends DataSource {
   constructor(city, config) {
@@ -9,10 +10,14 @@ class TravelTimesData extends DataSource {
     this.city = city;
     this.config = config;
     this.data = [];
+    this.longTravelPercentage = 0;
 
     this.residentialId = getTileTypeId(this.config, 'residential');
     this.commercialId = getTileTypeId(this.config, 'commercial');
     this.industrialId = getTileTypeId(this.config, 'industrial');
+
+    this.longTravelTime = this.config.goals['travel-times']['travel-time-long'] || 27;
+    this.levels = this.config.goals['travel-times']['travel-time-levels'] || [0.75, 0.55, 0.40, 0.25];
 
     this.travelTimeCalculator = new TravelTimeCalculator(this.config);
   }
@@ -45,10 +50,16 @@ class TravelTimesData extends DataSource {
         this.data.push(...this.timesFrom(x, y));
       }
     });
+
+    this.longTravelPercentage = percentageOverValue(this.data, this.longTravelTime);
   }
 
   getTravelTimesIndex() {
-    return 1;
+    return 1
+      + (this.longTravelPercentage <= this.levels[0] ? 1 : 0)
+      + (this.longTravelPercentage <= this.levels[1] ? 1 : 0)
+      + (this.longTravelPercentage <= this.levels[2] ? 1 : 0)
+      + (this.longTravelPercentage <= this.levels[3] ? 1 : 0);
   }
 }
 

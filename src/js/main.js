@@ -181,6 +181,7 @@ cfgLoader.load([
               'green-spaces': stats.get('green-spaces-index'),
               pollution: stats.get('pollution-index'),
               noise: stats.get('noise-index'),
+              'travel-times': stats.get('travel-times-index'),
             });
             goalDebugView.setValues(stats.getGoals());
             indexesDirty = false;
