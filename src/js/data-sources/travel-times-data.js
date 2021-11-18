@@ -1,7 +1,7 @@
 const DataSource = require('../data-source');
 const { getTileTypeId } = require('../aux/config-helpers');
-const travelTimes = require('../aux/travel-times');
 const Array2D = require('../aux/array-2d');
+const TravelTimeCalculator = require('../aux/travel-times');
 
 class TravelTimesData extends DataSource {
   constructor(city, config) {
@@ -9,27 +9,24 @@ class TravelTimesData extends DataSource {
     this.city = city;
     this.config = config;
     this.data = [];
-    this.roadTileTime = 1;
-    this.slowTileTile = 5;
 
     this.residentialId = getTileTypeId(this.config, 'residential');
     this.commercialId = getTileTypeId(this.config, 'commercial');
     this.industrialId = getTileTypeId(this.config, 'industrial');
-    this.roadId = getTileTypeId(this.config, 'road');
+
+    this.travelTimeCalculator = new TravelTimeCalculator(this.config);
   }
 
   getVariables() {
     return {
       'travel-times': () => this.data,
+      'travel-times-index': () => this.getTravelTimesIndex(),
     };
   }
 
   timesFrom(startX, startY) {
     const answer = [];
-    const data = travelTimes(this.city.map, [startX, startY],
-      (tileFrom, tileTo) => (
-        (tileFrom === this.roadId && tileTo === this.roadId)
-          ? this.roadTileTime : this.slowTileTile));
+    const data = this.travelTimeCalculator.travelTimes(this.city.map, [startX, startY]);
 
     Array2D.zip(data, this.city.map.cells, (value, tile) => {
       if (value !== 0 && (
@@ -48,6 +45,10 @@ class TravelTimesData extends DataSource {
         this.data.push(...this.timesFrom(x, y));
       }
     });
+  }
+
+  getTravelTimesIndex() {
+    return 1;
   }
 }
 

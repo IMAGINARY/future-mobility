@@ -1042,48 +1042,74 @@ module.exports = {
 
 const FlatQueue = __webpack_require__(/*! ./flatqueue */ "./src/js/aux/flatqueue.js");
 const Array2D = __webpack_require__(/*! ./array-2d */ "./src/js/aux/array-2d.js");
+const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
 
-/**
- * @callback timeFunctionCallback
- * @param tileTypeFrom
- * @param tileTypeTo
- * @return {Number}
- */
-/**
- * Given a city map and a starting point it returns the travel time to all other cells.
- *
- * Uses [Uniform Cost Search](https://www.redblobgames.com/pathfinding/a-star/introduction.html),
- * a variation on Dijkstra's algorithm.
- *
- * @param {Grid} map
- * @param {number} startX
- * @param {number} startY
- * @param {timeFunctionCallback} timeFunction
- * @return {number[][]}
- */
-function travelTimes(map, [startX, startY], timeFunction) {
-  const answer = Array2D.create(map.width, map.height, null);
-  const frontier = new FlatQueue();
-  frontier.push([startX, startY, map.get(startX, startY)], 0);
-  answer[startY][startX] = 0;
+class TravelTimeCalculator {
+  constructor(config) {
+    this.config = config;
 
-  while (frontier.length > 0) {
-    const [currX, currY, currTile] = frontier.pop();
-    map.adjacentCells(currX, currY)
-      .forEach(([nextX, nextY, nextTile]) => {
-        const newCost = answer[currY][currX] + timeFunction(currTile, nextTile);
-        const nextCost = answer[nextY][nextX];
-        if (nextCost === null || newCost < nextCost) {
-          answer[nextY][nextX] = newCost;
-          frontier.push([nextX, nextY, nextTile], newCost);
-        }
-      });
+    this.roadTileTime = this.config.goals['travel-times']['road-travel-time'];
+    this.defaultTileTime = this.config.goals['travel-times']['default-travel-time'];
+    this.slowTileTime = this.config.goals['travel-times']['slow-travel-time'];
+
+    this.emptyId = getTileTypeId(this.config, 'empty');
+    this.roadId = getTileTypeId(this.config, 'road');
+    this.waterId = getTileTypeId(this.config, 'water');
   }
 
-  return answer;
+  /**
+   * Given a city map and a starting point it returns the travel time to all other cells.
+   *
+   * Uses [Uniform Cost Search](https://www.redblobgames.com/pathfinding/a-star/introduction.html),
+   * a variation on Dijkstra's algorithm.
+   *
+   * @param {Grid} map
+   * @param {number} startX
+   * @param {number} startY
+   * @return {number[][]}
+   */
+  travelTimes(map, [startX, startY]) {
+    const answer = Array2D.create(map.width, map.height, null);
+    const frontier = new FlatQueue();
+    frontier.push([startX, startY, map.get(startX, startY)], 0);
+    answer[startY][startX] = 0;
+
+    while (frontier.length > 0) {
+      const [currX, currY, currTile] = frontier.pop();
+      map.adjacentCells(currX, currY)
+        .forEach(([nextX, nextY, nextTile]) => {
+          const newCost = answer[currY][currX] + this.timeBetweenTiles(currTile, nextTile);
+          const nextCost = answer[nextY][nextX];
+          if (nextCost === null || newCost < nextCost) {
+            answer[nextY][nextX] = newCost;
+            frontier.push([nextX, nextY, nextTile], newCost);
+          }
+        });
+    }
+
+    return answer;
+  }
+
+  /**
+   * Returns the travel time between two tiles based on their types.
+   *
+   * @param tileTypeFrom
+   * @param tileTypeTo
+   * @return {Number}
+   */
+  timeBetweenTiles(tileTypeFrom, tileTypeTo) {
+    if (tileTypeFrom === this.roadId && tileTypeTo === this.roadId) {
+      return this.roadTileTime;
+    }
+    if (tileTypeFrom === this.waterId || tileTypeTo === this.waterId
+      || tileTypeFrom === this.emptyId || tileTypeTo === this.emptyId) {
+      return this.slowTileTime;
+    }
+    return this.defaultTileTime;
+  }
 }
 
-module.exports = travelTimes;
+module.exports = TravelTimeCalculator;
 
 
 /***/ }),
@@ -1823,6 +1849,7 @@ const travelTimes = __webpack_require__(/*! ../aux/travel-times */ "./src/js/aux
 const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
 const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
 const VariableMapOverlay = __webpack_require__(/*! ../variable-map-overlay */ "./src/js/variable-map-overlay.js");
+const TravelTimeCalculator = __webpack_require__(/*! ../aux/travel-times */ "./src/js/aux/travel-times.js");
 
 class MapEditor {
   constructor($element, city, config, textures, dataManager) {
@@ -1838,6 +1865,7 @@ class MapEditor {
     this.textOverlay = new MapTextOverlay(this.mapView);
 
     this.variableMapOverlay = new VariableMapOverlay(this.mapView, this.config);
+    this.travelTimeCalculator = new TravelTimeCalculator(this.config);
 
     this.palette = new MapEditorPalette($('<div></div>').appendTo(this.$element), config);
 
@@ -1929,15 +1957,8 @@ class MapEditor {
           this.textOverlay.hide();
         },
         action: ([startX, startY]) => {
-          const roadTileId = getTileTypeId(this.config, 'road');
-          const data = travelTimes(this.mapView.city.map, [startX, startY],
-            (tileFrom, tileTo) => (
-              (tileFrom === roadTileId && tileTo === roadTileId) ? 1 : 5));
-          // Normalize the data
-          // Array2D.forEach(data, (v, x, y) => {
-          //   const manhattan = Math.abs(startX - x) + Math.abs(startY - y);
-          //   data[y][x] = (manhattan > 0 ? v / manhattan : 0);
-          // });
+          const data = this.travelTimeCalculator
+            .travelTimes(this.mapView.city.map, [startX, startY]);
           this.textOverlay.display(data);
 
           const residentalId = getTileTypeId(config, 'residential');
@@ -3433,4 +3454,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.dd14a386e6f1879b73c6.js.map
+//# sourceMappingURL=editor.e4705b453201346b0874.js.map

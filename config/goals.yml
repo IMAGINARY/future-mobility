@@ -57,3 +57,12 @@ goals:
     overdeveloped-percentage: 0.47
     # Difference from the ideal percentage that is acceptable (as fraction, 1 = 100%).
     acceptable-percentage-difference: 0.25
+  travel-times:
+    # Travel time between tiles if both are roads
+    road-travel-time: 1
+    # Default travel time between tiles
+    default-travel-time: 5
+    # Travel time between tiles if either is water
+    slow-travel-time: 10
+    # Minimum length a trip should have to be considered as having a long travel time
+    travel-time-long: 27

@@ -12,6 +12,7 @@ const travelTimes = require('../aux/travel-times');
 const { getTileTypeId } = require('../aux/config-helpers');
 const Array2D = require('../aux/array-2d');
 const VariableMapOverlay = require('../variable-map-overlay');
+const TravelTimeCalculator = require('../aux/travel-times');
 
 class MapEditor {
   constructor($element, city, config, textures, dataManager) {
@@ -27,6 +28,7 @@ class MapEditor {
     this.textOverlay = new MapTextOverlay(this.mapView);
 
     this.variableMapOverlay = new VariableMapOverlay(this.mapView, this.config);
+    this.travelTimeCalculator = new TravelTimeCalculator(this.config);
 
     this.palette = new MapEditorPalette($('<div></div>').appendTo(this.$element), config);
 
@@ -118,15 +120,8 @@ class MapEditor {
           this.textOverlay.hide();
         },
         action: ([startX, startY]) => {
-          const roadTileId = getTileTypeId(this.config, 'road');
-          const data = travelTimes(this.mapView.city.map, [startX, startY],
-            (tileFrom, tileTo) => (
-              (tileFrom === roadTileId && tileTo === roadTileId) ? 1 : 5));
-          // Normalize the data
-          // Array2D.forEach(data, (v, x, y) => {
-          //   const manhattan = Math.abs(startX - x) + Math.abs(startY - y);
-          //   data[y][x] = (manhattan > 0 ? v / manhattan : 0);
-          // });
+          const data = this.travelTimeCalculator
+            .travelTimes(this.mapView.city.map, [startX, startY]);
           this.textOverlay.display(data);
 
           const residentalId = getTileTypeId(config, 'residential');

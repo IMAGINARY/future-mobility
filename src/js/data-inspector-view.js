@@ -61,8 +61,8 @@ class DataInspectorView {
       { title: 'Count', value: data.length },
       { title: 'Range', value: DataInspectorView.range(sorted) },
       { title: 'Average', value: formatNumber(average(data)) },
-      { title: 'Median', value: formatNumber(sortedMedian(sorted)) },
       { title: 'Q1', value: formatNumber(sortedFirstQuartile(sorted)) },
+      { title: 'Median', value: formatNumber(sortedMedian(sorted)) },
       { title: 'Q3', value: formatNumber(sortedThirdQuartile(sorted)) },
     ];
   }
