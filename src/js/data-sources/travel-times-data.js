@@ -2,7 +2,7 @@ const DataSource = require('../data-source');
 const { getTileTypeId } = require('../aux/config-helpers');
 const Array2D = require('../aux/array-2d');
 const TravelTimeCalculator = require('../aux/travel-times');
-const { percentageEqualValue, percentageOverValue } = require('../aux/statistics');
+const { percentageOverValue } = require('../aux/statistics');
 
 class TravelTimesData extends DataSource {
   constructor(city, config) {
@@ -60,6 +60,18 @@ class TravelTimesData extends DataSource {
       + (this.longTravelPercentage <= this.levels[1] ? 1 : 0)
       + (this.longTravelPercentage <= this.levels[2] ? 1 : 0)
       + (this.longTravelPercentage <= this.levels[3] ? 1 : 0);
+  }
+
+  getGoals() {
+    return [
+      {
+        id: 'travel-times-slow',
+        category: 'roads',
+        priority: 2,
+        condition: this.longTravelPercentage < this.levels[3],
+        progress: this.goalProgress(1 - this.longTravelPercentage, 1 - this.levels[3]),
+      },
+    ];
   }
 }
 

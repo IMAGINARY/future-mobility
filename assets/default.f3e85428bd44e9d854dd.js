@@ -7172,7 +7172,8 @@ class CitizenRequestViewMgr {
       // Assign each goal an order so they are interleaved per group
       // (cat1, cat2, cat3, cat1, cat2, cat3, etc..) keeping the same
       // order they had within each category.
-      const group = this.config.citizenRequests[goal.id].group || 'others';
+      const group = (this.config.citizenRequests[goal.id]
+        && this.config.citizenRequests[goal.id].group) || 'others';
       interleavedOrder[goal.id] = this.groups[group] + goalsPerGroup[group] * this.groups.length;
       goalsPerGroup[group] += 1;
     });
@@ -7949,7 +7950,7 @@ const DataSource = __webpack_require__(/*! ../data-source */ "./src/js/data-sour
 const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
 const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
 const TravelTimeCalculator = __webpack_require__(/*! ../aux/travel-times */ "./src/js/aux/travel-times.js");
-const { percentageEqualValue, percentageOverValue } = __webpack_require__(/*! ../aux/statistics */ "./src/js/aux/statistics.js");
+const { percentageOverValue } = __webpack_require__(/*! ../aux/statistics */ "./src/js/aux/statistics.js");
 
 class TravelTimesData extends DataSource {
   constructor(city, config) {
@@ -8007,6 +8008,18 @@ class TravelTimesData extends DataSource {
       + (this.longTravelPercentage <= this.levels[1] ? 1 : 0)
       + (this.longTravelPercentage <= this.levels[2] ? 1 : 0)
       + (this.longTravelPercentage <= this.levels[3] ? 1 : 0);
+  }
+
+  getGoals() {
+    return [
+      {
+        id: 'travel-times-slow',
+        category: 'roads',
+        priority: 2,
+        condition: this.longTravelPercentage < this.levels[3],
+        progress: this.goalProgress(1 - this.longTravelPercentage, 1 - this.levels[3]),
+      },
+    ];
   }
 }
 
@@ -10336,4 +10349,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.8ba3a7a1eccbcacd90a0.js.map
+//# sourceMappingURL=default.f3e85428bd44e9d854dd.js.map

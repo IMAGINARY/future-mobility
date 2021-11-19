@@ -74,6 +74,11 @@ citizenRequests:
     de: Es gibt zu viele I[Industriegebiete]. Die Fabriken arbeiten nicht mit voller Kapazität.
     group: zoning
     urgent: false
+  travel-times-slow:
+   en: "*Faster travel!* We need roads connecting the whole city."
+   de: "*Bessere X[Straßenführung]!* Wir brauchen Straßen, die die ganze Stadt verbinden."
+   group: roads
+   urgent: false
 citizenIcons:
   regular:
     - static/openmoji/bw/man-beard.svg

@@ -716,7 +716,8 @@ class CitizenRequestViewMgr {
       // Assign each goal an order so they are interleaved per group
       // (cat1, cat2, cat3, cat1, cat2, cat3, etc..) keeping the same
       // order they had within each category.
-      const group = this.config.citizenRequests[goal.id].group || 'others';
+      const group = (this.config.citizenRequests[goal.id]
+        && this.config.citizenRequests[goal.id].group) || 'others';
       interleavedOrder[goal.id] = this.groups[group] + goalsPerGroup[group] * this.groups.length;
       goalsPerGroup[group] += 1;
     });
@@ -1305,4 +1306,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=dashboard.f8fcf627e60aeef6b1a7.js.map
+//# sourceMappingURL=dashboard.4b27486ed2542ca787c5.js.map
