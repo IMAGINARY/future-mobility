@@ -1982,7 +1982,7 @@ class MapEditor {
           this.mapView.setInspectCursor();
           this.variableMapOverlay.show(
             this.dataManager.get('pollution-map'),
-            this.config.variableMapOverlay.pollutionColor,
+            this.config.variableMapOverlay.colors.pollution,
           );
         },
         end: () => {
@@ -1995,7 +1995,7 @@ class MapEditor {
           this.mapView.setInspectCursor();
           this.variableMapOverlay.show(
             this.dataManager.get('noise-map'),
-            this.config.variableMapOverlay.noiseColor,
+            this.config.variableMapOverlay.colors.noise,
           );
         },
         end: () => {
@@ -3454,4 +3454,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.e4705b453201346b0874.js.map
+//# sourceMappingURL=editor.712df4945379ba0ffe84.js.map
