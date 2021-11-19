@@ -1821,7 +1821,7 @@ MapEditorPalette.Tools = [
     id: 'showNoise',
     title: 'Show noise',
     icon: 'static/fa/drum-solid.svg',
-  }
+  },
 ];
 
 module.exports = MapEditorPalette;
@@ -1845,7 +1845,6 @@ const ModalExport = __webpack_require__(/*! ./modal-export */ "./src/js/editor/m
 const ModalImport = __webpack_require__(/*! ./modal-import */ "./src/js/editor/modal-import.js");
 const ObjectStore = __webpack_require__(/*! ./object-store */ "./src/js/editor/object-store.js");
 const MapTextOverlay = __webpack_require__(/*! ../map-text-overlay */ "./src/js/map-text-overlay.js");
-const travelTimes = __webpack_require__(/*! ../aux/travel-times */ "./src/js/aux/travel-times.js");
 const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
 const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
 const VariableMapOverlay = __webpack_require__(/*! ../variable-map-overlay */ "./src/js/variable-map-overlay.js");
@@ -3454,4 +3453,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.712df4945379ba0ffe84.js.map
+//# sourceMappingURL=editor.8577810483a6e6a48486.js.map

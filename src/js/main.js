@@ -25,6 +25,7 @@ const CitizenRequestView = require('./citizen-request-view');
 const CitizenRequestViewMgr = require('./citizen-request-view-mgr');
 const TextureLoader = require('./texture-loader');
 const CarSpawner = require('./cars/car-spawner');
+const TrafficData = require('./data-sources/traffic-data');
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -57,6 +58,7 @@ cfgLoader.load([
     stats.registerSource(new NoiseData(city, config));
     stats.registerSource(new GreenSpacesData(city, config));
     stats.registerSource(new TravelTimesData(city, config));
+    stats.registerSource(new TrafficData(city, config));
     city.map.events.on('update', () => {
       stats.calculateAll();
     });
@@ -182,6 +184,7 @@ cfgLoader.load([
               pollution: stats.get('pollution-index'),
               noise: stats.get('noise-index'),
               'travel-times': stats.get('travel-times-index'),
+              'traffic-density': stats.get('traffic-density-index'),
             });
             goalDebugView.setValues(stats.getGoals());
             indexesDirty = false;
@@ -219,5 +222,6 @@ cfgLoader.load([
       })
       .catch((err) => {
         showFatalError('Error loading textures', err);
+        console.error(err);
       });
   });

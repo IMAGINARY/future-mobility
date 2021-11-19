@@ -12,6 +12,7 @@ const PollutionData = require('../src/js/data-sources/pollution-data');
 const NoiseData = require('../src/js/data-sources/noise-data');
 const GreenSpacesData = require('../src/js/data-sources/green-spaces-data');
 const TravelTimesData = require('../src/js/data-sources/travel-times-data');
+const TrafficData = require('../src/js/data-sources/traffic-data');
 
 function initApp(config) {
   console.log(`Initializing ${config.cityWidth} x ${config.cityHeight} city.`);
@@ -25,6 +26,7 @@ function initApp(config) {
   stats.registerSource(new NoiseData(city, config));
   stats.registerSource(new GreenSpacesData(city, config));
   stats.registerSource(new TravelTimesData(city, config));
+  stats.registerSource(new TrafficData(city, config));
   city.map.events.on('update', () => {
     stats.throttledCalculateAll();
   });
@@ -85,6 +87,7 @@ function initApp(config) {
           pollution: stats.get('pollution-index'),
           noise: stats.get('noise-index'),
           'travel-times': stats.get('travel-times-index'),
+          'traffic-density': stats.get('traffic-density-index'),
         },
       }));
     }

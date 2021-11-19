@@ -126,7 +126,7 @@ MapEditorPalette.Tools = [
     id: 'showNoise',
     title: 'Show noise',
     icon: 'static/fa/drum-solid.svg',
-  }
+  },
 ];
 
 module.exports = MapEditorPalette;

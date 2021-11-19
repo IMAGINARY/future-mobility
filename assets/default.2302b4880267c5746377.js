@@ -7940,6 +7940,75 @@ module.exports = PollutionData;
 
 /***/ }),
 
+/***/ "./src/js/data-sources/traffic-data.js":
+/*!*********************************************!*\
+  !*** ./src/js/data-sources/traffic-data.js ***!
+  \*********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const DataSource = __webpack_require__(/*! ../data-source */ "./src/js/data-source.js");
+
+class TrafficData extends DataSource {
+  constructor(city, config) {
+    super();
+    this.city = city;
+    this.config = config;
+
+    this.zoneCount = 0;
+    this.roadCount = 0;
+
+    this.goodDelta = config.goals['traffic-data']['road-zone-ratio-delta-good'] || 0.1;
+    this.fairDelta = config.goals['traffic-data']['road-zone-ratio-delta-fair'] || 0.35;
+  }
+
+  getVariables() {
+    return {
+      'traffic-density-index': () => this.getTrafficDensityIndex(),
+    };
+  }
+
+  calculate() {
+    this.zoneCount = this.dataManager.get('zones-residential-count')
+      + this.dataManager.get('zones-commercial-count')
+      + this.dataManager.get('zones-industrial-count');
+    this.roadCount = this.dataManager.get('zones-road-count');
+  }
+
+  getTrafficDensityIndex() {
+    return 1
+      + (this.zoneCount === 0
+        || (Math.abs(1 - (this.roadCount / this.zoneCount)) <= this.goodDelta) ? 1 : 0)
+      + (this.zoneCount === 0
+        || (Math.abs(1 - (this.roadCount / this.zoneCount)) <= this.fairDelta) ? 1 : 0);
+  }
+
+  getGoals() {
+    return [
+      {
+        id: 'road-count-high',
+        category: 'roads',
+        priority: 1,
+        condition: this.zoneCount === 0
+          || this.roadCount / this.zoneCount < 1 + this.goodDelta,
+        progress: this.goalProgress(this.zoneCount / this.roadCount, 1 - this.goodDelta),
+      },
+      {
+        id: 'road-count-low',
+        category: 'roads',
+        priority: 1,
+        condition: this.zoneCount === 0
+          || this.roadCount / this.zoneCount > 1 - this.goodDelta,
+        progress: this.goalProgress(this.roadCount / this.zoneCount, 1 - this.goodDelta),
+      },
+    ];
+  }
+}
+
+module.exports = TrafficData;
+
+
+/***/ }),
+
 /***/ "./src/js/data-sources/travel-times-data.js":
 /*!**************************************************!*\
   !*** ./src/js/data-sources/travel-times-data.js ***!
@@ -8430,7 +8499,7 @@ MapEditorPalette.Tools = [
     id: 'showNoise',
     title: 'Show noise',
     icon: 'static/fa/drum-solid.svg',
-  }
+  },
 ];
 
 module.exports = MapEditorPalette;
@@ -8454,7 +8523,6 @@ const ModalExport = __webpack_require__(/*! ./modal-export */ "./src/js/editor/m
 const ModalImport = __webpack_require__(/*! ./modal-import */ "./src/js/editor/modal-import.js");
 const ObjectStore = __webpack_require__(/*! ./object-store */ "./src/js/editor/object-store.js");
 const MapTextOverlay = __webpack_require__(/*! ../map-text-overlay */ "./src/js/map-text-overlay.js");
-const travelTimes = __webpack_require__(/*! ../aux/travel-times */ "./src/js/aux/travel-times.js");
 const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
 const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
 const VariableMapOverlay = __webpack_require__(/*! ../variable-map-overlay */ "./src/js/variable-map-overlay.js");
@@ -9777,8 +9845,27 @@ class TileCounterView {
     this.$element = $('<div></div>')
       .addClass('tile-counter');
 
-    this.fields = Object.fromEntries(
-      Object.keys(config.tileTypes).map(id => [id, $('<span></span>').addClass('field')])
+    this.computedFieldDefs = [
+      {
+        id: 'road-density',
+        label: 'Road:Zone ratio',
+        calculate: () => {
+          const zones = this.stats.get('zones-residential-count')
+            + this.stats.get('zones-commercial-count')
+            + this.stats.get('zones-industrial-count');
+
+          return (this.stats.get('zones-road-count') / zones).toFixed(2);
+        },
+      },
+    ];
+
+    this.fields = Object.assign(
+      Object.fromEntries(
+        Object.keys(config.tileTypes).map(id => [id, $('<span></span>').addClass('field')])
+      ),
+      Object.fromEntries(
+        this.computedFieldDefs.map(field => [field.id, $('<span></span>').addClass('field')])
+      ),
     );
 
     this.$element.append(
@@ -9790,6 +9877,13 @@ class TileCounterView {
               .addClass('label')
               .html(`${config.tileTypes[id].name || config.tileTypes[id].type || id}: `))
             .append(this.fields[id]))
+        )
+        .append(
+          this.computedFieldDefs.map(field => $('<li></li>')
+            .append($('<span></span>')
+              .addClass('label')
+              .html(`${field.label}: `))
+            .append(this.fields[field.id]))
         )
     );
 
@@ -9804,6 +9898,26 @@ class TileCounterView {
       const count = this.stats.get(`zones-${type}-count`);
       this.fields[id].text(`${count} (${((count / this.total) * 100).toFixed(1)}%)`);
     });
+
+    this.computedFieldDefs.forEach(({ id, calculate }) => {
+      this.fields[id].text(calculate());
+    });
+  }
+
+  extraFieldDefs() {
+    return [
+      {
+        id: 'road-density',
+        label: 'Road density',
+        calculate: () => {
+          const zones = this.stats.get('zones-residential-count')
+            + this.stats.get('zones-commercial-count')
+            + this.stats.get('zones-industrial-count');
+
+          return this.stats.get('zones-road-count') / zones;
+        },
+      }
+    ];
   }
 }
 
@@ -10148,6 +10262,7 @@ const CitizenRequestView = __webpack_require__(/*! ./citizen-request-view */ "./
 const CitizenRequestViewMgr = __webpack_require__(/*! ./citizen-request-view-mgr */ "./src/js/citizen-request-view-mgr.js");
 const TextureLoader = __webpack_require__(/*! ./texture-loader */ "./src/js/texture-loader.js");
 const CarSpawner = __webpack_require__(/*! ./cars/car-spawner */ "./src/js/cars/car-spawner.js");
+const TrafficData = __webpack_require__(/*! ./data-sources/traffic-data */ "./src/js/data-sources/traffic-data.js");
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -10180,6 +10295,7 @@ cfgLoader.load([
     stats.registerSource(new NoiseData(city, config));
     stats.registerSource(new GreenSpacesData(city, config));
     stats.registerSource(new TravelTimesData(city, config));
+    stats.registerSource(new TrafficData(city, config));
     city.map.events.on('update', () => {
       stats.calculateAll();
     });
@@ -10305,6 +10421,7 @@ cfgLoader.load([
               pollution: stats.get('pollution-index'),
               noise: stats.get('noise-index'),
               'travel-times': stats.get('travel-times-index'),
+              'traffic-density': stats.get('traffic-density-index'),
             });
             goalDebugView.setValues(stats.getGoals());
             indexesDirty = false;
@@ -10342,6 +10459,7 @@ cfgLoader.load([
       })
       .catch((err) => {
         showFatalError('Error loading textures', err);
+        console.error(err);
       });
   });
 
@@ -10349,4 +10467,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.0464d984b5ad7a99f68a.js.map
+//# sourceMappingURL=default.2302b4880267c5746377.js.map

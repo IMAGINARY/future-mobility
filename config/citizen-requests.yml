@@ -79,6 +79,16 @@ citizenRequests:
    de: "*Bessere X[Straßenführung]!* Wir brauchen Straßen, die die ganze Stadt verbinden."
    group: roads
    urgent: false
+  road-count-low:
+   en: "*More X[roads]!* They're not enough for our current traffic."
+   de: "*Mehr X[Straßen]!* Sie reichen nicht aus für unseren aktuellen Verkehr."
+   group: roads
+   urgent: false
+  road-count-high:
+   en: "*Less X[roads]!* We can use their space better."
+   de: "*Weniger X[Straßen]!* Wir können den Platz der Straßen viel besser nutzen."
+   group: roads
+   urgent: false
 citizenIcons:
   regular:
     - static/openmoji/bw/man-beard.svg

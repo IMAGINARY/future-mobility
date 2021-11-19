@@ -8,8 +8,27 @@ class TileCounterView {
     this.$element = $('<div></div>')
       .addClass('tile-counter');
 
-    this.fields = Object.fromEntries(
-      Object.keys(config.tileTypes).map(id => [id, $('<span></span>').addClass('field')])
+    this.computedFieldDefs = [
+      {
+        id: 'road-density',
+        label: 'Road:Zone ratio',
+        calculate: () => {
+          const zones = this.stats.get('zones-residential-count')
+            + this.stats.get('zones-commercial-count')
+            + this.stats.get('zones-industrial-count');
+
+          return (this.stats.get('zones-road-count') / zones).toFixed(2);
+        },
+      },
+    ];
+
+    this.fields = Object.assign(
+      Object.fromEntries(
+        Object.keys(config.tileTypes).map(id => [id, $('<span></span>').addClass('field')])
+      ),
+      Object.fromEntries(
+        this.computedFieldDefs.map(field => [field.id, $('<span></span>').addClass('field')])
+      ),
     );
 
     this.$element.append(
@@ -21,6 +40,13 @@ class TileCounterView {
               .addClass('label')
               .html(`${config.tileTypes[id].name || config.tileTypes[id].type || id}: `))
             .append(this.fields[id]))
+        )
+        .append(
+          this.computedFieldDefs.map(field => $('<li></li>')
+            .append($('<span></span>')
+              .addClass('label')
+              .html(`${field.label}: `))
+            .append(this.fields[field.id]))
         )
     );
 
@@ -35,6 +61,26 @@ class TileCounterView {
       const count = this.stats.get(`zones-${type}-count`);
       this.fields[id].text(`${count} (${((count / this.total) * 100).toFixed(1)}%)`);
     });
+
+    this.computedFieldDefs.forEach(({ id, calculate }) => {
+      this.fields[id].text(calculate());
+    });
+  }
+
+  extraFieldDefs() {
+    return [
+      {
+        id: 'road-density',
+        label: 'Road density',
+        calculate: () => {
+          const zones = this.stats.get('zones-residential-count')
+            + this.stats.get('zones-commercial-count')
+            + this.stats.get('zones-industrial-count');
+
+          return this.stats.get('zones-road-count') / zones;
+        },
+      }
+    ];
   }
 }
 

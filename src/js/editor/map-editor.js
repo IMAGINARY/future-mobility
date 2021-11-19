@@ -8,7 +8,6 @@ const ModalExport = require('./modal-export');
 const ModalImport = require('./modal-import');
 const ObjectStore = require('./object-store');
 const MapTextOverlay = require('../map-text-overlay');
-const travelTimes = require('../aux/travel-times');
 const { getTileTypeId } = require('../aux/config-helpers');
 const Array2D = require('../aux/array-2d');
 const VariableMapOverlay = require('../variable-map-overlay');
