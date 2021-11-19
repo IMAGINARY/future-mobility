@@ -89,6 +89,11 @@ citizenRequests:
    de: "*Weniger X[Straßen]!* Wir können den Platz der Straßen viel besser nutzen."
    group: roads
    urgent: false
+  accidents-intersections:
+    en: "*Less intersections!* They cause accidents."
+    de: "*Weniger Kreuzungen!* Sie verursachen Verkehrsunfälle."
+    group: roads
+    urgent: false
 citizenIcons:
   regular:
     - static/openmoji/bw/man-beard.svg

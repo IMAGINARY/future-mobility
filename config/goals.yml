@@ -68,8 +68,13 @@ goals:
     travel-time-long: 27
     # Travel times levels (percentage of trips with long travel time)
     travel-time-levels: [0.75, 0.55, 0.40, 0.25]
-  traffic-data:
+  traffic-density:
     # Good delta of the road:zone ratio
     road-zone-ratio-delta-good: 0.1
     # Fair delta of the road:zone ratio
     road-zone-ratio-delta-fair: 0.35
+  safety:
+    quad-intersection-factor: 1
+    triple-intersection-factor: 0.75
+    intersection-percentage-high: 0.2
+    intersection-percentage-med: 0.1

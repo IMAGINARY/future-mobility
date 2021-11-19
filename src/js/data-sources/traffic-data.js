@@ -9,8 +9,8 @@ class TrafficData extends DataSource {
     this.zoneCount = 0;
     this.roadCount = 0;
 
-    this.goodDelta = config.goals['traffic-data']['road-zone-ratio-delta-good'] || 0.1;
-    this.fairDelta = config.goals['traffic-data']['road-zone-ratio-delta-fair'] || 0.35;
+    this.goodDelta = config.goals['traffic-density']['road-zone-ratio-delta-good'] || 0.1;
+    this.fairDelta = config.goals['traffic-density']['road-zone-ratio-delta-fair'] || 0.35;
   }
 
   getVariables() {

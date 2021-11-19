@@ -7940,6 +7940,90 @@ module.exports = PollutionData;
 
 /***/ }),
 
+/***/ "./src/js/data-sources/road-safety-data.js":
+/*!*************************************************!*\
+  !*** ./src/js/data-sources/road-safety-data.js ***!
+  \*************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const DataSource = __webpack_require__(/*! ../data-source */ "./src/js/data-source.js");
+const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
+const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
+
+class RoadSafetyData extends DataSource {
+  constructor(city, config) {
+    super();
+    this.city = city;
+    this.config = config;
+
+    this.roadId = getTileTypeId(this.config, 'road');
+    this.tripleIntersectionsCount = 0;
+    this.quadIntersectionsCount = 0;
+    this.roadCount = 0;
+    this.intersectionPercentage = 0;
+
+    this.tripleIntersectionFactor = config.goals.safety['triple-intersection-factor'] || 1;
+    this.quadIntersectionFactor = config.goals.safety['quad-intersection-factor'] || 1;
+    this.intersectionPercHigh = config.goals.safety['intersection-percentage-high'] || 0.2;
+    this.intersectionPercMed = config.goals.safety['intersection-percentage-med'] || 0.1;
+  }
+
+  getVariables() {
+    return {
+      'road-triple-intersections-count': () => this.tripleIntersectionsCount,
+      'road-quad-intersections-count': () => this.quadIntersectionsCount,
+      'road-safety-index': () => this.getRoadSafetyIndex(),
+    };
+  }
+
+  calculate() {
+    this.roadCount = 0;
+    this.tripleIntersectionsCount = 0;
+    this.quadIntersectionsCount = 0;
+    Array2D.forEach(this.city.map.cells, (tile, x, y) => {
+      if (tile === this.roadId) {
+        this.roadCount += 1;
+        const adjacentRoadCount = this.city.map.adjacentCells(x, y)
+          .filter(([, , v]) => v === this.roadId).length;
+
+        if (adjacentRoadCount === 3) {
+          this.tripleIntersectionsCount += 1;
+        }
+
+        if (adjacentRoadCount === 4) {
+          this.quadIntersectionsCount += 1;
+        }
+      }
+    });
+
+    this.intersectionPercentage = (this.tripleIntersectionsCount * this.tripleIntersectionFactor
+        + this.quadIntersectionsCount * this.quadIntersectionFactor) / this.roadCount;
+  }
+
+  getRoadSafetyIndex() {
+    return 1
+      + (this.intersectionPercentage < this.intersectionPercHigh ? 1 : 0)
+      + (this.intersectionPercentage < this.intersectionPercMed ? 1 : 0);
+  }
+
+  getGoals() {
+    return [
+      {
+        id: 'accidents-intersections',
+        category: 'roads',
+        priority: 2,
+        condition: this.intersectionPercentage < this.intersectionPercMed,
+        progress: this.goalProgress(1 - this.intersectionPercentage, 1 - this.intersectionPercMed),
+      },
+    ];
+  }
+}
+
+module.exports = RoadSafetyData;
+
+
+/***/ }),
+
 /***/ "./src/js/data-sources/traffic-data.js":
 /*!*********************************************!*\
   !*** ./src/js/data-sources/traffic-data.js ***!
@@ -7957,8 +8041,8 @@ class TrafficData extends DataSource {
     this.zoneCount = 0;
     this.roadCount = 0;
 
-    this.goodDelta = config.goals['traffic-data']['road-zone-ratio-delta-good'] || 0.1;
-    this.fairDelta = config.goals['traffic-data']['road-zone-ratio-delta-fair'] || 0.35;
+    this.goodDelta = config.goals['traffic-density']['road-zone-ratio-delta-good'] || 0.1;
+    this.fairDelta = config.goals['traffic-density']['road-zone-ratio-delta-fair'] || 0.35;
   }
 
   getVariables() {
@@ -9857,6 +9941,16 @@ class TileCounterView {
           return (this.stats.get('zones-road-count') / zones).toFixed(2);
         },
       },
+      {
+        id: 'road-intersection-type',
+        label: 'Intersections (3x/4x)',
+        calculate: () => {
+          const tri = this.stats.get('road-triple-intersections-count');
+          const quad = this.stats.get('road-quad-intersections-count');
+          const total = this.stats.get('zones-road-count');
+          return `${tri}(${(tri / total * 100).toFixed(1)}%) / ${quad}(${(quad / total * 100).toFixed(1)}%)`;
+        },
+      },
     ];
 
     this.fields = Object.assign(
@@ -10263,6 +10357,7 @@ const CitizenRequestViewMgr = __webpack_require__(/*! ./citizen-request-view-mgr
 const TextureLoader = __webpack_require__(/*! ./texture-loader */ "./src/js/texture-loader.js");
 const CarSpawner = __webpack_require__(/*! ./cars/car-spawner */ "./src/js/cars/car-spawner.js");
 const TrafficData = __webpack_require__(/*! ./data-sources/traffic-data */ "./src/js/data-sources/traffic-data.js");
+const RoadSafetyData = __webpack_require__(/*! ./data-sources/road-safety-data */ "./src/js/data-sources/road-safety-data.js");
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -10296,6 +10391,7 @@ cfgLoader.load([
     stats.registerSource(new GreenSpacesData(city, config));
     stats.registerSource(new TravelTimesData(city, config));
     stats.registerSource(new TrafficData(city, config));
+    stats.registerSource(new RoadSafetyData(city, config));
     city.map.events.on('update', () => {
       stats.calculateAll();
     });
@@ -10422,6 +10518,7 @@ cfgLoader.load([
               noise: stats.get('noise-index'),
               'travel-times': stats.get('travel-times-index'),
               'traffic-density': stats.get('traffic-density-index'),
+              safety: stats.get('road-safety-index'),
             });
             goalDebugView.setValues(stats.getGoals());
             indexesDirty = false;
@@ -10467,4 +10564,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.2302b4880267c5746377.js.map
+//# sourceMappingURL=default.defbab629889b168ce00.js.map

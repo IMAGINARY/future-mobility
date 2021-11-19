@@ -20,6 +20,16 @@ class TileCounterView {
           return (this.stats.get('zones-road-count') / zones).toFixed(2);
         },
       },
+      {
+        id: 'road-intersection-type',
+        label: 'Intersections (3x/4x)',
+        calculate: () => {
+          const tri = this.stats.get('road-triple-intersections-count');
+          const quad = this.stats.get('road-quad-intersections-count');
+          const total = this.stats.get('zones-road-count');
+          return `${tri}(${(tri / total * 100).toFixed(1)}%) / ${quad}(${(quad / total * 100).toFixed(1)}%)`;
+        },
+      },
     ];
 
     this.fields = Object.assign(

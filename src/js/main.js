@@ -26,6 +26,7 @@ const CitizenRequestViewMgr = require('./citizen-request-view-mgr');
 const TextureLoader = require('./texture-loader');
 const CarSpawner = require('./cars/car-spawner');
 const TrafficData = require('./data-sources/traffic-data');
+const RoadSafetyData = require('./data-sources/road-safety-data');
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -59,6 +60,7 @@ cfgLoader.load([
     stats.registerSource(new GreenSpacesData(city, config));
     stats.registerSource(new TravelTimesData(city, config));
     stats.registerSource(new TrafficData(city, config));
+    stats.registerSource(new RoadSafetyData(city, config));
     city.map.events.on('update', () => {
       stats.calculateAll();
     });
@@ -185,6 +187,7 @@ cfgLoader.load([
               noise: stats.get('noise-index'),
               'travel-times': stats.get('travel-times-index'),
               'traffic-density': stats.get('traffic-density-index'),
+              safety: stats.get('road-safety-index'),
             });
             goalDebugView.setValues(stats.getGoals());
             indexesDirty = false;
