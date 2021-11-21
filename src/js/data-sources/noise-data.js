@@ -39,9 +39,19 @@ class NoiseData extends DataSource {
   }
 
   calculate() {
+    const noiseFactors = this.dataManager.getModifiers('noise-factors');
+    const noisePerTileType = Object.fromEntries(
+      Object.entries(this.config.tileTypes)
+        .map(([id, def]) => [id,
+          noiseFactors.reduce(
+            (acc, factors) => acc * (factors[this.config.tileTypes[id].type] || 1),
+            def.noise || 0
+          ),
+        ])
+    );
     Array2D.setAll(this.noiseMap, 0);
     Array2D.forEach(this.city.map.cells, (v, x, y) => {
-      const noise = (this.config.tileTypes[v] && this.config.tileTypes[v].noise) || 0;
+      const noise = noisePerTileType[v] || 0;
       if (noise !== 0) {
         this.noiseMap[y][x] += noise;
         this.city.map.nearbyCoords(x, y, 1).forEach(([nx, ny]) => {

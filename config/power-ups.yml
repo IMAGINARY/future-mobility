@@ -1,0 +1,93 @@
+powerUps:
+  walkable-city:
+    title:
+     en: Walkable City
+     de: Begehbare Stadt
+    description:
+     en: Wider sidewalks, lights, benches and shade encourage traveling on foot.
+     de: Breitere Gehwege, Lichter, Bänke und Schatten laden zum zu Fuß gehen ein.
+    modifiers:
+      traffic-density-index: 2
+      travel-times-index: -1
+      road-safety-index: 1
+      emissions-factors:
+        road: 0.5
+      noise-factors:
+        road: 0.5
+      _synergy:
+        dense-city:
+          travel-times-index: 1
+  dense-city:
+    title:
+     en: Dense City
+     de: Dichte Stadt
+    description:
+     en: Integrating shops and workplaces with residential zones reduces trip distances.
+     de: Die Integration von Geschäften und Arbeitsplätzen in Wohngebiete reduziert die Fahrtwege.
+    modifiers:
+      traffic-density-index: 1
+      travel-times-index: 2
+      road-safety-index: 1
+      emissions-factors:
+        road: 0.5
+      noise-factors:
+        road: 0.5
+        residential: 2
+      _synergy:
+        improved-mass-transit:
+          traffic-density-index: 1
+  reduced-speed-limit:
+    title:
+     en: Reduced Speed Limit
+     de: Reduziertes Tempolimit
+    description:
+     en: Slower car traffic reduces accidents and makes alternatives more attractive.
+     de: Ein langsamerer Autoverkehr reduziert Unfälle und macht Alternativen attraktiver.
+    modifiers:
+      traffic-density-index: 1
+      travel-times-index: -1
+      road-safety-index: 2
+      emissions-factors:
+        road: 0.5
+      noise-factors:
+        road: 0.5
+      _synergy:
+        improved-mass-transit:
+          traffic-density-index: 1
+  improved-mass-transit:
+    title:
+     en: Improved Mass Transit
+     de: Verbesserter Nahverkehr"
+    description:
+     en: Trams and buses use space and energy more efficiently.
+     de: Straßenbahnen und Busse nutzen Raum und Energie effizienter.
+    modifiers:
+      traffic-density-index: 1
+      travel-times-index: 1
+      road-safety-index: 1
+      emissions-factors:
+        road: 0.5
+      noise-factors:
+        road: 0.5
+  electric-vehicles:
+    title:
+     en: Electric Vehicles
+     de: Elektrische Fahrzeuge
+    description:
+     en: Electric engines improve air quality and reduce noise.
+     de: Elektromotoren verbessern die Luftqualität und reduzieren den Lärm.
+    modifiers:
+      emissions-factors:
+        road: 0.1
+      noise-factors:
+        road: 0.25
+  autonomous-vehicles:
+    title:
+     en: Autonomous Vehicles
+     de: Autonome Fahrzeuge
+    description:
+     en: Artificial Intelligence reduces accidents and uses roads more efficiently.
+     de: Künstliche Intelligenz reduziert Unfälle und nutzt Straßen effizienter.
+    modifiers:
+      traffic-density-index: 1
+      road-safety-index: 2

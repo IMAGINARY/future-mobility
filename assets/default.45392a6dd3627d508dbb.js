@@ -7428,6 +7428,8 @@ class DataManager {
 
     this.calculationPending = false;
     this.cooldownTimer = null;
+
+    this.dataModifiers = [];
   }
 
   /**
@@ -7450,6 +7452,10 @@ class DataManager {
     });
   }
 
+  registerModifier(modifier) {
+    this.dataModifiers.push(modifier);
+  }
+
   /**
    * Get the value of a variable.
    *
@@ -7460,6 +7466,7 @@ class DataManager {
     if (this.variables[variableId] === undefined) {
       throw new Error(`Requested unknown variable ${variableId}.`);
     }
+
     return this.variables[variableId]();
   }
 
@@ -7486,6 +7493,10 @@ class DataManager {
 
   getGoals() {
     return this.sources.reduce((acc, source) => acc.concat(source.getGoals()), []);
+  }
+
+  getModifiers(id) {
+    return this.dataModifiers.reduce((acc, modifier) => acc.concat(modifier.getModifiers(id)), []);
   }
 }
 
@@ -7729,9 +7740,19 @@ class NoiseData extends DataSource {
   }
 
   calculate() {
+    const noiseFactors = this.dataManager.getModifiers('noise-factors');
+    const noisePerTileType = Object.fromEntries(
+      Object.entries(this.config.tileTypes)
+        .map(([id, def]) => [id,
+          noiseFactors.reduce(
+            (acc, factors) => acc * (factors[this.config.tileTypes[id].type] || 1),
+            def.noise || 0
+          ),
+        ])
+    );
     Array2D.setAll(this.noiseMap, 0);
     Array2D.forEach(this.city.map.cells, (v, x, y) => {
-      const noise = (this.config.tileTypes[v] && this.config.tileTypes[v].noise) || 0;
+      const noise = noisePerTileType[v] || 0;
       if (noise !== 0) {
         this.noiseMap[y][x] += noise;
         this.city.map.nearbyCoords(x, y, 1).forEach(([nx, ny]) => {
@@ -7856,9 +7877,20 @@ class PollutionData extends DataSource {
   }
 
   calculate() {
+    const emissionFactors = this.dataManager.getModifiers('emissions-factors');
+    const emissionsPerTileType = Object.fromEntries(
+      Object.entries(this.config.tileTypes)
+        .map(([id, def]) => [id,
+          emissionFactors.reduce(
+            (acc, factors) => acc * (factors[this.config.tileTypes[id].type] || 1),
+            def.emissions || 0
+          ),
+        ])
+    );
+
     Array2D.setAll(this.pollutionMap, 0);
     Array2D.forEach(this.city.map.cells, (v, x, y) => {
-      const emissions = (this.config.tileTypes[v] && this.config.tileTypes[v].emissions) || 0;
+      const emissions = emissionsPerTileType[v] || 0;
       if (emissions !== 0) {
         this.pollutionMap[y][x] += emissions;
         this.city.map.nearbyCoords(x, y, 1).forEach(([nx, ny]) => {
@@ -8001,9 +8033,13 @@ class RoadSafetyData extends DataSource {
   }
 
   getRoadSafetyIndex() {
-    return 1
+    const base = 1
       + (this.intersectionPercentage < this.intersectionPercHigh ? 1 : 0)
       + (this.intersectionPercentage < this.intersectionPercMed ? 1 : 0);
+
+    return Math.max(1, Math.min(5,
+      this.dataManager.getModifiers('road-safety-index')
+        .reduce((acc, modifier) => acc + modifier, base)));
   }
 
   getGoals() {
@@ -8059,11 +8095,15 @@ class TrafficData extends DataSource {
   }
 
   getTrafficDensityIndex() {
-    return 1
+    const base = 1
       + (this.zoneCount === 0
         || (Math.abs(1 - (this.roadCount / this.zoneCount)) <= this.goodDelta) ? 1 : 0)
       + (this.zoneCount === 0
         || (Math.abs(1 - (this.roadCount / this.zoneCount)) <= this.fairDelta) ? 1 : 0);
+
+    return Math.max(1, Math.min(5,
+      this.dataManager.getModifiers('traffic-density-index')
+        .reduce((acc, modifier) => acc + modifier, base)));
   }
 
   getGoals() {
@@ -8156,11 +8196,15 @@ class TravelTimesData extends DataSource {
   }
 
   getTravelTimesIndex() {
-    return 1
+    const base = 1
       + (this.longTravelPercentage <= this.levels[0] ? 1 : 0)
       + (this.longTravelPercentage <= this.levels[1] ? 1 : 0)
       + (this.longTravelPercentage <= this.levels[2] ? 1 : 0)
       + (this.longTravelPercentage <= this.levels[3] ? 1 : 0);
+
+    return Math.max(1, Math.min(5,
+      this.dataManager.getModifiers('travel-times-index')
+        .reduce((acc, modifier) => acc + modifier, base)));
   }
 
   getGoals() {
@@ -9761,6 +9805,146 @@ module.exports = Modal;
 
 /***/ }),
 
+/***/ "./src/js/power-up-data-modifier.js":
+/*!******************************************!*\
+  !*** ./src/js/power-up-data-modifier.js ***!
+  \******************************************/
+/***/ ((module) => {
+
+/* eslint-disable no-underscore-dangle */
+class PowerUpDataModifier {
+  constructor(config, powerUpManager) {
+    this.config = config;
+    this.manager = powerUpManager;
+  }
+
+  getModifiers(variableId) {
+    const modifiers = [];
+
+    this.manager.activePowerUps().forEach((powerUp) => {
+      if (this.config.powerUps[powerUp] && this.config.powerUps[powerUp].modifiers
+        && this.config.powerUps[powerUp].modifiers[variableId]) {
+        modifiers.push(this.config.powerUps[powerUp].modifiers[variableId]);
+      }
+
+      if (this.config.powerUps[powerUp] && this.config.powerUps[powerUp].modifiers
+        && this.config.powerUps[powerUp].modifiers._synergy) {
+        Object.keys(this.config.powerUps[powerUp].modifiers._synergy)
+          .forEach((synergyPowerUp) => {
+            if (this.manager.powerUps[synergyPowerUp]
+              && this.config.powerUps[powerUp].modifiers
+              && this.config.powerUps[powerUp].modifiers._synergy
+              && this.config.powerUps[powerUp].modifiers._synergy[synergyPowerUp]
+              && this.config.powerUps[powerUp].modifiers._synergy[synergyPowerUp][variableId]) {
+              modifiers.push(
+                this.config.powerUps[powerUp].modifiers._synergy[synergyPowerUp][variableId]
+              );
+            }
+          });
+      }
+    });
+
+    return modifiers;
+  }
+}
+
+module.exports = PowerUpDataModifier;
+
+
+/***/ }),
+
+/***/ "./src/js/power-up-inspector.js":
+/*!**************************************!*\
+  !*** ./src/js/power-up-inspector.js ***!
+  \**************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+
+class PowerUpInspector {
+  constructor(config) {
+    this.config = config;
+    this.events = new EventEmitter();
+
+    this.$element = $('<div></div>')
+      .addClass('power-up-switcher');
+
+    Object.entries(config.powerUps).forEach(([id, def]) => {
+      const switchId = `power-up-switch-${id}`;
+      $('<div></div>').addClass('form-group form-check')
+        .append(
+          $('<input type="checkbox">')
+            .addClass('form-check-input')
+            .attr('id', switchId)
+            .on('change', () => {
+              this.handleChange(id, $(`#${switchId}`).prop('checked'));
+            }),
+        )
+        .append(
+          $('<label></label>').addClass('form-check-label')
+            .attr('for', switchId)
+            .text(def.title.en)
+        )
+        .appendTo(this.$element);
+    });
+  }
+
+  handleChange(id, enabled) {
+    this.events.emit('power-up-change', id, enabled);
+  }
+}
+
+module.exports = PowerUpInspector;
+
+
+/***/ }),
+
+/***/ "./src/js/power-up-manager.js":
+/*!************************************!*\
+  !*** ./src/js/power-up-manager.js ***!
+  \************************************/
+/***/ ((module) => {
+
+class PowerUpManager {
+  constructor(config) {
+    this.config = config;
+    this.powerUps = Object.fromEntries(
+      Object.entries(config.powerUps).map(([id]) => [id, false])
+    );
+  }
+
+  setState(id, enabled) {
+    if (enabled) {
+      this.enable(id);
+    } else {
+      this.disable(id);
+    }
+  }
+
+  enable(id) {
+    if (this.powerUps[id] !== undefined) {
+      this.powerUps[id] = true;
+    }
+  }
+
+  disable(id) {
+    if (this.powerUps[id] !== undefined) {
+      this.powerUps[id] = false;
+    }
+  }
+
+  activePowerUps() {
+    return Object.entries(this.powerUps)
+      .filter(([, enabled]) => enabled)
+      .map(([id]) => id);
+  }
+}
+
+module.exports = PowerUpManager;
+
+
+/***/ }),
+
 /***/ "./src/js/test/cities.json":
 /*!*********************************!*\
   !*** ./src/js/test/cities.json ***!
@@ -10358,6 +10542,9 @@ const TextureLoader = __webpack_require__(/*! ./texture-loader */ "./src/js/text
 const CarSpawner = __webpack_require__(/*! ./cars/car-spawner */ "./src/js/cars/car-spawner.js");
 const TrafficData = __webpack_require__(/*! ./data-sources/traffic-data */ "./src/js/data-sources/traffic-data.js");
 const RoadSafetyData = __webpack_require__(/*! ./data-sources/road-safety-data */ "./src/js/data-sources/road-safety-data.js");
+const PowerUpInspector = __webpack_require__(/*! ./power-up-inspector */ "./src/js/power-up-inspector.js");
+const PowerUpManager = __webpack_require__(/*! ./power-up-manager */ "./src/js/power-up-manager.js");
+const PowerUpDataModifier = __webpack_require__(/*! ./power-up-data-modifier */ "./src/js/power-up-data-modifier.js");
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -10369,7 +10556,9 @@ cfgLoader.load([
   'config/variables.yml',
   'config/goals.yml',
   'config/citizen-requests.yml',
+  'config/dashboard-actions.yml',
   'config/cars.yml',
+  'config/power-ups.yml',
   'config/default-settings.yml',
   './settings.yml',
 ])
@@ -10395,6 +10584,8 @@ cfgLoader.load([
     city.map.events.on('update', () => {
       stats.calculateAll();
     });
+    const powerUpMgr = new PowerUpManager(config);
+    stats.registerModifier(new PowerUpDataModifier(config, powerUpMgr));
 
     const app = new PIXI.Application({
       width: 3840,
@@ -10489,6 +10680,13 @@ cfgLoader.load([
             }))
           .appendTo($('[data-component=dataInspector]'));
 
+        const powerUpInspector = new PowerUpInspector(config);
+        $('[data-component=powerUpInspector]').append(powerUpInspector.$element);
+        powerUpInspector.events.on('power-up-change', (id, enabled) => {
+          powerUpMgr.setState(id, enabled);
+          stats.calculateAll();
+        });
+
         const variableRankListView = new VariableRankListView(config.variables);
         // Todo: Remove the lines below
         $('[data-component="data-container"]').append(variableRankListView.$element);
@@ -10564,4 +10762,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.defbab629889b168ce00.js.map
+//# sourceMappingURL=default.45392a6dd3627d508dbb.js.map

@@ -53,9 +53,13 @@ class RoadSafetyData extends DataSource {
   }
 
   getRoadSafetyIndex() {
-    return 1
+    const base = 1
       + (this.intersectionPercentage < this.intersectionPercHigh ? 1 : 0)
       + (this.intersectionPercentage < this.intersectionPercMed ? 1 : 0);
+
+    return Math.max(1, Math.min(5,
+      this.dataManager.getModifiers('road-safety-index')
+        .reduce((acc, modifier) => acc + modifier, base)));
   }
 
   getGoals() {

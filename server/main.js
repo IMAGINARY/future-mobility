@@ -27,6 +27,7 @@ cfgLoader.load([
   '../config/citizen-requests.yml',
   '../config/dashboard-actions.yml',
   '../config/cars.yml',
+  '../config/power-ups.yml',
   '../config/default-settings.yml',
   settingsFile,
 ])

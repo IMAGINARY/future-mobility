@@ -16,12 +16,14 @@ tileTypes:
     name: Residential
     color: '#fd6451'
     editorIcon: 'static/fa/home-solid.svg'
+    noise: 0.05
   3:
     type: industrial
     name: Industrial
     color: '#ffeb53'
     editorIcon: 'static/fa/industry-solid.svg'
     emissions: 0.3
+    noise: 0.1
   4:
     type: commercial
     name: Commercial

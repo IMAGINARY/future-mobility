@@ -27,6 +27,9 @@ const TextureLoader = require('./texture-loader');
 const CarSpawner = require('./cars/car-spawner');
 const TrafficData = require('./data-sources/traffic-data');
 const RoadSafetyData = require('./data-sources/road-safety-data');
+const PowerUpInspector = require('./power-up-inspector');
+const PowerUpManager = require('./power-up-manager');
+const PowerUpDataModifier = require('./power-up-data-modifier');
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -38,7 +41,9 @@ cfgLoader.load([
   'config/variables.yml',
   'config/goals.yml',
   'config/citizen-requests.yml',
+  'config/dashboard-actions.yml',
   'config/cars.yml',
+  'config/power-ups.yml',
   'config/default-settings.yml',
   './settings.yml',
 ])
@@ -64,6 +69,8 @@ cfgLoader.load([
     city.map.events.on('update', () => {
       stats.calculateAll();
     });
+    const powerUpMgr = new PowerUpManager(config);
+    stats.registerModifier(new PowerUpDataModifier(config, powerUpMgr));
 
     const app = new PIXI.Application({
       width: 3840,
@@ -157,6 +164,13 @@ cfgLoader.load([
               });
             }))
           .appendTo($('[data-component=dataInspector]'));
+
+        const powerUpInspector = new PowerUpInspector(config);
+        $('[data-component=powerUpInspector]').append(powerUpInspector.$element);
+        powerUpInspector.events.on('power-up-change', (id, enabled) => {
+          powerUpMgr.setState(id, enabled);
+          stats.calculateAll();
+        });
 
         const variableRankListView = new VariableRankListView(config.variables);
         // Todo: Remove the lines below

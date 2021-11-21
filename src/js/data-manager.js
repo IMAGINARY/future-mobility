@@ -9,6 +9,8 @@ class DataManager {
 
     this.calculationPending = false;
     this.cooldownTimer = null;
+
+    this.dataModifiers = [];
   }
 
   /**
@@ -31,6 +33,10 @@ class DataManager {
     });
   }
 
+  registerModifier(modifier) {
+    this.dataModifiers.push(modifier);
+  }
+
   /**
    * Get the value of a variable.
    *
@@ -41,6 +47,7 @@ class DataManager {
     if (this.variables[variableId] === undefined) {
       throw new Error(`Requested unknown variable ${variableId}.`);
     }
+
     return this.variables[variableId]();
   }
 
@@ -67,6 +74,10 @@ class DataManager {
 
   getGoals() {
     return this.sources.reduce((acc, source) => acc.concat(source.getGoals()), []);
+  }
+
+  getModifiers(id) {
+    return this.dataModifiers.reduce((acc, modifier) => acc.concat(modifier.getModifiers(id)), []);
   }
 }
 

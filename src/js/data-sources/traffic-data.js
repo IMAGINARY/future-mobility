@@ -27,11 +27,15 @@ class TrafficData extends DataSource {
   }
 
   getTrafficDensityIndex() {
-    return 1
+    const base = 1
       + (this.zoneCount === 0
         || (Math.abs(1 - (this.roadCount / this.zoneCount)) <= this.goodDelta) ? 1 : 0)
       + (this.zoneCount === 0
         || (Math.abs(1 - (this.roadCount / this.zoneCount)) <= this.fairDelta) ? 1 : 0);
+
+    return Math.max(1, Math.min(5,
+      this.dataManager.getModifiers('traffic-density-index')
+        .reduce((acc, modifier) => acc + modifier, base)));
   }
 
   getGoals() {

@@ -55,11 +55,15 @@ class TravelTimesData extends DataSource {
   }
 
   getTravelTimesIndex() {
-    return 1
+    const base = 1
       + (this.longTravelPercentage <= this.levels[0] ? 1 : 0)
       + (this.longTravelPercentage <= this.levels[1] ? 1 : 0)
       + (this.longTravelPercentage <= this.levels[2] ? 1 : 0)
       + (this.longTravelPercentage <= this.levels[3] ? 1 : 0);
+
+    return Math.max(1, Math.min(5,
+      this.dataManager.getModifiers('travel-times-index')
+        .reduce((acc, modifier) => acc + modifier, base)));
   }
 
   getGoals() {

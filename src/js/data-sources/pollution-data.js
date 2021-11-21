@@ -41,9 +41,20 @@ class PollutionData extends DataSource {
   }
 
   calculate() {
+    const emissionFactors = this.dataManager.getModifiers('emissions-factors');
+    const emissionsPerTileType = Object.fromEntries(
+      Object.entries(this.config.tileTypes)
+        .map(([id, def]) => [id,
+          emissionFactors.reduce(
+            (acc, factors) => acc * (factors[this.config.tileTypes[id].type] || 1),
+            def.emissions || 0
+          ),
+        ])
+    );
+
     Array2D.setAll(this.pollutionMap, 0);
     Array2D.forEach(this.city.map.cells, (v, x, y) => {
-      const emissions = (this.config.tileTypes[v] && this.config.tileTypes[v].emissions) || 0;
+      const emissions = emissionsPerTileType[v] || 0;
       if (emissions !== 0) {
         this.pollutionMap[y][x] += emissions;
         this.city.map.nearbyCoords(x, y, 1).forEach(([nx, ny]) => {

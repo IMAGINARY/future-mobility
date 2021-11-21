@@ -1241,6 +1241,8 @@ class DataManager {
 
     this.calculationPending = false;
     this.cooldownTimer = null;
+
+    this.dataModifiers = [];
   }
 
   /**
@@ -1263,6 +1265,10 @@ class DataManager {
     });
   }
 
+  registerModifier(modifier) {
+    this.dataModifiers.push(modifier);
+  }
+
   /**
    * Get the value of a variable.
    *
@@ -1273,6 +1279,7 @@ class DataManager {
     if (this.variables[variableId] === undefined) {
       throw new Error(`Requested unknown variable ${variableId}.`);
     }
+
     return this.variables[variableId]();
   }
 
@@ -1299,6 +1306,10 @@ class DataManager {
 
   getGoals() {
     return this.sources.reduce((acc, source) => acc.concat(source.getGoals()), []);
+  }
+
+  getModifiers(id) {
+    return this.dataModifiers.reduce((acc, modifier) => acc.concat(modifier.getModifiers(id)), []);
   }
 }
 
@@ -1401,9 +1412,19 @@ class NoiseData extends DataSource {
   }
 
   calculate() {
+    const noiseFactors = this.dataManager.getModifiers('noise-factors');
+    const noisePerTileType = Object.fromEntries(
+      Object.entries(this.config.tileTypes)
+        .map(([id, def]) => [id,
+          noiseFactors.reduce(
+            (acc, factors) => acc * (factors[this.config.tileTypes[id].type] || 1),
+            def.noise || 0
+          ),
+        ])
+    );
     Array2D.setAll(this.noiseMap, 0);
     Array2D.forEach(this.city.map.cells, (v, x, y) => {
-      const noise = (this.config.tileTypes[v] && this.config.tileTypes[v].noise) || 0;
+      const noise = noisePerTileType[v] || 0;
       if (noise !== 0) {
         this.noiseMap[y][x] += noise;
         this.city.map.nearbyCoords(x, y, 1).forEach(([nx, ny]) => {
@@ -1528,9 +1549,20 @@ class PollutionData extends DataSource {
   }
 
   calculate() {
+    const emissionFactors = this.dataManager.getModifiers('emissions-factors');
+    const emissionsPerTileType = Object.fromEntries(
+      Object.entries(this.config.tileTypes)
+        .map(([id, def]) => [id,
+          emissionFactors.reduce(
+            (acc, factors) => acc * (factors[this.config.tileTypes[id].type] || 1),
+            def.emissions || 0
+          ),
+        ])
+    );
+
     Array2D.setAll(this.pollutionMap, 0);
     Array2D.forEach(this.city.map.cells, (v, x, y) => {
-      const emissions = (this.config.tileTypes[v] && this.config.tileTypes[v].emissions) || 0;
+      const emissions = emissionsPerTileType[v] || 0;
       if (emissions !== 0) {
         this.pollutionMap[y][x] += emissions;
         this.city.map.nearbyCoords(x, y, 1).forEach(([nx, ny]) => {
@@ -3453,4 +3485,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.8577810483a6e6a48486.js.map
+//# sourceMappingURL=editor.9e26c3e0b7fef8f0c083.js.map
