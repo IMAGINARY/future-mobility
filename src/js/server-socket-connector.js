@@ -83,6 +83,8 @@ class ServerSocketConnector {
       this.events.emit('goals_update', message.goals);
     } else if (message.type === 'view_show_map_var') {
       this.events.emit('view_show_map_var', message.variable, message.data);
+    } else if (message.type === 'power_ups_update') {
+      this.events.emit('power_ups_update', message.powerUps);
     } else if (message.type === 'pong') {
       this.handlePong();
     }
@@ -159,6 +161,24 @@ class ServerSocketConnector {
       type: 'view_show_map_var',
       variable,
     });
+  }
+
+  enablePowerUp(powerUpId) {
+    this.send({
+      type: 'enable_power_up',
+      powerUpId,
+    });
+  }
+
+  disablePowerUp(powerUpId) {
+    this.send({
+      type: 'disable_power_up',
+      powerUpId,
+    });
+  }
+
+  getActivePowerUps() {
+    this.send('get_active_power_ups');
   }
 }
 

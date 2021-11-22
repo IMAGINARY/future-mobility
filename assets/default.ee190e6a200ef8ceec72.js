@@ -9903,7 +9903,9 @@ module.exports = PowerUpInspector;
 /*!************************************!*\
   !*** ./src/js/power-up-manager.js ***!
   \************************************/
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
 
 class PowerUpManager {
   constructor(config) {
@@ -9911,6 +9913,7 @@ class PowerUpManager {
     this.powerUps = Object.fromEntries(
       Object.entries(config.powerUps).map(([id]) => [id, false])
     );
+    this.events = new EventEmitter();
   }
 
   setState(id, enabled) {
@@ -9924,12 +9927,14 @@ class PowerUpManager {
   enable(id) {
     if (this.powerUps[id] !== undefined) {
       this.powerUps[id] = true;
+      this.events.emit('update', id, true);
     }
   }
 
   disable(id) {
     if (this.powerUps[id] !== undefined) {
       this.powerUps[id] = false;
+      this.events.emit('update', id, false);
     }
   }
 
@@ -10762,4 +10767,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.45392a6dd3627d508dbb.js.map
+//# sourceMappingURL=default.ee190e6a200ef8ceec72.js.map

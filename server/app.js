@@ -14,6 +14,8 @@ const GreenSpacesData = require('../src/js/data-sources/green-spaces-data');
 const TravelTimesData = require('../src/js/data-sources/travel-times-data');
 const TrafficData = require('../src/js/data-sources/traffic-data');
 const RoadSafetyData = require('../src/js/data-sources/road-safety-data');
+const PowerUpManager = require('../src/js/power-up-manager');
+const PowerUpDataModifier = require('../src/js/power-up-data-modifier');
 
 function initApp(config) {
   console.log(`Initializing ${config.cityWidth} x ${config.cityHeight} city.`);
@@ -30,6 +32,11 @@ function initApp(config) {
   stats.registerSource(new TrafficData(city, config));
   stats.registerSource(new RoadSafetyData(city, config));
   city.map.events.on('update', () => {
+    stats.throttledCalculateAll();
+  });
+  const powerUpMgr = new PowerUpManager(config);
+  stats.registerModifier(new PowerUpDataModifier(config, powerUpMgr));
+  powerUpMgr.events.on('update', () => {
     stats.throttledCalculateAll();
   });
 
@@ -110,6 +117,13 @@ function initApp(config) {
       }));
     }
 
+    function sendPowerUpsUpdate() {
+      socket.send(JSON.stringify({
+        type: 'power_ups_update',
+        powerUps: powerUpMgr.getActivePowerUps(),
+      }));
+    }
+
     function sendPong() {
       socket.send(JSON.stringify({
         type: 'pong',
@@ -134,6 +148,15 @@ function initApp(config) {
             break;
           case 'view_show_map_var':
             viewRepeater.emit('view_show_map_var', message.variable);
+            break;
+          case 'get_active_power_ups':
+            sendPowerUpsUpdate();
+            break;
+          case 'enable_power_up':
+            powerUpMgr.enable(message.powerUpId);
+            break;
+          case 'disable_power_up':
+            powerUpMgr.disable(message.powerUpId);
             break;
           case 'ping':
             sendPong();
