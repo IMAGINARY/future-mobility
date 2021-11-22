@@ -1,6 +1,6 @@
-$person-width: 4.5em;
+$person-width: 5em;
 $person-height: $person-width;
-$person-margin: 0.5em;
+$person-margin: 1em;
 $balloon-tip-size: 1.3em;
 
 .citizen-requests {
@@ -21,12 +21,13 @@ $balloon-tip-size: 1.3em;
     position: relative;
     display: inline-block;
     vertical-align: top;
-    width: calc(100% - (#{$person-width} + #{$person-margin}));
+    width: calc(100% - (#{$person-width} + #{$person-margin} - #{$balloon-tip-size}));
     border-radius: 0.5em;
     padding: 0.5em 0.8em;
-    margin-bottom: 1em;
+    margin-bottom: 1.5em;
     background-color: $c-gray-mid;
-    line-height: 1.35;
+    line-height: 1.2;
+    font-size: 1.3em;
 
     &:after {
       content: " ";
@@ -59,5 +60,16 @@ $balloon-tip-size: 1.3em;
   .request-text-de {
     font-weight: bold;
     margin-bottom: 0.5em;
+
+    .large {
+      font-size: 1.4em;
+      display: block;
+    }
+  }
+
+  .request-text-en {
+    .large {
+      display: block;
+    }
   }
 }

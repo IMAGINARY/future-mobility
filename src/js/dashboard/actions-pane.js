@@ -7,7 +7,7 @@ class ActionsPane {
     this.events = new EventEmitter();
     this.disabled = false;
 
-    this.buttons = this.config.dashboardActions.buttons.map(button => (
+    this.buttons = this.config.dashboard.actions.buttons.map(button => (
       $('<button></button>')
         .attr('type', 'button')
         .addClass(`btn btn-block btn-dashboard-action btn-${button.id}`)
@@ -27,7 +27,7 @@ class ActionsPane {
         .append(
           this.buttons.map(button => (
             $('<div>')
-              .addClass('col-3')
+              .addClass('col-5')
               .append(button)))
         )
     );

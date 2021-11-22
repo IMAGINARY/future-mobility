@@ -46,11 +46,13 @@ class CitizenRequestView {
   }
 
   formatRequestText(text) {
-    return text.replaceAll(CitizenRequestView.tileRefRegexp, (match, tileSpec, innerText) => (
-      `<span class="tileref tileref-${CitizenRequestView.tileReferences[tileSpec]}">
+    return text
+      .replaceAll(CitizenRequestView.tileRefRegexp, (match, tileSpec, innerText) => (
+        `<span class="tileref tileref-${CitizenRequestView.tileReferences[tileSpec]}">
 <span class="tileref-stub" style="background-color: ${this.tileColors[tileSpec]}"></span> ${innerText}
 </span>`
-    ));
+      ))
+      .replaceAll(CitizenRequestView.largeTextRegexp, '<span class="large">$1</span>');
   }
 }
 
@@ -65,5 +67,7 @@ CitizenRequestView.tileReferences = {
 CitizenRequestView.tileRefRegexp = new RegExp(
   `([${Object.keys(CitizenRequestView.tileReferences).join('')}])\\[([^\\]]+)\\]`, 'g'
 );
+
+CitizenRequestView.largeTextRegexp = /\*([^*]+)\*/g;
 
 module.exports = CitizenRequestView;

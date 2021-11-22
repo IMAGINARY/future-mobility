@@ -6,6 +6,7 @@ const ConnectionStateView = require('./connection-state-view');
 const CitizenRequestView = require('./citizen-request-view');
 const CitizenRequestViewMgr = require('./citizen-request-view-mgr');
 const ActionsPane = require('./dashboard/actions-pane');
+const { createTitle } = require('./dashboard/titles');
 
 fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -18,11 +19,15 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
     const connector = new ServerSocketConnector(process.env.SERVER_SOCKET_URI);
 
     const citizenRequestView = new CitizenRequestView(config);
-    $('#col-1').append(citizenRequestView.$element);
+    $('#col-1')
+      .append(createTitle(config.dashboard.goals.title))
+      .append(citizenRequestView.$element);
     const citizenRequestViewMgr = new CitizenRequestViewMgr(citizenRequestView);
 
     const variableRankListView = new VariableRankListView(config.variables);
-    $('#col-2').append(variableRankListView.$element);
+    $('#col-2')
+      .append(createTitle(config.dashboard.status.title))
+      .append(variableRankListView.$element);
     variableRankListView.setValues({
       'traffic-density': 0,
       'travel-times': 0,
@@ -31,6 +36,9 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
       noise: 0,
       'green-spaces': 0,
     });
+
+    $('#col-3')
+      .append(createTitle(config.dashboard.powerUps.title))
 
     const actionsPane = new ActionsPane(config);
     $('#col-actions').append(actionsPane.$element);

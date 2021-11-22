@@ -1,94 +1,94 @@
 citizenRequests:
   green-spaces-large-spaces-area:
-    en: We want large P[parks], W[lakes] or a W[river] in our city.
-    de: Wir wollen große P[Parks], W[Seen] oder einen W[Fluss] in unserer Stadt.
+    en: "*More parks!* We want a large P[park], a W[lake] or a W[river]."
+    de: "*Größere Parks!* Wir wollen große P[Parks], W[Seen] oder einen W[Fluss] in unserer Stadt."
     group: zoning
     urgent: false
   green-spaces-count:
-    en: We need more P[parks] and W[bodies of water] in our city. They will make the city more beautiful and help with pollution.
-    de: Wir brauchen mehr P[Parks] und W[Wasserflächen] in unserer Stadt. Sie machen die Stadt schöner und helfen gegen die Luftverschmutzung.
+    en: "*More parks!* P[parks] and W[water] make the city beautiful and reduce pollution."
+    de: "*Mehr Parks!* Mehr P[Parks] und W[Wasserflächen] machen die Stadt schöner und helfen gegen die Luftverschmutzung."
     group: zoning
     urgent: false
   green-spaces-proximity:
-    en: We want P[parks] and W[bodies of water] closer to our homes, so we can walk or bike to them.
-    de: Wir wollen P[Parks] und W[Wasserflächen] in der Nähe unserer Häuser, damit wir sie zu Fuß oder mit dem Fahrrad erreichen können.
+    en: "*More parks!* We want P[parks] and W[bodies of water] closer to our homes."
+    de: "*Mehr Parks!* Wir wollen P[Parks] und W[Wasserflächen] in der Nähe unserer Häuser."
     group: zoning
     urgent: false
   noise-residential:
-    en: Too much noise from C[commercial zones] and X[roads] reaches our homes! We need R[residential zones] in quieter parts of the city.
-    de: Zu viel Lärm aus den C[Gewerbegebieten] und von den X[Straßen] dringt in unsere Häuser! Wir brauchen R[Wohngebiete] in ruhigeren Gegenden der Stadt.
+    en: "*Too much noise!* We need R[residential zones]  in quieter parts of the city."
+    de: "*Zu viel Lärm!* Wir brauchen R[Wohngebiete] in ruhigeren Gegenden der Stadt."
     group: environment
     urgent: true
   noise-city:
-    en: Our city is too noisy! C[Commercial zones] and X[roads] should be more spread.
-    de: Unsere Stadt ist zu laut! Die C[Gewerbegebiete] und X[Straßen] sollten weitläufiger verteilt sein.
+    en: "*Too much noise!* C[Commercial zones] should be more spread."
+    de: "*Zu viel Lärm!* Die C[Gewerbegebiete] sollten weitläufiger verteilt sein."
     group: environment
     urgent: true
   noise-max:
-    en: The noise in some areas of the city is at very harmful levels. C[Commercial zones] should not be concentrated.
-    de: Die Lärmbelastung ist in einigen Teilen der Stadt gefährlich hoch. C[Gewerbegebiete] sollten nicht so nahe zusammenstehen.
+    en: "*Too much noise!* Some areas of the city have very high noise levels."
+    de: "*Zu viel Lärm!* Die Lärmbelastung ist in einigen Teilen der Stadt viel zu hoch."
     group: environment
     urgent: true
   pollution-city:
-    en: Our city is too polluted! I[Industrial zones] should not be concentrated.
-    de: Unsere Stadt ist zu verschmutzt! I[Industriegebiete] sollten nicht so nahe zusammenstehen.
+    en: "*Too much pollution!* Spread I[Industrial zones] more."
+    de: "*Zu hohe Umweltverschmutzung!* I[Industriegebiete] sollten weitläufiger verteilt sein."
     group: environment
     urgent: true
   pollution-residential:
-    en: The air quality in our homes is very bad! We need R[residential zones] in less polluted parts of the city.
-    de: Die Luftqualität in unseren Wohnungen ist sehr schlecht! Wir brauchen R[Wohngebiete] in weniger verschmutzten Zonen.
+    en: "*Too much pollution!* We need R[residential zones] in less polluted parts of the city."
+    de: "*Zu hohe Umweltverschmutzung!* Wir brauchen R[Wohngebiete] in weniger verschmutzten Zonen."
     group: environment
     urgent: true
   pollution-max:
-    en: The pollution in some parts of the city is at very harmful levels. I[Industrial zones] should not be concentrated.
-    de: Die Umweltverschmutzung in einigen Teilen der Stadt hat ein sehr schädliches Niveau erreicht. I[Industriegebiete] sollten nicht so nahe zusammenstehen.
+    en: "*Too much pollution!* Some areas of the city have very high pollution."
+    de: "*Zu hohe Umweltverschmutzung!* Einige Teile der Stadt haben eine viel zu hohe Umweltverschmutzung."
     group: environment
     urgent: true
   zone-balance-r-low:
-    en: Finding homes in the city is hard! We need more R[residential zones] to live in.
-    de: Es ist schwer, in der Stadt eine Wohnung zu finden! Wir brauchen mehr R[Wohngebiete], in denen wir leben können.
+    en: "*More R[residential zones]!* We need homes to live in."
+    de: "*Mehr R[Wohngebiete]!* Wir brauchen mehr Häuser, in denen wir leben können."
     group: zoning
     urgent: true
   zone-balance-c-low:
-    en: We need more C[commercial zones] to shop, work, and go out with friends.
-    de: Wir brauchen mehr C[Gewerbegebiete] zum Einkaufen, Arbeiten und Ausgehen.
+    en: "*More C[commercial zones]!* We want to shop, work, and go out with friends."
+    de: "*Mehr C[Gewerbegebiete]!* Wir wollen einkaufen, arbeiten und ausgehen."
     group: zoning
     urgent: false
   zone-balance-i-low:
-    en: We need more I[industrial zones]. They will create new jobs for citizens.
-    de: Wir brauchen mehr I[Industriegebiete]. Sie schaffen neue Arbeitsplätze.
+    en: "*More I[industrial zones]!* They will create new jobs."
+    de: "*Mehr I[Industriegebiete]!* Sie schaffen neue Arbeitsplätze."
     group: zoning
     urgent: false
   zone-balance-r-high:
-    en: There are too many R[residential zones]. Some houses are vacant.
-    de: Es gibt zu viele R[Wohngebiete]. Einige Häuser stehen leer.
+    en: "*Less R[residential zones]!* Many houses are empty."
+    de: "*Weniger R[Wohngebiete]!* Viele Häuser stehen leer."
     group: zoning
     urgent: false
   zone-balance-c-high:
-    en: There are too many C[commercial zones]. Many office spaces and shops are not being rented.
-    de: Es gibt zu viele C[Gewerbegebiete]. Viele Büroflächen und Geschäfte werden nicht vermietet.
+    en: "*Less C[commercial zones]!* Many office spaces and shops are not being rented."
+    de: "*Weniger C[Gewerbegebiete]!* Viele Büroflächen und Geschäfte werden nicht vermietet."
     group: zoning
     urgent: false
   zone-balance-i-high:
-    en: There are too many I[industrial zones]. Factories are not working at full capacity.
-    de: Es gibt zu viele I[Industriegebiete]. Die Fabriken arbeiten nicht mit voller Kapazität.
+    en: "*Less I[industrial zones]!* Factories are not working at full capacity."
+    de: "*Weniger I[Industriegebiete]!* Die Fabriken arbeiten nicht mit voller Kapazität."
     group: zoning
     urgent: false
   travel-times-slow:
-   en: "*Faster travel!* We need roads connecting the whole city."
-   de: "*Bessere X[Straßenführung]!* Wir brauchen Straßen, die die ganze Stadt verbinden."
-   group: roads
-   urgent: false
+    en: "*Faster travel!* We need roads connecting the whole city."
+    de: "*Bessere X[Straßenführung]!* Wir brauchen Straßen, die die ganze Stadt verbinden."
+    group: roads
+    urgent: false
   road-count-low:
-   en: "*More X[roads]!* They're not enough for our current traffic."
-   de: "*Mehr X[Straßen]!* Sie reichen nicht aus für unseren aktuellen Verkehr."
-   group: roads
-   urgent: false
+    en: "*More X[roads]!* They're not enough for our current traffic."
+    de: "*Mehr X[Straßen]!* Sie reichen nicht aus für unseren aktuellen Verkehr."
+    group: roads
+    urgent: false
   road-count-high:
-   en: "*Less X[roads]!* We can use their space better."
-   de: "*Weniger X[Straßen]!* Wir können den Platz der Straßen viel besser nutzen."
-   group: roads
-   urgent: false
+    en: "*Less X[roads]!* We can use their space better."
+    de: "*Weniger X[Straßen]!* Wir können den Platz der Straßen viel besser nutzen."
+    group: roads
+    urgent: false
   accidents-intersections:
     en: "*Less intersections!* They cause accidents."
     de: "*Weniger Kreuzungen!* Sie verursachen Verkehrsunfälle."

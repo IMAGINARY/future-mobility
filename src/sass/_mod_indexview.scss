@@ -1,5 +1,5 @@
-$index-description-icon-width: 2.5em;
-$index-description-icon-height: 2.5em;
+$index-description-icon-width: 2.8em;
+$index-description-icon-height: 2.8em;
 
 $index-value-icon-width: 3.75em;
 $index-value-icon-height: 3.75em;
@@ -24,16 +24,18 @@ $index-value-icon-face-py: ($index-value-icon-height - $index-value-icon-face-he
       width: calc(100% - (#{$index-value-icon-width + $index-value-icon-margin}));
       text-overflow: clip;
       background-repeat: no-repeat;
-      background-position: left center;
+      background-position: left 0.1em;
       background-size: $index-description-icon-width $index-description-icon-height;
       padding-left: $index-description-icon-width + 1.25em;
       min-height: $index-description-icon-height;
+      line-height: 1.2;
 
       .name {
         font-weight: bold;
+        font-size: 1.3em;
       }
       .name-tr {
-        font-size: 0.9em;
+        font-size: 1.1em;
       }
     }
 

@@ -1,0 +1,23 @@
+dashboard:
+  goals:
+    title:
+      de: "Ziele"
+      en: "Goals"
+  status:
+    title:
+      de: "Status"
+      en: "Status"
+  powerUps:
+    title:
+      de: "Power-Ups"
+      en: "Power-Ups"
+  actions:
+    buttons:
+      - id: show-pollution
+        text:
+          de: "<span class='large'>Luftverschmutzung</span><br>anzeigen"
+          en: "Show pollution"
+      - id: show-noise
+        text:
+          de: "<span class='large'>Lärmbelastung</span><br>anzeigen"
+          en: "Show noise"

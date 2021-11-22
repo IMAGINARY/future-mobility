@@ -3,10 +3,42 @@ body.dashboard {
 
   .citizen-requests {
     font-size: 1.4em;
+    width: 100%;
+    padding: 0;
   }
 
   .index-list {
     font-size: 1.9em;
+    width: 100%;
+    padding: 0 0.7em;
+  }
+
+  .dashboard-title {
+    font-size: 2em;
+  }
+}
+
+.dashboard-title {
+  padding: 0.4em 0 0.3em;
+  margin-bottom: 1em;
+  margin-top: 0.4em;
+  text-align: center;
+  font-size: 2em;
+  text-transform: uppercase;
+  background-color: $c-fluo-green;
+  color: black;
+
+  h2 {
+    font-size: 2em;
+    margin: 0;
+    display: inline-block;
+    color: black;
+    text-transform: uppercase;
+  }
+
+  .dashboard-title-translation {
+    margin-left: 0.75em;
+    display: inline-block;
   }
 }
 
@@ -14,7 +46,12 @@ body.dashboard {
   font-size: 1.8em;
   line-height: 1.1;
   border-radius: 6em;
-  padding: 0.8em 0.5em;
+  padding: 0.5em 0.5em;
+  margin: 0.5em 0;
+
+  .large {
+    font-size: 1.2em;
+  }
 
   .text {
     display: block;
@@ -26,15 +63,19 @@ body.dashboard {
     margin-bottom: 0.2em;
   }
 
+  .text-en {
+    font-size: 1.15em;
+  }
+
   &.disabled {
     color: rgba(255, 255, 255, 0.65)!important;
   }
 }
 
 .btn-show-pollution {
-  @include button-variant(#ffffff, #e34205, #e34205);
+  @include button-variant(#ffffff, $c-cherry, $c-cherry);
 }
 
 .btn-show-noise {
-  @include button-variant(#ffffff, #7d1dff, #7d1dff);
+  @include button-variant(#ffffff, $c-grape, $c-grape);
 }

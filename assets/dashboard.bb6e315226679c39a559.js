@@ -619,7 +619,7 @@ module.exports = showFatalError;
 /***/ ((module) => {
 
 class CitizenRequestViewMgr {
-  constructor(citizenRequestView, requestCount = 3) {
+  constructor(citizenRequestView, requestCount = 2) {
     this.view = citizenRequestView;
     this.requestCount = requestCount;
     this.config = this.view.config;
@@ -631,6 +631,9 @@ class CitizenRequestViewMgr {
     this.minTime = (this.config.citizenRequestView.minTime || 30) * 1000;
     this.maxTime = (this.config.citizenRequestView.maxTime || 90) * 1000;
     this.cooldownTime = (this.config.citizenRequestView.cooldownTime || 90) * 1000;
+
+    this.inTestMode = false;
+    window.testCitizenRequestView = () => this.enterTestMode();
   }
 
   displayRequest(goalId) {
@@ -649,6 +652,9 @@ class CitizenRequestViewMgr {
   }
 
   handleUpdate(goals) {
+    if (this.inTestMode) {
+      return;
+    }
     const selectedGoals = this.selectElegibleGoals(goals)
       .slice(0, this.requestCount);
 
@@ -729,6 +735,33 @@ class CitizenRequestViewMgr {
         || (interleavedOrder[a.id] - interleavedOrder[b.id])
       ));
   }
+
+  enterTestMode() {
+    this.inTestMode = true;
+    const allRequests = Object.keys(this.config.citizenRequests);
+    let i = 0;
+    const showOne = (index) => {
+      Object.keys(this.shownRequests).forEach((goalId) => {
+        this.removeRequest(goalId);
+      });
+      this.displayRequest(allRequests[index]);
+    };
+
+    showOne(0);
+    $(window).on('keydown', (ev) => {
+      if (ev.key === 'ArrowLeft') {
+        if (i > 0) {
+          i -= 1;
+        }
+        showOne(i);
+      } else if (ev.key === 'ArrowRight') {
+        if (i < (allRequests.length - 1)) {
+          i += 1;
+          showOne(i);
+        }
+      }
+    });
+  }
 }
 
 CitizenRequestViewMgr.Timing = {
@@ -796,11 +829,13 @@ class CitizenRequestView {
   }
 
   formatRequestText(text) {
-    return text.replaceAll(CitizenRequestView.tileRefRegexp, (match, tileSpec, innerText) => (
-      `<span class="tileref tileref-${CitizenRequestView.tileReferences[tileSpec]}">
+    return text
+      .replaceAll(CitizenRequestView.tileRefRegexp, (match, tileSpec, innerText) => (
+        `<span class="tileref tileref-${CitizenRequestView.tileReferences[tileSpec]}">
 <span class="tileref-stub" style="background-color: ${this.tileColors[tileSpec]}"></span> ${innerText}
 </span>`
-    ));
+      ))
+      .replaceAll(CitizenRequestView.largeTextRegexp, '<span class="large">$1</span>');
   }
 }
 
@@ -815,6 +850,8 @@ CitizenRequestView.tileReferences = {
 CitizenRequestView.tileRefRegexp = new RegExp(
   `([${Object.keys(CitizenRequestView.tileReferences).join('')}])\\[([^\\]]+)\\]`, 'g'
 );
+
+CitizenRequestView.largeTextRegexp = /\*([^*]+)\*/g;
 
 module.exports = CitizenRequestView;
 
@@ -900,7 +937,7 @@ class ActionsPane {
     this.events = new EventEmitter();
     this.disabled = false;
 
-    this.buttons = this.config.dashboardActions.buttons.map(button => (
+    this.buttons = this.config.dashboard.actions.buttons.map(button => (
       $('<button></button>')
         .attr('type', 'button')
         .addClass(`btn btn-block btn-dashboard-action btn-${button.id}`)
@@ -920,7 +957,7 @@ class ActionsPane {
         .append(
           this.buttons.map(button => (
             $('<div>')
-              .addClass('col-3')
+              .addClass('col-5')
               .append(button)))
         )
     );
@@ -938,6 +975,37 @@ class ActionsPane {
 }
 
 module.exports = ActionsPane;
+
+
+/***/ }),
+
+/***/ "./src/js/dashboard/titles.js":
+/*!************************************!*\
+  !*** ./src/js/dashboard/titles.js ***!
+  \************************************/
+/***/ ((module) => {
+
+function createTitle(texts) {
+  const $answer = $('<div></div>')
+    .addClass('dashboard-title');
+
+  const { de, en } = texts;
+  if (de === en) {
+    $answer.append($('<h2>').text(de));
+  } else {
+    $answer.append(
+      $('<h2>')
+        .text(de),
+      $('<div></div>')
+        .addClass('dashboard-title-translation')
+        .text(en)
+    );
+  }
+
+  return $answer;
+}
+
+module.exports = { createTitle };
 
 
 /***/ }),
@@ -1268,6 +1336,7 @@ const ConnectionStateView = __webpack_require__(/*! ./connection-state-view */ "
 const CitizenRequestView = __webpack_require__(/*! ./citizen-request-view */ "./src/js/citizen-request-view.js");
 const CitizenRequestViewMgr = __webpack_require__(/*! ./citizen-request-view-mgr */ "./src/js/citizen-request-view-mgr.js");
 const ActionsPane = __webpack_require__(/*! ./dashboard/actions-pane */ "./src/js/dashboard/actions-pane.js");
+const { createTitle } = __webpack_require__(/*! ./dashboard/titles */ "./src/js/dashboard/titles.js");
 
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -1280,11 +1349,15 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
     const connector = new ServerSocketConnector("ws://localhost:4848");
 
     const citizenRequestView = new CitizenRequestView(config);
-    $('#col-1').append(citizenRequestView.$element);
+    $('#col-1')
+      .append(createTitle(config.dashboard.goals.title))
+      .append(citizenRequestView.$element);
     const citizenRequestViewMgr = new CitizenRequestViewMgr(citizenRequestView);
 
     const variableRankListView = new VariableRankListView(config.variables);
-    $('#col-2').append(variableRankListView.$element);
+    $('#col-2')
+      .append(createTitle(config.dashboard.status.title))
+      .append(variableRankListView.$element);
     variableRankListView.setValues({
       'traffic-density': 0,
       'travel-times': 0,
@@ -1293,6 +1366,9 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
       noise: 0,
       'green-spaces': 0,
     });
+
+    $('#col-3')
+      .append(createTitle(config.dashboard.powerUps.title))
 
     const actionsPane = new ActionsPane(config);
     $('#col-actions').append(actionsPane.$element);
@@ -1326,4 +1402,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=dashboard.d9bf8ee6017201722660.js.map
+//# sourceMappingURL=dashboard.bb6e315226679c39a559.js.map
