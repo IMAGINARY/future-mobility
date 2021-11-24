@@ -79,3 +79,18 @@ body.dashboard {
 .btn-show-noise {
   @include button-variant(#ffffff, $c-grape, $c-grape);
 }
+
+.btn-power-ups-activate {
+  @include button-variant(#ffffff, $c-mint, $c-mint);
+  height: calc(100% - 1em);
+
+  &.disabled {
+    opacity: 0.45;
+  }
+}
+
+.btn-cancel {
+  @include button-variant(#ffffff, $c-gray-mid, $c-gray-mid);
+  color: black;
+  height: calc(100% - 1em)
+}

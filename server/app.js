@@ -120,7 +120,7 @@ function initApp(config) {
     function sendPowerUpsUpdate() {
       socket.send(JSON.stringify({
         type: 'power_ups_update',
-        powerUps: powerUpMgr.getActivePowerUps(),
+        powerUps: powerUpMgr.activePowerUps(),
       }));
     }
 
@@ -178,6 +178,10 @@ function initApp(config) {
     stats.events.on('update', () => {
       sendVariablesMessage();
       sendGoalsMessage();
+    });
+
+    powerUpMgr.events.on('update', () => {
+      sendPowerUpsUpdate();
     });
 
     viewRepeater.on('view_show_map_var', (variable) => {

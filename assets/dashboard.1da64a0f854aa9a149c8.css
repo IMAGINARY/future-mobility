@@ -23,6 +23,9 @@ h2 {
 .h-82 {
   height: 82% !important; }
 
+.h-18 {
+  height: 18% !important; }
+
 [data-component="app-container"] {
   max-width: 1152px;
   max-height: 1152px;
@@ -437,6 +440,96 @@ body > .tile-counter {
   .citizen-requests .request-text-en .large {
     display: block; }
 
+.powerups-selector-main > .row {
+  height: calc(100% - 9em); }
+
+.powerups-selector-main .powerup-container {
+  height: 100%; }
+
+.powerups-selector-main .powerup {
+  border: none;
+  padding: 0;
+  margin: 0;
+  background-color: #f8dffe;
+  border-radius: 0.5em;
+  font-size: 2em;
+  height: 100%; }
+  .powerups-selector-main .powerup:active {
+    background-color: #edaefc; }
+  .powerups-selector-main .powerup .title {
+    padding: 1em;
+    text-align: center;
+    border-radius: 0.5em;
+    margin-bottom: 0.5em; }
+    .powerups-selector-main .powerup .title .text-main {
+      font-size: 1.6em;
+      font-weight: bold;
+      line-height: 1.1; }
+    .powerups-selector-main .powerup .title .text-translation {
+      font-size: 1.3em; }
+  .powerups-selector-main .powerup .image {
+    height: 0;
+    padding-bottom: 40%;
+    margin-top: -1em;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center; }
+  .powerups-selector-main .powerup .description {
+    padding: 1em;
+    font-size: 1.05em;
+    line-height: 1.3; }
+    .powerups-selector-main .powerup .description .text-main {
+      font-weight: bold;
+      margin-bottom: 0.5em; }
+
+.powerups-selection {
+  font-size: 1.8em; }
+  .powerups-selection .no-selection {
+    font-size: 1.4em;
+    text-align: center;
+    margin-top: 5em;
+    background-color: #f2f2f2;
+    padding: 1em;
+    width: 80%;
+    margin-left: 10%;
+    border-radius: 0.5em; }
+    .powerups-selection .no-selection .text-de {
+      font-weight: bold;
+      margin-bottom: 1em; }
+  .powerups-selection .powerup {
+    border: none;
+    padding: 0 0 0.7em;
+    margin: 0 0 1em;
+    background-color: #f1bdfb;
+    border-radius: 0.5em; }
+    .powerups-selection .powerup .title {
+      padding: 1em;
+      text-align: left; }
+      .powerups-selection .powerup .title .text-main {
+        font-size: 1.4em;
+        font-weight: bold;
+        line-height: 1.1; }
+      .powerups-selection .powerup .title .text-translation {
+        font-size: 1.2em; }
+    .powerups-selection .powerup .btn-power-ups-disable {
+      background-color: #f8e0fd;
+      background-image: url(4dce12aa34f5f4555b5f.svg);
+      background-position: left center;
+      background-repeat: no-repeat;
+      background-size: contain;
+      text-align: left;
+      font-size: 1.2em;
+      border-radius: 1em;
+      width: 94%;
+      margin-left: 3%;
+      padding: 0.4em 0 0.4em 2.4em; }
+      .powerups-selection .powerup .btn-power-ups-disable .text-main {
+        font-weight: bold; }
+      .powerups-selection .powerup .btn-power-ups-disable .text-translation {
+        margin-left: 0.7em; }
+      .powerups-selection .powerup .btn-power-ups-disable:active {
+        background-color: #e280f7; }
+
 body.dashboard {
   background-color: #fff; }
   body.dashboard .citizen-requests {
@@ -558,5 +651,156 @@ body.dashboard {
     color: #952df5;
     background-color: #ffffff; }
 
+.btn-power-ups-activate {
+  color: #ffffff;
+  background-color: #00bb98;
+  border-color: #00bb98;
+  height: calc(100% - 1em); }
+  .btn-power-ups-activate:focus, .btn-power-ups-activate.focus {
+    color: #ffffff;
+    background-color: #00886f;
+    border-color: #003c30; }
+  .btn-power-ups-activate:hover {
+    color: #ffffff;
+    background-color: #00886f;
+    border-color: #007e66; }
+  .btn-power-ups-activate:active, .btn-power-ups-activate.active,
+  .open > .btn-power-ups-activate.dropdown-toggle {
+    color: #ffffff;
+    background-color: #00886f;
+    background-image: none;
+    border-color: #007e66; }
+    .btn-power-ups-activate:active:hover, .btn-power-ups-activate:active:focus, .btn-power-ups-activate:active.focus, .btn-power-ups-activate.active:hover, .btn-power-ups-activate.active:focus, .btn-power-ups-activate.active.focus,
+    .open > .btn-power-ups-activate.dropdown-toggle:hover,
+    .open > .btn-power-ups-activate.dropdown-toggle:focus,
+    .open > .btn-power-ups-activate.dropdown-toggle.focus {
+      color: #ffffff;
+      background-color: #006452;
+      border-color: #003c30; }
+  .btn-power-ups-activate.disabled:hover, .btn-power-ups-activate.disabled:focus, .btn-power-ups-activate.disabled.focus, .btn-power-ups-activate[disabled]:hover, .btn-power-ups-activate[disabled]:focus, .btn-power-ups-activate[disabled].focus,
+  fieldset[disabled] .btn-power-ups-activate:hover,
+  fieldset[disabled] .btn-power-ups-activate:focus,
+  fieldset[disabled] .btn-power-ups-activate.focus {
+    background-color: #00bb98;
+    border-color: #00bb98; }
+  .btn-power-ups-activate .badge {
+    color: #00bb98;
+    background-color: #ffffff; }
+  .btn-power-ups-activate.disabled {
+    opacity: 0.45; }
 
-/*# sourceMappingURL=default.f4a5fcf109e208a4d7ed.css.map*/
+.btn-cancel {
+  color: #ffffff;
+  background-color: #e7e7e6;
+  border-color: #e7e7e6;
+  color: black;
+  height: calc(100% - 1em); }
+  .btn-cancel:focus, .btn-cancel.focus {
+    color: #ffffff;
+    background-color: #cececc;
+    border-color: #a9a9a5; }
+  .btn-cancel:hover {
+    color: #ffffff;
+    background-color: #cececc;
+    border-color: #c9c9c7; }
+  .btn-cancel:active, .btn-cancel.active,
+  .open > .btn-cancel.dropdown-toggle {
+    color: #ffffff;
+    background-color: #cececc;
+    background-image: none;
+    border-color: #c9c9c7; }
+    .btn-cancel:active:hover, .btn-cancel:active:focus, .btn-cancel:active.focus, .btn-cancel.active:hover, .btn-cancel.active:focus, .btn-cancel.active.focus,
+    .open > .btn-cancel.dropdown-toggle:hover,
+    .open > .btn-cancel.dropdown-toggle:focus,
+    .open > .btn-cancel.dropdown-toggle.focus {
+      color: #ffffff;
+      background-color: #bdbdba;
+      border-color: #a9a9a5; }
+  .btn-cancel.disabled:hover, .btn-cancel.disabled:focus, .btn-cancel.disabled.focus, .btn-cancel[disabled]:hover, .btn-cancel[disabled]:focus, .btn-cancel[disabled].focus,
+  fieldset[disabled] .btn-cancel:hover,
+  fieldset[disabled] .btn-cancel:focus,
+  fieldset[disabled] .btn-cancel.focus {
+    background-color: #e7e7e6;
+    border-color: #e7e7e6; }
+  .btn-cancel .badge {
+    color: #e7e7e6;
+    background-color: #ffffff; }
+
+body.dashboard .slide {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  transition: left 1s; }
+
+body.dashboard .powerups-selector-bottom {
+  margin-right: -25%;
+  transition: margin-right 0s 1s; }
+
+body.dashboard .col-powerup-selector-item {
+  opacity: 0; }
+
+body.dashboard .col-powerup-selector-item:nth-child(1) {
+  transition: opacity 0s 1s; }
+
+body.dashboard .col-powerup-selector-item:nth-child(2) {
+  transition: opacity 0s 1s; }
+
+body.dashboard .col-powerup-selector-item:nth-child(3) {
+  transition: opacity 0s 1s; }
+
+body.dashboard #slide-2 .dashboard-title {
+  transition: margin-top 0s 1s, margin-bottom 0s 1s;
+  margin-top: -10%;
+  margin-bottom: calc(10% + 1em); }
+
+body.dashboard #slide-1 {
+  left: 0; }
+
+body.dashboard #slide-2 {
+  left: 100%; }
+
+body.dashboard #slide-3 {
+  left: 200%; }
+
+body.dashboard[data-show-slide='2'] #slide-1 {
+  left: -100%; }
+
+body.dashboard[data-show-slide='2'] #slide-2 {
+  left: 0; }
+
+body.dashboard[data-show-slide='2'] #slide-3 {
+  left: 100%; }
+
+body.dashboard[data-show-slide='2'] .powerups-selector-bottom {
+  margin-right: 0;
+  transition: margin-right 1s 1s; }
+
+body.dashboard[data-show-slide='2'] #slide-2 .dashboard-title {
+  transition: margin-top 1s 1s, margin-bottom 1s 1s;
+  margin-top: 0.4em;
+  margin-bottom: 1em; }
+
+body.dashboard[data-show-slide='2'] .col-powerup-selector-item {
+  opacity: 1; }
+
+body.dashboard[data-show-slide='2'] .col-powerup-selector-item:nth-child(1) {
+  transition: opacity 1s 1.3s; }
+
+body.dashboard[data-show-slide='2'] .col-powerup-selector-item:nth-child(2) {
+  transition: opacity 1s 1.6s; }
+
+body.dashboard[data-show-slide='2'] .col-powerup-selector-item:nth-child(3) {
+  transition: opacity 1s 1.9s; }
+
+body.dashboard[data-show-slide='3'] #slide-1 {
+  left: -200%; }
+
+body.dashboard[data-show-slide='3'] #slide-2 {
+  left: -100%; }
+
+body.dashboard[data-show-slide='3'] #slide-3 {
+  left: 0; }
+
+
+/*# sourceMappingURL=dashboard.1da64a0f854aa9a149c8.css.map*/

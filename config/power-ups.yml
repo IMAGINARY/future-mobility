@@ -1,5 +1,6 @@
 powerUps:
   walkable-city:
+    enabled: true
     title:
      en: Walkable City
      de: Begehbare Stadt
@@ -18,9 +19,10 @@ powerUps:
         dense-city:
           travel-times-index: 1
   dense-city:
+    enabled: true
     title:
      en: Dense City
-     de: Dichte Stadt
+     de: Verdichtete Stadt
     description:
      en: Integrating shops and workplaces with residential zones reduces trip distances.
      de: Die Integration von Geschäften und Arbeitsplätzen in Wohngebiete reduziert die Fahrtwege.
@@ -37,6 +39,7 @@ powerUps:
         improved-mass-transit:
           traffic-density-index: 1
   reduced-speed-limit:
+    enabled: true
     title:
      en: Reduced Speed Limit
      de: Reduziertes Tempolimit
@@ -55,9 +58,10 @@ powerUps:
         improved-mass-transit:
           traffic-density-index: 1
   improved-mass-transit:
+    enabled: true
     title:
      en: Improved Mass Transit
-     de: Verbesserter Nahverkehr"
+     de: Verbesserter Nahverkehr
     description:
      en: Trams and buses use space and energy more efficiently.
      de: Straßenbahnen und Busse nutzen Raum und Energie effizienter.
@@ -70,6 +74,7 @@ powerUps:
       noise-factors:
         road: 0.5
   electric-vehicles:
+    enabled: true
     title:
      en: Electric Vehicles
      de: Elektrische Fahrzeuge
@@ -82,6 +87,7 @@ powerUps:
       noise-factors:
         road: 0.25
   autonomous-vehicles:
+    enabled: true
     title:
      en: Autonomous Vehicles
      de: Autonome Fahrzeuge

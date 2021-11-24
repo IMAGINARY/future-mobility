@@ -7,6 +7,7 @@ const CitizenRequestView = require('./citizen-request-view');
 const CitizenRequestViewMgr = require('./citizen-request-view-mgr');
 const ActionsPane = require('./dashboard/actions-pane');
 const { createTitle } = require('./dashboard/titles');
+const PowerUpSelector = require('./dashboard/power-up-selector');
 
 fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -53,15 +54,30 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
       }
     });
 
+    const powerUpSelector = new PowerUpSelector(config,
+      $('#col-actions-powerup'), $('#col-3'), $('#slide-2'));
+    powerUpSelector.setSelectablePowerUps(['walkable-city', 'dense-city', 'reduced-speed-limit']);
+    powerUpSelector.setSelectablePowerUps(['improved-mass-transit', 'electric-vehicles', 'autonomous-vehicles']);
+    powerUpSelector.events.on('enable', (powerUpId) => {
+      connector.enablePowerUp(powerUpId);
+    });
+    powerUpSelector.events.on('disable', (powerUpId) => {
+      connector.disablePowerUp(powerUpId);
+    });
+
     connector.events.on('vars_update', (variables) => {
       variableRankListView.setValues(variables);
     });
     connector.events.on('goals_update', (goals) => {
       citizenRequestViewMgr.handleUpdate(goals);
     });
+    connector.events.on('power_ups_update', (activePowerUps) => {
+      powerUpSelector.update(activePowerUps);
+    });
     connector.events.on('connect', () => {
       connector.getVars();
       connector.getGoals();
+      connector.getActivePowerUps();
       actionsPane.enableAll();
     });
     const connStateView = new ConnectionStateView(connector);

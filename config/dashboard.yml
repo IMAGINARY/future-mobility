@@ -11,6 +11,13 @@ dashboard:
     title:
       de: "Power-Ups"
       en: "Power-Ups"
+    button:
+      text:
+        de: "<span class='large'>Power-Ups aktivieren</span>"
+        en: "Activate Power-Ups"
+    selector:
+      # Number of seconds after which the Power-up selector times out
+      timeout: 30
   actions:
     buttons:
       - id: show-pollution
