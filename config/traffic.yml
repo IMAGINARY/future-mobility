@@ -1,0 +1,7 @@
+traffic:
+  traffic-mode-rates:
+    car: 50
+    freight: 20
+    bike: 10
+    public: 15
+    service: 5

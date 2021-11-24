@@ -2,7 +2,6 @@
 const Array2D = require('../aux/array-2d');
 const TrafficLights = require('./traffic-lights');
 const { getTileTypeId } = require('../aux/config-helpers');
-const CarSpawner = require('./car-spawner');
 const RoadMap = require('./road-map');
 
 class CarOverlay {
@@ -31,8 +30,6 @@ class CarOverlay {
 
     this.trafficLights = Array2D.create(this.city.map.width, this.city.map.height, null);
     Array2D.fill(this.trafficLights, () => new TrafficLights());
-
-    this.spawner = this.options.spawn ? new CarSpawner(this, this.config) : null;
   }
 
   addCar(aCar) {
@@ -61,9 +58,6 @@ class CarOverlay {
   }
 
   animate(time) {
-    if (this.spawner) {
-      this.spawner.animate(time);
-    }
     this.cars.forEach(car => car.animate(time));
   }
 
@@ -99,7 +93,6 @@ class CarOverlay {
 }
 
 CarOverlay.defaultOptions = {
-  spawn: true, // If true cars will spawn automatically
   maxLifetime: true, // If true cars will be killed after some time
 };
 

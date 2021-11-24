@@ -10,6 +10,8 @@ const CarOverlay = require('./cars/car-overlay');
 const TextureLoader = require('./texture-loader');
 const CarSpawner = require('./cars/car-spawner');
 const VariableMapOverlay = require('./variable-map-overlay');
+const PowerUpViewMgr = require('./power-up-view-mgr');
+const TrafficHandler = require('./power-ups/traffic-handler');
 
 fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -38,6 +40,11 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
 
         const carOverlay = new CarOverlay(mapView, config, textures);
         app.ticker.add(time => carOverlay.animate(time));
+        const carSpawner = new CarSpawner(carOverlay, config);
+        app.ticker.add(time => carSpawner.animate(time));
+
+        const powerUpViewMgr = new PowerUpViewMgr();
+        powerUpViewMgr.registerHandler(new TrafficHandler(config, carSpawner));
 
         const variableMapOverlay = new VariableMapOverlay(mapView, config);
         app.ticker.add(time => variableMapOverlay.animate(time));
@@ -56,6 +63,10 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
             variableMapOverlay.hide();
           }, config.variableMapOverlay.overlayDuration * 1000);
         });
+        connector.events.on('power_ups_update', (activePowerUps) => {
+          powerUpViewMgr.update(activePowerUps);
+        });
+
         const connStateView = new ConnectionStateView(connector);
         $('body').append(connStateView.$element);
       })

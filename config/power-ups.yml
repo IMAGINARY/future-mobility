@@ -18,6 +18,10 @@ powerUps:
       _synergy:
         dense-city:
           travel-times-index: 1
+    traffic-mode-change:
+      car: -15
+      freight: -5
+      bike: 20
   dense-city:
     enabled: true
     title:
@@ -38,6 +42,11 @@ powerUps:
       _synergy:
         improved-mass-transit:
           traffic-density-index: 1
+    traffic-mode-change:
+      car: -15
+      freight: -5
+      bike: 15
+      public: 5
   reduced-speed-limit:
     enabled: true
     title:
@@ -57,6 +66,11 @@ powerUps:
       _synergy:
         improved-mass-transit:
           traffic-density-index: 1
+    traffic-mode-change:
+      car: -10
+      freight: -5
+      bike: 10
+      public: 5
   improved-mass-transit:
     enabled: true
     title:
@@ -73,6 +87,11 @@ powerUps:
         road: 0.5
       noise-factors:
         road: 0.5
+    traffic-mode-change:
+      car: -15
+      freight: -5
+      bike: 5
+      public: 15
   electric-vehicles:
     enabled: true
     title:

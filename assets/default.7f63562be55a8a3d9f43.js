@@ -6140,7 +6140,6 @@ module.exports = CarDriver;
 const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
 const TrafficLights = __webpack_require__(/*! ./traffic-lights */ "./src/js/cars/traffic-lights.js");
 const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
-const CarSpawner = __webpack_require__(/*! ./car-spawner */ "./src/js/cars/car-spawner.js");
 const RoadMap = __webpack_require__(/*! ./road-map */ "./src/js/cars/road-map.js");
 
 class CarOverlay {
@@ -6169,8 +6168,6 @@ class CarOverlay {
 
     this.trafficLights = Array2D.create(this.city.map.width, this.city.map.height, null);
     Array2D.fill(this.trafficLights, () => new TrafficLights());
-
-    this.spawner = this.options.spawn ? new CarSpawner(this, this.config) : null;
   }
 
   addCar(aCar) {
@@ -6199,9 +6196,6 @@ class CarOverlay {
   }
 
   animate(time) {
-    if (this.spawner) {
-      this.spawner.animate(time);
-    }
     this.cars.forEach(car => car.animate(time));
   }
 
@@ -6237,7 +6231,6 @@ class CarOverlay {
 }
 
 CarOverlay.defaultOptions = {
-  spawn: true, // If true cars will spawn automatically
   maxLifetime: true, // If true cars will be killed after some time
 };
 
@@ -6266,11 +6259,9 @@ class CarSpawner {
     this.overlay = carOverlay;
     this.config = config;
     this.city = carOverlay.city;
-    this.carRandomizer = weightedRandomizer(
-      Object.entries(this.config.carTypes).map(([id, props]) => [id, props.frequency || 1])
-    );
 
     this.throttleTimer = Math.random() * THROTTLE_TIME;
+    this.setModeDistribution(this.config.traffic['traffic-mode-rates']);
   }
 
   /**
@@ -6295,6 +6286,17 @@ class CarSpawner {
     return Object.keys(textures);
   }
 
+  setModeDistribution(modeDistribution) {
+    this.modeDistribution = modeDistribution;
+    this.modeRandomizer = weightedRandomizer(Object.entries(modeDistribution));
+    this.carRandomizers = Object.fromEntries(Object.keys(modeDistribution).map(mode => [
+      mode, weightedRandomizer(
+        Object.entries(this.config.carTypes)
+          .filter(([, props]) => props.mode === mode)
+          .map(([id, props]) => [id, props.frequency || 1])
+      )]));
+  }
+
   maybeSpawn() {
     const maxCars = this.overlay.roads.roadCount() * CARS_PER_ROAD;
     if (this.overlay.cars.length < maxCars) {
@@ -6302,6 +6304,10 @@ class CarSpawner {
         this.spawn();
       }
     }
+  }
+
+  getRandomCarType() {
+    return this.carRandomizers[this.modeRandomizer()]();
   }
 
   getRandomTile() {
@@ -6368,7 +6374,7 @@ class CarSpawner {
     const tile = this.getRandomTile();
     if (tile) {
       const entrySide = this.getRandomEntrySide(tile.x, tile.y);
-      const carType = this.carRandomizer();
+      const carType = this.getRandomCarType();
       const texture = this.getRandomTexture(carType);
       const lane = this.getRandomLane(carType);
       const maxSpeed = this.getRandomMaxSpeed(carType, lane);
@@ -9902,6 +9908,7 @@ class PowerUpInspector {
   constructor(config) {
     this.config = config;
     this.events = new EventEmitter();
+    this.values = Object.fromEntries(Object.keys(config.powerUps).map(id => [id, false]));
 
     this.$element = $('<div></div>')
       .addClass('power-up-switcher');
@@ -9927,7 +9934,12 @@ class PowerUpInspector {
   }
 
   handleChange(id, enabled) {
+    this.values[id] = enabled;
     this.events.emit('power-up-change', id, enabled);
+  }
+
+  getEnabled() {
+    return Object.entries(this.values).filter(([, enabled]) => enabled).map(([id]) => id);
   }
 }
 
@@ -9983,6 +9995,132 @@ class PowerUpManager {
 }
 
 module.exports = PowerUpManager;
+
+
+/***/ }),
+
+/***/ "./src/js/power-up-view-handler.js":
+/*!*****************************************!*\
+  !*** ./src/js/power-up-view-handler.js ***!
+  \*****************************************/
+/***/ ((module) => {
+
+/* eslint-disable no-unused-vars,class-methods-use-this */
+
+class PowerUpViewHandler {
+  onEnable(powerUp, activePowerUps) {
+
+  }
+
+  onDisable(powerUp, activePowerUps) {
+
+  }
+
+  onChange(activePowerUps) {
+
+  }
+}
+
+module.exports = PowerUpViewHandler;
+
+
+/***/ }),
+
+/***/ "./src/js/power-up-view-mgr.js":
+/*!*************************************!*\
+  !*** ./src/js/power-up-view-mgr.js ***!
+  \*************************************/
+/***/ ((module) => {
+
+class PowerUpViewMgr {
+  constructor() {
+    this.activePowerUps = [];
+    this.handlers = [];
+  }
+
+  registerHandler(handler) {
+    this.handlers.push(handler);
+  }
+
+  update(activePowerUps) {
+    let changes = false;
+    activePowerUps.forEach((powerUp) => {
+      if (!this.activePowerUps.includes(powerUp)) {
+        this.handleEnable(powerUp, activePowerUps);
+        changes = true;
+      }
+    });
+    this.activePowerUps.forEach((powerUp) => {
+      if (!activePowerUps.includes(powerUp)) {
+        this.handleDisable(powerUp, activePowerUps);
+        changes = true;
+      }
+    });
+
+    if (changes) {
+      this.activePowerUps = activePowerUps;
+      this.handlePowerUpChanges(activePowerUps);
+    }
+  }
+
+  handleEnable(powerUp, activePowerUps) {
+    this.handlers.forEach((handler) => {
+      handler.onEnable(powerUp, activePowerUps);
+    });
+  }
+
+  handleDisable(powerUp, activePowerUps) {
+    this.handlers.forEach((handler) => {
+      handler.onDisable(powerUp, activePowerUps);
+    });
+  }
+
+  handlePowerUpChanges(activePowerUps) {
+    this.handlers.forEach((handler) => {
+      handler.onChange(activePowerUps);
+    });
+  }
+}
+
+module.exports = PowerUpViewMgr;
+
+
+/***/ }),
+
+/***/ "./src/js/power-ups/traffic-handler.js":
+/*!*********************************************!*\
+  !*** ./src/js/power-ups/traffic-handler.js ***!
+  \*********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const PowerUpViewHandler = __webpack_require__(/*! ../power-up-view-handler */ "./src/js/power-up-view-handler.js");
+
+class TrafficHandler extends PowerUpViewHandler {
+  constructor(config, carSpawner) {
+    super();
+    this.config = config;
+    this.carSpawner = carSpawner;
+  }
+
+  onChange(activePowerUps) {
+    const distribution = Object.assign({}, this.config.traffic['traffic-mode-rates']);
+
+    activePowerUps.forEach((powerUp) => {
+      if (this.config.powerUps[powerUp]['traffic-mode-change']) {
+        Object.entries(this.config.powerUps[powerUp]['traffic-mode-change'])
+          .forEach(([mode, delta]) => {
+            if (distribution[mode] !== undefined) {
+              distribution[mode] += delta;
+            }
+          });
+      }
+    });
+
+    this.carSpawner.setModeDistribution(distribution);
+  }
+}
+
+module.exports = TrafficHandler;
 
 
 /***/ }),
@@ -10587,6 +10725,8 @@ const RoadSafetyData = __webpack_require__(/*! ./data-sources/road-safety-data *
 const PowerUpInspector = __webpack_require__(/*! ./power-up-inspector */ "./src/js/power-up-inspector.js");
 const PowerUpManager = __webpack_require__(/*! ./power-up-manager */ "./src/js/power-up-manager.js");
 const PowerUpDataModifier = __webpack_require__(/*! ./power-up-data-modifier */ "./src/js/power-up-data-modifier.js");
+const PowerUpViewMgr = __webpack_require__(/*! ./power-up-view-mgr */ "./src/js/power-up-view-mgr.js");
+const TrafficHandler = __webpack_require__(/*! ./power-ups/traffic-handler */ "./src/js/power-ups/traffic-handler.js");
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -10599,6 +10739,7 @@ cfgLoader.load([
   'config/goals.yml',
   'config/citizen-requests.yml',
   'config/dashboard.yml',
+  'config/traffic.yml',
   'config/cars.yml',
   'config/power-ups.yml',
   'config/default-settings.yml',
@@ -10657,6 +10798,14 @@ cfgLoader.load([
           maxLifetime: !testScenario,
         });
         app.ticker.add(time => carOverlay.animate(time));
+        const carSpawner = new CarSpawner(carOverlay, config);
+        if (!testScenario) {
+          app.ticker.add(time => carSpawner.animate(time));
+        }
+
+        const powerUpViewMgr = new PowerUpViewMgr();
+        powerUpViewMgr.registerHandler(new TrafficHandler(config, carSpawner));
+
 
         const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
         app.stage.addChild(emissionsVarViewer.displayObject);
@@ -10727,6 +10876,7 @@ cfgLoader.load([
         powerUpInspector.events.on('power-up-change', (id, enabled) => {
           powerUpMgr.setState(id, enabled);
           stats.calculateAll();
+          powerUpViewMgr.update(powerUpInspector.getEnabled());
         });
 
         const variableRankListView = new VariableRankListView(config.variables);
@@ -10804,4 +10954,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.e41a214ec8e488b5503f.js.map
+//# sourceMappingURL=default.7f63562be55a8a3d9f43.js.map

@@ -12,11 +12,9 @@ class CarSpawner {
     this.overlay = carOverlay;
     this.config = config;
     this.city = carOverlay.city;
-    this.carRandomizer = weightedRandomizer(
-      Object.entries(this.config.carTypes).map(([id, props]) => [id, props.frequency || 1])
-    );
 
     this.throttleTimer = Math.random() * THROTTLE_TIME;
+    this.setModeDistribution(this.config.traffic['traffic-mode-rates']);
   }
 
   /**
@@ -41,6 +39,17 @@ class CarSpawner {
     return Object.keys(textures);
   }
 
+  setModeDistribution(modeDistribution) {
+    this.modeDistribution = modeDistribution;
+    this.modeRandomizer = weightedRandomizer(Object.entries(modeDistribution));
+    this.carRandomizers = Object.fromEntries(Object.keys(modeDistribution).map(mode => [
+      mode, weightedRandomizer(
+        Object.entries(this.config.carTypes)
+          .filter(([, props]) => props.mode === mode)
+          .map(([id, props]) => [id, props.frequency || 1])
+      )]));
+  }
+
   maybeSpawn() {
     const maxCars = this.overlay.roads.roadCount() * CARS_PER_ROAD;
     if (this.overlay.cars.length < maxCars) {
@@ -48,6 +57,10 @@ class CarSpawner {
         this.spawn();
       }
     }
+  }
+
+  getRandomCarType() {
+    return this.carRandomizers[this.modeRandomizer()]();
   }
 
   getRandomTile() {
@@ -114,7 +127,7 @@ class CarSpawner {
     const tile = this.getRandomTile();
     if (tile) {
       const entrySide = this.getRandomEntrySide(tile.x, tile.y);
-      const carType = this.carRandomizer();
+      const carType = this.getRandomCarType();
       const texture = this.getRandomTexture(carType);
       const lane = this.getRandomLane(carType);
       const maxSpeed = this.getRandomMaxSpeed(carType, lane);

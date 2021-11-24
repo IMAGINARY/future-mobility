@@ -1,157 +1,190 @@
 carTypes:
   # Cars
   bug:
+    mode: car
     maxSpeed: 0.5
     frequency: 0.6
     variants: [white, yellow, red, blue, aqua]
   mouse:
+    mode: car
     maxSpeed: 0.5
     frequency: 0.6
     variants: [white, green, blue, yellow, red]
   morty:
+    mode: car
     maxSpeed: 0.6
     frequency: 0.6
     variants: [white, gray, yellow, rust]
   lurch:
+    mode: car
     maxSpeed: 0.55
     frequency: 1
     variants: [white, blue, rust]
   pill:
+    mode: car
     maxSpeed: 0.6
     frequency: 1
     variants: [white, blue, rust, aqua]
   boxi:
+    mode: car
     maxSpeed: 0.6
     frequency: 1
     variants: [white, gray, blue, rust]
   posh:
+    mode: car
     maxSpeed: 0.65
     frequency: 0.5
     variants: [white, gray, red, yellow, blue]
   sleek:
+    mode: car
     maxSpeed: 0.55
     frequency: 1
     variants: [white, gray, green, blue, orange]
-
-  # Heavy cars
+  wagon:
+    mode: car
+    maxSpeed: 0.5
+    frequency: 0.3
+    variants: [white, gray, gold]
+  # Freight: commercial
   pickup:
+    mode: freight
     maxSpeed: 0.5
     frequency: 0.3
     variants: [white, gray, blue, red]
   pagon:
+    mode: freight
     maxSpeed: 0.5
     frequency: 0.2
     variants: [white, blue, red]
-  wagon:
-    maxSpeed: 0.5
-    frequency: 0.3
-    variants: [white, gray, gold]
   van:
+    mode: freight
     maxSpeed: 0.5
     frequency: 0.5
     variants: [white, blue, yellow, camper, wgreen]
 
-  # Trucks
+  # Freight: industrial
   tventi:
+    mode: freight
     maxSpeed: 0.45
     frequency: 0.2
     variants: [white, gray, red, blue]
     wagons: [[trventi-white, trventi-orange, trventi-milk, trventi-empty]]
     lanes: inner
   tgrande:
+    mode: freight
     maxSpeed: 0.45
     frequency: 0.2
     variants: [white, blue]
     wagons: [[trgrande-aqua, trgrande-orange]]
     lanes: inner
   ttall:
+    mode: freight
     maxSpeed: 0.5
     frequency: 0.3
     variants: [white, blue, gold]
   tshort:
+    mode: freight
     maxSpeed: 0.5
     frequency: 0.3
     variants: [blue, yellow]
 
-  # Bicycles
+  # Bicycles: human powered
   bfast:
+    mode: bike
     maxSpeed: 0.5
     frequency: 0.1
     variants: [a, b, c, d, e, f]
     lanes: outer
   bstreet:
+    mode: bike
     maxSpeed: 0.4
     frequency: 0.1
     variants: [a, b, c, d, e, f]
     lanes: outer
   byoung:
+    mode: bike
     maxSpeed: 0.4
     frequency: 0.1
     variants: [a, b, c]
     lanes: outer
   bcargo:
+    mode: bike
     maxSpeed: 0.4
     frequency: 0.05
     variants: [a, b, c, d, e, f]
     lanes: outer
   bdelivery:
+    mode: bike
     maxSpeed: 0.45
     frequency: 0.15
     variants: [a, b, c]
     lanes: outer
 
-  # Motorcycles
+  # Bikes: motor
   mneon:
+    mode: bike
     maxSpeed: 0.6
     frequency: 0.1
     variants: [a, b, c, d]
   mfast:
+    mode: bike
     maxSpeed: 0.6
     frequency: 0.1
     variants: [a, b, c, d]
   bruno:
+    mode: bike
     maxSpeed: 0.4
     frequency: 0.1
     variants: [a, b, c]
     lanes: outer
   scoot:
+    mode: bike
     maxSpeed: 0.4
     frequency: 0.1
     variants: [a, b, c]
     lanes: outer
   mdelivery:
+    mode: bike
     maxSpeed: 0.5
     frequency: 0.2
     variants: [a, b, c, d, e]
 
   # Public transportation
   bus:
+    mode: public
     maxSpeed: 0.45
     frequency: 0.2
     lanes: outer
   taxi:
+    mode: public
     maxSpeed: 0.5
     frequency: 1
     variants: [a, b, c]
   tram:
+    mode: public
     maxSpeed: 0.4
     frequency: 0.2
     wagons: [tram-middle, tram-middle, tram-back]
     lanes: inner
   maas:
+    mode: public
     maxSpeed: 0.4
     frequency: 0.5
 
-  # Special
+  # Public service vehicles
   firetruck:
+    mode: service
     maxSpeed: 0.6
     frequency: 0.01
   garbage:
+    mode: service
     maxSpeed: 0.45
     frequency: 0.1
   police:
+    mode: service
     maxSpeed: 0.6
     frequency: 0.1
   ambulance:
+    mode: service
     maxSpeed: 0.6
     frequency: 0.1
