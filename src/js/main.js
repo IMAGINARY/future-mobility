@@ -34,6 +34,7 @@ const PowerUpViewMgr = require('./power-up-view-mgr');
 const TrafficHandler = require('./power-ups/traffic-handler');
 const AutonomousVehicleHandler = require('./power-ups/autonomous-vehicle-handler');
 const MaxSpeedHandler = require('./power-ups/max-speed-handler');
+const SpawnTramHandler = require('./power-ups/spawn-tram');
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -114,6 +115,7 @@ cfgLoader.load([
         powerUpViewMgr.registerHandler(new TrafficHandler(config, carSpawner));
         powerUpViewMgr.registerHandler(new AutonomousVehicleHandler(config, carSpawner));
         powerUpViewMgr.registerHandler(new MaxSpeedHandler(config, carOverlay));
+        powerUpViewMgr.registerHandler(new SpawnTramHandler(config, carSpawner));
 
         const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
         app.stage.addChild(emissionsVarViewer.displayObject);

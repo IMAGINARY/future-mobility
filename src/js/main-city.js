@@ -14,6 +14,7 @@ const PowerUpViewMgr = require('./power-up-view-mgr');
 const TrafficHandler = require('./power-ups/traffic-handler');
 const AutonomousVehicleHandler = require('./power-ups/autonomous-vehicle-handler');
 const MaxSpeedHandler = require('./power-ups/max-speed-handler');
+const SpawnTramHandler = require('./power-ups/spawn-tram');
 
 fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -49,6 +50,7 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
         powerUpViewMgr.registerHandler(new TrafficHandler(config, carSpawner));
         powerUpViewMgr.registerHandler(new AutonomousVehicleHandler(config, carSpawner));
         powerUpViewMgr.registerHandler(new MaxSpeedHandler(config, carOverlay));
+        powerUpViewMgr.registerHandler(new SpawnTramHandler(config, carSpawner));
 
         const variableMapOverlay = new VariableMapOverlay(mapView, config);
         app.ticker.add(time => variableMapOverlay.animate(time));

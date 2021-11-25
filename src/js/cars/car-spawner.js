@@ -122,11 +122,11 @@ class CarSpawner {
     ));
   }
 
-  spawn() {
+  spawn(explicitCarType) {
     const tile = this.getRandomTile();
     if (tile) {
       const entrySide = this.getRandomEntrySide(tile.x, tile.y);
-      const carType = this.getRandomCarType();
+      const carType = explicitCarType || this.getRandomCarType();
       const texture = this.getRandomTexture(carType);
       const lane = this.getRandomLane(carType);
       // const maxSpeed = this.getRandomMaxSpeed(carType, lane);

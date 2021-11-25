@@ -6419,11 +6419,11 @@ class CarSpawner {
     ));
   }
 
-  spawn() {
+  spawn(explicitCarType) {
     const tile = this.getRandomTile();
     if (tile) {
       const entrySide = this.getRandomEntrySide(tile.x, tile.y);
-      const carType = this.getRandomCarType();
+      const carType = explicitCarType || this.getRandomCarType();
       const texture = this.getRandomTexture(carType);
       const lane = this.getRandomLane(carType);
       // const maxSpeed = this.getRandomMaxSpeed(carType, lane);
@@ -10213,6 +10213,34 @@ module.exports = MaxSpeedHandler;
 
 /***/ }),
 
+/***/ "./src/js/power-ups/spawn-tram.js":
+/*!****************************************!*\
+  !*** ./src/js/power-ups/spawn-tram.js ***!
+  \****************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const PowerUpViewHandler = __webpack_require__(/*! ../power-up-view-handler */ "./src/js/power-up-view-handler.js");
+
+class SpawnTramHandler extends PowerUpViewHandler {
+  constructor(config, carSpawner) {
+    super();
+    this.config = config;
+    this.carSpawner = carSpawner;
+  }
+
+  onEnable(powerUp) {
+    if (powerUp === 'improved-mass-transit') {
+      this.carSpawner.spawn('tram');
+      this.carSpawner.spawn('tram');
+    }
+  }
+}
+
+module.exports = SpawnTramHandler;
+
+
+/***/ }),
+
 /***/ "./src/js/power-ups/traffic-handler.js":
 /*!*********************************************!*\
   !*** ./src/js/power-ups/traffic-handler.js ***!
@@ -10855,6 +10883,7 @@ const PowerUpViewMgr = __webpack_require__(/*! ./power-up-view-mgr */ "./src/js/
 const TrafficHandler = __webpack_require__(/*! ./power-ups/traffic-handler */ "./src/js/power-ups/traffic-handler.js");
 const AutonomousVehicleHandler = __webpack_require__(/*! ./power-ups/autonomous-vehicle-handler */ "./src/js/power-ups/autonomous-vehicle-handler.js");
 const MaxSpeedHandler = __webpack_require__(/*! ./power-ups/max-speed-handler */ "./src/js/power-ups/max-speed-handler.js");
+const SpawnTramHandler = __webpack_require__(/*! ./power-ups/spawn-tram */ "./src/js/power-ups/spawn-tram.js");
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -10935,6 +10964,7 @@ cfgLoader.load([
         powerUpViewMgr.registerHandler(new TrafficHandler(config, carSpawner));
         powerUpViewMgr.registerHandler(new AutonomousVehicleHandler(config, carSpawner));
         powerUpViewMgr.registerHandler(new MaxSpeedHandler(config, carOverlay));
+        powerUpViewMgr.registerHandler(new SpawnTramHandler(config, carSpawner));
 
         const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
         app.stage.addChild(emissionsVarViewer.displayObject);
@@ -11083,4 +11113,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.b4a25365ae1eab12813d.js.map
+//# sourceMappingURL=default.ad0956473dd8b1284f71.js.map
