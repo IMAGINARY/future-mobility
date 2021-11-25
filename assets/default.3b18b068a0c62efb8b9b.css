@@ -531,7 +531,8 @@ body > .tile-counter {
         background-color: #e280f7; }
 
 body.dashboard {
-  background-color: #fff; }
+  background-color: #fff;
+  overflow: hidden; }
   body.dashboard .citizen-requests {
     font-size: 1.4em;
     width: 100%;
@@ -803,4 +804,4 @@ body.dashboard[data-show-slide='3'] #slide-3 {
   left: 0; }
 
 
-/*# sourceMappingURL=city.1da64a0f854aa9a149c8.css.map*/
+/*# sourceMappingURL=default.3b18b068a0c62efb8b9b.css.map*/
