@@ -32,6 +32,7 @@ const PowerUpManager = require('./power-up-manager');
 const PowerUpDataModifier = require('./power-up-data-modifier');
 const PowerUpViewMgr = require('./power-up-view-mgr');
 const TrafficHandler = require('./power-ups/traffic-handler');
+const AutonomousVehicleHandler = require('./power-ups/autonomous-vehicle-handler');
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -110,7 +111,7 @@ cfgLoader.load([
 
         const powerUpViewMgr = new PowerUpViewMgr();
         powerUpViewMgr.registerHandler(new TrafficHandler(config, carSpawner));
-
+        powerUpViewMgr.registerHandler(new AutonomousVehicleHandler(config, carSpawner));
 
         const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
         app.stage.addChild(emissionsVarViewer.displayObject);

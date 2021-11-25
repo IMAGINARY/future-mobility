@@ -2,6 +2,7 @@ const Car = require('../cars/car');
 const RoadTile = require('../cars/road-tile');
 const Dir = require('../aux/cardinal-directions');
 const { randomItem, weightedRandomizer } = require('../aux/random');
+const CarDriver = require('./car-driver');
 
 const THROTTLE_TIME = 57; // Number of frames it waits before running the maybeSpawn function
 const SPAWN_PROBABILITY = 0.5;
@@ -15,6 +16,8 @@ class CarSpawner {
 
     this.throttleTimer = Math.random() * THROTTLE_TIME;
     this.setModeDistribution(this.config.traffic['traffic-mode-rates']);
+
+    this.DefaultDriver = CarDriver;
   }
 
   /**
@@ -97,14 +100,6 @@ class CarSpawner {
       : this.getPreferredDirections(tileX, tileY).find(d => validDirections.includes(d));
   }
 
-  getRandomMaxSpeed(carType, lane) {
-    const base = this.config.carTypes[carType].maxSpeed || 1;
-    const deviation = Math.random() * 0.2 - 0.1;
-    return lane === RoadTile.OUTER_LANE
-      ? base * 0.8 + deviation
-      : base + deviation;
-  }
-
   getRandomLane(carType) {
     const options = (this.config.carTypes[carType].lanes || 'inner, outer')
       .split(',')
@@ -134,9 +129,14 @@ class CarSpawner {
       const carType = this.getRandomCarType();
       const texture = this.getRandomTexture(carType);
       const lane = this.getRandomLane(carType);
-      const maxSpeed = this.getRandomMaxSpeed(carType, lane);
+      // const maxSpeed = this.getRandomMaxSpeed(carType, lane);
+      const maxSpeed = this.config.carTypes[carType].maxSpeed || 1;
+      const isBike = this.config.carTypes[carType].mode === 'bike';
 
-      const car = new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed);
+      const car = new Car(
+        this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed,
+        isBike ? CarDriver : this.DefaultDriver
+      );
       this.overlay.addCar(car);
 
       if (this.config.carTypes[carType].wagons) {

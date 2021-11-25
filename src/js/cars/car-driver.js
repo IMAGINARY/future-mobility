@@ -16,6 +16,15 @@ class CarDriver {
     this.safeDistance = SAFE_DISTANCE * this.carDistanceFactor;
     this.slowdownDistance = SLOWDOWN_DISTANCE * this.carDistanceFactor;
     this.inRedLight = false;
+    this.maxSpeed = this.randomizeMaxSpeed();
+  }
+
+  randomizeMaxSpeed() {
+    const base = this.car.maxSpeed;
+    const deviation = Math.random() * 0.2 - 0.1;
+    return (this.car.lane === RoadTile.OUTER_LANE)
+      ? base * 0.8 + deviation
+      : base + deviation;
   }
 
   chooseExitSide(tileX, tileY, entrySide) {
@@ -69,14 +78,14 @@ class CarDriver {
         this.car.speed = 0;
       } else if (distanceToCarInFront <= this.slowdownDistance) {
         // Decelerate to maintain the safe distance
-        this.car.speed = this.car.maxSpeed * (1 - this.safeDistance / distanceToCarInFront);
-      } else if (this.car.speed < this.car.maxSpeed) {
+        this.car.speed = this.maxSpeed * (1 - this.safeDistance / distanceToCarInFront);
+      } else if (this.car.speed < this.maxSpeed) {
         // Accelerate up to the maxSpeed
-        this.car.speed = Math.min(this.car.speed + this.car.maxSpeed / 5, this.car.maxSpeed);
+        this.car.speed = Math.min(this.car.speed + this.maxSpeed / 5, this.maxSpeed);
       }
-    } else if (this.car.speed < this.car.maxSpeed) {
+    } else if (this.car.speed < this.maxSpeed) {
       // Accelerate up to the maxSpeed
-      this.car.speed = Math.min(this.car.speed + this.car.maxSpeed / 5, this.car.maxSpeed);
+      this.car.speed = Math.min(this.car.speed + this.maxSpeed / 5, this.maxSpeed);
     }
 
     if (this.inRedLight && this.car.speed > 0) {

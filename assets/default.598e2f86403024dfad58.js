@@ -6032,6 +6032,41 @@ module.exports = TravelTimeCalculator;
 
 /***/ }),
 
+/***/ "./src/js/cars/ai-car-driver.js":
+/*!**************************************!*\
+  !*** ./src/js/cars/ai-car-driver.js ***!
+  \**************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const CarDriver = __webpack_require__(/*! ./car-driver */ "./src/js/cars/car-driver.js");
+const { TILE_SIZE } = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
+
+const LIGHT_CHANGE_DELAY = 500;
+// The closest a car can get to another
+const SAFE_DISTANCE = TILE_SIZE / 36;
+// Distance at which a car begins to slow down when there's another in front
+const SLOWDOWN_DISTANCE = TILE_SIZE / 18;
+
+class AiCarDriver extends CarDriver {
+  constructor(car) {
+    super(car);
+    this.safeDistance = SAFE_DISTANCE;
+    this.slowdownDistance = SLOWDOWN_DISTANCE;
+    this.maxSpeed = this.car.maxSpeed * 0.9;
+  }
+
+  onGreenLight() {
+    setTimeout(() => {
+      this.inRedLight = false;
+    }, LIGHT_CHANGE_DELAY);
+  }
+}
+
+module.exports = AiCarDriver;
+
+
+/***/ }),
+
 /***/ "./src/js/cars/car-driver.js":
 /*!***********************************!*\
   !*** ./src/js/cars/car-driver.js ***!
@@ -6056,6 +6091,15 @@ class CarDriver {
     this.safeDistance = SAFE_DISTANCE * this.carDistanceFactor;
     this.slowdownDistance = SLOWDOWN_DISTANCE * this.carDistanceFactor;
     this.inRedLight = false;
+    this.maxSpeed = this.randomizeMaxSpeed();
+  }
+
+  randomizeMaxSpeed() {
+    const base = this.car.maxSpeed;
+    const deviation = Math.random() * 0.2 - 0.1;
+    return (this.car.lane === RoadTile.OUTER_LANE)
+      ? base * 0.8 + deviation
+      : base + deviation;
   }
 
   chooseExitSide(tileX, tileY, entrySide) {
@@ -6109,14 +6153,14 @@ class CarDriver {
         this.car.speed = 0;
       } else if (distanceToCarInFront <= this.slowdownDistance) {
         // Decelerate to maintain the safe distance
-        this.car.speed = this.car.maxSpeed * (1 - this.safeDistance / distanceToCarInFront);
-      } else if (this.car.speed < this.car.maxSpeed) {
+        this.car.speed = this.maxSpeed * (1 - this.safeDistance / distanceToCarInFront);
+      } else if (this.car.speed < this.maxSpeed) {
         // Accelerate up to the maxSpeed
-        this.car.speed = Math.min(this.car.speed + this.car.maxSpeed / 5, this.car.maxSpeed);
+        this.car.speed = Math.min(this.car.speed + this.maxSpeed / 5, this.maxSpeed);
       }
-    } else if (this.car.speed < this.car.maxSpeed) {
+    } else if (this.car.speed < this.maxSpeed) {
       // Accelerate up to the maxSpeed
-      this.car.speed = Math.min(this.car.speed + this.car.maxSpeed / 5, this.car.maxSpeed);
+      this.car.speed = Math.min(this.car.speed + this.maxSpeed / 5, this.maxSpeed);
     }
 
     if (this.inRedLight && this.car.speed > 0) {
@@ -6249,6 +6293,7 @@ const Car = __webpack_require__(/*! ../cars/car */ "./src/js/cars/car.js");
 const RoadTile = __webpack_require__(/*! ../cars/road-tile */ "./src/js/cars/road-tile.js");
 const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
 const { randomItem, weightedRandomizer } = __webpack_require__(/*! ../aux/random */ "./src/js/aux/random.js");
+const CarDriver = __webpack_require__(/*! ./car-driver */ "./src/js/cars/car-driver.js");
 
 const THROTTLE_TIME = 57; // Number of frames it waits before running the maybeSpawn function
 const SPAWN_PROBABILITY = 0.5;
@@ -6262,6 +6307,8 @@ class CarSpawner {
 
     this.throttleTimer = Math.random() * THROTTLE_TIME;
     this.setModeDistribution(this.config.traffic['traffic-mode-rates']);
+
+    this.DefaultDriver = CarDriver;
   }
 
   /**
@@ -6344,14 +6391,6 @@ class CarSpawner {
       : this.getPreferredDirections(tileX, tileY).find(d => validDirections.includes(d));
   }
 
-  getRandomMaxSpeed(carType, lane) {
-    const base = this.config.carTypes[carType].maxSpeed || 1;
-    const deviation = Math.random() * 0.2 - 0.1;
-    return lane === RoadTile.OUTER_LANE
-      ? base * 0.8 + deviation
-      : base + deviation;
-  }
-
   getRandomLane(carType) {
     const options = (this.config.carTypes[carType].lanes || 'inner, outer')
       .split(',')
@@ -6381,9 +6420,14 @@ class CarSpawner {
       const carType = this.getRandomCarType();
       const texture = this.getRandomTexture(carType);
       const lane = this.getRandomLane(carType);
-      const maxSpeed = this.getRandomMaxSpeed(carType, lane);
+      // const maxSpeed = this.getRandomMaxSpeed(carType, lane);
+      const maxSpeed = this.config.carTypes[carType].maxSpeed || 1;
+      const isBike = this.config.carTypes[carType].mode === 'bike';
 
-      const car = new Car(this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed);
+      const car = new Car(
+        this.overlay, texture, tile.x, tile.y, entrySide, lane, maxSpeed,
+        isBike ? CarDriver : this.DefaultDriver
+      );
       this.overlay.addCar(car);
 
       if (this.config.carTypes[carType].wagons) {
@@ -6440,24 +6484,25 @@ const SPRITE_ANCHOR_X = 0.5;
 const SPRITE_ANCHOR_Y = 0.75;
 
 class Car {
-  constructor(carOverlay, texture, tileX, tileY, entrySide, lane, maxSpeed = 1) {
+  constructor(carOverlay, texture, tileX, tileY, entrySide, lane, maxSpeed = 1, DriverClass = CarDriver) {
     this.overlay = carOverlay;
-    this.driver = new CarDriver(this);
     this.lane = lane;
     this.maxSpeed = maxSpeed;
     this.speed = maxSpeed;
-    this.sprite = Car.createSprite(texture);
-    this.fader = new SpriteFader(this.sprite);
     this.lifetime = 0;
     this.timeStopped = 0;
     this.isSpawning = true;
     this.isDespawning = false;
     this.frontWagon = null;
     this.backWagon = null;
-
     this.path = null;
-    this.setTile(tileX, tileY, entrySide);
+    this.DriverClass = DriverClass;
 
+    this.driver = new this.DriverClass(this);
+
+    this.sprite = Car.createSprite(texture);
+    this.fader = new SpriteFader(this.sprite);
+    this.setTile(tileX, tileY, entrySide);
     this.setSpritePosition(this.tilePosition().add(RoadTile.entryPoint(this.lane, this.entrySide)));
     this.sprite.rotation = Dir.asAngle(Dir.opposite(this.entrySide));
   }
@@ -6510,7 +6555,7 @@ class Car {
 
   removeFrontWagon() {
     this.frontWagon = null;
-    this.driver = new CarDriver(this);
+    this.driver = new this.DriverClass(this);
   }
 
   isPulling(car) {
@@ -10091,6 +10136,43 @@ module.exports = PowerUpViewMgr;
 
 /***/ }),
 
+/***/ "./src/js/power-ups/autonomous-vehicle-handler.js":
+/*!********************************************************!*\
+  !*** ./src/js/power-ups/autonomous-vehicle-handler.js ***!
+  \********************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const PowerUpViewHandler = __webpack_require__(/*! ../power-up-view-handler */ "./src/js/power-up-view-handler.js");
+const AiCarDriver = __webpack_require__(/*! ../cars/ai-car-driver */ "./src/js/cars/ai-car-driver.js");
+
+class AutonomousVehicleHandler extends PowerUpViewHandler {
+  constructor(config, carSpawner) {
+    super();
+    this.config = config;
+    this.carSpawner = carSpawner;
+  }
+
+  onEnable(powerUp) {
+    if (powerUp === 'autonomous-vehicles') {
+      this.previousDefaultDriver = this.carSpawner.DefaultDriver;
+      this.carSpawner.DefaultDriver = AiCarDriver;
+    }
+  }
+
+  onDisable(powerUp) {
+    if (powerUp === 'autonomous-vehicles') {
+      if (this.previousDefaultDriver) {
+        this.carSpawner.DefaultDriver = this.previousDefaultDriver;
+      }
+    }
+  }
+}
+
+module.exports = AutonomousVehicleHandler;
+
+
+/***/ }),
+
 /***/ "./src/js/power-ups/traffic-handler.js":
 /*!*********************************************!*\
   !*** ./src/js/power-ups/traffic-handler.js ***!
@@ -10731,6 +10813,7 @@ const PowerUpManager = __webpack_require__(/*! ./power-up-manager */ "./src/js/p
 const PowerUpDataModifier = __webpack_require__(/*! ./power-up-data-modifier */ "./src/js/power-up-data-modifier.js");
 const PowerUpViewMgr = __webpack_require__(/*! ./power-up-view-mgr */ "./src/js/power-up-view-mgr.js");
 const TrafficHandler = __webpack_require__(/*! ./power-ups/traffic-handler */ "./src/js/power-ups/traffic-handler.js");
+const AutonomousVehicleHandler = __webpack_require__(/*! ./power-ups/autonomous-vehicle-handler */ "./src/js/power-ups/autonomous-vehicle-handler.js");
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -10809,7 +10892,7 @@ cfgLoader.load([
 
         const powerUpViewMgr = new PowerUpViewMgr();
         powerUpViewMgr.registerHandler(new TrafficHandler(config, carSpawner));
-
+        powerUpViewMgr.registerHandler(new AutonomousVehicleHandler(config, carSpawner));
 
         const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
         app.stage.addChild(emissionsVarViewer.displayObject);
@@ -10958,4 +11041,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.1849536cbe8a0f49c17a.js.map
+//# sourceMappingURL=default.598e2f86403024dfad58.js.map

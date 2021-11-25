@@ -17,24 +17,25 @@ const SPRITE_ANCHOR_X = 0.5;
 const SPRITE_ANCHOR_Y = 0.75;
 
 class Car {
-  constructor(carOverlay, texture, tileX, tileY, entrySide, lane, maxSpeed = 1) {
+  constructor(carOverlay, texture, tileX, tileY, entrySide, lane, maxSpeed = 1, DriverClass = CarDriver) {
     this.overlay = carOverlay;
-    this.driver = new CarDriver(this);
     this.lane = lane;
     this.maxSpeed = maxSpeed;
     this.speed = maxSpeed;
-    this.sprite = Car.createSprite(texture);
-    this.fader = new SpriteFader(this.sprite);
     this.lifetime = 0;
     this.timeStopped = 0;
     this.isSpawning = true;
     this.isDespawning = false;
     this.frontWagon = null;
     this.backWagon = null;
-
     this.path = null;
-    this.setTile(tileX, tileY, entrySide);
+    this.DriverClass = DriverClass;
 
+    this.driver = new this.DriverClass(this);
+
+    this.sprite = Car.createSprite(texture);
+    this.fader = new SpriteFader(this.sprite);
+    this.setTile(tileX, tileY, entrySide);
     this.setSpritePosition(this.tilePosition().add(RoadTile.entryPoint(this.lane, this.entrySide)));
     this.sprite.rotation = Dir.asAngle(Dir.opposite(this.entrySide));
   }
@@ -87,7 +88,7 @@ class Car {
 
   removeFrontWagon() {
     this.frontWagon = null;
-    this.driver = new CarDriver(this);
+    this.driver = new this.DriverClass(this);
   }
 
   isPulling(car) {
