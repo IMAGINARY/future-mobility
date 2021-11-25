@@ -35,6 +35,7 @@ const TrafficHandler = require('./power-ups/traffic-handler');
 const AutonomousVehicleHandler = require('./power-ups/autonomous-vehicle-handler');
 const MaxSpeedHandler = require('./power-ups/max-speed-handler');
 const SpawnTramHandler = require('./power-ups/spawn-tram');
+const WalkableCityHandler = require('./power-ups/walkable-city-handler');
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -87,6 +88,7 @@ cfgLoader.load([
 
     const textureLoader = new TextureLoader(app);
     textureLoader.addSpritesheet('roads');
+    textureLoader.addSpritesheet('roads-walkable');
     textureLoader.addSpritesheet('parks');
     textureLoader.addFolder('cars', CarSpawner.allTextureIds(config));
     textureLoader.load()
@@ -116,6 +118,7 @@ cfgLoader.load([
         powerUpViewMgr.registerHandler(new AutonomousVehicleHandler(config, carSpawner));
         powerUpViewMgr.registerHandler(new MaxSpeedHandler(config, carOverlay));
         powerUpViewMgr.registerHandler(new SpawnTramHandler(config, carSpawner));
+        powerUpViewMgr.registerHandler(new WalkableCityHandler(config, mapEditor.mapView));
 
         const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
         app.stage.addChild(emissionsVarViewer.displayObject);

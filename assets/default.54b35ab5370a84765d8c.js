@@ -9646,6 +9646,7 @@ class MapView {
     this.pointerActive = false;
     this.roadTileId = getTileTypeId(config, 'road');
     this.parkTileId = getTileTypeId(config, 'park');
+    this.roadTextureKey = 'roads';
 
     this.randomizedTerrain = Array2D.create(this.city.map.width, this.city.map.height);
     Array2D.fill(this.randomizedTerrain, () => Math.random());
@@ -9767,7 +9768,7 @@ class MapView {
       .map(([x, y]) => (!this.city.map.isValidCoords(x, y)
       || this.city.map.get(x, y) === this.roadTileId
         ? '1' : '0')).join('');
-    this.getTextureTile(i, j).texture = this.textures.roads[`road${connMask}`];
+    this.getTextureTile(i, j).texture = this.textures[this.roadTextureKey][`road${connMask}`];
     this.getTextureTile(i, j).visible = true;
   }
 
@@ -10275,6 +10276,41 @@ class TrafficHandler extends PowerUpViewHandler {
 }
 
 module.exports = TrafficHandler;
+
+
+/***/ }),
+
+/***/ "./src/js/power-ups/walkable-city-handler.js":
+/*!***************************************************!*\
+  !*** ./src/js/power-ups/walkable-city-handler.js ***!
+  \***************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const PowerUpViewHandler = __webpack_require__(/*! ../power-up-view-handler */ "./src/js/power-up-view-handler.js");
+
+class WalkableCityHandler extends PowerUpViewHandler {
+  constructor(config, mapView) {
+    super();
+    this.config = config;
+    this.mapView = mapView;
+  }
+
+  onEnable(powerUp) {
+    if (powerUp === 'walkable-city') {
+      this.mapView.roadTextureKey = 'roads-walkable';
+      this.mapView.handleCityUpdate(this.mapView.city.map.allCells());
+    }
+  }
+
+  onDisable(powerUp) {
+    if (powerUp === 'walkable-city') {
+      this.mapView.roadTextureKey = 'roads';
+      this.mapView.handleCityUpdate(this.mapView.city.map.allCells());
+    }
+  }
+}
+
+module.exports = WalkableCityHandler;
 
 
 /***/ }),
@@ -10884,6 +10920,7 @@ const TrafficHandler = __webpack_require__(/*! ./power-ups/traffic-handler */ ".
 const AutonomousVehicleHandler = __webpack_require__(/*! ./power-ups/autonomous-vehicle-handler */ "./src/js/power-ups/autonomous-vehicle-handler.js");
 const MaxSpeedHandler = __webpack_require__(/*! ./power-ups/max-speed-handler */ "./src/js/power-ups/max-speed-handler.js");
 const SpawnTramHandler = __webpack_require__(/*! ./power-ups/spawn-tram */ "./src/js/power-ups/spawn-tram.js");
+const WalkableCityHandler = __webpack_require__(/*! ./power-ups/walkable-city-handler */ "./src/js/power-ups/walkable-city-handler.js");
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -10936,6 +10973,7 @@ cfgLoader.load([
 
     const textureLoader = new TextureLoader(app);
     textureLoader.addSpritesheet('roads');
+    textureLoader.addSpritesheet('roads-walkable');
     textureLoader.addSpritesheet('parks');
     textureLoader.addFolder('cars', CarSpawner.allTextureIds(config));
     textureLoader.load()
@@ -10965,6 +11003,7 @@ cfgLoader.load([
         powerUpViewMgr.registerHandler(new AutonomousVehicleHandler(config, carSpawner));
         powerUpViewMgr.registerHandler(new MaxSpeedHandler(config, carOverlay));
         powerUpViewMgr.registerHandler(new SpawnTramHandler(config, carSpawner));
+        powerUpViewMgr.registerHandler(new WalkableCityHandler(config, mapEditor.mapView));
 
         const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
         app.stage.addChild(emissionsVarViewer.displayObject);
@@ -11113,4 +11152,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.ad0956473dd8b1284f71.js.map
+//# sourceMappingURL=default.54b35ab5370a84765d8c.js.map

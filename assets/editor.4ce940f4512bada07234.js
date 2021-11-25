@@ -2645,6 +2645,7 @@ class MapView {
     this.pointerActive = false;
     this.roadTileId = getTileTypeId(config, 'road');
     this.parkTileId = getTileTypeId(config, 'park');
+    this.roadTextureKey = 'roads';
 
     this.randomizedTerrain = Array2D.create(this.city.map.width, this.city.map.height);
     Array2D.fill(this.randomizedTerrain, () => Math.random());
@@ -2766,7 +2767,7 @@ class MapView {
       .map(([x, y]) => (!this.city.map.isValidCoords(x, y)
       || this.city.map.get(x, y) === this.roadTileId
         ? '1' : '0')).join('');
-    this.getTextureTile(i, j).texture = this.textures.roads[`road${connMask}`];
+    this.getTextureTile(i, j).texture = this.textures[this.roadTextureKey][`road${connMask}`];
     this.getTextureTile(i, j).visible = true;
   }
 
@@ -3505,4 +3506,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.877672274fc5c67f0f4d.js.map
+//# sourceMappingURL=editor.4ce940f4512bada07234.js.map

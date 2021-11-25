@@ -2847,6 +2847,7 @@ class MapView {
     this.pointerActive = false;
     this.roadTileId = getTileTypeId(config, 'road');
     this.parkTileId = getTileTypeId(config, 'park');
+    this.roadTextureKey = 'roads';
 
     this.randomizedTerrain = Array2D.create(this.city.map.width, this.city.map.height);
     Array2D.fill(this.randomizedTerrain, () => Math.random());
@@ -2968,7 +2969,7 @@ class MapView {
       .map(([x, y]) => (!this.city.map.isValidCoords(x, y)
       || this.city.map.get(x, y) === this.roadTileId
         ? '1' : '0')).join('');
-    this.getTextureTile(i, j).texture = this.textures.roads[`road${connMask}`];
+    this.getTextureTile(i, j).texture = this.textures[this.roadTextureKey][`road${connMask}`];
     this.getTextureTile(i, j).visible = true;
   }
 
@@ -3253,6 +3254,41 @@ class TrafficHandler extends PowerUpViewHandler {
 }
 
 module.exports = TrafficHandler;
+
+
+/***/ }),
+
+/***/ "./src/js/power-ups/walkable-city-handler.js":
+/*!***************************************************!*\
+  !*** ./src/js/power-ups/walkable-city-handler.js ***!
+  \***************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const PowerUpViewHandler = __webpack_require__(/*! ../power-up-view-handler */ "./src/js/power-up-view-handler.js");
+
+class WalkableCityHandler extends PowerUpViewHandler {
+  constructor(config, mapView) {
+    super();
+    this.config = config;
+    this.mapView = mapView;
+  }
+
+  onEnable(powerUp) {
+    if (powerUp === 'walkable-city') {
+      this.mapView.roadTextureKey = 'roads-walkable';
+      this.mapView.handleCityUpdate(this.mapView.city.map.allCells());
+    }
+  }
+
+  onDisable(powerUp) {
+    if (powerUp === 'walkable-city') {
+      this.mapView.roadTextureKey = 'roads';
+      this.mapView.handleCityUpdate(this.mapView.city.map.allCells());
+    }
+  }
+}
+
+module.exports = WalkableCityHandler;
 
 
 /***/ }),
@@ -3786,6 +3822,7 @@ const TrafficHandler = __webpack_require__(/*! ./power-ups/traffic-handler */ ".
 const AutonomousVehicleHandler = __webpack_require__(/*! ./power-ups/autonomous-vehicle-handler */ "./src/js/power-ups/autonomous-vehicle-handler.js");
 const MaxSpeedHandler = __webpack_require__(/*! ./power-ups/max-speed-handler */ "./src/js/power-ups/max-speed-handler.js");
 const SpawnTramHandler = __webpack_require__(/*! ./power-ups/spawn-tram */ "./src/js/power-ups/spawn-tram.js");
+const WalkableCityHandler = __webpack_require__(/*! ./power-ups/walkable-city-handler */ "./src/js/power-ups/walkable-city-handler.js");
 
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -3799,6 +3836,7 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
     });
     const textureLoader = new TextureLoader(app);
     textureLoader.addSpritesheet('roads');
+    textureLoader.addSpritesheet('roads-walkable');
     textureLoader.addSpritesheet('parks');
     textureLoader.addFolder('cars', CarSpawner.allTextureIds(config));
     textureLoader.load()
@@ -3822,6 +3860,7 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
         powerUpViewMgr.registerHandler(new AutonomousVehicleHandler(config, carSpawner));
         powerUpViewMgr.registerHandler(new MaxSpeedHandler(config, carOverlay));
         powerUpViewMgr.registerHandler(new SpawnTramHandler(config, carSpawner));
+        powerUpViewMgr.registerHandler(new WalkableCityHandler(config, mapView));
 
         const variableMapOverlay = new VariableMapOverlay(mapView, config);
         app.ticker.add(time => variableMapOverlay.animate(time));
@@ -3832,6 +3871,7 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
         });
         connector.events.on('connect', () => {
           connector.getMap();
+          connector.getActivePowerUps();
         });
         connector.events.on('view_show_map_var', (variable, data) => {
           variableMapOverlay.show(data,
@@ -3861,4 +3901,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.2524a8fb408917aa685a.js.map
+//# sourceMappingURL=city.df9b7c0ec728c788b496.js.map

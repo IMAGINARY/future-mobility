@@ -15,6 +15,7 @@ const TrafficHandler = require('./power-ups/traffic-handler');
 const AutonomousVehicleHandler = require('./power-ups/autonomous-vehicle-handler');
 const MaxSpeedHandler = require('./power-ups/max-speed-handler');
 const SpawnTramHandler = require('./power-ups/spawn-tram');
+const WalkableCityHandler = require('./power-ups/walkable-city-handler');
 
 fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -28,6 +29,7 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
     });
     const textureLoader = new TextureLoader(app);
     textureLoader.addSpritesheet('roads');
+    textureLoader.addSpritesheet('roads-walkable');
     textureLoader.addSpritesheet('parks');
     textureLoader.addFolder('cars', CarSpawner.allTextureIds(config));
     textureLoader.load()
@@ -51,6 +53,7 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
         powerUpViewMgr.registerHandler(new AutonomousVehicleHandler(config, carSpawner));
         powerUpViewMgr.registerHandler(new MaxSpeedHandler(config, carOverlay));
         powerUpViewMgr.registerHandler(new SpawnTramHandler(config, carSpawner));
+        powerUpViewMgr.registerHandler(new WalkableCityHandler(config, mapView));
 
         const variableMapOverlay = new VariableMapOverlay(mapView, config);
         app.ticker.add(time => variableMapOverlay.animate(time));
@@ -61,6 +64,7 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
         });
         connector.events.on('connect', () => {
           connector.getMap();
+          connector.getActivePowerUps();
         });
         connector.events.on('view_show_map_var', (variable, data) => {
           variableMapOverlay.show(data,
