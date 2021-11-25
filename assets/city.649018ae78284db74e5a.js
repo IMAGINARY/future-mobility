@@ -2848,6 +2848,7 @@ class MapView {
     this.roadTileId = getTileTypeId(config, 'road');
     this.parkTileId = getTileTypeId(config, 'park');
     this.roadTextureKey = 'roads';
+    this.basicTileRenderers = {};
 
     this.randomizedTerrain = Array2D.create(this.city.map.width, this.city.map.height);
     Array2D.fill(this.randomizedTerrain, () => Math.random());
@@ -2975,11 +2976,15 @@ class MapView {
 
   renderBasicTile(i, j) {
     const tileType = this.config.tileTypes[this.city.map.get(i, j)] || null;
-    this.getBgTile(i, j)
-      .clear()
-      .beginFill(tileType ? Number(`0x${tileType.color.substr(1)}`) : 0, 1)
-      .drawRect(0, 0, MapView.TILE_SIZE, MapView.TILE_SIZE)
-      .endFill();
+    if (this.basicTileRenderers[tileType.type]) {
+      this.basicTileRenderers[tileType.type](i, j);
+    } else {
+      this.getBgTile(i, j)
+        .clear()
+        .beginFill(tileType ? Number(`0x${tileType.color.substr(1)}`) : 0, 1)
+        .drawRect(0, 0, MapView.TILE_SIZE, MapView.TILE_SIZE)
+        .endFill();
+    }
     this.getTextureTile(i, j).visible = false;
   }
 
@@ -3154,6 +3159,75 @@ class AutonomousVehicleHandler extends PowerUpViewHandler {
 }
 
 module.exports = AutonomousVehicleHandler;
+
+
+/***/ }),
+
+/***/ "./src/js/power-ups/dense-city-handler.js":
+/*!************************************************!*\
+  !*** ./src/js/power-ups/dense-city-handler.js ***!
+  \************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const PowerUpViewHandler = __webpack_require__(/*! ../power-up-view-handler */ "./src/js/power-up-view-handler.js");
+const MapView = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
+const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
+
+class DenseCityHandler extends PowerUpViewHandler {
+  constructor(config, mapView) {
+    super();
+    this.config = config;
+    this.mapView = mapView;
+
+    const residentialId = getTileTypeId(this.config, 'residential');
+    const commercialId = getTileTypeId(this.config, 'commercial');
+
+    this.colors = {
+      residential: this.config.tileTypes[residentialId].color,
+      commercial: this.config.tileTypes[commercialId].color,
+    };
+  }
+
+  onEnable(powerUp) {
+    if (powerUp === 'dense-city') {
+      this.mapView.basicTileRenderers.residential = this.renderResidential.bind(this);
+      this.mapView.basicTileRenderers.commercial = this.renderCommercial.bind(this);
+      this.mapView.handleCityUpdate(this.mapView.city.map.allCells());
+    }
+  }
+
+  onDisable(powerUp) {
+    if (powerUp === 'dense-city') {
+      this.mapView.basicTileRenderers.residential = null;
+      this.mapView.basicTileRenderers.commercial = null;
+      this.mapView.handleCityUpdate(this.mapView.city.map.allCells());
+    }
+  }
+
+  renderResidential(i, j) {
+    this.mapView.getBgTile(i, j)
+      .clear()
+      .beginFill(Number(`0x${this.colors.residential.substr(1)}`), 1)
+      .drawRect(0, 0, MapView.TILE_SIZE, MapView.TILE_SIZE)
+      .beginFill(Number(`0x${this.colors.commercial.substr(1)}`), 1)
+      .drawRect(MapView.TILE_SIZE / 2, MapView.TILE_SIZE / 2,
+        MapView.TILE_SIZE / 2, MapView.TILE_SIZE / 2)
+      .endFill();
+  }
+
+  renderCommercial(i, j) {
+    this.mapView.getBgTile(i, j)
+      .clear()
+      .beginFill(Number(`0x${this.colors.commercial.substr(1)}`), 1)
+      .drawRect(0, 0, MapView.TILE_SIZE, MapView.TILE_SIZE)
+      .beginFill(Number(`0x${this.colors.residential.substr(1)}`), 1)
+      .drawRect(MapView.TILE_SIZE / 2, MapView.TILE_SIZE / 2,
+        MapView.TILE_SIZE / 2, MapView.TILE_SIZE / 2)
+      .endFill();
+  }
+}
+
+module.exports = DenseCityHandler;
 
 
 /***/ }),
@@ -3823,6 +3897,7 @@ const AutonomousVehicleHandler = __webpack_require__(/*! ./power-ups/autonomous-
 const MaxSpeedHandler = __webpack_require__(/*! ./power-ups/max-speed-handler */ "./src/js/power-ups/max-speed-handler.js");
 const SpawnTramHandler = __webpack_require__(/*! ./power-ups/spawn-tram */ "./src/js/power-ups/spawn-tram.js");
 const WalkableCityHandler = __webpack_require__(/*! ./power-ups/walkable-city-handler */ "./src/js/power-ups/walkable-city-handler.js");
+const DenseCityHandler = __webpack_require__(/*! ./power-ups/dense-city-handler */ "./src/js/power-ups/dense-city-handler.js");
 
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -3861,6 +3936,7 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
         powerUpViewMgr.registerHandler(new MaxSpeedHandler(config, carOverlay));
         powerUpViewMgr.registerHandler(new SpawnTramHandler(config, carSpawner));
         powerUpViewMgr.registerHandler(new WalkableCityHandler(config, mapView));
+        powerUpViewMgr.registerHandler(new DenseCityHandler(config, mapView));
 
         const variableMapOverlay = new VariableMapOverlay(mapView, config);
         app.ticker.add(time => variableMapOverlay.animate(time));
@@ -3901,4 +3977,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.df9b7c0ec728c788b496.js.map
+//# sourceMappingURL=city.649018ae78284db74e5a.js.map

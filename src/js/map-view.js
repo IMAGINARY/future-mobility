@@ -14,6 +14,7 @@ class MapView {
     this.roadTileId = getTileTypeId(config, 'road');
     this.parkTileId = getTileTypeId(config, 'park');
     this.roadTextureKey = 'roads';
+    this.basicTileRenderers = {};
 
     this.randomizedTerrain = Array2D.create(this.city.map.width, this.city.map.height);
     Array2D.fill(this.randomizedTerrain, () => Math.random());
@@ -141,11 +142,15 @@ class MapView {
 
   renderBasicTile(i, j) {
     const tileType = this.config.tileTypes[this.city.map.get(i, j)] || null;
-    this.getBgTile(i, j)
-      .clear()
-      .beginFill(tileType ? Number(`0x${tileType.color.substr(1)}`) : 0, 1)
-      .drawRect(0, 0, MapView.TILE_SIZE, MapView.TILE_SIZE)
-      .endFill();
+    if (this.basicTileRenderers[tileType.type]) {
+      this.basicTileRenderers[tileType.type](i, j);
+    } else {
+      this.getBgTile(i, j)
+        .clear()
+        .beginFill(tileType ? Number(`0x${tileType.color.substr(1)}`) : 0, 1)
+        .drawRect(0, 0, MapView.TILE_SIZE, MapView.TILE_SIZE)
+        .endFill();
+    }
     this.getTextureTile(i, j).visible = false;
   }
 
