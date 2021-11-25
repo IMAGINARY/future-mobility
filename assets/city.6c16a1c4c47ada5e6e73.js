@@ -1474,7 +1474,7 @@ class AiCarDriver extends CarDriver {
     super(car);
     this.safeDistance = SAFE_DISTANCE;
     this.slowdownDistance = SLOWDOWN_DISTANCE;
-    this.maxSpeed = this.car.maxSpeed * 0.9;
+    this.carSpeedDeviation = 0;
   }
 
   onGreenLight() {
@@ -1510,18 +1510,18 @@ class CarDriver {
   constructor(car) {
     this.car = car;
     this.carDistanceFactor = 1 + Math.random() * 0.6;
+    this.carSpeedDeviation = Math.random() * 0.2 - 0.1;
+    this.carSpeedFactor = 1 + (Math.random() * 0.3 - 0.15);
     this.safeDistance = SAFE_DISTANCE * this.carDistanceFactor;
     this.slowdownDistance = SLOWDOWN_DISTANCE * this.carDistanceFactor;
     this.inRedLight = false;
-    this.maxSpeed = this.randomizeMaxSpeed();
   }
 
-  randomizeMaxSpeed() {
-    const base = this.car.maxSpeed;
-    const deviation = Math.random() * 0.2 - 0.1;
+  getMaxSpeed() {
+    const base = Math.min(this.car.maxSpeed, this.car.overlay.cityMaxSpeed);
     return (this.car.lane === RoadTile.OUTER_LANE)
-      ? base * 0.8 + deviation
-      : base + deviation;
+      ? base * 0.8 * this.carSpeedFactor
+      : base * this.carSpeedFactor;
   }
 
   chooseExitSide(tileX, tileY, entrySide) {
@@ -1566,6 +1566,7 @@ class CarDriver {
   adjustCarSpeed() {
     const position = this.car.getSpritePosition();
     const carInFront = this.car.overlay.getCarInFront(this.car);
+    const maxSpeed = this.getMaxSpeed();
     if (carInFront) {
       const overlapDistance = this.car.sprite.height / 2 + carInFront.sprite.height / 2;
       const distanceToCarInFront = carInFront
@@ -1575,14 +1576,18 @@ class CarDriver {
         this.car.speed = 0;
       } else if (distanceToCarInFront <= this.slowdownDistance) {
         // Decelerate to maintain the safe distance
-        this.car.speed = this.maxSpeed * (1 - this.safeDistance / distanceToCarInFront);
-      } else if (this.car.speed < this.maxSpeed) {
+        this.car.speed = maxSpeed * (1 - this.safeDistance / distanceToCarInFront);
+      } else if (this.car.speed < maxSpeed) {
         // Accelerate up to the maxSpeed
-        this.car.speed = Math.min(this.car.speed + this.maxSpeed / 5, this.maxSpeed);
+        this.car.speed = Math.min(this.car.speed + maxSpeed / 5, maxSpeed);
       }
-    } else if (this.car.speed < this.maxSpeed) {
+    } else if (this.car.speed < maxSpeed) {
       // Accelerate up to the maxSpeed
-      this.car.speed = Math.min(this.car.speed + this.maxSpeed / 5, this.maxSpeed);
+      this.car.speed = Math.min(this.car.speed + maxSpeed / 5, maxSpeed);
+    }
+
+    if (this.car.speed > maxSpeed) {
+      this.car.speed = this.car.speed * 0.9;
     }
 
     if (this.inRedLight && this.car.speed > 0) {
@@ -1615,6 +1620,7 @@ class CarOverlay {
     this.textures = textures;
     this.city = this.mapView.city;
     this.roads = new RoadMap(this.city.map, getTileTypeId(config, 'road'));
+    this.cityMaxSpeed = 0.7;
 
     this.options = Object.assign({}, CarOverlay.defaultOptions, options);
 
@@ -3151,6 +3157,40 @@ module.exports = AutonomousVehicleHandler;
 
 /***/ }),
 
+/***/ "./src/js/power-ups/max-speed-handler.js":
+/*!***********************************************!*\
+  !*** ./src/js/power-ups/max-speed-handler.js ***!
+  \***********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const PowerUpViewHandler = __webpack_require__(/*! ../power-up-view-handler */ "./src/js/power-up-view-handler.js");
+
+class MaxSpeedHandler extends PowerUpViewHandler {
+  constructor(config, carOverlay) {
+    super();
+    this.config = config;
+    this.carOverlay = carOverlay;
+  }
+
+  onEnable(powerUp) {
+    if (powerUp === 'reduced-speed-limit') {
+      this.previousMaxSpeed = this.carOverlay.cityMaxSpeed;
+      this.carOverlay.cityMaxSpeed = 0.4;
+    }
+  }
+
+  onDisable(powerUp) {
+    if (powerUp === 'reduced-speed-limit') {
+      this.carOverlay.cityMaxSpeed = (this.previousMaxSpeed || 0.7);
+    }
+  }
+}
+
+module.exports = MaxSpeedHandler;
+
+
+/***/ }),
+
 /***/ "./src/js/power-ups/traffic-handler.js":
 /*!*********************************************!*\
   !*** ./src/js/power-ups/traffic-handler.js ***!
@@ -3716,6 +3756,7 @@ const VariableMapOverlay = __webpack_require__(/*! ./variable-map-overlay */ "./
 const PowerUpViewMgr = __webpack_require__(/*! ./power-up-view-mgr */ "./src/js/power-up-view-mgr.js");
 const TrafficHandler = __webpack_require__(/*! ./power-ups/traffic-handler */ "./src/js/power-ups/traffic-handler.js");
 const AutonomousVehicleHandler = __webpack_require__(/*! ./power-ups/autonomous-vehicle-handler */ "./src/js/power-ups/autonomous-vehicle-handler.js");
+const MaxSpeedHandler = __webpack_require__(/*! ./power-ups/max-speed-handler */ "./src/js/power-ups/max-speed-handler.js");
 
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -3750,6 +3791,7 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
         const powerUpViewMgr = new PowerUpViewMgr();
         powerUpViewMgr.registerHandler(new TrafficHandler(config, carSpawner));
         powerUpViewMgr.registerHandler(new AutonomousVehicleHandler(config, carSpawner));
+        powerUpViewMgr.registerHandler(new MaxSpeedHandler(config, carOverlay));
 
         const variableMapOverlay = new VariableMapOverlay(mapView, config);
         app.ticker.add(time => variableMapOverlay.animate(time));
@@ -3789,4 +3831,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.59a2f2f622378cadd627.js.map
+//# sourceMappingURL=city.6c16a1c4c47ada5e6e73.js.map

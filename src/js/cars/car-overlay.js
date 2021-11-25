@@ -11,6 +11,7 @@ class CarOverlay {
     this.textures = textures;
     this.city = this.mapView.city;
     this.roads = new RoadMap(this.city.map, getTileTypeId(config, 'road'));
+    this.cityMaxSpeed = 0.7;
 
     this.options = Object.assign({}, CarOverlay.defaultOptions, options);
 

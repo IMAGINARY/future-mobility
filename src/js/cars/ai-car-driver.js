@@ -12,7 +12,7 @@ class AiCarDriver extends CarDriver {
     super(car);
     this.safeDistance = SAFE_DISTANCE;
     this.slowdownDistance = SLOWDOWN_DISTANCE;
-    this.maxSpeed = this.car.maxSpeed * 0.9;
+    this.carSpeedDeviation = 0;
   }
 
   onGreenLight() {

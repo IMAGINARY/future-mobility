@@ -13,18 +13,18 @@ class CarDriver {
   constructor(car) {
     this.car = car;
     this.carDistanceFactor = 1 + Math.random() * 0.6;
+    this.carSpeedDeviation = Math.random() * 0.2 - 0.1;
+    this.carSpeedFactor = 1 + (Math.random() * 0.3 - 0.15);
     this.safeDistance = SAFE_DISTANCE * this.carDistanceFactor;
     this.slowdownDistance = SLOWDOWN_DISTANCE * this.carDistanceFactor;
     this.inRedLight = false;
-    this.maxSpeed = this.randomizeMaxSpeed();
   }
 
-  randomizeMaxSpeed() {
-    const base = this.car.maxSpeed;
-    const deviation = Math.random() * 0.2 - 0.1;
+  getMaxSpeed() {
+    const base = Math.min(this.car.maxSpeed, this.car.overlay.cityMaxSpeed);
     return (this.car.lane === RoadTile.OUTER_LANE)
-      ? base * 0.8 + deviation
-      : base + deviation;
+      ? base * 0.8 * this.carSpeedFactor
+      : base * this.carSpeedFactor;
   }
 
   chooseExitSide(tileX, tileY, entrySide) {
@@ -69,6 +69,7 @@ class CarDriver {
   adjustCarSpeed() {
     const position = this.car.getSpritePosition();
     const carInFront = this.car.overlay.getCarInFront(this.car);
+    const maxSpeed = this.getMaxSpeed();
     if (carInFront) {
       const overlapDistance = this.car.sprite.height / 2 + carInFront.sprite.height / 2;
       const distanceToCarInFront = carInFront
@@ -78,14 +79,18 @@ class CarDriver {
         this.car.speed = 0;
       } else if (distanceToCarInFront <= this.slowdownDistance) {
         // Decelerate to maintain the safe distance
-        this.car.speed = this.maxSpeed * (1 - this.safeDistance / distanceToCarInFront);
-      } else if (this.car.speed < this.maxSpeed) {
+        this.car.speed = maxSpeed * (1 - this.safeDistance / distanceToCarInFront);
+      } else if (this.car.speed < maxSpeed) {
         // Accelerate up to the maxSpeed
-        this.car.speed = Math.min(this.car.speed + this.maxSpeed / 5, this.maxSpeed);
+        this.car.speed = Math.min(this.car.speed + maxSpeed / 5, maxSpeed);
       }
-    } else if (this.car.speed < this.maxSpeed) {
+    } else if (this.car.speed < maxSpeed) {
       // Accelerate up to the maxSpeed
-      this.car.speed = Math.min(this.car.speed + this.maxSpeed / 5, this.maxSpeed);
+      this.car.speed = Math.min(this.car.speed + maxSpeed / 5, maxSpeed);
+    }
+
+    if (this.car.speed > maxSpeed) {
+      this.car.speed = this.car.speed * 0.9;
     }
 
     if (this.inRedLight && this.car.speed > 0) {
