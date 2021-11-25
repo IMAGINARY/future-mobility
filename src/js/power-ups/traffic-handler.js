@@ -21,7 +21,7 @@ class TrafficHandler extends PowerUpViewHandler {
       }
     });
 
-    this.carSpawner.setModeDistribution(distribution);
+    this.carSpawner.setModeDistribution(distribution, activePowerUps);
   }
 }
 

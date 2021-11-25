@@ -5,62 +5,134 @@ carTypes:
     maxSpeed: 0.5
     frequency: 0.6
     variants: [white, yellow, red, blue, aqua]
+    exclude: [electric-vehicles]
+  bug-clean:
+    mode: car
+    maxSpeed: 0.5
+    frequency: 0.6
+    include: [electric-vehicles]
   mouse:
     mode: car
     maxSpeed: 0.5
     frequency: 0.6
     variants: [white, green, blue, yellow, red]
+    exclude: [electric-vehicles]
+  mouse-clean:
+    mode: car
+    maxSpeed: 0.5
+    frequency: 0.6
+    include: [ electric-vehicles ]
   morty:
     mode: car
     maxSpeed: 0.6
     frequency: 0.6
     variants: [white, gray, yellow, rust]
+    exclude: [ electric-vehicles ]
+  morty-clean :
+    mode: car
+    maxSpeed: 0.6
+    frequency: 0.6
+    include: [ electric-vehicles ]
   lurch:
     mode: car
     maxSpeed: 0.55
     frequency: 1
     variants: [white, blue, rust]
+    exclude: [ electric-vehicles ]
+  lurch-clean:
+    mode: car
+    maxSpeed: 0.55
+    frequency: 1
+    include: [ electric-vehicles ]
   pill:
     mode: car
     maxSpeed: 0.6
     frequency: 1
     variants: [white, blue, rust, aqua]
+    exclude: [ electric-vehicles ]
+  pill-clean:
+    mode: car
+    maxSpeed: 0.6
+    frequency: 1
+    include: [ electric-vehicles ]
   boxi:
     mode: car
     maxSpeed: 0.6
     frequency: 1
     variants: [white, gray, blue, rust]
+    exclude: [ electric-vehicles ]
+  boxi-clean:
+    mode: car
+    maxSpeed: 0.6
+    frequency: 1
+    include: [ electric-vehicles ]
   posh:
     mode: car
     maxSpeed: 0.65
     frequency: 0.5
     variants: [white, gray, red, yellow, blue]
+    exclude: [ electric-vehicles ]
+  posh-clean:
+    mode: car
+    maxSpeed: 0.65
+    frequency: 0.5
+    include: [ electric-vehicles ]
   sleek:
     mode: car
     maxSpeed: 0.55
     frequency: 1
     variants: [white, gray, green, blue, orange]
+    exclude: [ electric-vehicles ]
+  sleek-clean:
+    mode: car
+    maxSpeed: 0.55
+    frequency: 1
+    include: [ electric-vehicles ]
   wagon:
     mode: car
     maxSpeed: 0.5
     frequency: 0.3
     variants: [white, gray, gold]
+    exclude: [ electric-vehicles ]
+  wagon-clean:
+    mode: car
+    maxSpeed: 0.5
+    frequency: 0.3
+    include: [ electric-vehicles ]
   # Freight: commercial
   pickup:
     mode: freight
     maxSpeed: 0.5
     frequency: 0.3
     variants: [white, gray, blue, red]
+    exclude: [ electric-vehicles ]
+  pickup-clean:
+    mode: freight
+    maxSpeed: 0.5
+    frequency: 0.3
+    include: [ electric-vehicles ]
   pagon:
     mode: freight
     maxSpeed: 0.5
     frequency: 0.2
     variants: [white, blue, red]
+    exclude: [ electric-vehicles ]
+  pagon-clean:
+    mode: freight
+    maxSpeed: 0.5
+    frequency: 0.2
+    include: [ electric-vehicles ]
   van:
     mode: freight
     maxSpeed: 0.5
     frequency: 0.5
     variants: [white, blue, yellow, camper, wgreen]
+    exclude: [ electric-vehicles ]
+  van-clean:
+    mode: freight
+    maxSpeed: 0.5
+    frequency: 0.5
+    include: [ electric-vehicles ]
 
   # Freight: industrial
   tventi:
@@ -70,6 +142,14 @@ carTypes:
     variants: [white, gray, red, blue]
     wagons: [[trventi-white, trventi-orange, trventi-milk, trventi-empty]]
     lanes: inner
+    exclude: [ electric-vehicles ]
+  tventi-clean:
+    mode: freight
+    maxSpeed: 0.45
+    frequency: 0.2
+    include: [ electric-vehicles ]
+    wagons: [ [ trventi-white, trventi-orange, trventi-milk, trventi-empty ] ]
+    lanes: inner
   tgrande:
     mode: freight
     maxSpeed: 0.45
@@ -77,16 +157,36 @@ carTypes:
     variants: [white, blue]
     wagons: [[trgrande-aqua, trgrande-orange]]
     lanes: inner
+    exclude: [ electric-vehicles ]
+  tgrande-clean:
+    mode: freight
+    maxSpeed: 0.45
+    frequency: 0.2
+    include: [ electric-vehicles ]
+    wagons: [ [ trgrande-aqua, trgrande-orange ] ]
+    lanes: inner
   ttall:
     mode: freight
     maxSpeed: 0.5
     frequency: 0.3
     variants: [white, blue, gold]
+    exclude: [ electric-vehicles ]
+  ttall-clean:
+    mode: freight
+    maxSpeed: 0.5
+    frequency: 0.3
+    include: [ electric-vehicles ]
   tshort:
     mode: freight
     maxSpeed: 0.5
     frequency: 0.3
     variants: [blue, yellow]
+    exclude: [ electric-vehicles ]
+  tshort-clean:
+    mode: freight
+    maxSpeed: 0.5
+    frequency: 0.3
+    include: [ electric-vehicles ]
 
   # Bicycles: human powered
   bfast:
@@ -153,23 +253,24 @@ carTypes:
   bus:
     mode: public
     maxSpeed: 0.45
-    frequency: 0.2
+    frequency: 2
     lanes: outer
   taxi:
     mode: public
     maxSpeed: 0.5
-    frequency: 1
+    frequency: 4
     variants: [a, b, c]
   tram:
     mode: public
     maxSpeed: 0.4
-    frequency: 0.2
+    frequency: 1
     wagons: [tram-middle, tram-middle, tram-back]
     lanes: inner
+    include: [improved-mass-transit]
   maas:
     mode: public
     maxSpeed: 0.4
-    frequency: 0.5
+    frequency: 1
 
   # Public service vehicles
   firetruck:

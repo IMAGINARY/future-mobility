@@ -1708,13 +1708,17 @@ class CarSpawner {
     return Object.keys(textures);
   }
 
-  setModeDistribution(modeDistribution) {
+  setModeDistribution(modeDistribution, tags = []) {
     this.modeDistribution = modeDistribution;
     this.modeRandomizer = weightedRandomizer(Object.entries(modeDistribution));
     this.carRandomizers = Object.fromEntries(Object.keys(modeDistribution).map(mode => [
       mode, weightedRandomizer(
         Object.entries(this.config.carTypes)
           .filter(([, props]) => props.mode === mode)
+          .filter(([, props]) => (
+            (props.include === undefined || props.include.some(tag => tags.includes(tag)))
+            && (props.exclude === undefined || !props.exclude.some(tag => tags.includes(tag)))
+          ))
           .map(([id, props]) => [id, props.frequency || 1])
       )]));
   }
@@ -3094,7 +3098,7 @@ class TrafficHandler extends PowerUpViewHandler {
       }
     });
 
-    this.carSpawner.setModeDistribution(distribution);
+    this.carSpawner.setModeDistribution(distribution, activePowerUps);
   }
 }
 
@@ -3701,4 +3705,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.2ad4791ac70213489d46.js.map
+//# sourceMappingURL=city.1afc43fc06cc76906b7a.js.map

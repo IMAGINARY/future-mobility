@@ -39,13 +39,17 @@ class CarSpawner {
     return Object.keys(textures);
   }
 
-  setModeDistribution(modeDistribution) {
+  setModeDistribution(modeDistribution, tags = []) {
     this.modeDistribution = modeDistribution;
     this.modeRandomizer = weightedRandomizer(Object.entries(modeDistribution));
     this.carRandomizers = Object.fromEntries(Object.keys(modeDistribution).map(mode => [
       mode, weightedRandomizer(
         Object.entries(this.config.carTypes)
           .filter(([, props]) => props.mode === mode)
+          .filter(([, props]) => (
+            (props.include === undefined || props.include.some(tag => tags.includes(tag)))
+            && (props.exclude === undefined || !props.exclude.some(tag => tags.includes(tag)))
+          ))
           .map(([id, props]) => [id, props.frequency || 1])
       )]));
   }
