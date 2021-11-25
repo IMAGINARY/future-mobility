@@ -32,6 +32,7 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
     const textureLoader = new TextureLoader(app);
     textureLoader.addSpritesheet('roads');
     textureLoader.addSpritesheet('parks');
+    textureLoader.addSpritesheet('water');
     textureLoader.load()
       .then((textures) => {
         $('[data-component="app-container"]').append(app.view);

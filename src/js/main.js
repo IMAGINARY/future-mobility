@@ -91,6 +91,7 @@ cfgLoader.load([
     textureLoader.addSpritesheet('roads');
     textureLoader.addSpritesheet('roads-walkable');
     textureLoader.addSpritesheet('parks');
+    textureLoader.addSpritesheet('water');
     textureLoader.addFolder('cars', CarSpawner.allTextureIds(config));
     textureLoader.load()
       .then((textures) => {

@@ -2645,6 +2645,7 @@ class MapView {
     this.pointerActive = false;
     this.roadTileId = getTileTypeId(config, 'road');
     this.parkTileId = getTileTypeId(config, 'park');
+    this.waterTileId = getTileTypeId(config, 'water');
     this.roadTextureKey = 'roads';
     this.basicTileRenderers = {};
 
@@ -2752,6 +2753,9 @@ class MapView {
     if (this.city.map.get(x, y) === this.parkTileId) {
       this.renderParkTile(x, y);
     }
+    if (this.city.map.get(x, y) === this.waterTileId) {
+      this.renderWaterTile(x, y);
+    }
     if (this.city.map.get(x, y) === this.roadTileId) {
       this.renderRoadTile(x, y);
     }
@@ -2760,6 +2764,12 @@ class MapView {
   renderParkTile(x, y) {
     const textureNumber = 1 + Math.round(this.randomizedTerrain[y][x] * 8);
     this.getTextureTile(x, y).texture = this.textures.parks[`park-0${textureNumber}`];
+    this.getTextureTile(x, y).visible = true;
+  }
+
+  renderWaterTile(x, y) {
+    const textureNumber = 1 + Math.round(this.randomizedTerrain[y][x] * 8);
+    this.getTextureTile(x, y).texture = this.textures.water[`water-0${textureNumber}`];
     this.getTextureTile(x, y).visible = true;
   }
 
@@ -3454,6 +3464,7 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
     const textureLoader = new TextureLoader(app);
     textureLoader.addSpritesheet('roads');
     textureLoader.addSpritesheet('parks');
+    textureLoader.addSpritesheet('water');
     textureLoader.load()
       .then((textures) => {
         $('[data-component="app-container"]').append(app.view);
@@ -3511,4 +3522,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.1c1667ad72f8cd0b916f.js.map
+//# sourceMappingURL=editor.7c0bf8515575d5a51dd9.js.map

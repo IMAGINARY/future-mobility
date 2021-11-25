@@ -2847,6 +2847,7 @@ class MapView {
     this.pointerActive = false;
     this.roadTileId = getTileTypeId(config, 'road');
     this.parkTileId = getTileTypeId(config, 'park');
+    this.waterTileId = getTileTypeId(config, 'water');
     this.roadTextureKey = 'roads';
     this.basicTileRenderers = {};
 
@@ -2954,6 +2955,9 @@ class MapView {
     if (this.city.map.get(x, y) === this.parkTileId) {
       this.renderParkTile(x, y);
     }
+    if (this.city.map.get(x, y) === this.waterTileId) {
+      this.renderWaterTile(x, y);
+    }
     if (this.city.map.get(x, y) === this.roadTileId) {
       this.renderRoadTile(x, y);
     }
@@ -2962,6 +2966,12 @@ class MapView {
   renderParkTile(x, y) {
     const textureNumber = 1 + Math.round(this.randomizedTerrain[y][x] * 8);
     this.getTextureTile(x, y).texture = this.textures.parks[`park-0${textureNumber}`];
+    this.getTextureTile(x, y).visible = true;
+  }
+
+  renderWaterTile(x, y) {
+    const textureNumber = 1 + Math.round(this.randomizedTerrain[y][x] * 8);
+    this.getTextureTile(x, y).texture = this.textures.water[`water-0${textureNumber}`];
     this.getTextureTile(x, y).visible = true;
   }
 
@@ -3913,6 +3923,7 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
     textureLoader.addSpritesheet('roads');
     textureLoader.addSpritesheet('roads-walkable');
     textureLoader.addSpritesheet('parks');
+    textureLoader.addSpritesheet('water');
     textureLoader.addFolder('cars', CarSpawner.allTextureIds(config));
     textureLoader.load()
       .then((textures) => {
@@ -3977,4 +3988,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.649018ae78284db74e5a.js.map
+//# sourceMappingURL=city.e0e4dbb927666d8a10e7.js.map
