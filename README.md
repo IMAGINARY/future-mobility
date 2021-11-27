@@ -46,4 +46,5 @@ a friendly format.
 
 Copyright (c) 2021 IMAGINARY gGmbH
 Licensed under the MIT license (see LICENSE)
+Supported by Futurium gGmbH
 
