@@ -11053,7 +11053,6 @@ cfgLoader.load([
       width: 3840,
       height: 1920,
       backgroundColor: 0xf2f2f2,
-      // backgroundColor: 0xffffff,
     });
 
     const textureLoader = new TextureLoader(app);
@@ -11239,4 +11238,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.3a17479f18a7a078ea4a.js.map
+//# sourceMappingURL=default.665617b975a244eab033.js.map

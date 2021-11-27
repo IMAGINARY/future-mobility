@@ -26,7 +26,7 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
     const app = new PIXI.Application({
       width: 1152,
       height: 1152,
-      backgroundColor: 0xf2f2f2,
+      backgroundColor: 0xa6a6a6,
     });
     const textureLoader = new TextureLoader(app);
     textureLoader.addSpritesheet('roads');

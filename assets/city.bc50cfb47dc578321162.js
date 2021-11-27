@@ -3917,7 +3917,7 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
     const app = new PIXI.Application({
       width: 1152,
       height: 1152,
-      backgroundColor: 0xf2f2f2,
+      backgroundColor: 0xa6a6a6,
     });
     const textureLoader = new TextureLoader(app);
     textureLoader.addSpritesheet('roads');
@@ -3988,4 +3988,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.e0e4dbb927666d8a10e7.js.map
+//# sourceMappingURL=city.bc50cfb47dc578321162.js.map

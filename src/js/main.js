@@ -84,7 +84,6 @@ cfgLoader.load([
       width: 3840,
       height: 1920,
       backgroundColor: 0xf2f2f2,
-      // backgroundColor: 0xffffff,
     });
 
     const textureLoader = new TextureLoader(app);

@@ -1,22 +1,5 @@
-mapView:
+# Override any configurations through this file
+
+#mapView:
   # Stroke width (in pixels) of the grid overlay of the map view
-  gridOverlay: 0
-citizenRequestView:
-  # Minimum time (in seconds) a citizen request should be shown (as long as it's not been met)
-  minTime: 30
-  # Time (in seconds) after which a citizen request will enter cooldown (losing priority).
-  maxTime: 90
-  # Cooldown time (in seconds) after which a citizen request will regain priority.
-  cooldown: 90
-dataManager:
-  # Minimum interval for recalculating the simulation's variables
-  throttleTime: 1000
-variableMapOverlay:
-  # Colors used for showing variables (with alpha 0.9 for max pollution)
-  colors:
-    pollution: 0x7a1600
-    noise: 0x3100c2
-  # Duration (in seconds) of the fade-in or out transition
-  transitionDuration: 1
-  # Amount of time (in seconds) that the overlay is shown for (not counting transitions)
-  overlayDuration: 5
+#  gridOverlay: 0
