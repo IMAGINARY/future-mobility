@@ -50,6 +50,19 @@ h2 {
       font-family: 'Roboto Condensed', sans-serif;
       font-weight: 700;
       color: black; }
+  #accordionData .index-list {
+    padding: 1em 0.4em; }
+    #accordionData .index-list .variables {
+      font-size: 0.8em; }
+  #accordionData .citizen-requests {
+    font-size: 0.65em;
+    padding-left: 0;
+    padding-right: 0.5em; }
+    #accordionData .citizen-requests .request-person {
+      background-size: 6em;
+      background-position: center; }
+  #accordionData .goal-debug {
+    font-size: 0.9em; }
 
 .map-view, .map-editor {
   width: 100%;
@@ -804,4 +817,4 @@ body.dashboard[data-show-slide='3'] #slide-3 {
   left: 0; }
 
 
-/*# sourceMappingURL=editor.3b18b068a0c62efb8b9b.css.map*/
+/*# sourceMappingURL=dashboard.0a73c70e06b692f21041.css.map*/
