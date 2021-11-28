@@ -9653,6 +9653,7 @@ class MapView {
     this.parkTileId = getTileTypeId(config, 'park');
     this.waterTileId = getTileTypeId(config, 'water');
     this.roadTextureKey = 'roads';
+    this.roadTexturePrefix = 'road';
     this.basicTileRenderers = {};
 
     this.randomizedTerrain = Array2D.create(this.city.map.width, this.city.map.height);
@@ -9784,7 +9785,7 @@ class MapView {
       .map(([x, y]) => (!this.city.map.isValidCoords(x, y)
       || this.city.map.get(x, y) === this.roadTileId
         ? '1' : '0')).join('');
-    this.getTextureTile(i, j).texture = this.textures[this.roadTextureKey][`road${connMask}`];
+    this.getTextureTile(i, j).texture = this.textures[this.roadTextureKey][`${this.roadTexturePrefix}${connMask}`];
     this.getTextureTile(i, j).visible = true;
   }
 
@@ -10617,6 +10618,7 @@ class WalkableCityHandler extends PowerUpViewHandler {
   onEnable(powerUp) {
     if (powerUp === 'walkable-city') {
       this.mapView.roadTextureKey = 'roads-walkable';
+      this.mapView.roadTexturePrefix = 'road-walkable';
       this.mapView.handleCityUpdate(this.mapView.city.map.allCells());
     }
   }
@@ -10624,6 +10626,7 @@ class WalkableCityHandler extends PowerUpViewHandler {
   onDisable(powerUp) {
     if (powerUp === 'walkable-city') {
       this.mapView.roadTextureKey = 'roads';
+      this.mapView.roadTexturePrefix = 'road';
       this.mapView.handleCityUpdate(this.mapView.city.map.allCells());
     }
   }
@@ -11329,7 +11332,6 @@ cfgLoader.load([
         powerUpViewMgr.registerHandler(new DenseCityHandler(config, mapEditor.mapView));
         powerUpViewMgr.registerHandler(new AutonomousVehicleLidarHandler(config, carOverlay), true);
 
-
         const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
         app.stage.addChild(emissionsVarViewer.displayObject);
         emissionsVarViewer.displayObject.width = 960;
@@ -11477,4 +11479,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.159074d67473505fa537.js.map
+//# sourceMappingURL=default.7f7e34bee853ab4e17aa.js.map

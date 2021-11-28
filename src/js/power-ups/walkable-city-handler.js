@@ -10,6 +10,7 @@ class WalkableCityHandler extends PowerUpViewHandler {
   onEnable(powerUp) {
     if (powerUp === 'walkable-city') {
       this.mapView.roadTextureKey = 'roads-walkable';
+      this.mapView.roadTexturePrefix = 'road-walkable';
       this.mapView.handleCityUpdate(this.mapView.city.map.allCells());
     }
   }
@@ -17,6 +18,7 @@ class WalkableCityHandler extends PowerUpViewHandler {
   onDisable(powerUp) {
     if (powerUp === 'walkable-city') {
       this.mapView.roadTextureKey = 'roads';
+      this.mapView.roadTexturePrefix = 'road';
       this.mapView.handleCityUpdate(this.mapView.city.map.allCells());
     }
   }

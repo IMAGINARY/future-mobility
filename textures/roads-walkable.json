@@ -1,6 +1,6 @@
 {"frames": {
 
-"road0000":
+"road-walkable0000":
 {
 	"frame": {"x":0,"y":0,"w":72,"h":72},
 	"rotated": false,
@@ -8,7 +8,7 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":72,"h":72},
 	"sourceSize": {"w":72,"h":72}
 },
-"road0100":
+"road-walkable0100":
 {
 	"frame": {"x":72,"y":0,"w":72,"h":72},
 	"rotated": false,
@@ -16,7 +16,7 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":72,"h":72},
 	"sourceSize": {"w":72,"h":72}
 },
-"road0101":
+"road-walkable0101":
 {
 	"frame": {"x":144,"y":0,"w":72,"h":72},
 	"rotated": false,
@@ -24,7 +24,7 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":72,"h":72},
 	"sourceSize": {"w":72,"h":72}
 },
-"road0011":
+"road-walkable0011":
 {
 	"frame": {"x":216,"y":0,"w":72,"h":72},
 	"rotated": false,
@@ -32,7 +32,7 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":72,"h":72},
 	"sourceSize": {"w":72,"h":72}
 },
-"road0010":
+"road-walkable0010":
 {
 	"frame": {"x":0,"y":72,"w":72,"h":72},
 	"rotated": false,
@@ -40,7 +40,7 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":72,"h":72},
 	"sourceSize": {"w":72,"h":72}
 },
-"road0110":
+"road-walkable0110":
 {
 	"frame": {"x":72,"y":72,"w":72,"h":72},
 	"rotated": false,
@@ -48,7 +48,7 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":72,"h":72},
 	"sourceSize": {"w":72,"h":72}
 },
-"road0111":
+"road-walkable0111":
 {
 	"frame": {"x":144,"y":72,"w":72,"h":72},
 	"rotated": false,
@@ -56,7 +56,7 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":72,"h":72},
 	"sourceSize": {"w":72,"h":72}
 },
-"road1011":
+"road-walkable1011":
 {
 	"frame": {"x":216,"y":72,"w":72,"h":72},
 	"rotated": false,
@@ -64,7 +64,7 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":72,"h":72},
 	"sourceSize": {"w":72,"h":72}
 },
-"road1110":
+"road-walkable1110":
 {
 	"frame": {"x":0,"y":144,"w":72,"h":72},
 	"rotated": false,
@@ -72,7 +72,7 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":72,"h":72},
 	"sourceSize": {"w":72,"h":72}
 },
-"road1111":
+"road-walkable1111":
 {
 	"frame": {"x":72,"y":144,"w":72,"h":72},
 	"rotated": false,
@@ -80,7 +80,7 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":72,"h":72},
 	"sourceSize": {"w":72,"h":72}
 },
-"road1001":
+"road-walkable1001":
 {
 	"frame": {"x":144,"y":144,"w":72,"h":72},
 	"rotated": false,
@@ -88,7 +88,7 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":72,"h":72},
 	"sourceSize": {"w":72,"h":72}
 },
-"road1010":
+"road-walkable1010":
 {
 	"frame": {"x":216,"y":144,"w":72,"h":72},
 	"rotated": false,
@@ -96,7 +96,7 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":72,"h":72},
 	"sourceSize": {"w":72,"h":72}
 },
-"road1100":
+"road-walkable1100":
 {
 	"frame": {"x":0,"y":216,"w":72,"h":72},
 	"rotated": false,
@@ -104,7 +104,7 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":72,"h":72},
 	"sourceSize": {"w":72,"h":72}
 },
-"road1101":
+"road-walkable1101":
 {
 	"frame": {"x":72,"y":216,"w":72,"h":72},
 	"rotated": false,
@@ -112,7 +112,7 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":72,"h":72},
 	"sourceSize": {"w":72,"h":72}
 },
-"road0001":
+"road-walkable0001":
 {
 	"frame": {"x":144,"y":216,"w":72,"h":72},
 	"rotated": false,
@@ -120,7 +120,7 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":72,"h":72},
 	"sourceSize": {"w":72,"h":72}
 },
-"road1000":
+"road-walkable1000":
 {
 	"frame": {"x":216,"y":216,"w":72,"h":72},
 	"rotated": false,

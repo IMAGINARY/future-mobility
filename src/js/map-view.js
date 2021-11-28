@@ -15,6 +15,7 @@ class MapView {
     this.parkTileId = getTileTypeId(config, 'park');
     this.waterTileId = getTileTypeId(config, 'water');
     this.roadTextureKey = 'roads';
+    this.roadTexturePrefix = 'road';
     this.basicTileRenderers = {};
 
     this.randomizedTerrain = Array2D.create(this.city.map.width, this.city.map.height);
@@ -146,7 +147,7 @@ class MapView {
       .map(([x, y]) => (!this.city.map.isValidCoords(x, y)
       || this.city.map.get(x, y) === this.roadTileId
         ? '1' : '0')).join('');
-    this.getTextureTile(i, j).texture = this.textures[this.roadTextureKey][`road${connMask}`];
+    this.getTextureTile(i, j).texture = this.textures[this.roadTextureKey][`${this.roadTexturePrefix}${connMask}`];
     this.getTextureTile(i, j).visible = true;
   }
 

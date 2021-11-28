@@ -2854,6 +2854,7 @@ class MapView {
     this.parkTileId = getTileTypeId(config, 'park');
     this.waterTileId = getTileTypeId(config, 'water');
     this.roadTextureKey = 'roads';
+    this.roadTexturePrefix = 'road';
     this.basicTileRenderers = {};
 
     this.randomizedTerrain = Array2D.create(this.city.map.width, this.city.map.height);
@@ -2985,7 +2986,7 @@ class MapView {
       .map(([x, y]) => (!this.city.map.isValidCoords(x, y)
       || this.city.map.get(x, y) === this.roadTileId
         ? '1' : '0')).join('');
-    this.getTextureTile(i, j).texture = this.textures[this.roadTextureKey][`road${connMask}`];
+    this.getTextureTile(i, j).texture = this.textures[this.roadTextureKey][`${this.roadTexturePrefix}${connMask}`];
     this.getTextureTile(i, j).visible = true;
   }
 
@@ -3595,6 +3596,7 @@ class WalkableCityHandler extends PowerUpViewHandler {
   onEnable(powerUp) {
     if (powerUp === 'walkable-city') {
       this.mapView.roadTextureKey = 'roads-walkable';
+      this.mapView.roadTexturePrefix = 'road-walkable';
       this.mapView.handleCityUpdate(this.mapView.city.map.allCells());
     }
   }
@@ -3602,6 +3604,7 @@ class WalkableCityHandler extends PowerUpViewHandler {
   onDisable(powerUp) {
     if (powerUp === 'walkable-city') {
       this.mapView.roadTextureKey = 'roads';
+      this.mapView.roadTexturePrefix = 'road';
       this.mapView.handleCityUpdate(this.mapView.city.map.allCells());
     }
   }
@@ -4226,4 +4229,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.0b3bda6c6d7b45a693b7.js.map
+//# sourceMappingURL=city.a00c29dc7d60e67562ad.js.map

@@ -125,7 +125,6 @@ cfgLoader.load([
         powerUpViewMgr.registerHandler(new DenseCityHandler(config, mapEditor.mapView));
         powerUpViewMgr.registerHandler(new AutonomousVehicleLidarHandler(config, carOverlay), true);
 
-
         const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
         app.stage.addChild(emissionsVarViewer.displayObject);
         emissionsVarViewer.displayObject.width = 960;
