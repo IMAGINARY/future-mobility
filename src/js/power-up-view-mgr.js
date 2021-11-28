@@ -2,10 +2,14 @@ class PowerUpViewMgr {
   constructor() {
     this.activePowerUps = [];
     this.handlers = [];
+    this.animatedHandlers = [];
   }
 
-  registerHandler(handler) {
+  registerHandler(handler, animation = false) {
     this.handlers.push(handler);
+    if (animation) {
+      this.animatedHandlers.push(handler);
+    }
   }
 
   update(activePowerUps) {
@@ -44,6 +48,12 @@ class PowerUpViewMgr {
   handlePowerUpChanges(activePowerUps) {
     this.handlers.forEach((handler) => {
       handler.onChange(activePowerUps);
+    });
+  }
+
+  animate(time) {
+    this.animatedHandlers.forEach((handler) => {
+      handler.animate(time);
     });
   }
 }

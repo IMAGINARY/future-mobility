@@ -13,6 +13,7 @@ class AiCarDriver extends CarDriver {
     this.safeDistance = SAFE_DISTANCE;
     this.slowdownDistance = SLOWDOWN_DISTANCE;
     this.carSpeedDeviation = 0;
+    this.isAutonomous = true;
   }
 
   onGreenLight() {

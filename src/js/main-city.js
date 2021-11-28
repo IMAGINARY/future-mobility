@@ -17,6 +17,7 @@ const MaxSpeedHandler = require('./power-ups/max-speed-handler');
 const SpawnTramHandler = require('./power-ups/spawn-tram');
 const WalkableCityHandler = require('./power-ups/walkable-city-handler');
 const DenseCityHandler = require('./power-ups/dense-city-handler');
+const AutonomousVehicleLidarHandler = require('./power-ups/autonomous-vehicle-lidar-handler');
 
 fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
   .then(response => response.json())
@@ -51,12 +52,14 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
         app.ticker.add(time => carSpawner.animate(time));
 
         const powerUpViewMgr = new PowerUpViewMgr();
+        app.ticker.add(time => powerUpViewMgr.animate(time));
         powerUpViewMgr.registerHandler(new TrafficHandler(config, carSpawner));
         powerUpViewMgr.registerHandler(new AutonomousVehicleHandler(config, carSpawner));
         powerUpViewMgr.registerHandler(new MaxSpeedHandler(config, carOverlay));
         powerUpViewMgr.registerHandler(new SpawnTramHandler(config, carSpawner));
         powerUpViewMgr.registerHandler(new WalkableCityHandler(config, mapView));
         powerUpViewMgr.registerHandler(new DenseCityHandler(config, mapView));
+        powerUpViewMgr.registerHandler(new AutonomousVehicleLidarHandler(config, carOverlay), true);
 
         const variableMapOverlay = new VariableMapOverlay(mapView, config);
         app.ticker.add(time => variableMapOverlay.animate(time));

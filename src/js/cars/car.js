@@ -80,6 +80,10 @@ class Car {
     }
   }
 
+  isVisible() {
+    return this.fader.visible;
+  }
+
   addWagon(car) {
     this.backWagon = car;
     car.frontWagon = this;
