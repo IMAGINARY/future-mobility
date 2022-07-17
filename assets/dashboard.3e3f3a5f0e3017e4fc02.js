@@ -862,12 +862,19 @@ module.exports = CitizenRequestView;
 /*!*****************************************!*\
   !*** ./src/js/connection-state-view.js ***!
   \*****************************************/
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const icon = __webpack_require__(/*! ../../static/fa/broadcast-tower-solid.svg */ "./static/fa/broadcast-tower-solid.svg");
 
 class ConnectionStateView {
   constructor(connector) {
     this.$element = $('<div></div>')
       .addClass('connection-state-view');
+
+    this.$icon = $('<img>')
+      .attr('src', icon)
+      .addClass('connection-state-view-icon')
+      .appendTo(this.$element);
 
     this.$errorMessage = $('<div></div>')
       .addClass('connection-state-view-error text-danger')
@@ -876,6 +883,7 @@ class ConnectionStateView {
       .addClass('connection-state-view-status')
       .appendTo(this.$element);
 
+    connector.events.on('closing', this.handleClosing.bind(this));
     connector.events.on('disconnect', this.handleDisconnect.bind(this));
     connector.events.on('connectWait', this.handleConnectWait.bind(this));
     connector.events.on('connecting', this.handleConnecting.bind(this));
@@ -896,6 +904,12 @@ class ConnectionStateView {
 
   setErrorStatus(status) {
     this.$errorStatus.html(status);
+  }
+
+  handleClosing() {
+    this.setErrorMessage('Retrying connection');
+    this.setErrorStatus('');
+    this.show();
   }
 
   handleDisconnect() {
@@ -1307,9 +1321,10 @@ class ServerSocketConnector {
     this.uri = uri;
     this.ws = null;
     this.connected = false;
+    this.isClosing = false; // Must track because the socket might enter CLOSING state and not close immediately
     this.events = new EventEmitter();
     this.pingTimeout = null;
-    this.pongWaitTimeout = null;
+    this.pongTimeout = null;
     this.reconnectTimeout = null;
     this.connect();
   }
@@ -1349,8 +1364,10 @@ class ServerSocketConnector {
 
   handleOpen() {
     this.cancelReconnect();
+    this.cancelPongTimeout();
 
     this.connected = true;
+    this.isClosing = false;
     console.log('Connected.');
     this.events.emit('connect');
     this.schedulePing();
@@ -1358,7 +1375,9 @@ class ServerSocketConnector {
 
   handleClose(ev) {
     this.connected = false;
+    this.isClosing = false;
     this.cancelPing();
+    this.cancelPongTimeout();
     // ev.code is defined here https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent
     // but according to people the only code one normally gets is 1006 (Abnormal Closure)
     console.error(
@@ -1388,14 +1407,13 @@ class ServerSocketConnector {
   }
 
   handlePong() {
-    this.cancelPongWait();
+    this.cancelPongTimeout();
+    this.schedulePing();
   }
 
   send(data) {
-    this.cancelPing();
     const message = typeof data === 'string' ? { type: data } : data;
     this.ws.send(JSON.stringify(message));
-    this.schedulePing();
   }
 
   cancelPing() {
@@ -1413,25 +1431,30 @@ class ServerSocketConnector {
     }, PING_TIME);
   }
 
-  cancelPongWait() {
-    if (this.pongWaitTimeout !== null) {
-      clearTimeout(this.pongWaitTimeout);
-      this.pongWaitTimeout = null;
+  cancelPongTimeout() {
+    if (this.pongTimeout !== null) {
+      clearTimeout(this.pongTimeout);
+      this.pongTimeout = null;
     }
   }
 
-  startPongWait() {
-    this.pongWaitTimeout = setTimeout(() => {
-      this.pongWaitTimeout = null;
+  startPongTimeout() {
+    this.cancelPongTimeout();
+    this.pongTimeout = setTimeout(() => {
+      this.pongTimeout = null;
       console.warn(`PONG not received after ${PONG_WAIT_TIME / 1000} seconds`);
       console.warn('Closing connection');
+      if (!this.isClosing) {
+        this.isClosing = true;
+        this.events.emit('closing');
+      }
       this.ws.close();
     }, PONG_WAIT_TIME);
   }
 
   ping() {
     this.send('ping');
-    this.startPongWait();
+    this.startPongTimeout();
   }
 
   getMap() {
@@ -1482,6 +1505,17 @@ class ServerSocketConnector {
 module.exports = ServerSocketConnector;
 
 
+/***/ }),
+
+/***/ "./static/fa/broadcast-tower-solid.svg":
+/*!*********************************************!*\
+  !*** ./static/fa/broadcast-tower-solid.svg ***!
+  \*********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+module.exports = __webpack_require__.p + "ead51173b07512a4bf13.svg";
+
 /***/ })
 
 /******/ 	});
@@ -1511,6 +1545,18 @@ module.exports = ServerSocketConnector;
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/global */
+/******/ 	(() => {
+/******/ 		__webpack_require__.g = (function() {
+/******/ 			if (typeof globalThis === 'object') return globalThis;
+/******/ 			try {
+/******/ 				return this || new Function('return this')();
+/******/ 			} catch (e) {
+/******/ 				if (typeof window === 'object') return window;
+/******/ 			}
+/******/ 		})();
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
@@ -1520,6 +1566,26 @@ module.exports = ServerSocketConnector;
 /******/ 			}
 /******/ 			Object.defineProperty(exports, '__esModule', { value: true });
 /******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/publicPath */
+/******/ 	(() => {
+/******/ 		var scriptUrl;
+/******/ 		if (__webpack_require__.g.importScripts) scriptUrl = __webpack_require__.g.location + "";
+/******/ 		var document = __webpack_require__.g.document;
+/******/ 		if (!scriptUrl && document) {
+/******/ 			if (document.currentScript)
+/******/ 				scriptUrl = document.currentScript.src
+/******/ 			if (!scriptUrl) {
+/******/ 				var scripts = document.getElementsByTagName("script");
+/******/ 				if(scripts.length) scriptUrl = scripts[scripts.length - 1].src
+/******/ 			}
+/******/ 		}
+/******/ 		// When supporting browsers where an automatic publicPath is not supported you must specify an output.publicPath manually via configuration
+/******/ 		// or pass an empty string ("") and set the __webpack_public_path__ variable from your code to use your own logic.
+/******/ 		if (!scriptUrl) throw new Error("Automatic publicPath is not supported in this browser");
+/******/ 		scriptUrl = scriptUrl.replace(/#.*$/, "").replace(/\?.*$/, "").replace(/\/[^\/]+$/, "/");
+/******/ 		__webpack_require__.p = scriptUrl;
 /******/ 	})();
 /******/ 	
 /************************************************************************/
@@ -1579,14 +1645,19 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
     const actionsPane = new ActionsPane(config);
     $('#col-actions').append(actionsPane.$element);
+    let showingVariable = false;
     actionsPane.events.on('action', (actionId) => {
-      if (actionId === 'show-pollution' || actionId === 'show-noise') {
-        connector.viewShowMapVariable(actionId.replace('show-', ''));
+      if (!showingVariable && (actionId === 'show-pollution' || actionId === 'show-noise')) {
+        showingVariable = true;
         actionsPane.disableAll();
+
         setTimeout(() => {
           actionsPane.enableAll();
+          showingVariable = false;
         }, (config.variableMapOverlay.overlayDuration
           + config.variableMapOverlay.transitionDuration) * 1000);
+
+        connector.viewShowMapVariable(actionId.replace('show-', ''));
       }
     });
 
@@ -1627,4 +1698,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=dashboard.cbe3d2071a9de4999818.js.map
+//# sourceMappingURL=dashboard.3e3f3a5f0e3017e4fc02.js.map

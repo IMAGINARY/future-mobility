@@ -10,9 +10,10 @@ class ServerSocketConnector {
     this.uri = uri;
     this.ws = null;
     this.connected = false;
+    this.isClosing = false; // Must track because the socket might enter CLOSING state and not close immediately
     this.events = new EventEmitter();
     this.pingTimeout = null;
-    this.pongWaitTimeout = null;
+    this.pongTimeout = null;
     this.reconnectTimeout = null;
     this.connect();
   }
@@ -52,8 +53,10 @@ class ServerSocketConnector {
 
   handleOpen() {
     this.cancelReconnect();
+    this.cancelPongTimeout();
 
     this.connected = true;
+    this.isClosing = false;
     console.log('Connected.');
     this.events.emit('connect');
     this.schedulePing();
@@ -61,7 +64,9 @@ class ServerSocketConnector {
 
   handleClose(ev) {
     this.connected = false;
+    this.isClosing = false;
     this.cancelPing();
+    this.cancelPongTimeout();
     // ev.code is defined here https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent
     // but according to people the only code one normally gets is 1006 (Abnormal Closure)
     console.error(
@@ -91,14 +96,13 @@ class ServerSocketConnector {
   }
 
   handlePong() {
-    this.cancelPongWait();
+    this.cancelPongTimeout();
+    this.schedulePing();
   }
 
   send(data) {
-    this.cancelPing();
     const message = typeof data === 'string' ? { type: data } : data;
     this.ws.send(JSON.stringify(message));
-    this.schedulePing();
   }
 
   cancelPing() {
@@ -116,25 +120,30 @@ class ServerSocketConnector {
     }, PING_TIME);
   }
 
-  cancelPongWait() {
-    if (this.pongWaitTimeout !== null) {
-      clearTimeout(this.pongWaitTimeout);
-      this.pongWaitTimeout = null;
+  cancelPongTimeout() {
+    if (this.pongTimeout !== null) {
+      clearTimeout(this.pongTimeout);
+      this.pongTimeout = null;
     }
   }
 
-  startPongWait() {
-    this.pongWaitTimeout = setTimeout(() => {
-      this.pongWaitTimeout = null;
+  startPongTimeout() {
+    this.cancelPongTimeout();
+    this.pongTimeout = setTimeout(() => {
+      this.pongTimeout = null;
       console.warn(`PONG not received after ${PONG_WAIT_TIME / 1000} seconds`);
       console.warn('Closing connection');
+      if (!this.isClosing) {
+        this.isClosing = true;
+        this.events.emit('closing');
+      }
       this.ws.close();
     }, PONG_WAIT_TIME);
   }
 
   ping() {
     this.send('ping');
-    this.startPongWait();
+    this.startPongTimeout();
   }
 
   getMap() {

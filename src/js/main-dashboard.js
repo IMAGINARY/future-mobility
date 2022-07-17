@@ -48,14 +48,19 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
 
     const actionsPane = new ActionsPane(config);
     $('#col-actions').append(actionsPane.$element);
+    let showingVariable = false;
     actionsPane.events.on('action', (actionId) => {
-      if (actionId === 'show-pollution' || actionId === 'show-noise') {
-        connector.viewShowMapVariable(actionId.replace('show-', ''));
+      if (!showingVariable && (actionId === 'show-pollution' || actionId === 'show-noise')) {
+        showingVariable = true;
         actionsPane.disableAll();
+
         setTimeout(() => {
           actionsPane.enableAll();
+          showingVariable = false;
         }, (config.variableMapOverlay.overlayDuration
           + config.variableMapOverlay.transitionDuration) * 1000);
+
+        connector.viewShowMapVariable(actionId.replace('show-', ''));
       }
     });
 

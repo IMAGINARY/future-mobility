@@ -178,16 +178,19 @@ button.city-browser-item-new {
   left: 50%;
   margin-top: -150px;
   margin-left: -150px;
-  background-image: url(ead51173b07512a4bf13.svg);
-  background-repeat: no-repeat;
-  background-size: 100px 100px;
-  background-position: 100px 25px;
   font-size: 20px;
   text-align: center;
   background-color: rgba(255, 255, 255, 0.9);
   border-radius: 10px; }
   .connection-state-view.visible {
     display: block; }
+  .connection-state-view .connection-state-view-icon {
+    display: block;
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    top: 25px;
+    left: 100px; }
   .connection-state-view .connection-state-view-error {
     font-weight: bold; }
   .connection-state-view .connection-state-view-status {
@@ -817,4 +820,4 @@ body.dashboard[data-show-slide='3'] #slide-3 {
   left: 0; }
 
 
-/*# sourceMappingURL=default.0a73c70e06b692f21041.css.map*/
+/*# sourceMappingURL=dashboard.23c41c6ceb49be52b2f7.css.map*/

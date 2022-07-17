@@ -8,10 +8,7 @@
   left: 50%;
   margin-top: -150px;
   margin-left: -150px;
-  background-image: url('../../static/fa/broadcast-tower-solid.svg');
-  background-repeat: no-repeat;
-  background-size: 100px 100px;
-  background-position: 100px 25px;
+
   font-size: 20px;
   text-align: center;
   background-color: rgba(255, 255, 255, 0.9);
@@ -19,6 +16,15 @@
 
   &.visible {
     display: block;
+  }
+
+  .connection-state-view-icon {
+    display: block;
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    top: 25px;
+    left: 100px;
   }
 
   .connection-state-view-error {

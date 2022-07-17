@@ -1,7 +1,14 @@
+const icon = require('../../static/fa/broadcast-tower-solid.svg');
+
 class ConnectionStateView {
   constructor(connector) {
     this.$element = $('<div></div>')
       .addClass('connection-state-view');
+
+    this.$icon = $('<img>')
+      .attr('src', icon)
+      .addClass('connection-state-view-icon')
+      .appendTo(this.$element);
 
     this.$errorMessage = $('<div></div>')
       .addClass('connection-state-view-error text-danger')
@@ -10,6 +17,7 @@ class ConnectionStateView {
       .addClass('connection-state-view-status')
       .appendTo(this.$element);
 
+    connector.events.on('closing', this.handleClosing.bind(this));
     connector.events.on('disconnect', this.handleDisconnect.bind(this));
     connector.events.on('connectWait', this.handleConnectWait.bind(this));
     connector.events.on('connecting', this.handleConnecting.bind(this));
@@ -30,6 +38,12 @@ class ConnectionStateView {
 
   setErrorStatus(status) {
     this.$errorStatus.html(status);
+  }
+
+  handleClosing() {
+    this.setErrorMessage('Retrying connection');
+    this.setErrorStatus('');
+    this.show();
   }
 
   handleDisconnect() {
