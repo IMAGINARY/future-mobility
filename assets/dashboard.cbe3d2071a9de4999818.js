@@ -1541,11 +1541,16 @@ const { createTitle } = __webpack_require__(/*! ./dashboard/titles */ "./src/js/
 const PowerUpSelector = __webpack_require__(/*! ./dashboard/power-up-selector */ "./src/js/dashboard/power-up-selector.js");
 
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
-  .then(response => response.json())
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error. Status: ${ response.status }`);
+    }
+    return response.json();
+  })
   .catch((err) => {
     showFatalError(`Error loading configuration from ${"http://localhost:4848"}`, err);
     console.error(`Error loading configuration from ${"http://localhost:4848"}`);
-    console.error(err);
+    throw err;
   })
   .then((config) => {
     const connector = new ServerSocketConnector("ws://localhost:4848");
@@ -1613,10 +1618,13 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
     });
     const connStateView = new ConnectionStateView(connector);
     $('body').append(connStateView.$element);
+  })
+  .catch((err) => {
+    console.error(err);
   });
 
 })();
 
 /******/ })()
 ;
-//# sourceMappingURL=dashboard.ce2c4a9a2c841b1927ae.js.map
+//# sourceMappingURL=dashboard.cbe3d2071a9de4999818.js.map

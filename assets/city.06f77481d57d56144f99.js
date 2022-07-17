@@ -4149,7 +4149,17 @@ const DenseCityHandler = __webpack_require__(/*! ./power-ups/dense-city-handler 
 const AutonomousVehicleLidarHandler = __webpack_require__(/*! ./power-ups/autonomous-vehicle-lidar-handler */ "./src/js/power-ups/autonomous-vehicle-lidar-handler.js");
 
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
-  .then(response => response.json())
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error. Status: ${ response.status }`);
+    }
+    return response.json();
+  })
+  .catch((err) => {
+    showFatalError(`Error loading configuration from ${"http://localhost:4848"}`, err);
+    console.error(`Error loading configuration from ${"http://localhost:4848"}`);
+    throw err;
+  })
   .then((config) => {
     const city = new City(config.cityWidth, config.cityHeight);
 
@@ -4220,8 +4230,6 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
       });
   })
   .catch((err) => {
-    showFatalError(`Error loading configuration from ${"http://localhost:4848"}`, err);
-    console.error(`Error loading configuration from ${"http://localhost:4848"}`);
     console.error(err);
   });
 
@@ -4229,4 +4237,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.a00c29dc7d60e67562ad.js.map
+//# sourceMappingURL=city.06f77481d57d56144f99.js.map

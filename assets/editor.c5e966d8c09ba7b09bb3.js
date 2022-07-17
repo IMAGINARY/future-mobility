@@ -3445,7 +3445,17 @@ const DataManager = __webpack_require__(/*! ./data-manager */ "./src/js/data-man
 const TextureLoader = __webpack_require__(/*! ./texture-loader */ "./src/js/texture-loader.js");
 
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
-  .then(response => response.json())
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error. Status: ${ response.status }`);
+    }
+    return response.json();
+  })
+  .catch((err) => {
+    showFatalError(`Error loading configuration from ${"http://localhost:4848"}`, err);
+    console.error(`Error loading configuration from ${"http://localhost:4848"}`);
+    throw err;
+  })
   .then((config) => {
     // const city = City.fromJSON(Cities.cities[0]);
     const city = new City(config.cityWidth, config.cityHeight);
@@ -3514,8 +3524,6 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
       });
   })
   .catch((err) => {
-    showFatalError(`Error loading configuration from ${"http://localhost:4848"}`, err);
-    console.error(`Error loading configuration from ${"http://localhost:4848"}`);
     console.error(err);
   });
 
@@ -3523,4 +3531,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=editor.765b648b15c2d6c166ee.js.map
+//# sourceMappingURL=editor.c5e966d8c09ba7b09bb3.js.map

@@ -12,7 +12,17 @@ const DataManager = require('./data-manager');
 const TextureLoader = require('./texture-loader');
 
 fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
-  .then(response => response.json())
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error. Status: ${ response.status }`);
+    }
+    return response.json();
+  })
+  .catch((err) => {
+    showFatalError(`Error loading configuration from ${process.env.SERVER_HTTP_URI}`, err);
+    console.error(`Error loading configuration from ${process.env.SERVER_HTTP_URI}`);
+    throw err;
+  })
   .then((config) => {
     // const city = City.fromJSON(Cities.cities[0]);
     const city = new City(config.cityWidth, config.cityHeight);
@@ -81,7 +91,5 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
       });
   })
   .catch((err) => {
-    showFatalError(`Error loading configuration from ${process.env.SERVER_HTTP_URI}`, err);
-    console.error(`Error loading configuration from ${process.env.SERVER_HTTP_URI}`);
     console.error(err);
   });

@@ -10,11 +10,16 @@ const { createTitle } = require('./dashboard/titles');
 const PowerUpSelector = require('./dashboard/power-up-selector');
 
 fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
-  .then(response => response.json())
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error. Status: ${ response.status }`);
+    }
+    return response.json();
+  })
   .catch((err) => {
     showFatalError(`Error loading configuration from ${process.env.SERVER_HTTP_URI}`, err);
     console.error(`Error loading configuration from ${process.env.SERVER_HTTP_URI}`);
-    console.error(err);
+    throw err;
   })
   .then((config) => {
     const connector = new ServerSocketConnector(process.env.SERVER_SOCKET_URI);
@@ -82,4 +87,7 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
     });
     const connStateView = new ConnectionStateView(connector);
     $('body').append(connStateView.$element);
+  })
+  .catch((err) => {
+    console.error(err);
   });
