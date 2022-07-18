@@ -65,8 +65,6 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
 
     const powerUpSelector = new PowerUpSelector(config,
       $('#col-actions-powerup'), $('#col-3'), $('#slide-2'));
-    powerUpSelector.setSelectablePowerUps(['walkable-city', 'dense-city', 'reduced-speed-limit']);
-    powerUpSelector.setSelectablePowerUps(['improved-mass-transit', 'electric-vehicles', 'autonomous-vehicles']);
     powerUpSelector.events.on('enable', (powerUpId) => {
       connector.enablePowerUp(powerUpId);
     });

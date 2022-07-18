@@ -6,7 +6,6 @@ class PowerUpSelector {
     this.config = config;
     this.selectorTimeout = null;
     this.events = new EventEmitter();
-    this.selectDisable = true;
     this.activePowerUps = [];
     this.lastActivePowerUps = [];
 
@@ -18,11 +17,9 @@ class PowerUpSelector {
       .append($('<span></span>').addClass('text text-en')
         .html(this.config.dashboard.powerUps.button.text.en))
       .on('click', () => {
-        if (!this.selectDisable) {
-          this.setSelectablePowerUps(this.pickSelectablePowerUps());
-          this.activateCloseTimeout();
-          this.openSelector();
-        }
+        this.setSelectablePowerUps(this.pickSelectablePowerUps());
+        this.activateCloseTimeout();
+        this.openSelector();
       })
       .appendTo($(buttonContainer));
 
@@ -61,13 +58,21 @@ class PowerUpSelector {
     this.update([]);
   }
 
+  updateSelectButton() {
+    if (this.activePowerUps.length >= 2 || this.isSelectorOpen()) {
+      this.disableSelectButton();
+    } else {
+      this.enableSelectButton();
+    }
+  }
+
   disableSelectButton() {
-    this.selectDisable = true;
+    this.selectButton.attr('disabled', true);
     this.selectButton.addClass('disabled');
   }
 
   enableSelectButton() {
-    this.selectDisable = false;
+    this.selectButton.attr('disabled', false);
     this.selectButton.removeClass('disabled');
   }
 
@@ -136,12 +141,18 @@ class PowerUpSelector {
     );
   }
 
+  isSelectorOpen() {
+    return $('body').attr('data-show-slide') === '2';
+  }
+
   openSelector() {
     $('body').attr('data-show-slide', '2');
+    this.updateSelectButton();
   }
 
   closeSelector() {
     $('body').attr('data-show-slide', '1');
+    this.updateSelectButton();
   }
 
   cancelCloseTimeout() {
@@ -180,11 +191,7 @@ class PowerUpSelector {
       );
     }
 
-    if (activePowerUps.length === 2) {
-      this.disableSelectButton();
-    } else {
-      this.enableSelectButton();
-    }
+    this.updateSelectButton();
   }
 }
 
