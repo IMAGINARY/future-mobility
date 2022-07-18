@@ -75,82 +75,82 @@ function initApp(config) {
     });
   });
 
-  const wss = new ws.Server({ noServer: true });
+  function sendMapUpdateMessage(socket) {
+    socket.send(JSON.stringify({
+      type: 'map_update',
+      cells: city.map.cells,
+    }));
+  }
+
+  function sendVariablesMessage(socket) {
+    socket.send(JSON.stringify({
+      type: 'vars_update',
+      variables: {
+        'green-spaces': stats.get('green-spaces-index'),
+        pollution: stats.get('pollution-index'),
+        noise: stats.get('noise-index'),
+        'travel-times': stats.get('travel-times-index'),
+        'traffic-density': stats.get('traffic-density-index'),
+        safety: stats.get('road-safety-index'),
+      },
+    }));
+  }
+
+  function sendGoalsMessage(socket) {
+    socket.send(JSON.stringify({
+      type: 'goals_update',
+      goals: stats.getGoals(),
+    }));
+  }
+
+  function sendViewShowMapVar(socket, variable) {
+    socket.send(JSON.stringify({
+      type: 'view_show_map_var',
+      variable,
+      data: stats.get(`${variable}-map`),
+    }));
+  }
+
+  function sendPowerUpsUpdate(socket) {
+    socket.send(JSON.stringify({
+      type: 'power_ups_update',
+      powerUps: powerUpMgr.activePowerUps(),
+    }));
+  }
+
+  function sendPong(socket) {
+    socket.send(JSON.stringify({
+      type: 'pong',
+    }));
+  }
+
+  const wss = new ws.Server({ noServer: true, clientTracking: true });
   const viewRepeater = new EventEmitter();
 
   wss.on('connection', (socket) => {
-    console.log('Connected');
-
-    function sendMapUpdateMessage() {
-      socket.send(JSON.stringify({
-        type: 'map_update',
-        cells: city.map.cells,
-      }));
-    }
-
-    function sendVariablesMessage() {
-      socket.send(JSON.stringify({
-        type: 'vars_update',
-        variables: {
-          'green-spaces': stats.get('green-spaces-index'),
-          pollution: stats.get('pollution-index'),
-          noise: stats.get('noise-index'),
-          'travel-times': stats.get('travel-times-index'),
-          'traffic-density': stats.get('traffic-density-index'),
-          safety: stats.get('road-safety-index'),
-        },
-      }));
-    }
-
-    function sendGoalsMessage() {
-      socket.send(JSON.stringify({
-        type: 'goals_update',
-        goals: stats.getGoals(),
-      }));
-    }
-
-    function sendViewShowMapVar(variable) {
-      socket.send(JSON.stringify({
-        type: 'view_show_map_var',
-        variable,
-        data: stats.get(`${variable}-map`),
-      }));
-    }
-
-    function sendPowerUpsUpdate() {
-      socket.send(JSON.stringify({
-        type: 'power_ups_update',
-        powerUps: powerUpMgr.activePowerUps(),
-      }));
-    }
-
-    function sendPong() {
-      socket.send(JSON.stringify({
-        type: 'pong',
-      }));
-    }
+    console.log(`Connected (${wss.clients.size} clients)`);
 
     socket.on('message', (data) => {
       const message = JSON.parse(data);
       if (typeof message === 'object' && typeof message.type === 'string') {
         switch (message.type) {
           case 'get_map':
-            sendMapUpdateMessage();
+            sendMapUpdateMessage(socket);
             break;
           case 'set_map':
             city.map.replace(message.cells);
             break;
           case 'get_vars':
-            sendVariablesMessage();
+            sendVariablesMessage(socket);
             break;
           case 'get_goals':
-            sendGoalsMessage();
+            sendGoalsMessage(socket);
             break;
           case 'view_show_map_var':
             viewRepeater.emit('view_show_map_var', message.variable);
             break;
           case 'get_active_power_ups':
-            sendPowerUpsUpdate();
+            sendPowerUpsUpdate(socket);
             break;
           case 'enable_power_up':
             powerUpMgr.enable(message.powerUpId);
@@ -159,7 +159,7 @@ function initApp(config) {
             powerUpMgr.disable(message.powerUpId);
             break;
           case 'ping':
-            sendPong();
+            sendPong(socket);
             break;
           default:
             console.warn(`Error: Received message of unknown type '${message.type}'`);
@@ -171,22 +171,45 @@ function initApp(config) {
       }
     });
 
-    city.map.events.on('update', () => {
-      sendMapUpdateMessage();
+    socket.on('close', (code, reason) => {
+      console.log(`Socket closed (code: ${code} reason: '${reason}')`);
     });
 
-    stats.events.on('update', () => {
-      sendVariablesMessage();
-      sendGoalsMessage();
-    });
+    socket.on('error', (err) => {
+      console.error(`Socket error (code: ${err.code})`);
+      console.error(err);
+    })
+  });
 
-    powerUpMgr.events.on('update', () => {
-      sendPowerUpsUpdate();
-    });
+  wss.on('close', () => {
+    console.error('WebSocket Server closed');
+  });
 
-    viewRepeater.on('view_show_map_var', (variable) => {
-      sendViewShowMapVar(variable);
-    });
+  wss.on('error', (err) => {
+    console.error('WebSocket Server error: ${err.message}');
+    console.error(err);
+  });
+
+  wss.on('wsClientError', (err) => {
+    console.error('WebSocket Server client error: ${err.message}');
+    console.error(err);
+  });
+
+  city.map.events.on('update', () => {
+    wss.clients.forEach(socket => sendMapUpdateMessage(socket));
+  });
+
+  stats.events.on('update', () => {
+    wss.clients.forEach(socket => sendVariablesMessage(socket));
+    wss.clients.forEach(socket => sendGoalsMessage(socket));
+  });
+
+  powerUpMgr.events.on('update', () => {
+    wss.clients.forEach(socket => sendPowerUpsUpdate(socket));
+  });
+
+  viewRepeater.on('view_show_map_var', (variable) => {
+    wss.clients.forEach(socket => sendViewShowMapVar(socket, variable));
   });
 
   return [app, wss];
