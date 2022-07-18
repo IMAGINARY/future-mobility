@@ -948,7 +948,6 @@ class ActionsPane {
   constructor(config) {
     this.config = config;
     this.$element = $('<div></div>').addClass('actions-pane');
-    this.events = new EventEmitter();
     this.disabled = false;
 
     this.buttons = this.config.dashboard.actions.buttons.map(button => (
@@ -959,11 +958,7 @@ class ActionsPane {
           .html(button.text.de))
         .append($('<span></span>').addClass('text text-en')
           .html(button.text.en))
-        .on('click', () => {
-          if (!this.disabled) {
-            this.events.emit('action', button.id);
-          }
-        })
+        .attr('id', button.id)
     ));
 
     this.$element.append(
@@ -979,11 +974,13 @@ class ActionsPane {
 
   disableAll() {
     this.disabled = true;
+    this.buttons.forEach(button => button.attr('disabled', true));
     this.buttons.forEach(button => button.addClass('disabled'));
   }
 
   enableAll() {
     this.disabled = false;
+    this.buttons.forEach(button => button.attr('disabled', false));
     this.buttons.forEach(button => button.removeClass('disabled'));
   }
 }
@@ -1645,21 +1642,20 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
     const actionsPane = new ActionsPane(config);
     $('#col-actions').append(actionsPane.$element);
-    let showingVariable = false;
-    actionsPane.events.on('action', (actionId) => {
-      if (!showingVariable && (actionId === 'show-pollution' || actionId === 'show-noise')) {
-        showingVariable = true;
+    actionsPane.buttons.forEach($button => $button.on('click', (ev) => {
+      const actionId = ev.currentTarget.id;
+      if ((actionId === 'show-pollution' || actionId === 'show-noise')) {
         actionsPane.disableAll();
 
         setTimeout(() => {
           actionsPane.enableAll();
-          showingVariable = false;
         }, (config.variableMapOverlay.overlayDuration
           + config.variableMapOverlay.transitionDuration) * 1000);
 
         connector.viewShowMapVariable(actionId.replace('show-', ''));
       }
-    });
+      ev.stopPropagation();
+    }));
 
     const powerUpSelector = new PowerUpSelector(config,
       $('#col-actions-powerup'), $('#col-3'), $('#slide-2'));
@@ -1687,6 +1683,7 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
       connector.getActivePowerUps();
       actionsPane.enableAll();
     });
+
     const connStateView = new ConnectionStateView(connector);
     $('body').append(connStateView.$element);
   })
@@ -1698,4 +1695,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=dashboard.3e3f3a5f0e3017e4fc02.js.map
+//# sourceMappingURL=dashboard.bcb977160b5dee1db786.js.map

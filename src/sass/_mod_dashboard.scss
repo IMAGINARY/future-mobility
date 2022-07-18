@@ -68,7 +68,7 @@ body.dashboard {
     font-size: 1.15em;
   }
 
-  &.disabled {
+  &.disabled, &:disabled {
     color: rgba(255, 255, 255, 0.65)!important;
   }
 }

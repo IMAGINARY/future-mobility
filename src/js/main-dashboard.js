@@ -48,21 +48,20 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
 
     const actionsPane = new ActionsPane(config);
     $('#col-actions').append(actionsPane.$element);
-    let showingVariable = false;
-    actionsPane.events.on('action', (actionId) => {
-      if (!showingVariable && (actionId === 'show-pollution' || actionId === 'show-noise')) {
-        showingVariable = true;
+    actionsPane.buttons.forEach($button => $button.on('click', (ev) => {
+      const actionId = ev.currentTarget.id;
+      if ((actionId === 'show-pollution' || actionId === 'show-noise')) {
         actionsPane.disableAll();
 
         setTimeout(() => {
           actionsPane.enableAll();
-          showingVariable = false;
         }, (config.variableMapOverlay.overlayDuration
           + config.variableMapOverlay.transitionDuration) * 1000);
 
         connector.viewShowMapVariable(actionId.replace('show-', ''));
       }
-    });
+      ev.stopPropagation();
+    }));
 
     const powerUpSelector = new PowerUpSelector(config,
       $('#col-actions-powerup'), $('#col-3'), $('#slide-2'));
@@ -90,6 +89,7 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
       connector.getActivePowerUps();
       actionsPane.enableAll();
     });
+
     const connStateView = new ConnectionStateView(connector);
     $('body').append(connStateView.$element);
   })

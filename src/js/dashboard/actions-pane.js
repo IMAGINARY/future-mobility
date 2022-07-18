@@ -4,7 +4,6 @@ class ActionsPane {
   constructor(config) {
     this.config = config;
     this.$element = $('<div></div>').addClass('actions-pane');
-    this.events = new EventEmitter();
     this.disabled = false;
 
     this.buttons = this.config.dashboard.actions.buttons.map(button => (
@@ -15,11 +14,7 @@ class ActionsPane {
           .html(button.text.de))
         .append($('<span></span>').addClass('text text-en')
           .html(button.text.en))
-        .on('click', () => {
-          if (!this.disabled) {
-            this.events.emit('action', button.id);
-          }
-        })
+        .attr('id', button.id)
     ));
 
     this.$element.append(
@@ -35,11 +30,13 @@ class ActionsPane {
 
   disableAll() {
     this.disabled = true;
+    this.buttons.forEach(button => button.attr('disabled', true));
     this.buttons.forEach(button => button.addClass('disabled'));
   }
 
   enableAll() {
     this.disabled = false;
+    this.buttons.forEach(button => button.attr('disabled', false));
     this.buttons.forEach(button => button.removeClass('disabled'));
   }
 }

@@ -595,7 +595,7 @@ body.dashboard {
     margin-bottom: 0.2em; }
   .btn-dashboard-action .text-en {
     font-size: 1.15em; }
-  .btn-dashboard-action.disabled {
+  .btn-dashboard-action.disabled, .btn-dashboard-action:disabled {
     color: rgba(255, 255, 255, 0.65) !important; }
 
 .btn-show-pollution {
@@ -820,4 +820,4 @@ body.dashboard[data-show-slide='3'] #slide-3 {
   left: 0; }
 
 
-/*# sourceMappingURL=editor.23c41c6ceb49be52b2f7.css.map*/
+/*# sourceMappingURL=default.ebfc49063403cab9152d.css.map*/
