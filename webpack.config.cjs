@@ -7,6 +7,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 module.exports = {
   entry: {
     default: './src/js/main.js',
+    devtool: './src/js/main-devtool.js',
     city: './src/js/main-city.js',
     dashboard: './src/js/main-dashboard.js',
     editor: './src/js/main-editor.js',
@@ -56,6 +57,12 @@ module.exports = {
       template: path.resolve(__dirname, 'src/html/index.html'),
       filename: path.resolve(__dirname, 'index.html'),
       chunks: ['default'],
+      minify: true,
+    }),
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'src/html/devtool.html'),
+      filename: path.resolve(__dirname, 'devtool.html'),
+      chunks: ['devtool'],
       minify: true,
     }),
     new HtmlWebpackPlugin({

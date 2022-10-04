@@ -1,6 +1,6 @@
 # future-mobility
 
-An exhibit about the Future of Mobility
+An exhibit about the Future of Mobility.
 
 ## Compilation
 
@@ -19,6 +19,8 @@ Start the server by running `npm run start` in the `server` directory.
 The clients, in the root directory, are:
 
 - `city.html`: Presents the city map, to be projected over the exhibition table.
+- `dashboard.html`: Shows the auxiliary touchscreen dashboard that displays variables and goals,
+    and allows selecting Power-Ups.
 - `editor.html`: An editor that pushes changes to the server. Note that it doesn't read updates from
     the server, so it's not possible to use multiple editors simulatenously. It's only meant for 
     use during development.
