@@ -2863,7 +2863,6 @@ class MapView {
     this.config = config;
     this.textures = textures;
     this.events = new EventEmitter();
-    this.pointerActive = false;
     this.roadTileId = getTileTypeId(config, 'road');
     this.parkTileId = getTileTypeId(config, 'park');
     this.waterTileId = getTileTypeId(config, 'water');
@@ -2940,26 +2939,58 @@ class MapView {
     });
   }
 
+  getCoordsAtPosition(globalPoint) {
+    if (this.origin === undefined) {
+      this.origin = new PIXI.Point();
+    }
+    this.origin = this.displayObject.getGlobalPosition(this.origin, false);
+
+    const x = Math.floor((globalPoint.x - this.origin.x)
+      / this.displayObject.scale.x / MapView.TILE_SIZE);
+    const y = Math.floor((globalPoint.y - this.origin.y)
+      / this.displayObject.scale.y / MapView.TILE_SIZE);
+
+    return (x >= 0 && x < this.city.map.width && y >= 0 && y < this.city.map.height)
+      ? { x, y } : null;
+  }
+
   enableTileInteractivity() {
-    $(window).on('pointerup', () => { this.pointerActive = false; });
+    const pointers = {};
 
     Array2D.items(this.bgTiles).forEach(([x, y, bgTile]) => {
       bgTile.interactive = true;
       bgTile.cursor = `url(${PencilCursor}) 0 20, auto`;
       bgTile.on('pointerdown', (ev) => {
-        this.pointerActive = true;
+        // this.pointerActive = true;
+        pointers[ev.data.pointerId] = { lastTile: { x, y } };
         this.events.emit('action', [x, y], {
           shiftKey: ev.data.originalEvent.shiftKey,
         });
       });
-      bgTile.on('pointerover', (ev) => {
-        if (this.pointerActive) {
-          this.events.emit('action', [x, y], {
-            shiftKey: ev.data.originalEvent.shiftKey,
-          });
-        }
-      });
     });
+
+    this.zoningLayer.interactive = true;
+    this.zoningLayer.on('pointermove', (ev) => {
+      if (pointers[ev.data.pointerId] !== undefined) {
+        const tileCoords = this.getCoordsAtPosition(ev.data.global);
+        if (pointers[ev.data.pointerId].lastTile !== tileCoords) {
+          if (tileCoords) {
+            this.events.emit('action', [tileCoords.x, tileCoords.y], {
+              shiftKey: ev.data.originalEvent.shiftKey,
+            });
+          }
+          pointers[ev.data.pointerId].lastTile = tileCoords;
+        }
+      }
+    });
+
+    const onEndPointer = (ev) => {
+      delete pointers[ev.data.pointerId];
+    };
+
+    this.zoningLayer.on('pointerup', onEndPointer);
+    this.zoningLayer.on('pointerupoutside', onEndPointer);
+    this.zoningLayer.on('pointercancel', onEndPointer);
   }
 
   getBgTile(x, y) {
@@ -4271,4 +4302,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=city.aac9b1a81e0cc0b1564a.js.map
+//# sourceMappingURL=city.2df223578144968bdc0f.js.map

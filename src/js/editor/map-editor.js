@@ -31,7 +31,7 @@ class MapEditor {
 
     this.palette = new MapEditorPalette($('<div></div>').appendTo(this.$element), config);
 
-    this.tool = null;
+    this.tool = 'nullTool';
     this.tileType = this.palette.tileId;
     this.palette.events.on('change', (tool, toolType) => {
       if (this.tool) {
@@ -86,6 +86,11 @@ class MapEditor {
     };
 
     this.tools = {
+      nullTool: {
+        start: () => {},
+        end: () => {},
+        action: () => {},
+      },
       tile: {
         start: () => {
           this.mapView.setEditCursor();
