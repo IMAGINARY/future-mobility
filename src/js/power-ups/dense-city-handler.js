@@ -1,6 +1,6 @@
 const PowerUpViewHandler = require('../power-up-view-handler');
 const MapView = require('../map-view');
-const { getTileTypeId } = require('../aux/config-helpers');
+const { getTileTypeId } = require('../lib/config-helpers');
 
 class DenseCityHandler extends PowerUpViewHandler {
   constructor(config, mapView) {

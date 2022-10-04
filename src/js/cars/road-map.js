@@ -1,5 +1,5 @@
-const Dir = require('../aux/cardinal-directions');
-const Array2D = require('../aux/array-2d');
+const Dir = require('../lib/cardinal-directions');
+const Array2D = require('../lib/array-2d');
 
 class RoadMap {
   constructor(map, roadTileId) {

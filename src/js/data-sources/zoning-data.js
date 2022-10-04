@@ -1,5 +1,5 @@
 const DataSource = require('../data-source');
-const Array2D = require('../aux/array-2d');
+const Array2D = require('../lib/array-2d');
 
 class ZoningData extends DataSource {
   constructor(city, config) {

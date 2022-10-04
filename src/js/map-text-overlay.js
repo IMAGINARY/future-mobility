@@ -1,7 +1,7 @@
 /* globals PIXI */
 
 const MapView = require('./map-view');
-const Array2D = require('./aux/array-2d');
+const Array2D = require('./lib/array-2d');
 
 class MapTextOverlay {
   constructor(mapView) {

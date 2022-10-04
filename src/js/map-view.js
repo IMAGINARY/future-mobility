@@ -1,7 +1,7 @@
 /* globals PIXI */
 const EventEmitter = require('events');
-const Array2D = require('./aux/array-2d');
-const { getTileTypeId } = require('./aux/config-helpers');
+const Array2D = require('./lib/array-2d');
+const { getTileTypeId } = require('./lib/config-helpers');
 const PencilCursor = require('../../static/fa/pencil-alt-solid.svg');
 
 class MapView {

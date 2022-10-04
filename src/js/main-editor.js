@@ -5,7 +5,7 @@ const VariableMapView = require('./variable-map-view');
 require('../sass/default.scss');
 const ServerSocketConnector = require('./server-socket-connector');
 const ConnectionStateView = require('./connection-state-view');
-const showFatalError = require('./aux/show-fatal-error');
+const showFatalError = require('./lib/show-fatal-error');
 const PollutionData = require('./data-sources/pollution-data');
 const NoiseData = require('./data-sources/noise-data');
 const DataManager = require('./data-manager');

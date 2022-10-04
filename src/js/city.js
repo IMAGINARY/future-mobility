@@ -1,5 +1,5 @@
 const Grid = require('./grid');
-const Array2D = require('./aux/array-2d');
+const Array2D = require('./lib/array-2d');
 
 class City {
   constructor(width, height, cells = null) {

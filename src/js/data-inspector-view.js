@@ -2,7 +2,7 @@
 
 const {
   average, sortedMedian, sortedFirstQuartile, sortedThirdQuartile,
-} = require('./aux/statistics');
+} = require('./lib/statistics');
 
 class DataInspectorView {
   constructor() {

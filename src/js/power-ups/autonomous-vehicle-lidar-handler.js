@@ -1,6 +1,6 @@
 /* globals PIXI */
 const PowerUpViewHandler = require('../power-up-view-handler');
-const { randomItem } = require('../aux/random');
+const { randomItem } = require('../lib/random');
 // const AiCarDriver = require('../cars/ai-car-driver');
 
 const PULSING_INTERVAL = 120;

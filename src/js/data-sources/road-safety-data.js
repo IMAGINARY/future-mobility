@@ -1,6 +1,6 @@
 const DataSource = require('../data-source');
-const { getTileTypeId } = require('../aux/config-helpers');
-const Array2D = require('../aux/array-2d');
+const { getTileTypeId } = require('../lib/config-helpers');
+const Array2D = require('../lib/array-2d');
 
 class RoadSafetyData extends DataSource {
   constructor(city, config) {

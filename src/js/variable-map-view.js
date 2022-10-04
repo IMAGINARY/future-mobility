@@ -1,5 +1,5 @@
 /* globals PIXI */
-const Array2D = require('./aux/array-2d');
+const Array2D = require('./lib/array-2d');
 
 const TILE_SIZE = 10;
 

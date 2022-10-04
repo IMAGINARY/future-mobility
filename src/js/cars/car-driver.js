@@ -1,6 +1,6 @@
-const Dir = require('../aux/cardinal-directions');
+const Dir = require('../lib/cardinal-directions');
 const RoadTile = require('./road-tile');
-const { randomItem } = require('../aux/random');
+const { randomItem } = require('../lib/random');
 const { TILE_SIZE } = require('../map-view');
 
 const LIGHT_CHANGE_DELAY = [300, 800];

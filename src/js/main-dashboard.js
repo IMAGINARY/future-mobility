@@ -1,5 +1,5 @@
 require('../sass/default.scss');
-const showFatalError = require('./aux/show-fatal-error');
+const showFatalError = require('./lib/show-fatal-error');
 const VariableRankListView = require('./index-list-view');
 const ServerSocketConnector = require('./server-socket-connector');
 const ConnectionStateView = require('./connection-state-view');

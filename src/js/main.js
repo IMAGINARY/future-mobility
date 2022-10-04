@@ -8,7 +8,7 @@ const VariableMapView = require('./variable-map-view');
 const CarOverlay = require('./cars/car-overlay');
 const TileCounterView = require('./tile-counter-view');
 const TestScenarios = require('./test/scenarios');
-const showFatalError = require('./aux/show-fatal-error');
+const showFatalError = require('./lib/show-fatal-error');
 require('../sass/default.scss');
 const ZoneBalanceView = require('./zone-balance-view');
 const DataInspectorView = require('./data-inspector-view');

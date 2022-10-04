@@ -1,8 +1,8 @@
 const DataSource = require('../data-source');
-const { getTileTypeId } = require('../aux/config-helpers');
-const Array2D = require('../aux/array-2d');
-const TravelTimeCalculator = require('../aux/travel-times');
-const { percentageOverValue } = require('../aux/statistics');
+const { getTileTypeId } = require('../lib/config-helpers');
+const Array2D = require('../lib/array-2d');
+const TravelTimeCalculator = require('../lib/travel-times');
+const { percentageOverValue } = require('../lib/statistics');
 
 class TravelTimesData extends DataSource {
   constructor(city, config) {

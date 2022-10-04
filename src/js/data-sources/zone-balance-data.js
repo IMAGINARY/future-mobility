@@ -1,5 +1,5 @@
 const DataSource = require('../data-source');
-const { getTileTypeId } = require('../aux/config-helpers');
+const { getTileTypeId } = require('../lib/config-helpers');
 
 class ZoneBalanceData extends DataSource {
   constructor(city, config) {

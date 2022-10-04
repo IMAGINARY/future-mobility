@@ -5,7 +5,7 @@ const MapView = require('./map-view');
 require('../sass/default.scss');
 const ServerSocketConnector = require('./server-socket-connector');
 const ConnectionStateView = require('./connection-state-view');
-const showFatalError = require('./aux/show-fatal-error');
+const showFatalError = require('./lib/show-fatal-error');
 const CarOverlay = require('./cars/car-overlay');
 const TextureLoader = require('./texture-loader');
 const CarSpawner = require('./cars/car-spawner');

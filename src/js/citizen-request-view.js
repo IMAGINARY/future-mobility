@@ -1,5 +1,5 @@
-const { randomItem } = require('./aux/random');
-const { getTileType } = require('./aux/config-helpers');
+const { randomItem } = require('./lib/random');
+const { getTileType } = require('./lib/config-helpers');
 
 class CitizenRequestView {
   constructor(config) {

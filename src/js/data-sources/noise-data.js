@@ -1,7 +1,7 @@
 const DataSource = require('../data-source');
-const Array2D = require('../aux/array-2d');
-const { getTileTypeId } = require('../aux/config-helpers');
-const { percentageEqualValue, percentageOverEqValue } = require('../aux/statistics');
+const Array2D = require('../lib/array-2d');
+const { getTileTypeId } = require('../lib/config-helpers');
+const { percentageEqualValue, percentageOverEqValue } = require('../lib/statistics');
 
 class NoiseData extends DataSource {
   constructor(city, config) {

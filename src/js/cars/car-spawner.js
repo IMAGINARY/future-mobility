@@ -1,7 +1,7 @@
 const Car = require('../cars/car');
 const RoadTile = require('../cars/road-tile');
-const Dir = require('../aux/cardinal-directions');
-const { randomItem, weightedRandomizer } = require('../aux/random');
+const Dir = require('../lib/cardinal-directions');
+const { randomItem, weightedRandomizer } = require('../lib/random');
 const CarDriver = require('./car-driver');
 
 const THROTTLE_TIME = 57; // Number of frames it waits before running the maybeSpawn function

@@ -1,4 +1,4 @@
-const Dir = require('../aux/cardinal-directions');
+const Dir = require('../lib/cardinal-directions');
 
 const MIN_LIGHT_CHANGE_DELAY = 500;
 const MAX_LIGHT_CHANGE_DELAY = 1200;

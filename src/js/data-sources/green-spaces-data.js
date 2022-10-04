@@ -1,7 +1,7 @@
 const DataSource = require('../data-source');
-const { allDistancesToTileType } = require('../aux/distance');
-const { getTileTypeId } = require('../aux/config-helpers');
-const { regionAreas } = require('../aux/regions');
+const { allDistancesToTileType } = require('../lib/distance');
+const { getTileTypeId } = require('../lib/config-helpers');
+const { regionAreas } = require('../lib/regions');
 
 class GreenSpacesData extends DataSource {
   constructor(city, config) {

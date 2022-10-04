@@ -1,5 +1,5 @@
 const Vec2 = require('vec2');
-const Dir = require('../aux/cardinal-directions');
+const Dir = require('../lib/cardinal-directions');
 const RoadTile = require('./road-tile');
 
 class PathArc {

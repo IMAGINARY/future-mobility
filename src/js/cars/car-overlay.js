@@ -1,7 +1,7 @@
 /* globals PIXI */
-const Array2D = require('../aux/array-2d');
+const Array2D = require('../lib/array-2d');
 const TrafficLights = require('./traffic-lights');
-const { getTileTypeId } = require('../aux/config-helpers');
+const { getTileTypeId } = require('../lib/config-helpers');
 const RoadMap = require('./road-map');
 
 class CarOverlay {

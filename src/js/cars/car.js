@@ -1,10 +1,10 @@
 /* globals PIXI */
 const Vec2 = require('vec2');
 const CarDriver = require('./car-driver');
-const Dir = require('../aux/cardinal-directions');
+const Dir = require('../lib/cardinal-directions');
 const RoadTile = require('./road-tile');
 const { TILE_SIZE } = require('../map-view');
-const SpriteFader = require('../aux/sprite-fader');
+const SpriteFader = require('../lib/sprite-fader');
 const PathStraight = require('./path-straight');
 const PathArc = require('./path-arc');
 const PulledCarDriver = require('./pulled-car-driver');

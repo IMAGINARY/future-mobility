@@ -1,5 +1,5 @@
 const EventEmitter = require('events');
-const Array2D = require('./aux/array-2d');
+const Array2D = require('./lib/array-2d');
 
 /**
  * Represents a 2D grid map that stores a single Number per cell

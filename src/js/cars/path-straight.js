@@ -1,6 +1,6 @@
 const Vec2 = require('vec2');
 const RoadTile = require('./road-tile');
-const Dir = require('../aux/cardinal-directions');
+const Dir = require('../lib/cardinal-directions');
 const MapView = require('../map-view');
 
 class PathStraight {

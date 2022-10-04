@@ -8,10 +8,10 @@ const ModalExport = require('./modal-export');
 const ModalImport = require('./modal-import');
 const ObjectStore = require('./object-store');
 const MapTextOverlay = require('../map-text-overlay');
-const { getTileTypeId } = require('../aux/config-helpers');
-const Array2D = require('../aux/array-2d');
+const { getTileTypeId } = require('../lib/config-helpers');
+const Array2D = require('../lib/array-2d');
 const VariableMapOverlay = require('../variable-map-overlay');
-const TravelTimeCalculator = require('../aux/travel-times');
+const TravelTimeCalculator = require('../lib/travel-times');
 
 class MapEditor {
   constructor($element, city, config, textures, dataManager) {

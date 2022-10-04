@@ -5170,868 +5170,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./src/js/aux/array-2d.js":
-/*!********************************!*\
-  !*** ./src/js/aux/array-2d.js ***!
-  \********************************/
-/***/ ((module) => {
-
-/**
- * This class provides helper functions to work with 2D arrays.
- * (arrays of arrays)
- */
-class Array2D {
-  /**
-   * Create and initialize a 2D Array
-   *
-   * @param width {number} Number of columns (inner arrays size)
-   * @param height {number} Number of rows (outer array size)
-   * @param initValue {any} Initial value for inner array items
-   * @return {any[][]}
-   */
-  static create(width, height, initValue = 0) {
-    const rows = [];
-    for (let i = 0; i < height; i += 1) {
-      const row = [];
-      for (let j = 0; j < width; j += 1) {
-        row[j] = initValue;
-      }
-      rows.push(row);
-    }
-    return rows;
-  }
-
-  /**
-   * Creates a 2D array from a 1D array in cells[y * width + x] format
-   *
-   * @param width {number}
-   * @param height {number}
-   * @param cells {any[]}
-   */
-  static fromFlat(width, height, cells) {
-    const answer = Array2D.create(width, height);
-    for (let x = 0; x < width; x += 1) {
-      for (let y = 0; y < height; y += 1) {
-        answer[y][x] = cells[y * width + x];
-      }
-    }
-    return answer;
-  }
-
-  /**
-   * Returns a 1D array with the flattened contents of the 2D array
-   * @return {*[]}
-   */
-  static flatten(a) {
-    const items = [];
-    for (let y = 0; y < a.length; y += 1) {
-      for (let x = 0; x < a[y].length; x += 1) {
-        items.push(a[y][x]);
-      }
-    }
-    return items;
-  }
-
-  /**
-   * Returns true if the argument is an array of arrays and every inner
-   * array has the same length.
-   *
-   * @param a {any[][]}
-   * @return {boolean}
-   */
-  static isValid(a) {
-    return Array.isArray(a) && a.length > 0
-      && Array.isArray(a[0]) && a[0].length > 0
-      && a.every(row => row.length === a[0].length);
-  }
-
-  /**
-   * Returns the size of a 2D array as [width, height]
-   *
-   * Assumes the argument is a valid 2D Array.
-   *
-   * @param a {any[][]}
-   * @return {number[]}
-   */
-  static size(a) {
-    return [a[0].length, a.length];
-  }
-
-  /**
-   * Clones the 2D Array.
-   *
-   * Assumes the argument is a valid 2D Array. The items in the 2D
-   * array are not deep copied, only the outer and inner arrays.
-   *
-   * @param a {any[][]}
-   * @return {any[][]}
-   */
-  static clone(a) {
-    return a.map(row => Array.from(row));
-  }
-
-  /**
-   * Copies the contents of a 2D array into another.
-   *
-   * Assumes the arguments are valid 2D arrays with the same size.
-   *
-   * @param src {any[][]}
-   * @param dest {any[][]}
-   */
-  static copy(src, dest) {
-    for (let i = 0; i < src.length; i += 1) {
-      for (let j = 0; j < src[i].length; j += 1) {
-        // eslint-disable-next-line no-param-reassign
-        dest[i][j] = src[i][j];
-      }
-    }
-  }
-
-  /**
-   * Sets all cells to a fixed value
-   *
-   * @param a {any[][]}
-   * @param value {any}
-   */
-  static setAll(a, value) {
-    for (let y = 0; y < a.length; y += 1) {
-      for (let x = 0; x < a[y].length; x += 1) {
-        a[y][x] = value;
-      }
-    }
-  }
-
-  /**
-   * Returns all items as a flat array of [x, y, value] arrays.
-   *
-   * @param a {any[][]}
-   * @return {[number, number, any][]}
-   */
-  static items(a) {
-    const items = [];
-    for (let y = 0; y < a.length; y += 1) {
-      for (let x = 0; x < a[y].length; x += 1) {
-        items.push([x, y, a[y][x]]);
-      }
-    }
-    return items;
-  }
-
-  /**
-   * @callback coordinateCallback
-   * @param x {number}
-   * @param y {number}
-   * @return {any}
-   */
-  /**
-   * Fills the items in the array with the result of a callback
-   *
-   * @param a {any[][]}
-   * @param callback {coordinateCallback}
-   */
-  static fill(a, callback) {
-    for (let y = 0; y < a.length; y += 1) {
-      for (let x = 0; x < a[y].length; x += 1) {
-        a[y][x] = callback(x, y);
-      }
-    }
-  }
-
-  /**
-   * @callback reduceCallback
-   * @param accumulator {any}
-   * @param currentValue {any}
-   * @param x {number}
-   * @param y {number}
-   */
-  /**
-   *
-   * @param a {any[][]}
-   * @param callback {reduceCallback}
-   * @param initialValue {any}
-   * @return {any}
-   */
-  static reduce(a, callback, initialValue) {
-    let accumulator = initialValue;
-    for (let y = 0; y < a.length; y += 1) {
-      for (let x = 0; x < a[y].length; x += 1) {
-        accumulator = callback(accumulator, a[y][x], x, y);
-      }
-    }
-    return accumulator;
-  }
-
-  static forEach(a, callback) {
-    for (let y = 0; y < a.length; y += 1) {
-      for (let x = 0; x < a[y].length; x += 1) {
-        callback(a[y][x], x, y);
-      }
-    }
-  }
-
-  static zip(a, b, callback) {
-    const yMax = Math.min(a.length, b.length);
-    for (let y = 0; y < yMax; y += 1) {
-      const xMax = Math.min(a[y].length, b[y].length);
-      for (let x = 0; x < xMax; x += 1) {
-        callback(a[y][x], b[y][x], x, y);
-      }
-    }
-  }
-}
-
-module.exports = Array2D;
-
-
-/***/ }),
-
-/***/ "./src/js/aux/cardinal-directions.js":
-/*!*******************************************!*\
-  !*** ./src/js/aux/cardinal-directions.js ***!
-  \*******************************************/
-/***/ ((module) => {
-
-const all = ['N', 'E', 'S', 'W'];
-
-function opposite(direction) {
-  return {
-    N: 'S', E: 'W', S: 'N', W: 'E',
-  }[direction];
-}
-
-function ccw(direction) {
-  return {
-    N: 'W', E: 'N', S: 'E', W: 'S',
-  }[direction];
-}
-
-function cw(direction) {
-  return {
-    N: 'E', E: 'S', S: 'W', W: 'N',
-  }[direction];
-}
-
-function asVector(direction) {
-  return {
-    N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0],
-  }[direction];
-}
-
-function asAngle(direction) {
-  return {
-    N: Math.PI, E: Math.PI * 1.5, S: 0, W: Math.PI * 0.5,
-  }[direction];
-}
-
-function adjCoords(x, y, direction) {
-  const [dx, dy] = asVector(direction);
-  return [x + dx, y + dy];
-}
-
-module.exports = {
-  all,
-  opposite,
-  ccw,
-  cw,
-  asVector,
-  asAngle,
-  adjCoords,
-};
-
-
-/***/ }),
-
-/***/ "./src/js/aux/config-helpers.js":
-/*!**************************************!*\
-  !*** ./src/js/aux/config-helpers.js ***!
-  \**************************************/
-/***/ ((module) => {
-
-function getTileTypeId(config, type) {
-  const entry = Object.entries(config.tileTypes).find(([, props]) => props.type === type);
-  return entry ? Number(entry[0]) : null;
-}
-
-function getTileType(config, type) {
-  const entry = Object.entries(config.tileTypes).find(([, props]) => props.type === type);
-  return entry ? entry[1] : null;
-}
-
-module.exports = { getTileTypeId, getTileType };
-
-
-/***/ }),
-
-/***/ "./src/js/aux/distance.js":
-/*!********************************!*\
-  !*** ./src/js/aux/distance.js ***!
-  \********************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const Array2D = __webpack_require__(/*! ./array-2d */ "./src/js/aux/array-2d.js");
-
-function allDistancesToTileType(map, tileTypeIds) {
-  const distances = Array2D.create(map.width, map.height, Infinity);
-  let distFromLast = Infinity;
-  // Forward pass
-  for (let y = 0; y !== map.cells.length; y += 1) {
-    distFromLast = Infinity;
-    for (let x = 0; x !== map.cells[y].length; x += 1) {
-      distFromLast = (tileTypeIds.includes(map.cells[y][x])) ? 0 : distFromLast + 1;
-      distances[y][x] = (y === 0) ? distFromLast : Math.min(distFromLast, distances[y - 1][x] + 1);
-    }
-  }
-
-  // Reverse pass
-  for (let y = map.cells.length - 1; y >= 0; y -= 1) {
-    for (let x = map.cells[y].length - 1; x >= 0; x -= 1) {
-      distances[y][x] = Math.min(
-        distances[y][x],
-        (y < map.cells.length - 1) ? distances[y + 1][x] + 1 : Infinity,
-        (x < map.cells[y].length - 1) ? distances[y][x + 1] + 1 : Infinity,
-      );
-    }
-  }
-
-  return distances;
-}
-
-module.exports = {
-  allDistancesToTileType,
-};
-
-
-/***/ }),
-
-/***/ "./src/js/aux/flatqueue.js":
-/*!*********************************!*\
-  !*** ./src/js/aux/flatqueue.js ***!
-  \*********************************/
-/***/ ((module) => {
-
-// https://github.com/mourner/flatqueue
-
-/**
- ISC License
-
- Copyright (c) 2021, Vladimir Agafonkin
-
- Permission to use, copy, modify, and/or distribute this software for any purpose
- with or without fee is hereby granted, provided that the above copyright notice
- and this permission notice appear in all copies.
-
- THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
- REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
- FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
- INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
- THIS SOFTWARE.
- © 2021 GitHub, Inc.
- Terms
- Privacy
-
- */
-class FlatQueue {
-
-  constructor() {
-    this.ids = [];
-    this.values = [];
-    this.length = 0;
-  }
-
-  clear() {
-    this.length = 0;
-  }
-
-  push(id, value) {
-    let pos = this.length++;
-    this.ids[pos] = id;
-    this.values[pos] = value;
-
-    while (pos > 0) {
-      const parent = (pos - 1) >> 1;
-      const parentValue = this.values[parent];
-      if (value >= parentValue) break;
-      this.ids[pos] = this.ids[parent];
-      this.values[pos] = parentValue;
-      pos = parent;
-    }
-
-    this.ids[pos] = id;
-    this.values[pos] = value;
-  }
-
-  pop() {
-    if (this.length === 0) return undefined;
-
-    const top = this.ids[0];
-    this.length--;
-
-    if (this.length > 0) {
-      const id = this.ids[0] = this.ids[this.length];
-      const value = this.values[0] = this.values[this.length];
-      const halfLength = this.length >> 1;
-      let pos = 0;
-
-      while (pos < halfLength) {
-        let left = (pos << 1) + 1;
-        const right = left + 1;
-        let bestIndex = this.ids[left];
-        let bestValue = this.values[left];
-        const rightValue = this.values[right];
-
-        if (right < this.length && rightValue < bestValue) {
-          left = right;
-          bestIndex = this.ids[right];
-          bestValue = rightValue;
-        }
-        if (bestValue >= value) break;
-
-        this.ids[pos] = bestIndex;
-        this.values[pos] = bestValue;
-        pos = left;
-      }
-
-      this.ids[pos] = id;
-      this.values[pos] = value;
-    }
-
-    return top;
-  }
-
-  peek() {
-    if (this.length === 0) return undefined;
-    return this.ids[0];
-  }
-
-  peekValue() {
-    if (this.length === 0) return undefined;
-    return this.values[0];
-  }
-
-  shrink() {
-    this.ids.length = this.values.length = this.length;
-  }
-}
-
-module.exports = FlatQueue;
-
-
-/***/ }),
-
-/***/ "./src/js/aux/random.js":
-/*!******************************!*\
-  !*** ./src/js/aux/random.js ***!
-  \******************************/
-/***/ ((module) => {
-
-/**
- * Create a function that picks an element from a set where each has a probability weight.
- *
- * The returned function can be called repeatedly to pick random elements.
- *
- * @param {[any, number]} weightedOptions
- *  An array of options. Each option is an array where the first
- *  item is the element, and the second is the weight.
- * @return {function(): any}
- *  Returns a function that returns a random element.
- */
-function weightedRandomizer(weightedOptions) {
-  let last = 0;
-  const ranges = new Array(weightedOptions.length);
-  // ranges = [from, to, value]
-  weightedOptions.forEach(([value, weight], i) => {
-    ranges[i] = [last, last + weight, value];
-    last += weight;
-  });
-
-  return () => {
-    const rndP = Math.random() * last;
-    return ranges.find(([min, max]) => rndP > min && rndP < max)[2];
-  };
-}
-
-function randomItem(items) {
-  return items[Math.floor(Math.random() * items.length)];
-}
-
-module.exports = {
-  weightedRandomizer,
-  randomItem,
-};
-
-
-/***/ }),
-
-/***/ "./src/js/aux/regions.js":
-/*!*******************************!*\
-  !*** ./src/js/aux/regions.js ***!
-  \*******************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const Array2D = __webpack_require__(/*! ./array-2d */ "./src/js/aux/array-2d.js");
-
-function regionAreas(map, tileTypeIds) {
-  const answer = [];
-  const seen = Array2D.create(map.width, map.height, false);
-
-  map.allCells().forEach(([x, y, value]) => {
-    if (seen[y][x] === false && tileTypeIds.includes(value)) {
-      const frontier = [[x, y]];
-      seen[y][x] = true;
-      let area = 0;
-      while (frontier.length > 0) {
-        const [currX, currY] = frontier.pop();
-        area += 1;
-        map.adjacentCells(currX, currY).forEach(([adjX, adjY, adjValue]) => {
-          if (seen[adjY][adjX] === false && tileTypeIds.includes(adjValue)) {
-            seen[adjY][adjX] = true;
-            frontier.push([adjX, adjY]);
-          }
-        });
-      }
-      answer.push(area);
-    }
-  });
-
-  return answer;
-}
-
-module.exports = {
-  regionAreas,
-};
-
-
-/***/ }),
-
-/***/ "./src/js/aux/show-fatal-error.js":
-/*!****************************************!*\
-  !*** ./src/js/aux/show-fatal-error.js ***!
-  \****************************************/
-/***/ ((module) => {
-
-function showFatalError(text, error) {
-  $('<div></div>')
-    .addClass('fatal-error')
-    .append($('<div></div>')
-      .addClass('fatal-error-text')
-      .html(text))
-    .append($('<div></div>')
-      .addClass('fatal-error-details')
-      .html(error.message))
-    .appendTo('body');
-
-  $('html').addClass('with-fatal-error');
-}
-
-module.exports = showFatalError;
-
-
-/***/ }),
-
-/***/ "./src/js/aux/sprite-fader.js":
-/*!************************************!*\
-  !*** ./src/js/aux/sprite-fader.js ***!
-  \************************************/
-/***/ ((module) => {
-
-class SpriteFader {
-  constructor(sprite) {
-    this.sprite = sprite;
-    this.callback = null;
-    this.duration = null;
-    this.startAlpha = null;
-    this.endAlpha = null;
-
-    this.visible = this.sprite.alpha !== 0;
-    this.isFading = false;
-  }
-
-  fadeIn(callback = null, duration = SpriteFader.DEFAULT_DURATION) {
-    if (!this.visible) {
-      this.visible = true;
-      this.startFade(0, 1, duration, callback);
-    }
-    if (callback) {
-      this.setCallback(callback);
-    }
-  }
-
-  fadeOut(callback = null, duration = SpriteFader.DEFAULT_DURATION) {
-    if (this.visible) {
-      this.visible = false;
-      this.startFade(1, 0, duration, callback);
-    }
-    if (callback) {
-      this.setCallback(callback);
-    }
-  }
-
-  setCallback(callback) {
-    if (this.isFading) {
-      this.callback = callback;
-    } else {
-      setTimeout(() => { callback(); }, 0);
-    }
-  }
-
-  startFade(startAlpha, endAlpha, duration = SpriteFader.DEFAULT_DURATION, callback = null) {
-    this.callback = callback;
-    this.startAlpha = startAlpha;
-    this.endAlpha = endAlpha;
-    this.duration = duration;
-    this.isFading = true;
-    this.timer = 0;
-  }
-
-  onFadeEnd() {
-    if (this.callback) {
-      setTimeout(() => {
-        this.callback();
-        this.callback = null;
-      }, 0);
-    }
-    this.isFading = false;
-    this.startAlpha = null;
-    this.endAlpha = null;
-    this.duration = null;
-    this.timer = 0;
-  }
-
-  animate(time) {
-    if (this.isFading) {
-      this.timer = Math.min(this.duration, this.timer + time);
-      this.sprite.alpha = this.startAlpha
-        + (this.endAlpha - this.startAlpha) * (this.timer / this.duration);
-      if (this.timer === this.duration) {
-        this.onFadeEnd();
-      }
-    }
-  }
-}
-
-SpriteFader.DEFAULT_DURATION = 20;
-
-module.exports = SpriteFader;
-
-
-/***/ }),
-
-/***/ "./src/js/aux/statistics.js":
-/*!**********************************!*\
-  !*** ./src/js/aux/statistics.js ***!
-  \**********************************/
-/***/ ((module) => {
-
-function average(data) {
-  return data.length > 0 ? data.reduce((a, b) => a + b, 0) / data.length : undefined;
-}
-
-function sortedQuantile(sortedData, q) {
-  if (sortedData.length === 0) {
-    return undefined;
-  }
-  const pos = (sortedData.length - 1) * q;
-  const base = Math.floor(pos);
-  const rest = pos - base;
-  if (sortedData[base + 1] !== undefined) {
-    return sortedData[base] + rest * (sortedData[base + 1] - sortedData[base]);
-  }
-  return sortedData[base];
-}
-
-function quantile(data, q) {
-  return sortedQuantile(data.sort((a, b) => a - b), q);
-}
-
-function median(data) {
-  return quantile(data, 0.5);
-}
-
-function sortedMedian(data) {
-  return sortedQuantile(data, 0.5);
-}
-
-function firstQuartile(data) {
-  return quantile(data, 0.25);
-}
-
-function sortedFirstQuartile(data) {
-  return sortedQuantile(data, 0.25);
-}
-
-function thirdQuartile(data) {
-  return quantile(data, 0.75);
-}
-
-function sortedThirdQuartile(data) {
-  return sortedQuantile(data, 0.75);
-}
-
-function numberUnderValue(data, k) {
-  let count = 0;
-  for (let i = 0; i < data.length; i += 1) {
-    if (data[i] < k) {
-      count += 1;
-    }
-  }
-
-  return count;
-}
-
-function percentageUnderValue(data, k) {
-  return data.length > 0 ? numberUnderValue(data, k) / data.length : 1;
-}
-
-function numberOverValue(data, k) {
-  let count = 0;
-  for (let i = 0; i < data.length; i += 1) {
-    if (data[i] > k) {
-      count += 1;
-    }
-  }
-
-  return count;
-}
-
-function percentageOverValue(data, k) {
-  return data.length > 0 ? numberOverValue(data, k) / data.length : 1;
-}
-
-function numberOverEqValue(data, k) {
-  let count = 0;
-  for (let i = 0; i < data.length; i += 1) {
-    if (data[i] >= k) {
-      count += 1;
-    }
-  }
-
-  return count;
-}
-
-function percentageOverEqValue(data, k) {
-  return data.length > 0 ? numberOverEqValue(data, k) / data.length : 1;
-}
-
-function numberEqualValue(data, k) {
-  let count = 0;
-  for (let i = 0; i < data.length; i += 1) {
-    if (data[i] === k) {
-      count += 1;
-    }
-  }
-
-  return count;
-}
-
-function percentageEqualValue(data, k) {
-  return data.length > 0 ? numberEqualValue(data, k) / data.length : 1;
-}
-
-module.exports = {
-  average,
-  quantile,
-  sortedQuantile,
-  median,
-  sortedMedian,
-  firstQuartile,
-  sortedFirstQuartile,
-  thirdQuartile,
-  sortedThirdQuartile,
-  numberUnderValue,
-  percentageUnderValue,
-  numberOverValue,
-  percentageOverValue,
-  numberOverEqValue,
-  percentageOverEqValue,
-  numberEqualValue,
-  percentageEqualValue,
-};
-
-
-/***/ }),
-
-/***/ "./src/js/aux/travel-times.js":
-/*!************************************!*\
-  !*** ./src/js/aux/travel-times.js ***!
-  \************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const FlatQueue = __webpack_require__(/*! ./flatqueue */ "./src/js/aux/flatqueue.js");
-const Array2D = __webpack_require__(/*! ./array-2d */ "./src/js/aux/array-2d.js");
-const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
-
-class TravelTimeCalculator {
-  constructor(config) {
-    this.config = config;
-
-    this.roadTileTime = this.config.goals['travel-times']['road-travel-time'];
-    this.defaultTileTime = this.config.goals['travel-times']['default-travel-time'];
-    this.slowTileTime = this.config.goals['travel-times']['slow-travel-time'];
-
-    this.emptyId = getTileTypeId(this.config, 'empty');
-    this.roadId = getTileTypeId(this.config, 'road');
-    this.waterId = getTileTypeId(this.config, 'water');
-  }
-
-  /**
-   * Given a city map and a starting point it returns the travel time to all other cells.
-   *
-   * Uses [Uniform Cost Search](https://www.redblobgames.com/pathfinding/a-star/introduction.html),
-   * a variation on Dijkstra's algorithm.
-   *
-   * @param {Grid} map
-   * @param {number} startX
-   * @param {number} startY
-   * @return {number[][]}
-   */
-  travelTimes(map, [startX, startY]) {
-    const answer = Array2D.create(map.width, map.height, null);
-    const frontier = new FlatQueue();
-    frontier.push([startX, startY, map.get(startX, startY)], 0);
-    answer[startY][startX] = 0;
-
-    while (frontier.length > 0) {
-      const [currX, currY, currTile] = frontier.pop();
-      map.adjacentCells(currX, currY)
-        .forEach(([nextX, nextY, nextTile]) => {
-          const newCost = answer[currY][currX] + this.timeBetweenTiles(currTile, nextTile);
-          const nextCost = answer[nextY][nextX];
-          if (nextCost === null || newCost < nextCost) {
-            answer[nextY][nextX] = newCost;
-            frontier.push([nextX, nextY, nextTile], newCost);
-          }
-        });
-    }
-
-    return answer;
-  }
-
-  /**
-   * Returns the travel time between two tiles based on their types.
-   *
-   * @param tileTypeFrom
-   * @param tileTypeTo
-   * @return {Number}
-   */
-  timeBetweenTiles(tileTypeFrom, tileTypeTo) {
-    if (tileTypeFrom === this.roadId && tileTypeTo === this.roadId) {
-      return this.roadTileTime;
-    }
-    if (tileTypeFrom === this.waterId || tileTypeTo === this.waterId
-      || tileTypeFrom === this.emptyId || tileTypeTo === this.emptyId) {
-      return this.slowTileTime;
-    }
-    return this.defaultTileTime;
-  }
-}
-
-module.exports = TravelTimeCalculator;
-
-
-/***/ }),
-
 /***/ "./src/js/cars/ai-car-driver.js":
 /*!**************************************!*\
   !*** ./src/js/cars/ai-car-driver.js ***!
@@ -6074,9 +5212,9 @@ module.exports = AiCarDriver;
   \***********************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+const Dir = __webpack_require__(/*! ../lib/cardinal-directions */ "./src/js/lib/cardinal-directions.js");
 const RoadTile = __webpack_require__(/*! ./road-tile */ "./src/js/cars/road-tile.js");
-const { randomItem } = __webpack_require__(/*! ../aux/random */ "./src/js/aux/random.js");
+const { randomItem } = __webpack_require__(/*! ../lib/random */ "./src/js/lib/random.js");
 const { TILE_SIZE } = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
 
 const LIGHT_CHANGE_DELAY = [300, 800];
@@ -6187,9 +5325,9 @@ module.exports = CarDriver;
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /* globals PIXI */
-const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
+const Array2D = __webpack_require__(/*! ../lib/array-2d */ "./src/js/lib/array-2d.js");
 const TrafficLights = __webpack_require__(/*! ./traffic-lights */ "./src/js/cars/traffic-lights.js");
-const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
+const { getTileTypeId } = __webpack_require__(/*! ../lib/config-helpers */ "./src/js/lib/config-helpers.js");
 const RoadMap = __webpack_require__(/*! ./road-map */ "./src/js/cars/road-map.js");
 
 class CarOverlay {
@@ -6298,8 +5436,8 @@ module.exports = CarOverlay;
 
 const Car = __webpack_require__(/*! ../cars/car */ "./src/js/cars/car.js");
 const RoadTile = __webpack_require__(/*! ../cars/road-tile */ "./src/js/cars/road-tile.js");
-const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
-const { randomItem, weightedRandomizer } = __webpack_require__(/*! ../aux/random */ "./src/js/aux/random.js");
+const Dir = __webpack_require__(/*! ../lib/cardinal-directions */ "./src/js/lib/cardinal-directions.js");
+const { randomItem, weightedRandomizer } = __webpack_require__(/*! ../lib/random */ "./src/js/lib/random.js");
 const CarDriver = __webpack_require__(/*! ./car-driver */ "./src/js/cars/car-driver.js");
 
 const THROTTLE_TIME = 57; // Number of frames it waits before running the maybeSpawn function
@@ -6475,10 +5613,10 @@ module.exports = CarSpawner;
 /* globals PIXI */
 const Vec2 = __webpack_require__(/*! vec2 */ "./node_modules/vec2/vec2.js");
 const CarDriver = __webpack_require__(/*! ./car-driver */ "./src/js/cars/car-driver.js");
-const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+const Dir = __webpack_require__(/*! ../lib/cardinal-directions */ "./src/js/lib/cardinal-directions.js");
 const RoadTile = __webpack_require__(/*! ./road-tile */ "./src/js/cars/road-tile.js");
 const { TILE_SIZE } = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
-const SpriteFader = __webpack_require__(/*! ../aux/sprite-fader */ "./src/js/aux/sprite-fader.js");
+const SpriteFader = __webpack_require__(/*! ../lib/sprite-fader */ "./src/js/lib/sprite-fader.js");
 const PathStraight = __webpack_require__(/*! ./path-straight */ "./src/js/cars/path-straight.js");
 const PathArc = __webpack_require__(/*! ./path-arc */ "./src/js/cars/path-arc.js");
 const PulledCarDriver = __webpack_require__(/*! ./pulled-car-driver */ "./src/js/cars/pulled-car-driver.js");
@@ -6709,7 +5847,7 @@ module.exports = Car;
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const Vec2 = __webpack_require__(/*! vec2 */ "./node_modules/vec2/vec2.js");
-const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+const Dir = __webpack_require__(/*! ../lib/cardinal-directions */ "./src/js/lib/cardinal-directions.js");
 const RoadTile = __webpack_require__(/*! ./road-tile */ "./src/js/cars/road-tile.js");
 
 class PathArc {
@@ -6756,7 +5894,7 @@ module.exports = PathArc;
 
 const Vec2 = __webpack_require__(/*! vec2 */ "./node_modules/vec2/vec2.js");
 const RoadTile = __webpack_require__(/*! ./road-tile */ "./src/js/cars/road-tile.js");
-const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+const Dir = __webpack_require__(/*! ../lib/cardinal-directions */ "./src/js/lib/cardinal-directions.js");
 const MapView = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
 
 class PathStraight {
@@ -6838,8 +5976,8 @@ module.exports = PulledCarDriver;
   \*********************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
-const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
+const Dir = __webpack_require__(/*! ../lib/cardinal-directions */ "./src/js/lib/cardinal-directions.js");
+const Array2D = __webpack_require__(/*! ../lib/array-2d */ "./src/js/lib/array-2d.js");
 
 class RoadMap {
   constructor(map, roadTileId) {
@@ -7006,7 +6144,7 @@ module.exports = {
   \***************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-const Dir = __webpack_require__(/*! ../aux/cardinal-directions */ "./src/js/aux/cardinal-directions.js");
+const Dir = __webpack_require__(/*! ../lib/cardinal-directions */ "./src/js/lib/cardinal-directions.js");
 
 const MIN_LIGHT_CHANGE_DELAY = 500;
 const MAX_LIGHT_CHANGE_DELAY = 1200;
@@ -7303,8 +6441,8 @@ module.exports = CitizenRequestViewMgr;
   \****************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-const { randomItem } = __webpack_require__(/*! ./aux/random */ "./src/js/aux/random.js");
-const { getTileType } = __webpack_require__(/*! ./aux/config-helpers */ "./src/js/aux/config-helpers.js");
+const { randomItem } = __webpack_require__(/*! ./lib/random */ "./src/js/lib/random.js");
+const { getTileType } = __webpack_require__(/*! ./lib/config-helpers */ "./src/js/lib/config-helpers.js");
 
 class CitizenRequestView {
   constructor(config) {
@@ -7387,7 +6525,7 @@ module.exports = CitizenRequestView;
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const Grid = __webpack_require__(/*! ./grid */ "./src/js/grid.js");
-const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+const Array2D = __webpack_require__(/*! ./lib/array-2d */ "./src/js/lib/array-2d.js");
 
 class City {
   constructor(width, height, cells = null) {
@@ -7436,7 +6574,7 @@ module.exports = City;
 
 const {
   average, sortedMedian, sortedFirstQuartile, sortedThirdQuartile,
-} = __webpack_require__(/*! ./aux/statistics */ "./src/js/aux/statistics.js");
+} = __webpack_require__(/*! ./lib/statistics */ "./src/js/lib/statistics.js");
 
 class DataInspectorView {
   constructor() {
@@ -7662,9 +6800,9 @@ module.exports = DataSource;
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const DataSource = __webpack_require__(/*! ../data-source */ "./src/js/data-source.js");
-const { allDistancesToTileType } = __webpack_require__(/*! ../aux/distance */ "./src/js/aux/distance.js");
-const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
-const { regionAreas } = __webpack_require__(/*! ../aux/regions */ "./src/js/aux/regions.js");
+const { allDistancesToTileType } = __webpack_require__(/*! ../lib/distance */ "./src/js/lib/distance.js");
+const { getTileTypeId } = __webpack_require__(/*! ../lib/config-helpers */ "./src/js/lib/config-helpers.js");
+const { regionAreas } = __webpack_require__(/*! ../lib/regions */ "./src/js/lib/regions.js");
 
 class GreenSpacesData extends DataSource {
   constructor(city, config) {
@@ -7803,9 +6941,9 @@ module.exports = GreenSpacesData;
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const DataSource = __webpack_require__(/*! ../data-source */ "./src/js/data-source.js");
-const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
-const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
-const { percentageEqualValue, percentageOverEqValue } = __webpack_require__(/*! ../aux/statistics */ "./src/js/aux/statistics.js");
+const Array2D = __webpack_require__(/*! ../lib/array-2d */ "./src/js/lib/array-2d.js");
+const { getTileTypeId } = __webpack_require__(/*! ../lib/config-helpers */ "./src/js/lib/config-helpers.js");
+const { percentageEqualValue, percentageOverEqValue } = __webpack_require__(/*! ../lib/statistics */ "./src/js/lib/statistics.js");
 
 class NoiseData extends DataSource {
   constructor(city, config) {
@@ -7938,9 +7076,9 @@ module.exports = NoiseData;
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const DataSource = __webpack_require__(/*! ../data-source */ "./src/js/data-source.js");
-const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
-const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
-const { percentageEqualValue, percentageOverValue } = __webpack_require__(/*! ../aux/statistics */ "./src/js/aux/statistics.js");
+const Array2D = __webpack_require__(/*! ../lib/array-2d */ "./src/js/lib/array-2d.js");
+const { getTileTypeId } = __webpack_require__(/*! ../lib/config-helpers */ "./src/js/lib/config-helpers.js");
+const { percentageEqualValue, percentageOverValue } = __webpack_require__(/*! ../lib/statistics */ "./src/js/lib/statistics.js");
 
 class PollutionData extends DataSource {
   constructor(city, config) {
@@ -8082,8 +7220,8 @@ module.exports = PollutionData;
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const DataSource = __webpack_require__(/*! ../data-source */ "./src/js/data-source.js");
-const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
-const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
+const { getTileTypeId } = __webpack_require__(/*! ../lib/config-helpers */ "./src/js/lib/config-helpers.js");
+const Array2D = __webpack_require__(/*! ../lib/array-2d */ "./src/js/lib/array-2d.js");
 
 class RoadSafetyData extends DataSource {
   constructor(city, config) {
@@ -8243,10 +7381,10 @@ module.exports = TrafficData;
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const DataSource = __webpack_require__(/*! ../data-source */ "./src/js/data-source.js");
-const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
-const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
-const TravelTimeCalculator = __webpack_require__(/*! ../aux/travel-times */ "./src/js/aux/travel-times.js");
-const { percentageOverValue } = __webpack_require__(/*! ../aux/statistics */ "./src/js/aux/statistics.js");
+const { getTileTypeId } = __webpack_require__(/*! ../lib/config-helpers */ "./src/js/lib/config-helpers.js");
+const Array2D = __webpack_require__(/*! ../lib/array-2d */ "./src/js/lib/array-2d.js");
+const TravelTimeCalculator = __webpack_require__(/*! ../lib/travel-times */ "./src/js/lib/travel-times.js");
+const { percentageOverValue } = __webpack_require__(/*! ../lib/statistics */ "./src/js/lib/statistics.js");
 
 class TravelTimesData extends DataSource {
   constructor(city, config) {
@@ -8335,7 +7473,7 @@ module.exports = TravelTimesData;
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const DataSource = __webpack_require__(/*! ../data-source */ "./src/js/data-source.js");
-const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
+const { getTileTypeId } = __webpack_require__(/*! ../lib/config-helpers */ "./src/js/lib/config-helpers.js");
 
 class ZoneBalanceData extends DataSource {
   constructor(city, config) {
@@ -8480,7 +7618,7 @@ module.exports = ZoneBalanceData;
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const DataSource = __webpack_require__(/*! ../data-source */ "./src/js/data-source.js");
-const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
+const Array2D = __webpack_require__(/*! ../lib/array-2d */ "./src/js/lib/array-2d.js");
 
 class ZoningData extends DataSource {
   constructor(city, config) {
@@ -8754,10 +7892,10 @@ const ModalExport = __webpack_require__(/*! ./modal-export */ "./src/js/editor/m
 const ModalImport = __webpack_require__(/*! ./modal-import */ "./src/js/editor/modal-import.js");
 const ObjectStore = __webpack_require__(/*! ./object-store */ "./src/js/editor/object-store.js");
 const MapTextOverlay = __webpack_require__(/*! ../map-text-overlay */ "./src/js/map-text-overlay.js");
-const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
-const Array2D = __webpack_require__(/*! ../aux/array-2d */ "./src/js/aux/array-2d.js");
+const { getTileTypeId } = __webpack_require__(/*! ../lib/config-helpers */ "./src/js/lib/config-helpers.js");
+const Array2D = __webpack_require__(/*! ../lib/array-2d */ "./src/js/lib/array-2d.js");
 const VariableMapOverlay = __webpack_require__(/*! ../variable-map-overlay */ "./src/js/variable-map-overlay.js");
-const TravelTimeCalculator = __webpack_require__(/*! ../aux/travel-times */ "./src/js/aux/travel-times.js");
+const TravelTimeCalculator = __webpack_require__(/*! ../lib/travel-times */ "./src/js/lib/travel-times.js");
 
 class MapEditor {
   constructor($element, city, config, textures, dataManager) {
@@ -9265,7 +8403,7 @@ module.exports = GoalDebugView;
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+const Array2D = __webpack_require__(/*! ./lib/array-2d */ "./src/js/lib/array-2d.js");
 
 /**
  * Represents a 2D grid map that stores a single Number per cell
@@ -9553,6 +8691,868 @@ module.exports = IndexView;
 
 /***/ }),
 
+/***/ "./src/js/lib/array-2d.js":
+/*!********************************!*\
+  !*** ./src/js/lib/array-2d.js ***!
+  \********************************/
+/***/ ((module) => {
+
+/**
+ * This class provides helper functions to work with 2D arrays.
+ * (arrays of arrays)
+ */
+class Array2D {
+  /**
+   * Create and initialize a 2D Array
+   *
+   * @param width {number} Number of columns (inner arrays size)
+   * @param height {number} Number of rows (outer array size)
+   * @param initValue {any} Initial value for inner array items
+   * @return {any[][]}
+   */
+  static create(width, height, initValue = 0) {
+    const rows = [];
+    for (let i = 0; i < height; i += 1) {
+      const row = [];
+      for (let j = 0; j < width; j += 1) {
+        row[j] = initValue;
+      }
+      rows.push(row);
+    }
+    return rows;
+  }
+
+  /**
+   * Creates a 2D array from a 1D array in cells[y * width + x] format
+   *
+   * @param width {number}
+   * @param height {number}
+   * @param cells {any[]}
+   */
+  static fromFlat(width, height, cells) {
+    const answer = Array2D.create(width, height);
+    for (let x = 0; x < width; x += 1) {
+      for (let y = 0; y < height; y += 1) {
+        answer[y][x] = cells[y * width + x];
+      }
+    }
+    return answer;
+  }
+
+  /**
+   * Returns a 1D array with the flattened contents of the 2D array
+   * @return {*[]}
+   */
+  static flatten(a) {
+    const items = [];
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        items.push(a[y][x]);
+      }
+    }
+    return items;
+  }
+
+  /**
+   * Returns true if the argument is an array of arrays and every inner
+   * array has the same length.
+   *
+   * @param a {any[][]}
+   * @return {boolean}
+   */
+  static isValid(a) {
+    return Array.isArray(a) && a.length > 0
+      && Array.isArray(a[0]) && a[0].length > 0
+      && a.every(row => row.length === a[0].length);
+  }
+
+  /**
+   * Returns the size of a 2D array as [width, height]
+   *
+   * Assumes the argument is a valid 2D Array.
+   *
+   * @param a {any[][]}
+   * @return {number[]}
+   */
+  static size(a) {
+    return [a[0].length, a.length];
+  }
+
+  /**
+   * Clones the 2D Array.
+   *
+   * Assumes the argument is a valid 2D Array. The items in the 2D
+   * array are not deep copied, only the outer and inner arrays.
+   *
+   * @param a {any[][]}
+   * @return {any[][]}
+   */
+  static clone(a) {
+    return a.map(row => Array.from(row));
+  }
+
+  /**
+   * Copies the contents of a 2D array into another.
+   *
+   * Assumes the arguments are valid 2D arrays with the same size.
+   *
+   * @param src {any[][]}
+   * @param dest {any[][]}
+   */
+  static copy(src, dest) {
+    for (let i = 0; i < src.length; i += 1) {
+      for (let j = 0; j < src[i].length; j += 1) {
+        // eslint-disable-next-line no-param-reassign
+        dest[i][j] = src[i][j];
+      }
+    }
+  }
+
+  /**
+   * Sets all cells to a fixed value
+   *
+   * @param a {any[][]}
+   * @param value {any}
+   */
+  static setAll(a, value) {
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        a[y][x] = value;
+      }
+    }
+  }
+
+  /**
+   * Returns all items as a flat array of [x, y, value] arrays.
+   *
+   * @param a {any[][]}
+   * @return {[number, number, any][]}
+   */
+  static items(a) {
+    const items = [];
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        items.push([x, y, a[y][x]]);
+      }
+    }
+    return items;
+  }
+
+  /**
+   * @callback coordinateCallback
+   * @param x {number}
+   * @param y {number}
+   * @return {any}
+   */
+  /**
+   * Fills the items in the array with the result of a callback
+   *
+   * @param a {any[][]}
+   * @param callback {coordinateCallback}
+   */
+  static fill(a, callback) {
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        a[y][x] = callback(x, y);
+      }
+    }
+  }
+
+  /**
+   * @callback reduceCallback
+   * @param accumulator {any}
+   * @param currentValue {any}
+   * @param x {number}
+   * @param y {number}
+   */
+  /**
+   *
+   * @param a {any[][]}
+   * @param callback {reduceCallback}
+   * @param initialValue {any}
+   * @return {any}
+   */
+  static reduce(a, callback, initialValue) {
+    let accumulator = initialValue;
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        accumulator = callback(accumulator, a[y][x], x, y);
+      }
+    }
+    return accumulator;
+  }
+
+  static forEach(a, callback) {
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        callback(a[y][x], x, y);
+      }
+    }
+  }
+
+  static zip(a, b, callback) {
+    const yMax = Math.min(a.length, b.length);
+    for (let y = 0; y < yMax; y += 1) {
+      const xMax = Math.min(a[y].length, b[y].length);
+      for (let x = 0; x < xMax; x += 1) {
+        callback(a[y][x], b[y][x], x, y);
+      }
+    }
+  }
+}
+
+module.exports = Array2D;
+
+
+/***/ }),
+
+/***/ "./src/js/lib/cardinal-directions.js":
+/*!*******************************************!*\
+  !*** ./src/js/lib/cardinal-directions.js ***!
+  \*******************************************/
+/***/ ((module) => {
+
+const all = ['N', 'E', 'S', 'W'];
+
+function opposite(direction) {
+  return {
+    N: 'S', E: 'W', S: 'N', W: 'E',
+  }[direction];
+}
+
+function ccw(direction) {
+  return {
+    N: 'W', E: 'N', S: 'E', W: 'S',
+  }[direction];
+}
+
+function cw(direction) {
+  return {
+    N: 'E', E: 'S', S: 'W', W: 'N',
+  }[direction];
+}
+
+function asVector(direction) {
+  return {
+    N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0],
+  }[direction];
+}
+
+function asAngle(direction) {
+  return {
+    N: Math.PI, E: Math.PI * 1.5, S: 0, W: Math.PI * 0.5,
+  }[direction];
+}
+
+function adjCoords(x, y, direction) {
+  const [dx, dy] = asVector(direction);
+  return [x + dx, y + dy];
+}
+
+module.exports = {
+  all,
+  opposite,
+  ccw,
+  cw,
+  asVector,
+  asAngle,
+  adjCoords,
+};
+
+
+/***/ }),
+
+/***/ "./src/js/lib/config-helpers.js":
+/*!**************************************!*\
+  !*** ./src/js/lib/config-helpers.js ***!
+  \**************************************/
+/***/ ((module) => {
+
+function getTileTypeId(config, type) {
+  const entry = Object.entries(config.tileTypes).find(([, props]) => props.type === type);
+  return entry ? Number(entry[0]) : null;
+}
+
+function getTileType(config, type) {
+  const entry = Object.entries(config.tileTypes).find(([, props]) => props.type === type);
+  return entry ? entry[1] : null;
+}
+
+module.exports = { getTileTypeId, getTileType };
+
+
+/***/ }),
+
+/***/ "./src/js/lib/distance.js":
+/*!********************************!*\
+  !*** ./src/js/lib/distance.js ***!
+  \********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Array2D = __webpack_require__(/*! ./array-2d */ "./src/js/lib/array-2d.js");
+
+function allDistancesToTileType(map, tileTypeIds) {
+  const distances = Array2D.create(map.width, map.height, Infinity);
+  let distFromLast = Infinity;
+  // Forward pass
+  for (let y = 0; y !== map.cells.length; y += 1) {
+    distFromLast = Infinity;
+    for (let x = 0; x !== map.cells[y].length; x += 1) {
+      distFromLast = (tileTypeIds.includes(map.cells[y][x])) ? 0 : distFromLast + 1;
+      distances[y][x] = (y === 0) ? distFromLast : Math.min(distFromLast, distances[y - 1][x] + 1);
+    }
+  }
+
+  // Reverse pass
+  for (let y = map.cells.length - 1; y >= 0; y -= 1) {
+    for (let x = map.cells[y].length - 1; x >= 0; x -= 1) {
+      distances[y][x] = Math.min(
+        distances[y][x],
+        (y < map.cells.length - 1) ? distances[y + 1][x] + 1 : Infinity,
+        (x < map.cells[y].length - 1) ? distances[y][x + 1] + 1 : Infinity,
+      );
+    }
+  }
+
+  return distances;
+}
+
+module.exports = {
+  allDistancesToTileType,
+};
+
+
+/***/ }),
+
+/***/ "./src/js/lib/flatqueue.js":
+/*!*********************************!*\
+  !*** ./src/js/lib/flatqueue.js ***!
+  \*********************************/
+/***/ ((module) => {
+
+// https://github.com/mourner/flatqueue
+
+/**
+ ISC License
+
+ Copyright (c) 2021, Vladimir Agafonkin
+
+ Permission to use, copy, modify, and/or distribute this software for any purpose
+ with or without fee is hereby granted, provided that the above copyright notice
+ and this permission notice appear in all copies.
+
+ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+ REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+ INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ THIS SOFTWARE.
+ © 2021 GitHub, Inc.
+ Terms
+ Privacy
+
+ */
+class FlatQueue {
+
+  constructor() {
+    this.ids = [];
+    this.values = [];
+    this.length = 0;
+  }
+
+  clear() {
+    this.length = 0;
+  }
+
+  push(id, value) {
+    let pos = this.length++;
+    this.ids[pos] = id;
+    this.values[pos] = value;
+
+    while (pos > 0) {
+      const parent = (pos - 1) >> 1;
+      const parentValue = this.values[parent];
+      if (value >= parentValue) break;
+      this.ids[pos] = this.ids[parent];
+      this.values[pos] = parentValue;
+      pos = parent;
+    }
+
+    this.ids[pos] = id;
+    this.values[pos] = value;
+  }
+
+  pop() {
+    if (this.length === 0) return undefined;
+
+    const top = this.ids[0];
+    this.length--;
+
+    if (this.length > 0) {
+      const id = this.ids[0] = this.ids[this.length];
+      const value = this.values[0] = this.values[this.length];
+      const halfLength = this.length >> 1;
+      let pos = 0;
+
+      while (pos < halfLength) {
+        let left = (pos << 1) + 1;
+        const right = left + 1;
+        let bestIndex = this.ids[left];
+        let bestValue = this.values[left];
+        const rightValue = this.values[right];
+
+        if (right < this.length && rightValue < bestValue) {
+          left = right;
+          bestIndex = this.ids[right];
+          bestValue = rightValue;
+        }
+        if (bestValue >= value) break;
+
+        this.ids[pos] = bestIndex;
+        this.values[pos] = bestValue;
+        pos = left;
+      }
+
+      this.ids[pos] = id;
+      this.values[pos] = value;
+    }
+
+    return top;
+  }
+
+  peek() {
+    if (this.length === 0) return undefined;
+    return this.ids[0];
+  }
+
+  peekValue() {
+    if (this.length === 0) return undefined;
+    return this.values[0];
+  }
+
+  shrink() {
+    this.ids.length = this.values.length = this.length;
+  }
+}
+
+module.exports = FlatQueue;
+
+
+/***/ }),
+
+/***/ "./src/js/lib/random.js":
+/*!******************************!*\
+  !*** ./src/js/lib/random.js ***!
+  \******************************/
+/***/ ((module) => {
+
+/**
+ * Create a function that picks an element from a set where each has a probability weight.
+ *
+ * The returned function can be called repeatedly to pick random elements.
+ *
+ * @param {[any, number]} weightedOptions
+ *  An array of options. Each option is an array where the first
+ *  item is the element, and the second is the weight.
+ * @return {function(): any}
+ *  Returns a function that returns a random element.
+ */
+function weightedRandomizer(weightedOptions) {
+  let last = 0;
+  const ranges = new Array(weightedOptions.length);
+  // ranges = [from, to, value]
+  weightedOptions.forEach(([value, weight], i) => {
+    ranges[i] = [last, last + weight, value];
+    last += weight;
+  });
+
+  return () => {
+    const rndP = Math.random() * last;
+    return ranges.find(([min, max]) => rndP > min && rndP < max)[2];
+  };
+}
+
+function randomItem(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+module.exports = {
+  weightedRandomizer,
+  randomItem,
+};
+
+
+/***/ }),
+
+/***/ "./src/js/lib/regions.js":
+/*!*******************************!*\
+  !*** ./src/js/lib/regions.js ***!
+  \*******************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Array2D = __webpack_require__(/*! ./array-2d */ "./src/js/lib/array-2d.js");
+
+function regionAreas(map, tileTypeIds) {
+  const answer = [];
+  const seen = Array2D.create(map.width, map.height, false);
+
+  map.allCells().forEach(([x, y, value]) => {
+    if (seen[y][x] === false && tileTypeIds.includes(value)) {
+      const frontier = [[x, y]];
+      seen[y][x] = true;
+      let area = 0;
+      while (frontier.length > 0) {
+        const [currX, currY] = frontier.pop();
+        area += 1;
+        map.adjacentCells(currX, currY).forEach(([adjX, adjY, adjValue]) => {
+          if (seen[adjY][adjX] === false && tileTypeIds.includes(adjValue)) {
+            seen[adjY][adjX] = true;
+            frontier.push([adjX, adjY]);
+          }
+        });
+      }
+      answer.push(area);
+    }
+  });
+
+  return answer;
+}
+
+module.exports = {
+  regionAreas,
+};
+
+
+/***/ }),
+
+/***/ "./src/js/lib/show-fatal-error.js":
+/*!****************************************!*\
+  !*** ./src/js/lib/show-fatal-error.js ***!
+  \****************************************/
+/***/ ((module) => {
+
+function showFatalError(text, error) {
+  $('<div></div>')
+    .addClass('fatal-error')
+    .append($('<div></div>')
+      .addClass('fatal-error-text')
+      .html(text))
+    .append($('<div></div>')
+      .addClass('fatal-error-details')
+      .html(error.message))
+    .appendTo('body');
+
+  $('html').addClass('with-fatal-error');
+}
+
+module.exports = showFatalError;
+
+
+/***/ }),
+
+/***/ "./src/js/lib/sprite-fader.js":
+/*!************************************!*\
+  !*** ./src/js/lib/sprite-fader.js ***!
+  \************************************/
+/***/ ((module) => {
+
+class SpriteFader {
+  constructor(sprite) {
+    this.sprite = sprite;
+    this.callback = null;
+    this.duration = null;
+    this.startAlpha = null;
+    this.endAlpha = null;
+
+    this.visible = this.sprite.alpha !== 0;
+    this.isFading = false;
+  }
+
+  fadeIn(callback = null, duration = SpriteFader.DEFAULT_DURATION) {
+    if (!this.visible) {
+      this.visible = true;
+      this.startFade(0, 1, duration, callback);
+    }
+    if (callback) {
+      this.setCallback(callback);
+    }
+  }
+
+  fadeOut(callback = null, duration = SpriteFader.DEFAULT_DURATION) {
+    if (this.visible) {
+      this.visible = false;
+      this.startFade(1, 0, duration, callback);
+    }
+    if (callback) {
+      this.setCallback(callback);
+    }
+  }
+
+  setCallback(callback) {
+    if (this.isFading) {
+      this.callback = callback;
+    } else {
+      setTimeout(() => { callback(); }, 0);
+    }
+  }
+
+  startFade(startAlpha, endAlpha, duration = SpriteFader.DEFAULT_DURATION, callback = null) {
+    this.callback = callback;
+    this.startAlpha = startAlpha;
+    this.endAlpha = endAlpha;
+    this.duration = duration;
+    this.isFading = true;
+    this.timer = 0;
+  }
+
+  onFadeEnd() {
+    if (this.callback) {
+      setTimeout(() => {
+        this.callback();
+        this.callback = null;
+      }, 0);
+    }
+    this.isFading = false;
+    this.startAlpha = null;
+    this.endAlpha = null;
+    this.duration = null;
+    this.timer = 0;
+  }
+
+  animate(time) {
+    if (this.isFading) {
+      this.timer = Math.min(this.duration, this.timer + time);
+      this.sprite.alpha = this.startAlpha
+        + (this.endAlpha - this.startAlpha) * (this.timer / this.duration);
+      if (this.timer === this.duration) {
+        this.onFadeEnd();
+      }
+    }
+  }
+}
+
+SpriteFader.DEFAULT_DURATION = 20;
+
+module.exports = SpriteFader;
+
+
+/***/ }),
+
+/***/ "./src/js/lib/statistics.js":
+/*!**********************************!*\
+  !*** ./src/js/lib/statistics.js ***!
+  \**********************************/
+/***/ ((module) => {
+
+function average(data) {
+  return data.length > 0 ? data.reduce((a, b) => a + b, 0) / data.length : undefined;
+}
+
+function sortedQuantile(sortedData, q) {
+  if (sortedData.length === 0) {
+    return undefined;
+  }
+  const pos = (sortedData.length - 1) * q;
+  const base = Math.floor(pos);
+  const rest = pos - base;
+  if (sortedData[base + 1] !== undefined) {
+    return sortedData[base] + rest * (sortedData[base + 1] - sortedData[base]);
+  }
+  return sortedData[base];
+}
+
+function quantile(data, q) {
+  return sortedQuantile(data.sort((a, b) => a - b), q);
+}
+
+function median(data) {
+  return quantile(data, 0.5);
+}
+
+function sortedMedian(data) {
+  return sortedQuantile(data, 0.5);
+}
+
+function firstQuartile(data) {
+  return quantile(data, 0.25);
+}
+
+function sortedFirstQuartile(data) {
+  return sortedQuantile(data, 0.25);
+}
+
+function thirdQuartile(data) {
+  return quantile(data, 0.75);
+}
+
+function sortedThirdQuartile(data) {
+  return sortedQuantile(data, 0.75);
+}
+
+function numberUnderValue(data, k) {
+  let count = 0;
+  for (let i = 0; i < data.length; i += 1) {
+    if (data[i] < k) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+function percentageUnderValue(data, k) {
+  return data.length > 0 ? numberUnderValue(data, k) / data.length : 1;
+}
+
+function numberOverValue(data, k) {
+  let count = 0;
+  for (let i = 0; i < data.length; i += 1) {
+    if (data[i] > k) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+function percentageOverValue(data, k) {
+  return data.length > 0 ? numberOverValue(data, k) / data.length : 1;
+}
+
+function numberOverEqValue(data, k) {
+  let count = 0;
+  for (let i = 0; i < data.length; i += 1) {
+    if (data[i] >= k) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+function percentageOverEqValue(data, k) {
+  return data.length > 0 ? numberOverEqValue(data, k) / data.length : 1;
+}
+
+function numberEqualValue(data, k) {
+  let count = 0;
+  for (let i = 0; i < data.length; i += 1) {
+    if (data[i] === k) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+function percentageEqualValue(data, k) {
+  return data.length > 0 ? numberEqualValue(data, k) / data.length : 1;
+}
+
+module.exports = {
+  average,
+  quantile,
+  sortedQuantile,
+  median,
+  sortedMedian,
+  firstQuartile,
+  sortedFirstQuartile,
+  thirdQuartile,
+  sortedThirdQuartile,
+  numberUnderValue,
+  percentageUnderValue,
+  numberOverValue,
+  percentageOverValue,
+  numberOverEqValue,
+  percentageOverEqValue,
+  numberEqualValue,
+  percentageEqualValue,
+};
+
+
+/***/ }),
+
+/***/ "./src/js/lib/travel-times.js":
+/*!************************************!*\
+  !*** ./src/js/lib/travel-times.js ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const FlatQueue = __webpack_require__(/*! ./flatqueue */ "./src/js/lib/flatqueue.js");
+const Array2D = __webpack_require__(/*! ./array-2d */ "./src/js/lib/array-2d.js");
+const { getTileTypeId } = __webpack_require__(/*! .//config-helpers */ "./src/js/lib/config-helpers.js");
+
+class TravelTimeCalculator {
+  constructor(config) {
+    this.config = config;
+
+    this.roadTileTime = this.config.goals['travel-times']['road-travel-time'];
+    this.defaultTileTime = this.config.goals['travel-times']['default-travel-time'];
+    this.slowTileTime = this.config.goals['travel-times']['slow-travel-time'];
+
+    this.emptyId = getTileTypeId(this.config, 'empty');
+    this.roadId = getTileTypeId(this.config, 'road');
+    this.waterId = getTileTypeId(this.config, 'water');
+  }
+
+  /**
+   * Given a city map and a starting point it returns the travel time to all other cells.
+   *
+   * Uses [Uniform Cost Search](https://www.redblobgames.com/pathfinding/a-star/introduction.html),
+   * a variation on Dijkstra's algorithm.
+   *
+   * @param {Grid} map
+   * @param {number} startX
+   * @param {number} startY
+   * @return {number[][]}
+   */
+  travelTimes(map, [startX, startY]) {
+    const answer = Array2D.create(map.width, map.height, null);
+    const frontier = new FlatQueue();
+    frontier.push([startX, startY, map.get(startX, startY)], 0);
+    answer[startY][startX] = 0;
+
+    while (frontier.length > 0) {
+      const [currX, currY, currTile] = frontier.pop();
+      map.adjacentCells(currX, currY)
+        .forEach(([nextX, nextY, nextTile]) => {
+          const newCost = answer[currY][currX] + this.timeBetweenTiles(currTile, nextTile);
+          const nextCost = answer[nextY][nextX];
+          if (nextCost === null || newCost < nextCost) {
+            answer[nextY][nextX] = newCost;
+            frontier.push([nextX, nextY, nextTile], newCost);
+          }
+        });
+    }
+
+    return answer;
+  }
+
+  /**
+   * Returns the travel time between two tiles based on their types.
+   *
+   * @param tileTypeFrom
+   * @param tileTypeTo
+   * @return {Number}
+   */
+  timeBetweenTiles(tileTypeFrom, tileTypeTo) {
+    if (tileTypeFrom === this.roadId && tileTypeTo === this.roadId) {
+      return this.roadTileTime;
+    }
+    if (tileTypeFrom === this.waterId || tileTypeTo === this.waterId
+      || tileTypeFrom === this.emptyId || tileTypeTo === this.emptyId) {
+      return this.slowTileTime;
+    }
+    return this.defaultTileTime;
+  }
+}
+
+module.exports = TravelTimeCalculator;
+
+
+/***/ }),
+
 /***/ "./src/js/map-text-overlay.js":
 /*!************************************!*\
   !*** ./src/js/map-text-overlay.js ***!
@@ -9562,7 +9562,7 @@ module.exports = IndexView;
 /* globals PIXI */
 
 const MapView = __webpack_require__(/*! ./map-view */ "./src/js/map-view.js");
-const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+const Array2D = __webpack_require__(/*! ./lib/array-2d */ "./src/js/lib/array-2d.js");
 
 class MapTextOverlay {
   constructor(mapView) {
@@ -9643,8 +9643,8 @@ module.exports = MapTextOverlay;
 
 /* globals PIXI */
 const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
-const { getTileTypeId } = __webpack_require__(/*! ./aux/config-helpers */ "./src/js/aux/config-helpers.js");
+const Array2D = __webpack_require__(/*! ./lib/array-2d */ "./src/js/lib/array-2d.js");
+const { getTileTypeId } = __webpack_require__(/*! ./lib/config-helpers */ "./src/js/lib/config-helpers.js");
 const PencilCursor = __webpack_require__(/*! ../../static/fa/pencil-alt-solid.svg */ "./static/fa/pencil-alt-solid.svg");
 
 class MapView {
@@ -10255,7 +10255,7 @@ module.exports = AutonomousVehicleHandler;
 
 /* globals PIXI */
 const PowerUpViewHandler = __webpack_require__(/*! ../power-up-view-handler */ "./src/js/power-up-view-handler.js");
-const { randomItem } = __webpack_require__(/*! ../aux/random */ "./src/js/aux/random.js");
+const { randomItem } = __webpack_require__(/*! ../lib/random */ "./src/js/lib/random.js");
 // const AiCarDriver = require('../cars/ai-car-driver');
 
 const PULSING_INTERVAL = 120;
@@ -10475,7 +10475,7 @@ module.exports = AutonomousVehicleLidarHandler;
 
 const PowerUpViewHandler = __webpack_require__(/*! ../power-up-view-handler */ "./src/js/power-up-view-handler.js");
 const MapView = __webpack_require__(/*! ../map-view */ "./src/js/map-view.js");
-const { getTileTypeId } = __webpack_require__(/*! ../aux/config-helpers */ "./src/js/aux/config-helpers.js");
+const { getTileTypeId } = __webpack_require__(/*! ../lib/config-helpers */ "./src/js/lib/config-helpers.js");
 
 class DenseCityHandler extends PowerUpViewHandler {
   constructor(config, mapView) {
@@ -11041,7 +11041,7 @@ module.exports = VariableMapOverlay;
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /* globals PIXI */
-const Array2D = __webpack_require__(/*! ./aux/array-2d */ "./src/js/aux/array-2d.js");
+const Array2D = __webpack_require__(/*! ./lib/array-2d */ "./src/js/lib/array-2d.js");
 
 const TILE_SIZE = 10;
 
@@ -11251,7 +11251,7 @@ const VariableMapView = __webpack_require__(/*! ./variable-map-view */ "./src/js
 const CarOverlay = __webpack_require__(/*! ./cars/car-overlay */ "./src/js/cars/car-overlay.js");
 const TileCounterView = __webpack_require__(/*! ./tile-counter-view */ "./src/js/tile-counter-view.js");
 const TestScenarios = __webpack_require__(/*! ./test/scenarios */ "./src/js/test/scenarios.js");
-const showFatalError = __webpack_require__(/*! ./aux/show-fatal-error */ "./src/js/aux/show-fatal-error.js");
+const showFatalError = __webpack_require__(/*! ./lib/show-fatal-error */ "./src/js/lib/show-fatal-error.js");
 __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
 const ZoneBalanceView = __webpack_require__(/*! ./zone-balance-view */ "./src/js/zone-balance-view.js");
 const DataInspectorView = __webpack_require__(/*! ./data-inspector-view */ "./src/js/data-inspector-view.js");
@@ -11515,4 +11515,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.4f95a3fbce1de4ca730a.js.map
+//# sourceMappingURL=default.86697b07d1c06d1f3356.js.map

@@ -522,96 +522,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./src/js/aux/config-helpers.js":
-/*!**************************************!*\
-  !*** ./src/js/aux/config-helpers.js ***!
-  \**************************************/
-/***/ ((module) => {
-
-function getTileTypeId(config, type) {
-  const entry = Object.entries(config.tileTypes).find(([, props]) => props.type === type);
-  return entry ? Number(entry[0]) : null;
-}
-
-function getTileType(config, type) {
-  const entry = Object.entries(config.tileTypes).find(([, props]) => props.type === type);
-  return entry ? entry[1] : null;
-}
-
-module.exports = { getTileTypeId, getTileType };
-
-
-/***/ }),
-
-/***/ "./src/js/aux/random.js":
-/*!******************************!*\
-  !*** ./src/js/aux/random.js ***!
-  \******************************/
-/***/ ((module) => {
-
-/**
- * Create a function that picks an element from a set where each has a probability weight.
- *
- * The returned function can be called repeatedly to pick random elements.
- *
- * @param {[any, number]} weightedOptions
- *  An array of options. Each option is an array where the first
- *  item is the element, and the second is the weight.
- * @return {function(): any}
- *  Returns a function that returns a random element.
- */
-function weightedRandomizer(weightedOptions) {
-  let last = 0;
-  const ranges = new Array(weightedOptions.length);
-  // ranges = [from, to, value]
-  weightedOptions.forEach(([value, weight], i) => {
-    ranges[i] = [last, last + weight, value];
-    last += weight;
-  });
-
-  return () => {
-    const rndP = Math.random() * last;
-    return ranges.find(([min, max]) => rndP > min && rndP < max)[2];
-  };
-}
-
-function randomItem(items) {
-  return items[Math.floor(Math.random() * items.length)];
-}
-
-module.exports = {
-  weightedRandomizer,
-  randomItem,
-};
-
-
-/***/ }),
-
-/***/ "./src/js/aux/show-fatal-error.js":
-/*!****************************************!*\
-  !*** ./src/js/aux/show-fatal-error.js ***!
-  \****************************************/
-/***/ ((module) => {
-
-function showFatalError(text, error) {
-  $('<div></div>')
-    .addClass('fatal-error')
-    .append($('<div></div>')
-      .addClass('fatal-error-text')
-      .html(text))
-    .append($('<div></div>')
-      .addClass('fatal-error-details')
-      .html(error.message))
-    .appendTo('body');
-
-  $('html').addClass('with-fatal-error');
-}
-
-module.exports = showFatalError;
-
-
-/***/ }),
-
 /***/ "./src/js/citizen-request-view-mgr.js":
 /*!********************************************!*\
   !*** ./src/js/citizen-request-view-mgr.js ***!
@@ -781,8 +691,8 @@ module.exports = CitizenRequestViewMgr;
   \****************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-const { randomItem } = __webpack_require__(/*! ./aux/random */ "./src/js/aux/random.js");
-const { getTileType } = __webpack_require__(/*! ./aux/config-helpers */ "./src/js/aux/config-helpers.js");
+const { randomItem } = __webpack_require__(/*! ./lib/random */ "./src/js/lib/random.js");
+const { getTileType } = __webpack_require__(/*! ./lib/config-helpers */ "./src/js/lib/config-helpers.js");
 
 class CitizenRequestView {
   constructor(config) {
@@ -1307,6 +1217,96 @@ module.exports = IndexView;
 
 /***/ }),
 
+/***/ "./src/js/lib/config-helpers.js":
+/*!**************************************!*\
+  !*** ./src/js/lib/config-helpers.js ***!
+  \**************************************/
+/***/ ((module) => {
+
+function getTileTypeId(config, type) {
+  const entry = Object.entries(config.tileTypes).find(([, props]) => props.type === type);
+  return entry ? Number(entry[0]) : null;
+}
+
+function getTileType(config, type) {
+  const entry = Object.entries(config.tileTypes).find(([, props]) => props.type === type);
+  return entry ? entry[1] : null;
+}
+
+module.exports = { getTileTypeId, getTileType };
+
+
+/***/ }),
+
+/***/ "./src/js/lib/random.js":
+/*!******************************!*\
+  !*** ./src/js/lib/random.js ***!
+  \******************************/
+/***/ ((module) => {
+
+/**
+ * Create a function that picks an element from a set where each has a probability weight.
+ *
+ * The returned function can be called repeatedly to pick random elements.
+ *
+ * @param {[any, number]} weightedOptions
+ *  An array of options. Each option is an array where the first
+ *  item is the element, and the second is the weight.
+ * @return {function(): any}
+ *  Returns a function that returns a random element.
+ */
+function weightedRandomizer(weightedOptions) {
+  let last = 0;
+  const ranges = new Array(weightedOptions.length);
+  // ranges = [from, to, value]
+  weightedOptions.forEach(([value, weight], i) => {
+    ranges[i] = [last, last + weight, value];
+    last += weight;
+  });
+
+  return () => {
+    const rndP = Math.random() * last;
+    return ranges.find(([min, max]) => rndP > min && rndP < max)[2];
+  };
+}
+
+function randomItem(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+module.exports = {
+  weightedRandomizer,
+  randomItem,
+};
+
+
+/***/ }),
+
+/***/ "./src/js/lib/show-fatal-error.js":
+/*!****************************************!*\
+  !*** ./src/js/lib/show-fatal-error.js ***!
+  \****************************************/
+/***/ ((module) => {
+
+function showFatalError(text, error) {
+  $('<div></div>')
+    .addClass('fatal-error')
+    .append($('<div></div>')
+      .addClass('fatal-error-text')
+      .html(text))
+    .append($('<div></div>')
+      .addClass('fatal-error-details')
+      .html(error.message))
+    .appendTo('body');
+
+  $('html').addClass('with-fatal-error');
+}
+
+module.exports = showFatalError;
+
+
+/***/ }),
+
 /***/ "./src/js/server-socket-connector.js":
 /*!*******************************************!*\
   !*** ./src/js/server-socket-connector.js ***!
@@ -1600,7 +1600,7 @@ var __webpack_exports__ = {};
   !*** ./src/js/main-dashboard.js ***!
   \**********************************/
 __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
-const showFatalError = __webpack_require__(/*! ./aux/show-fatal-error */ "./src/js/aux/show-fatal-error.js");
+const showFatalError = __webpack_require__(/*! ./lib/show-fatal-error */ "./src/js/lib/show-fatal-error.js");
 const VariableRankListView = __webpack_require__(/*! ./index-list-view */ "./src/js/index-list-view.js");
 const ServerSocketConnector = __webpack_require__(/*! ./server-socket-connector */ "./src/js/server-socket-connector.js");
 const ConnectionStateView = __webpack_require__(/*! ./connection-state-view */ "./src/js/connection-state-view.js");
@@ -1700,4 +1700,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=dashboard.638ec8ad05c8771313fb.js.map
+//# sourceMappingURL=dashboard.d1862ae4da5e93798dfe.js.map

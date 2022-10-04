@@ -1,6 +1,6 @@
 const FlatQueue = require('./flatqueue');
 const Array2D = require('./array-2d');
-const { getTileTypeId } = require('../aux/config-helpers');
+const { getTileTypeId } = require('.//config-helpers');
 
 class TravelTimeCalculator {
   constructor(config) {
