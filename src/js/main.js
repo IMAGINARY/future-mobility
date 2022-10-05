@@ -4,12 +4,12 @@ const CfgReaderFetch = require('./cfg-reader-fetch');
 const CfgLoader = require('./cfg-loader');
 const City = require('./city');
 const MapEditor = require('./editor/map-editor');
-const VariableMapView = require('./variable-map-view');
 const CarOverlay = require('./cars/car-overlay');
 const TileCounterView = require('./tile-counter-view');
 const TestScenarios = require('./test/scenarios');
 const showFatalError = require('./lib/show-fatal-error');
 require('../sass/default.scss');
+require('../sass/desktop.scss');
 const ZoneBalanceView = require('./zone-balance-view');
 const DataInspectorView = require('./data-inspector-view');
 const VariableRankListView = require('./index-list-view');
@@ -38,6 +38,7 @@ const SpawnTramHandler = require('./power-ups/spawn-tram');
 const WalkableCityHandler = require('./power-ups/walkable-city-handler');
 const DenseCityHandler = require('./power-ups/dense-city-handler');
 const AutonomousVehicleLidarHandler = require('./power-ups/autonomous-vehicle-lidar-handler');
+const PowerUpPanel = require('./editor/power-up-panel');
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -82,7 +83,7 @@ cfgLoader.load([
     stats.registerModifier(new PowerUpDataModifier(config, powerUpMgr));
 
     const app = new PIXI.Application({
-      width: 3840,
+      width: 1920,
       height: 1920,
       backgroundColor: 0xf2f2f2,
     });
@@ -97,7 +98,7 @@ cfgLoader.load([
       .then((textures) => {
         $('[data-component="app-container"]').append(app.view);
 
-        const mapEditor = new MapEditor($('body'), city, config, textures, stats);
+        const mapEditor = new MapEditor($('.fms-desktop'), city, config, textures, stats);
         app.stage.addChild(mapEditor.displayObject);
         mapEditor.displayObject.width = 1920;
         mapEditor.displayObject.height = 1920;
@@ -124,25 +125,6 @@ cfgLoader.load([
         powerUpViewMgr.registerHandler(new WalkableCityHandler(config, mapEditor.mapView));
         powerUpViewMgr.registerHandler(new DenseCityHandler(config, mapEditor.mapView));
         powerUpViewMgr.registerHandler(new AutonomousVehicleLidarHandler(config, carOverlay), true);
-
-        const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
-        app.stage.addChild(emissionsVarViewer.displayObject);
-        emissionsVarViewer.displayObject.width = 960;
-        emissionsVarViewer.displayObject.height = 960;
-        emissionsVarViewer.displayObject.x = 1920 + 40;
-        emissionsVarViewer.displayObject.y = 0;
-
-        const noiseVarViewer = new VariableMapView(city.map.width, city.map.height, 0x20e95ff);
-        app.stage.addChild(noiseVarViewer.displayObject);
-        noiseVarViewer.displayObject.width = 960;
-        noiseVarViewer.displayObject.height = 960;
-        noiseVarViewer.displayObject.x = 1920 + 40;
-        noiseVarViewer.displayObject.y = 960;
-
-        stats.events.on('update', () => {
-          emissionsVarViewer.update(stats.get('pollution-map'));
-          noiseVarViewer.update(stats.get('noise-map'));
-        });
 
         const counterView = new TileCounterView(stats, config);
         const zoneBalanceView = new ZoneBalanceView(stats, config);
@@ -251,6 +233,22 @@ cfgLoader.load([
         stats.events.on('update', () => {
           citizenRequestViewMgr.handleUpdate(stats.getGoals());
         });
+
+        const powerUpPanel = new PowerUpPanel(config);
+        function updatePowerUps() {
+          stats.calculateAll();
+          powerUpViewMgr.update(powerUpMgr.activePowerUps());
+        }
+
+        powerUpPanel.events.on('enable', (id) => {
+          powerUpMgr.setState(id, true);
+          updatePowerUps();
+        });
+        powerUpPanel.events.on('disable', (id) => {
+          powerUpMgr.setState(id, false);
+          updatePowerUps();
+        });
+        $('[data-component=powerUpPanel]').append(powerUpPanel.$element);
 
         if (testScenario) {
           testScenario(city, carOverlay);
