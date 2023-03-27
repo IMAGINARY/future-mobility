@@ -86,10 +86,12 @@ class PowerUpSelector {
   }
 
   pickSelectablePowerUps() {
+    const hideLastActive = this.config.dashboard.powerUps.selector.hideLastActive;
+
     return Object.keys(this.config.powerUps)
       .filter(id => !(this.config.powerUps[id].enabled === false))
       .filter(id => !(this.activePowerUps.includes(id)))
-      .map(id => [id, (this.lastActivePowerUps.includes(id) ? 1 : 0) + Math.random()])
+      .map(id => [id, (hideLastActive && this.lastActivePowerUps.includes(id) ? 1 : 0) + Math.random()])
       .sort(([, recentA], [, recentB]) => recentA - recentB)
       .map(([id]) => id)
       .slice(0, 3);

@@ -1,3 +1,7 @@
+const deepmerge = require('deepmerge');
+
+const overwriteMerge = (destinationArray, sourceArray) => sourceArray;
+
 class CfgLoader {
   constructor(cfgReader, cfgParser) {
     this.reader = cfgReader;
@@ -19,7 +23,7 @@ class CfgLoader {
       );
     });
 
-    return Promise.all(promises).then(() => Object.assign({}, ...segments));
+    return Promise.all(promises).then(() => deepmerge.all(segments.filter(s => s), { arrayMerge: overwriteMerge }));
   }
 }
 
