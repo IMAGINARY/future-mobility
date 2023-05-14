@@ -4831,19 +4831,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./src/sass/desktop.scss":
-/*!*******************************!*\
-  !*** ./src/sass/desktop.scss ***!
-  \*******************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-// extracted by mini-css-extract-plugin
-
-
-/***/ }),
-
 /***/ "./node_modules/vec2/vec2.js":
 /*!***********************************!*\
   !*** ./node_modules/vec2/vec2.js ***!
@@ -8372,60 +8359,6 @@ module.exports = ModalLoad;
 
 /***/ }),
 
-/***/ "./src/js/editor/modal-power-up.js":
-/*!*****************************************!*\
-  !*** ./src/js/editor/modal-power-up.js ***!
-  \*****************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const Modal = __webpack_require__(/*! ../modal */ "./src/js/modal.js");
-
-class ModalPowerUp extends Modal {
-  constructor(config, selectablePowerUps) {
-    super({
-      title: 'Power-Ups',
-      size: 'xl',
-    });
-    this.config = config;
-
-    this.$selector = $('<div></div>').addClass(['row', 'powerups-selector-main'])
-      .append(
-        selectablePowerUps.map(powerUpId => $('<div></div>').addClass('col')
-          .append(this.renderPowerUp(powerUpId))
-        )
-      )
-      .appendTo(this.$body);
-  }
-
-  renderPowerUp(powerUpId) {
-    const props = this.config.powerUps[powerUpId];
-    return (
-      $('<div></div>').addClass('powerup')
-        .attr('type', 'button')
-        .append($('<div></div>').addClass('title')
-          .append($('<div></div>').addClass('text-de text-main')
-            .html(props.title.de))
-          .append($('<div></div>').addClass('text-en text-translation')
-            .html(props.title.en)))
-        .append($('<div></div>').addClass('image')
-          .attr('style', `background-image: url('static/powerups/${powerUpId}.svg')`))
-        .append($('<div></div>').addClass('description')
-          .append($('<div></div>').addClass('text-de text-main')
-            .html(props.description.de))
-          .append($('<div></div>').addClass('text-en text-translation')
-            .html(props.description.en)))
-        .on('click', () => {
-          this.hide(powerUpId);
-        })
-    );
-  }
-}
-
-module.exports = ModalPowerUp;
-
-
-/***/ }),
-
 /***/ "./src/js/editor/modal-save.js":
 /*!*************************************!*\
   !*** ./src/js/editor/modal-save.js ***!
@@ -8556,134 +8489,6 @@ class ObjectStore {
 }
 
 module.exports = ObjectStore;
-
-
-/***/ }),
-
-/***/ "./src/js/editor/power-up-panel.js":
-/*!*****************************************!*\
-  !*** ./src/js/editor/power-up-panel.js ***!
-  \*****************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-const City = __webpack_require__(/*! ../city */ "./src/js/city.js");
-const ModalPowerUp = __webpack_require__(/*! ./modal-power-up */ "./src/js/editor/modal-power-up.js");
-
-class PowerUpPanel {
-  constructor(config) {
-    this.config = config;
-    this.events = new EventEmitter();
-    this.activePowerUps = [];
-    this.lastActivePowerUps = [];
-    this.$element = $('<div></div>').addClass('power-up-panel');
-
-    this.statusElement = $('<div></div>')
-      .addClass('powerups-selection')
-      .appendTo(this.$element);
-
-    this.selectButton = $('<button></button>')
-      .attr('type', 'button')
-      .addClass('btn btn-block btn-dashboard-action btn-power-ups-activate')
-      .append($('<span></span>').addClass('text text-de')
-        .html(this.config.dashboard.powerUps.button.text.de))
-      .append($('<span></span>').addClass('text text-en')
-        .html(this.config.dashboard.powerUps.button.text.en))
-      .on('click', () => {
-        this.openSelector(this.pickSelectablePowerUps());
-      })
-      .appendTo(this.$element);
-
-    this.update([]);
-  }
-
-  updateSelectButton() {
-    if (this.activePowerUps.length >= 2) {
-      this.disableSelectButton();
-    } else {
-      this.enableSelectButton();
-    }
-  }
-
-  disableSelectButton() {
-    this.selectButton.attr('disabled', true);
-    this.selectButton.addClass('disabled');
-  }
-
-  enableSelectButton() {
-    this.selectButton.attr('disabled', false);
-    this.selectButton.removeClass('disabled');
-  }
-
-  update(activePowerUps) {
-    this.lastActivePowerUps
-      .push(...this.activePowerUps.filter(id => !activePowerUps.includes(id)));
-    this.lastActivePowerUps = this.lastActivePowerUps.slice(-2);
-    this.activePowerUps = activePowerUps;
-
-    this.statusElement.empty();
-    if (activePowerUps.length === 0) {
-      this.statusElement.append(
-        $('<div></div>').addClass('no-selection')
-          .append($('<div></div>').addClass('text text-de')
-            .text('Keine Power-Ups aktiv'))
-          .append($('<div></div>').addClass('text text-en')
-            .text('No Power-Ups active'))
-      );
-    } else {
-      this.statusElement.append(
-        activePowerUps.map(powerUpId => this.renderPowerUpThumb(powerUpId))
-      );
-    }
-
-    this.updateSelectButton();
-  }
-
-  pickSelectablePowerUps() {
-    return Object.keys(this.config.powerUps)
-      .filter(id => !(this.config.powerUps[id].enabled === false))
-      .filter(id => !(this.activePowerUps.includes(id)))
-      .map(id => [id, (this.lastActivePowerUps.includes(id) ? 1 : 0) + Math.random()])
-      .sort(([, recentA], [, recentB]) => recentA - recentB)
-      .map(([id]) => id)
-      .slice(0, 3);
-  }
-
-  renderPowerUpThumb(powerUpId) {
-    const props = this.config.powerUps[powerUpId];
-    return (
-      $('<div></div>').addClass('powerup')
-        .attr('type', 'button')
-        .append($('<div></div>').addClass('title')
-          .append($('<div></div>').addClass('text-de text-main')
-            .html(props.title.de))
-          .append($('<div></div>').addClass('text-en text-translation')
-            .html(props.title.en)))
-        .append($('<button></button>').attr('type', 'button')
-          .addClass('btn btn-block btn-power-ups-disable')
-          .append($('<span></span>').addClass('text text-de text-main').text('Deaktivieren'))
-          .append($('<span></span>').addClass('text text-en text-translation').text('Disable'))
-          .on('click', () => {
-            this.events.emit('disable', powerUpId);
-            this.activePowerUps = this.activePowerUps.filter(id => id !== powerUpId);
-            this.update(this.activePowerUps);
-          }))
-    );
-  }
-
-  openSelector(selectablePowerUps) {
-    const modal = new ModalPowerUp(this.config, selectablePowerUps);
-    modal.show().then((powerUpId) => {
-      if (powerUpId) {
-        this.events.emit('enable', powerUpId);
-        this.activePowerUps.push(powerUpId);
-        this.update(this.activePowerUps);
-      }
-    });
-  }
-}
-
-module.exports = PowerUpPanel;
 
 
 /***/ }),
@@ -10785,11 +10590,11 @@ class AutonomousVehicleLidarHandler extends PowerUpViewHandler {
         boundingBox.graphics.x = boundingBox.car.sprite.x;
         boundingBox.graphics.y = boundingBox.car.sprite.y;
         boundingBox.graphics.rotation = boundingBox.car.sprite.rotation;
+        boundingBox.elapsed += time;
+        if (boundingBox.elapsed > boundingBox.duration) {
+          this.onBoundingBoxEnd(boundingBox);
+        }
       } else {
-        this.onBoundingBoxEnd(boundingBox);
-      }
-      boundingBox.elapsed += time;
-      if (boundingBox.elapsed > boundingBox.duration) {
         this.onBoundingBoxEnd(boundingBox);
       }
     });
@@ -11581,21 +11386,21 @@ module.exports = __webpack_require__.p + "2174451d87ee3f5a3181.svg";
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
-/*!************************!*\
-  !*** ./src/js/main.js ***!
-  \************************/
+/*!********************************!*\
+  !*** ./src/js/main-devtool.js ***!
+  \********************************/
 /* globals PIXI */
 const yaml = __webpack_require__(/*! js-yaml */ "./node_modules/js-yaml/index.js");
 const CfgReaderFetch = __webpack_require__(/*! ./cfg-reader-fetch */ "./src/js/cfg-reader-fetch.js");
 const CfgLoader = __webpack_require__(/*! ./cfg-loader */ "./src/js/cfg-loader.js");
 const City = __webpack_require__(/*! ./city */ "./src/js/city.js");
 const MapEditor = __webpack_require__(/*! ./editor/map-editor */ "./src/js/editor/map-editor.js");
+const VariableMapView = __webpack_require__(/*! ./variable-map-view */ "./src/js/variable-map-view.js");
 const CarOverlay = __webpack_require__(/*! ./cars/car-overlay */ "./src/js/cars/car-overlay.js");
 const TileCounterView = __webpack_require__(/*! ./tile-counter-view */ "./src/js/tile-counter-view.js");
 const TestScenarios = __webpack_require__(/*! ./test/scenarios */ "./src/js/test/scenarios.js");
 const showFatalError = __webpack_require__(/*! ./lib/show-fatal-error */ "./src/js/lib/show-fatal-error.js");
 __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
-__webpack_require__(/*! ../sass/desktop.scss */ "./src/sass/desktop.scss");
 const ZoneBalanceView = __webpack_require__(/*! ./zone-balance-view */ "./src/js/zone-balance-view.js");
 const DataInspectorView = __webpack_require__(/*! ./data-inspector-view */ "./src/js/data-inspector-view.js");
 const VariableRankListView = __webpack_require__(/*! ./index-list-view */ "./src/js/index-list-view.js");
@@ -11624,7 +11429,6 @@ const SpawnTramHandler = __webpack_require__(/*! ./power-ups/spawn-tram */ "./sr
 const WalkableCityHandler = __webpack_require__(/*! ./power-ups/walkable-city-handler */ "./src/js/power-ups/walkable-city-handler.js");
 const DenseCityHandler = __webpack_require__(/*! ./power-ups/dense-city-handler */ "./src/js/power-ups/dense-city-handler.js");
 const AutonomousVehicleLidarHandler = __webpack_require__(/*! ./power-ups/autonomous-vehicle-lidar-handler */ "./src/js/power-ups/autonomous-vehicle-lidar-handler.js");
-const PowerUpPanel = __webpack_require__(/*! ./editor/power-up-panel */ "./src/js/editor/power-up-panel.js");
 
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
@@ -11669,7 +11473,7 @@ cfgLoader.load([
     stats.registerModifier(new PowerUpDataModifier(config, powerUpMgr));
 
     const app = new PIXI.Application({
-      width: 1920,
+      width: 3840,
       height: 1920,
       backgroundColor: 0xf2f2f2,
     });
@@ -11684,7 +11488,7 @@ cfgLoader.load([
       .then((textures) => {
         $('[data-component="app-container"]').append(app.view);
 
-        const mapEditor = new MapEditor($('.fms-desktop'), city, config, textures, stats);
+        const mapEditor = new MapEditor($('body'), city, config, textures, stats);
         app.stage.addChild(mapEditor.displayObject);
         mapEditor.displayObject.width = 1920;
         mapEditor.displayObject.height = 1920;
@@ -11711,6 +11515,25 @@ cfgLoader.load([
         powerUpViewMgr.registerHandler(new WalkableCityHandler(config, mapEditor.mapView));
         powerUpViewMgr.registerHandler(new DenseCityHandler(config, mapEditor.mapView));
         powerUpViewMgr.registerHandler(new AutonomousVehicleLidarHandler(config, carOverlay), true);
+
+        const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
+        app.stage.addChild(emissionsVarViewer.displayObject);
+        emissionsVarViewer.displayObject.width = 960;
+        emissionsVarViewer.displayObject.height = 960;
+        emissionsVarViewer.displayObject.x = 1920 + 40;
+        emissionsVarViewer.displayObject.y = 0;
+
+        const noiseVarViewer = new VariableMapView(city.map.width, city.map.height, 0x20e95ff);
+        app.stage.addChild(noiseVarViewer.displayObject);
+        noiseVarViewer.displayObject.width = 960;
+        noiseVarViewer.displayObject.height = 960;
+        noiseVarViewer.displayObject.x = 1920 + 40;
+        noiseVarViewer.displayObject.y = 960;
+
+        stats.events.on('update', () => {
+          emissionsVarViewer.update(stats.get('pollution-map'));
+          noiseVarViewer.update(stats.get('noise-map'));
+        });
 
         const counterView = new TileCounterView(stats, config);
         const zoneBalanceView = new ZoneBalanceView(stats, config);
@@ -11820,22 +11643,6 @@ cfgLoader.load([
           citizenRequestViewMgr.handleUpdate(stats.getGoals());
         });
 
-        const powerUpPanel = new PowerUpPanel(config);
-        function updatePowerUps() {
-          stats.calculateAll();
-          powerUpViewMgr.update(powerUpMgr.activePowerUps());
-        }
-
-        powerUpPanel.events.on('enable', (id) => {
-          powerUpMgr.setState(id, true);
-          updatePowerUps();
-        });
-        powerUpPanel.events.on('disable', (id) => {
-          powerUpMgr.setState(id, false);
-          updatePowerUps();
-        });
-        $('[data-component=powerUpPanel]').append(powerUpPanel.$element);
-
         if (testScenario) {
           testScenario(city, carOverlay);
           if (!window.test) {
@@ -11856,4 +11663,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.72d8819f959b6a3616bd.js.map
+//# sourceMappingURL=devtool.48fb15210517bf09dd41.js.map

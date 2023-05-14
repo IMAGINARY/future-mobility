@@ -187,11 +187,11 @@ class AutonomousVehicleLidarHandler extends PowerUpViewHandler {
         boundingBox.graphics.x = boundingBox.car.sprite.x;
         boundingBox.graphics.y = boundingBox.car.sprite.y;
         boundingBox.graphics.rotation = boundingBox.car.sprite.rotation;
+        boundingBox.elapsed += time;
+        if (boundingBox.elapsed > boundingBox.duration) {
+          this.onBoundingBoxEnd(boundingBox);
+        }
       } else {
-        this.onBoundingBoxEnd(boundingBox);
-      }
-      boundingBox.elapsed += time;
-      if (boundingBox.elapsed > boundingBox.duration) {
         this.onBoundingBoxEnd(boundingBox);
       }
     });
