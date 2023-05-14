@@ -10772,8 +10772,8 @@ class AutonomousVehicleLidarHandler extends PowerUpViewHandler {
         this.onPulseEnd(pulse);
         this.carOverlay.getCarsAround(pulse.car).forEach((carAround) => {
           const cheapDistance = (v1, v2) => Math.max(Math.abs(v1.x - v2.x), Math.abs(v1.y - v2.y));
-          if (cheapDistance(pulse.car.getSpritePosition(), carAround.getSpritePosition())
-            < PULSE_RADIUS * 1.5) {
+          if (pulse.car.sprite && carAround.sprite &&
+            cheapDistance(pulse.car.getSpritePosition(), carAround.getSpritePosition()) < PULSE_RADIUS * 1.5) {
             this.hitCar(carAround);
           }
         });
@@ -11856,4 +11856,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.910e9562a3205692b508.js.map
+//# sourceMappingURL=default.72d8819f959b6a3616bd.js.map
