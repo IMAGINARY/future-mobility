@@ -1,0 +1,3 @@
+From this folder only noise should stay. 
+Maybe safety, but I do not know how to model it. 
+Maybe object density and water distance could be factors.

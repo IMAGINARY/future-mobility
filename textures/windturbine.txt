@@ -1,0 +1,5 @@
+The png file is still missing and has to be designed. 
+Currently there are two different states planned (see windturbines.json), which switch by rotating. 
+This number might be increased. 
+It would make sense to have at least 4 variants, one for two possible prevailing wind directions (NN/SS, EE/WW, NE/SW, ES/WN).
+If the wind passes the wind turbine in prevailing wind direction possitively or negativly / forwards or backwards, does not matter for the representation.
