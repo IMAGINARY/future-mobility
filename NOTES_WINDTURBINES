@@ -1,0 +1,14 @@
+Change the following:
+
+config/
+citizen-requests.yml
+dashboard.yml
+default-settings.yml
+goals.yml
+power-ups.yml
+tiles.yml
+traffic.yml
+variables.yml
+
+Questions:
+How to deal with the .ai files?

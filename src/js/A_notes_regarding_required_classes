@@ -1,15 +1,24 @@
 Required classes:
-  - greenland
-  - housing
-    - distance to nearest wea
-  - water areas
-    - distance to nearest wea
-  - wind turbines
-    - distance to nearest wea
-    - height
-    - fundament size
-    - nominal power
+
+- greenland
+- housing
+  - distance to nearest wea
+- water areas
+  - distance to nearest wea
+- roads
+  - distance to nearest wea
+- wind turbines_small
+  - distance to nearest wea
+  - height
+  - fundament size
+  - nominal power
+- wind turbines_big
+  - distance to nearest wea
+  - height
+  - fundament size
+  - nominal power
 
 Required properties for the potential area:
-  - prevailing wind direction (NN, NE, EE, ES, SS, SW, WW, WN)
-  - wind speed ?
+
+- prevailing wind direction (NN, NE, EE, ES, SS, SW, WW, WN)
+- wind speed ?
