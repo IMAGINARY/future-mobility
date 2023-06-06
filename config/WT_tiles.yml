@@ -1,0 +1,42 @@
+tileTypes:
+  0:
+    type: park
+    name: Park
+    color: "#2ee517"
+    editorIcon: "static/fa/tree-solid.svg"
+  1:
+    type: road
+    name: Road
+    color: "#8f8f8f"
+    editorIcon: "static/fa/road-solid.svg"
+    distance_WEA_m_fixed: 30.0
+  2:
+    type: residential
+    name: Residential
+    color: "#fd6451"
+    editorIcon: "static/fa/home-solid.svg"
+    # for Lower Saxony, for NRW it would be 1000 m fixed
+    distance_WEA_m_factor_height: 2
+  3:
+    type: water
+    name: Water
+    color: "#19fff7"
+    editorIcon: "static/fa/water-solid.svg"
+    # if size is bigger than 1ha
+    distance_WEA_m_fixed: 50.0
+  4:
+    type: windTurbineSmall
+    name: Wind Turbine Small
+    # light grey
+    color: "#cfd1cf"
+    # 2D/3D
+    distance_WEA_m_factor_height_prevailing: 3.0
+    distance_WEA_m_factor_height_NOT_prevailing: 2.0
+  5:
+    type: windTurbineBig
+    name: Wind Turbine Big
+    # light grey
+    color: "#cfd1cf"
+    # 2D/3D
+    distance_WEA_m_factor_height_prevailing: 3.0
+    distance_WEA_m_factor_height_NOT_prevailing: 2.0

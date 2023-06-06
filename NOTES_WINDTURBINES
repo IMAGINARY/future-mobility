@@ -10,5 +10,8 @@ tiles.yml
 traffic.yml
 variables.yml
 
+--> New:
+WT_tiles.yml --> Default should be greenland/park
+
 Questions:
 How to deal with the .ai files?
