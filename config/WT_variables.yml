@@ -1,0 +1,9 @@
+variables:
+  noise:
+    name:
+      de: Lärmbelastung
+      en: Noise level
+  energy_gain:
+    name:
+      de: Energiegewinn
+      en: Energy gain

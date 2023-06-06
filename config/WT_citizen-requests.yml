@@ -1,0 +1,117 @@
+# HAS TO BE FITTED TO THE USECASE
+citizenRequests:
+  green-spaces-large-spaces-area:
+    en: "*More parks!* We want a large P[park], a W[lake] or a W[river]."
+    de: "*Größere Parks!* Wir wollen große P[Parks], W[Seen] oder einen W[Fluss] in unserer Stadt."
+    group: zoning
+    urgent: false
+  green-spaces-count:
+    en: "*More parks!* P[parks] and W[water] make the city beautiful and reduce pollution."
+    de: "*Mehr Parks!* Mehr P[Parks] und W[Wasserflächen] machen die Stadt schöner und helfen gegen die Luftverschmutzung."
+    group: zoning
+    urgent: false
+  green-spaces-proximity:
+    en: "*More parks!* We want P[parks] and W[bodies of water] closer to our homes."
+    de: "*Mehr Parks!* Wir wollen P[Parks] und W[Wasserflächen] in der Nähe unserer Häuser."
+    group: zoning
+    urgent: false
+  noise-residential:
+    en: "*Too much noise!* We need R[residential zones]  in quieter parts of the city."
+    de: "*Zu viel Lärm!* Wir brauchen R[Wohngebiete] in ruhigeren Gegenden der Stadt."
+    group: environment
+    urgent: true
+  noise-city:
+    en: "*Too much noise!* C[Commercial zones] should be more spread."
+    de: "*Zu viel Lärm!* Die C[Gewerbegebiete] sollten weitläufiger verteilt sein."
+    group: environment
+    urgent: true
+  noise-max:
+    en: "*Too much noise!* Some areas of the city have very high noise levels."
+    de: "*Zu viel Lärm!* Die Lärmbelastung ist in einigen Teilen der Stadt viel zu hoch."
+    group: environment
+    urgent: true
+  pollution-city:
+    en: "*Too much pollution!* Spread I[Industrial zones] more."
+    de: "*Zu hohe Umweltverschmutzung!* I[Industriegebiete] sollten weitläufiger verteilt sein."
+    group: environment
+    urgent: true
+  pollution-residential:
+    en: "*Too much pollution!* We need R[residential zones] in less polluted parts of the city."
+    de: "*Zu hohe Umweltverschmutzung!* Wir brauchen R[Wohngebiete] in weniger verschmutzten Zonen."
+    group: environment
+    urgent: true
+  pollution-max:
+    en: "*Too much pollution!* Some areas of the city have very high pollution."
+    de: "*Zu hohe Umweltverschmutzung!* Einige Teile der Stadt haben eine viel zu hohe Umweltverschmutzung."
+    group: environment
+    urgent: true
+  zone-balance-r-low:
+    en: "*More R[residential zones]!* We need homes to live in."
+    de: "*Mehr R[Wohngebiete]!* Wir brauchen mehr Häuser, in denen wir leben können."
+    group: zoning
+    urgent: true
+  zone-balance-c-low:
+    en: "*More C[commercial zones]!* We want to shop, work, and go out with friends."
+    de: "*Mehr C[Gewerbegebiete]!* Wir wollen einkaufen, arbeiten und ausgehen."
+    group: zoning
+    urgent: false
+  zone-balance-i-low:
+    en: "*More I[industrial zones]!* They will create new jobs."
+    de: "*Mehr I[Industriegebiete]!* Sie schaffen neue Arbeitsplätze."
+    group: zoning
+    urgent: false
+  zone-balance-r-high:
+    en: "*Less R[residential zones]!* Many houses are empty."
+    de: "*Weniger R[Wohngebiete]!* Viele Häuser stehen leer."
+    group: zoning
+    urgent: false
+  zone-balance-c-high:
+    en: "*Less C[commercial zones]!* Many office spaces and shops are not being rented."
+    de: "*Weniger C[Gewerbegebiete]!* Viele Büroflächen und Geschäfte werden nicht vermietet."
+    group: zoning
+    urgent: false
+  zone-balance-i-high:
+    en: "*Less I[industrial zones]!* Factories are not working at full capacity."
+    de: "*Weniger I[Industriegebiete]!* Die Fabriken arbeiten nicht mit voller Kapazität."
+    group: zoning
+    urgent: false
+  travel-times-slow:
+    en: "*Faster travel!* We need roads connecting the whole city."
+    de: "*Bessere X[Straßenführung]!* Wir brauchen Straßen, die die ganze Stadt verbinden."
+    group: roads
+    urgent: false
+  road-count-low:
+    en: "*More X[roads]!* They're not enough for our current traffic."
+    de: "*Mehr X[Straßen]!* Sie reichen nicht aus für unseren aktuellen Verkehr."
+    group: roads
+    urgent: false
+  road-count-high:
+    en: "*Less X[roads]!* We can use their space better."
+    de: "*Weniger X[Straßen]!* Wir können den Platz der Straßen viel besser nutzen."
+    group: roads
+    urgent: false
+  accidents-intersections:
+    en: "*Less intersections!* They cause accidents."
+    de: "*Weniger Kreuzungen!* Sie verursachen Verkehrsunfälle."
+    group: roads
+    urgent: false
+citizenIcons:
+  regular:
+    - static/openmoji/bw/man-beard.svg
+    - static/openmoji/bw/man-older.svg
+    - static/openmoji/bw/man-raising-hand.svg
+    - static/openmoji/bw/man.svg
+    - static/openmoji/bw/person-bald.svg
+    - static/openmoji/bw/person.svg
+    - static/openmoji/bw/person-raising-hand.svg
+    - static/openmoji/bw/person-older.svg
+    - static/openmoji/bw/person-curly.svg
+    - static/openmoji/bw/woman-older.svg
+    - static/openmoji/bw/woman-raising-hand.svg
+    - static/openmoji/bw/woman.svg
+    - static/openmoji/bw/woman-curly.svg
+    - static/openmoji/bw/woman-headscarf.svg
+  urgent:
+    - static/openmoji/bw/person-frowning.svg
+    - static/openmoji/bw/woman-frowning.svg
+    - static/openmoji/bw/man-frowning.svg

@@ -1,0 +1,28 @@
+goals:
+  noise:
+    # Maximum noise level (in [0,1])
+    max-noise-level: 1
+    # High noise level (in [0,1])
+    high-noise-level: 0.5
+    # Medium noise level (in [0,1])
+    med-noise-level: 0.25
+    # Maximum percentage of tiles that can have noise level above the max noise level (as fraction, 1 = 100%).
+    max-noise-goal-percentage: 0.05
+    # Maximum percentage of tiles that can have noise level above the high noise level (as fraction, 1 = 100%).
+    high-noise-goal-percentage: 0.5
+    # Maximum percentage of residential areas that can have noise level above the high noise level (as fraction, 1 = 100%).
+    residential-high-noise-goal-percentage: 0.5
+    # Maximum percentage of residential areas that can have noise level above the med noise level (as fraction, 1 = 100%).
+    residential-med-noise-goal-percentage: 0.5
+  energy_gain:
+    # Maximum energy level (in [0,1])
+    max-energy-level: 1
+    # High energy level (in [0,1])
+    high-energy-level: 0.5
+    # Medium energy level (in [0,1])
+    med-energy-level: 0.25
+    # Maximum percentage of tiles that can have energy level above the max energy level (as fraction, 1 = 100%).
+    max-energy-goal-percentage: 0.05
+    # Maximum percentage of tiles that can have energy level above the high energy level (as fraction, 1 = 100%).
+    high-energy-goal-percentage: 0.5
+    # Maximum percentage of residential areas that can have energy level above the high energy level (as fraction, 1 = 100%).

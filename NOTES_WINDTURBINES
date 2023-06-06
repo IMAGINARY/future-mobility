@@ -10,8 +10,15 @@ tiles.yml
 traffic.yml
 variables.yml
 
+specs/openapi.yml --> components > schemas > config > tileTypes
+
+server/app.js
+
 --> New:
-WT_tiles.yml --> Default should be greenland/park
+config/WT_tiles.yml --> Default should be greenland/park
+config/WT_citizen-requests.yml
+config/WT_goals.yml
+config/WT_variables.yml
 
 Questions:
 How to deal with the .ai files?
