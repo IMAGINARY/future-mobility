@@ -1,20 +1,20 @@
-const path = require('path');
-const Dotenv = require('dotenv-webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const path = require("path");
+const Dotenv = require("dotenv-webpack");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 module.exports = {
   entry: {
-    default: './src/js/main.js',
-    devtool: './src/js/main-devtool.js',
-    city: './src/js/main-city.js',
-    dashboard: './src/js/main-dashboard.js',
-    editor: './src/js/main-editor.js',
+    default: "./src/js/main.js",
+    devtool: "./src/js/main-devtool.js",
+    city: "./src/js/main-city.js",
+    dashboard: "./src/js/main-dashboard.js",
+    editor: "./src/js/main-editor.js",
   },
   output: {
-    filename: '[name].[contenthash].js',
-    path: path.resolve(__dirname, 'assets'),
+    filename: "[name].[contenthash].js",
+    path: path.resolve(__dirname, "assets"),
   },
   module: {
     rules: [
@@ -25,17 +25,17 @@ module.exports = {
           {
             loader: MiniCssExtractPlugin.loader,
             options: {
-              publicPath: '',
+              publicPath: "",
             },
           },
           {
-            loader: 'css-loader',
+            loader: "css-loader",
             options: {
               sourceMap: true,
             },
           },
           {
-            loader: 'sass-loader',
+            loader: "sass-loader",
             options: {
               sourceMap: true,
             },
@@ -44,51 +44,51 @@ module.exports = {
       },
       {
         test: /\.(png|svg|jpg|jpeg|gif)$/i,
-        type: 'asset/resource',
+        type: "asset/resource",
       },
     ],
   },
   plugins: [
     new Dotenv(),
     new MiniCssExtractPlugin({
-      filename: '[name].[contenthash].css',
+      filename: "[name].[contenthash].css",
     }),
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'src/html/index.html'),
-      filename: path.resolve(__dirname, 'index.html'),
-      chunks: ['default'],
+      template: path.resolve(__dirname, "src/html/index.html"),
+      filename: path.resolve(__dirname, "index.html"),
+      chunks: ["default"],
       minify: true,
     }),
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'src/html/devtool.html'),
-      filename: path.resolve(__dirname, 'devtool.html'),
-      chunks: ['devtool'],
+      template: path.resolve(__dirname, "src/html/devtool.html"),
+      filename: path.resolve(__dirname, "devtool.html"),
+      chunks: ["devtool"],
       minify: true,
     }),
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'src/html/city.html'),
-      filename: path.resolve(__dirname, 'city.html'),
-      chunks: ['city'],
+      template: path.resolve(__dirname, "src/html/city.html"),
+      filename: path.resolve(__dirname, "city.html"),
+      chunks: ["city"],
       minify: true,
     }),
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'src/html/editor.html'),
-      filename: path.resolve(__dirname, 'editor.html'),
-      chunks: ['editor'],
+      template: path.resolve(__dirname, "src/html/editor.html"),
+      filename: path.resolve(__dirname, "editor.html"),
+      chunks: ["editor"],
       minify: true,
     }),
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'src/html/dashboard.html'),
-      filename: path.resolve(__dirname, 'dashboard.html'),
-      chunks: ['dashboard'],
+      template: path.resolve(__dirname, "src/html/dashboard.html"),
+      filename: path.resolve(__dirname, "dashboard.html"),
+      chunks: ["dashboard"],
       minify: true,
     }),
     new CleanWebpackPlugin({
       // todo: temporary measure. Dev builds should be done without hashes in the filename.
-      cleanOnceBeforeBuildPatterns: ['**/*'],
+      cleanOnceBeforeBuildPatterns: ["**/*"],
     }),
   ],
-  mode: 'development',
+  mode: "development",
   // Todo: change the source map settings for production builds
-  devtool: 'source-map',
+  devtool: "source-map",
 };

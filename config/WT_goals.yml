@@ -18,11 +18,11 @@ goals:
     # Maximum energy level (in [0,1])
     max-energy-level: 1
     # High energy level (in [0,1])
-    high-energy-level: 0.5
+    high-energy-level: 0.8
     # Medium energy level (in [0,1])
-    med-energy-level: 0.25
+    med-energy-level: 0.4
     # Maximum percentage of tiles that can have energy level above the max energy level (as fraction, 1 = 100%).
-    max-energy-goal-percentage: 0.05
+    # max-energy-goal-percentage: 0.05
     # Maximum percentage of tiles that can have energy level above the high energy level (as fraction, 1 = 100%).
-    high-energy-goal-percentage: 0.5
+    # high-energy-goal-percentage: 0.5
     # Maximum percentage of residential areas that can have energy level above the high energy level (as fraction, 1 = 100%).
