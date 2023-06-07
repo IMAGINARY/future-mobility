@@ -8,7 +8,21 @@
       "sourceSize": { "w": 72, "h": 72 }
     },
     "turbine-02": {
-      "frame": { "x": 0, "y": 144, "w": 72, "h": 72 },
+      "frame": { "x": 72, "y": 0, "w": 72, "h": 72 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 72, "h": 72 },
+      "sourceSize": { "w": 72, "h": 72 }
+    },
+    "turbine-03": {
+      "frame": { "x": 144, "y": 0, "w": 72, "h": 72 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 72, "h": 72 },
+      "sourceSize": { "w": 72, "h": 72 }
+    },
+    "turbine-04": {
+      "frame": { "x": 0, "y": 72, "w": 72, "h": 72 },
       "rotated": false,
       "trimmed": false,
       "spriteSourceSize": { "x": 0, "y": 0, "w": 72, "h": 72 },
@@ -18,7 +32,7 @@
   "meta": {
     "app": "https://www.codeandweb.com/texturepacker",
     "version": "1.0",
-    "image": "turbine.png",
+    "image": "windturbines.png",
     "format": "RGBA8888",
     "size": { "w": 216, "h": 216 },
     "scale": "1"
