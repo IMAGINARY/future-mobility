@@ -29,6 +29,7 @@ tileTypes:
     name: Wind Turbine Small
     # light grey
     color: "#cfd1cf"
+    editorIcon: ""
     # 2D/3D
     distance_WEA_m_factor_height_prevailing: 3.0
     distance_WEA_m_factor_height_NOT_prevailing: 2.0
@@ -37,6 +38,7 @@ tileTypes:
     name: Wind Turbine Big
     # light grey
     color: "#cfd1cf"
+    editorIcon: ""
     # 2D/3D
     distance_WEA_m_factor_height_prevailing: 3.0
     distance_WEA_m_factor_height_NOT_prevailing: 2.0
