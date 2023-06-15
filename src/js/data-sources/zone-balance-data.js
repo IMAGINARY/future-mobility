@@ -10,7 +10,7 @@ class ZoneBalanceData extends DataSource {
     this.tileTypeIds = {
       residential: getTileTypeId(this.config, "residential"),
       //commercial: getTileTypeId(this.config, 'commercial'),
-      industrial: getTileTypeId(this.config, "industrial"),
+      //industrial: getTileTypeId(this.config, "industrial"),
     };
 
     this.idealPct = {
@@ -18,9 +18,7 @@ class ZoneBalanceData extends DataSource {
         this.config.goals["zone-balance"]["ideal-residential-percentage"] ||
         0.5,
       //commercial: this.config.goals['zone-balance']['ideal-commercial-percentage'] || 0.25,
-      industrial:
-        this.config.goals["zone-balance"]["ideal-industrial-percentage"] ||
-        0.25,
+      //industrial: this.config.goals["zone-balance"]["ideal-industrial-percentage"] || 0.25,
     };
 
     this.undervelopedPct =
@@ -34,7 +32,7 @@ class ZoneBalanceData extends DataSource {
     this.amount = {
       residential: 0,
       //commercial: 0,
-      industrial: 0,
+      //industrial: 0,
     };
     this.underDevThreshold = {};
     this.overDevThreshold = {};
@@ -52,13 +50,13 @@ class ZoneBalanceData extends DataSource {
     this.percentage = {
       residential: 0,
       //commercial: 0,
-      industrial: 0,
+      //industrial: 0,
     };
 
     this.difference = {
       residential: 0,
       //commercial: 0,
-      industrial: 0,
+      //industrial: 0,
     };
   }
 
@@ -66,10 +64,10 @@ class ZoneBalanceData extends DataSource {
     return {
       "residential-percentage": () => this.percentage.residential,
       //'commercial-percentage': () => this.percentage.commercial,
-      "industrial-percentage": () => this.percentage.industrial,
+      //"industrial-percentage": () => this.percentage.industrial,
       "residential-difference": () => this.difference.residential,
       //'commercial-difference': () => this.difference.commercial,
-      "industrial-difference": () => this.difference.industrial,
+      //"industrial-difference": () => this.difference.industrial,
     };
   }
 
@@ -109,7 +107,7 @@ class ZoneBalanceData extends DataSource {
           1 - this.acceptablePctDiff
         ),
       },
-      {
+      /*{
         id: "zone-balance-i-low",
         category: "zone-balance",
         priority: 1,
@@ -118,7 +116,7 @@ class ZoneBalanceData extends DataSource {
           1 + this.difference.industrial,
           1 - this.acceptablePctDiff
         ),
-      },
+      },*/
       /*{
         id: 'zone-balance-c-low',
         category: 'zone-balance',
@@ -136,7 +134,7 @@ class ZoneBalanceData extends DataSource {
           1 - this.acceptablePctDiff
         ),
       },
-      {
+      /*{
         id: "zone-balance-i-high",
         category: "zone-balance",
         priority: 2,
@@ -145,7 +143,7 @@ class ZoneBalanceData extends DataSource {
           1 - this.difference.industrial,
           1 - this.acceptablePctDiff
         ),
-      },
+      },*/
       /*{
         id: 'zone-balance-c-high',
         category: 'zone-balance',

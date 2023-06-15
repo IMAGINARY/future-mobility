@@ -48,9 +48,9 @@ goals:
     # Percentage of zoned areas that should (ideally) be residential
     ideal-residential-percentage: 0.5
     # Percentage of zoned areas that should (ideally) be commercial
-    ideal-commercial-percentage: 0.25
+    #ideal-commercial-percentage: 0.25
     # Percentage of zoned areas that should (ideally) be industrial
-    ideal-industrial-percentage: 0.25
+    #ideal-industrial-percentage: 0.25
     # Minimum percentage of tiles that should be zoned areas
     underdeveloped-percentage: 0.35
     # Maximum percentage of tiles that should be zoned areas

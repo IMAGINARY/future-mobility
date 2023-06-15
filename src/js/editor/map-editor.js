@@ -142,11 +142,11 @@ class MapEditor {
 
           const residentalId = getTileTypeId(config, "residential");
           //const commercialId = getTileTypeId(config, 'commercial');
-          const industrialId = getTileTypeId(config, "industrial");
+          //const industrialId = getTileTypeId(config, "industrial");
           Array2D.zip(data, city.map.cells, (value, tile, x, y) => {
             data[y][x] =
-              tile === residentalId /*|| tile === commercialId*/ ||
-              tile === industrialId
+              tile === residentalId /*|| tile === commercialId ||
+              tile === industrialId*/
                 ? value
                 : null;
           });

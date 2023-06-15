@@ -22,10 +22,9 @@ class TrafficData extends DataSource {
   }
 
   calculate() {
-    this.zoneCount =
-      this.dataManager.get("zones-residential-count") +
-      //+ this.dataManager.get('zones-commercial-count')
-      this.dataManager.get("zones-industrial-count");
+    this.zoneCount = this.dataManager.get("zones-residential-count"); //+
+    //+ this.dataManager.get('zones-commercial-count')
+    //this.dataManager.get("zones-industrial-count");
     this.roadCount = this.dataManager.get("zones-road-count");
   }
 

@@ -9,7 +9,7 @@ class ZoneBalanceView {
     this.levels = {
       residential: 0,
       //commercial: 0,
-      industrial: 0,
+      //industrial: 0,
     };
 
     const tileTypes = Object.keys(this.levels);

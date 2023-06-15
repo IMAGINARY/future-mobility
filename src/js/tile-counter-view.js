@@ -12,10 +12,9 @@ class TileCounterView {
         id: "road-density",
         label: "Road:Zone ratio",
         calculate: () => {
-          const zones =
-            this.stats.get("zones-residential-count") +
-            //+ this.stats.get('zones-commercial-count')
-            this.stats.get("zones-industrial-count");
+          const zones = this.stats.get("zones-residential-count"); // +
+          //+ this.stats.get('zones-commercial-count')
+          //this.stats.get("zones-industrial-count");
 
           return (this.stats.get("zones-road-count") / zones).toFixed(2);
         },
@@ -106,10 +105,9 @@ class TileCounterView {
         id: "road-density",
         label: "Road density",
         calculate: () => {
-          const zones =
-            this.stats.get("zones-residential-count") +
-            //+ this.stats.get('zones-commercial-count')
-            this.stats.get("zones-industrial-count");
+          const zones = this.stats.get("zones-residential-count"); //+
+          //+ this.stats.get('zones-commercial-count')
+          //this.stats.get("zones-industrial-count");
 
           return this.stats.get("zones-road-count") / zones;
         },

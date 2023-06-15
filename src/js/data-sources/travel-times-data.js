@@ -14,7 +14,7 @@ class TravelTimesData extends DataSource {
 
     this.residentialId = getTileTypeId(this.config, "residential");
     //this.commercialId = getTileTypeId(this.config, 'commercial');
-    this.industrialId = getTileTypeId(this.config, "industrial");
+    //this.industrialId = getTileTypeId(this.config, "industrial");
 
     this.longTravelTime =
       this.config.goals["travel-times"]["travel-time-long"] || 27;
@@ -42,8 +42,8 @@ class TravelTimesData extends DataSource {
     Array2D.zip(data, this.city.map.cells, (value, tile) => {
       if (
         value !== 0 &&
-        (tile === this.residentialId /*|| tile === this.commercialId*/ ||
-          tile === this.industrialId)
+        tile === this.residentialId /*|| tile === this.commercialId ||
+          tile === this.industrialId*/
       ) {
         answer.push(value);
       }
@@ -56,8 +56,8 @@ class TravelTimesData extends DataSource {
     this.data = [];
     this.city.map.allCells().forEach(([x, y, tile]) => {
       if (
-        tile === this.residentialId /*|| tile === this.commercialId*/ ||
-        tile === this.industrialId
+        tile === this.residentialId /*|| tile === this.commercialId ||
+        tile === this.industrialId*/
       ) {
         this.data.push(...this.timesFrom(x, y));
       }

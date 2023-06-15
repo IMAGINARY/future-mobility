@@ -88,7 +88,7 @@ CitizenRequestView.tileReferences = {
   P: "park",
   R: "residential",
   //C: 'commercial',
-  I: "industrial",
+  //I: "industrial",
   X: "road",
 };
 CitizenRequestView.tileRefRegexp = new RegExp(
