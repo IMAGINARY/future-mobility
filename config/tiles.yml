@@ -1,9 +1,16 @@
 tileTypes:
+  #5:
   0:
-    type: empty
-    name: Empty
-    color: "#4a4a4a"
-    editorIcon: "static/fa/times-solid.svg"
+    type: park
+    name: Park
+    color: "#2ee517"
+    editorIcon: "static/fa/tree-solid.svg"
+    #emissions: -0.2
+  #0:
+  #  type: empty
+  #  name: Empty
+  #  color: "#4a4a4a"
+  #  editorIcon: "static/fa/times-solid.svg"
   1:
     type: road
     name: Road
@@ -30,12 +37,12 @@ tileTypes:
   #  color: '#5095ff'
   #  editorIcon: 'static/fa/building-regular.svg'
   #  noise: 0.20
-  5:
-    type: park
-    name: Park
-    color: "#2ee517"
-    editorIcon: "static/fa/tree-solid.svg"
-    emissions: -0.2
+  #5:
+  #  type: park
+  #  name: Park
+  #  color: "#2ee517"
+  #  editorIcon: "static/fa/tree-solid.svg"
+  #  emissions: -0.2
   6:
     type: water
     name: Water
