@@ -23,3 +23,21 @@ tileTypes:
     name: Water
     color: "#19fff7"
     editorIcon: "static/fa/water-solid.svg"
+  4:
+    type: windTurbineSmall
+    name: Wind Turbine Small
+    # light grey
+    color: "#cfd1cf"
+    editorIcon: "static/fa/wind-power-grey.svg"
+    # 2D/3D
+    #distance_WEA_m_factor_height_prevailing: 3.0
+    #distance_WEA_m_factor_height_NOT_prevailing: 2.0
+  5:
+    type: windTurbineBig
+    name: Wind Turbine Big
+    # light grey
+    color: "#cfd1cl"
+    editorIcon: "static/fa/wind-power.svg"
+    # 2D/3D
+    #distance_WEA_m_factor_height_prevailing: 3.0
+    #distance_WEA_m_factor_height_NOT_prevailing: 2.0
