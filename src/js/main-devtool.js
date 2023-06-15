@@ -94,8 +94,8 @@ cfgLoader
     textureLoader.addSpritesheet("roads-walkable");
     textureLoader.addSpritesheet("parks");
     textureLoader.addSpritesheet("water");
-    textureLoader.addSpritesheet("windturbines-small"); // CHANGE HERE (ADD)
-    textureLoader.addSpritesheet("windturbines-big"); // CHANGE HERE (ADD)
+    textureLoader.addSpritesheet("windturbines_small"); // CHANGE HERE (ADD)
+    //textureLoader.addSpritesheet("windturbines_big"); // CHANGE HERE (ADD)
     textureLoader.addFolder("cars", CarSpawner.allTextureIds(config));
     textureLoader
       .load()

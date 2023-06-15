@@ -1,71 +1,73 @@
 /* globals PIXI */
-const yaml = require('js-yaml');
-const CfgReaderFetch = require('./cfg-reader-fetch');
-const CfgLoader = require('./cfg-loader');
-const City = require('./city');
-const MapEditor = require('./editor/map-editor');
-const CarOverlay = require('./cars/car-overlay');
-const TileCounterView = require('./tile-counter-view');
-const TestScenarios = require('./test/scenarios');
-const showFatalError = require('./lib/show-fatal-error');
-require('../sass/default.scss');
-require('../sass/desktop.scss');
-const ZoneBalanceView = require('./zone-balance-view');
-const DataInspectorView = require('./data-inspector-view');
-const VariableRankListView = require('./index-list-view');
-const PollutionData = require('./data-sources/pollution-data');
-const NoiseData = require('./data-sources/noise-data');
-const GreenSpacesData = require('./data-sources/green-spaces-data');
-const TravelTimesData = require('./data-sources/travel-times-data');
-const ZoningData = require('./data-sources/zoning-data');
-const ZoneBalanceData = require('./data-sources/zone-balance-data');
-const GoalDebugView = require('./goal-debug-view');
-const DataManager = require('./data-manager');
-const CitizenRequestView = require('./citizen-request-view');
-const CitizenRequestViewMgr = require('./citizen-request-view-mgr');
-const TextureLoader = require('./texture-loader');
-const CarSpawner = require('./cars/car-spawner');
-const TrafficData = require('./data-sources/traffic-data');
-const RoadSafetyData = require('./data-sources/road-safety-data');
-const PowerUpInspector = require('./power-up-inspector');
-const PowerUpManager = require('./power-up-manager');
-const PowerUpDataModifier = require('./power-up-data-modifier');
-const PowerUpViewMgr = require('./power-up-view-mgr');
-const TrafficHandler = require('./power-ups/traffic-handler');
-const AutonomousVehicleHandler = require('./power-ups/autonomous-vehicle-handler');
-const MaxSpeedHandler = require('./power-ups/max-speed-handler');
-const SpawnTramHandler = require('./power-ups/spawn-tram');
-const WalkableCityHandler = require('./power-ups/walkable-city-handler');
-const DenseCityHandler = require('./power-ups/dense-city-handler');
-const AutonomousVehicleLidarHandler = require('./power-ups/autonomous-vehicle-lidar-handler');
-const PowerUpPanel = require('./editor/power-up-panel');
+const yaml = require("js-yaml");
+const CfgReaderFetch = require("./cfg-reader-fetch");
+const CfgLoader = require("./cfg-loader");
+const City = require("./city");
+const MapEditor = require("./editor/map-editor");
+const CarOverlay = require("./cars/car-overlay");
+const TileCounterView = require("./tile-counter-view");
+const TestScenarios = require("./test/scenarios");
+const showFatalError = require("./lib/show-fatal-error");
+require("../sass/default.scss");
+require("../sass/desktop.scss");
+const ZoneBalanceView = require("./zone-balance-view");
+const DataInspectorView = require("./data-inspector-view");
+const VariableRankListView = require("./index-list-view");
+const PollutionData = require("./data-sources/pollution-data");
+const NoiseData = require("./data-sources/noise-data");
+const GreenSpacesData = require("./data-sources/green-spaces-data");
+const TravelTimesData = require("./data-sources/travel-times-data");
+const ZoningData = require("./data-sources/zoning-data");
+const ZoneBalanceData = require("./data-sources/zone-balance-data");
+const GoalDebugView = require("./goal-debug-view");
+const DataManager = require("./data-manager");
+const CitizenRequestView = require("./citizen-request-view");
+const CitizenRequestViewMgr = require("./citizen-request-view-mgr");
+const TextureLoader = require("./texture-loader");
+const CarSpawner = require("./cars/car-spawner");
+const TrafficData = require("./data-sources/traffic-data");
+const RoadSafetyData = require("./data-sources/road-safety-data");
+const PowerUpInspector = require("./power-up-inspector");
+const PowerUpManager = require("./power-up-manager");
+const PowerUpDataModifier = require("./power-up-data-modifier");
+const PowerUpViewMgr = require("./power-up-view-mgr");
+const TrafficHandler = require("./power-ups/traffic-handler");
+const AutonomousVehicleHandler = require("./power-ups/autonomous-vehicle-handler");
+const MaxSpeedHandler = require("./power-ups/max-speed-handler");
+const SpawnTramHandler = require("./power-ups/spawn-tram");
+const WalkableCityHandler = require("./power-ups/walkable-city-handler");
+const DenseCityHandler = require("./power-ups/dense-city-handler");
+const AutonomousVehicleLidarHandler = require("./power-ups/autonomous-vehicle-lidar-handler");
+const PowerUpPanel = require("./editor/power-up-panel");
 
 const qs = new URLSearchParams(window.location.search);
-const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
+const testScenario = qs.get("test") ? TestScenarios[qs.get("test")] : null;
 
 const cfgLoader = new CfgLoader(CfgReaderFetch, yaml.load);
-cfgLoader.load([
-  'config/city.yml',
-  'config/tiles.yml',
-  'config/variables.yml',
-  'config/goals.yml',
-  'config/citizen-requests.yml',
-  'config/dashboard.yml',
-  'config/traffic.yml',
-  'config/cars.yml',
-  'config/power-ups.yml',
-  'config/default-settings.yml',
-  './settings.yml',
-])
+cfgLoader
+  .load([
+    "config/city.yml",
+    "config/tiles.yml",
+    "config/variables.yml",
+    "config/goals.yml",
+    "config/citizen-requests.yml",
+    "config/dashboard.yml",
+    "config/traffic.yml",
+    "config/cars.yml",
+    "config/power-ups.yml",
+    "config/default-settings.yml",
+    "./settings.yml",
+  ])
   .catch((err) => {
-    showFatalError('Error loading configuration', err);
-    console.error('Error loading configuration');
+    showFatalError("Error loading configuration", err);
+    console.error("Error loading configuration");
     console.error(err);
   })
   .then((config) => {
-    const city = (testScenario && testScenario.city)
-      ? City.fromJSON(testScenario.city)
-      : new City(config.cityWidth, config.cityHeight);
+    const city =
+      testScenario && testScenario.city
+        ? City.fromJSON(testScenario.city)
+        : new City(config.cityWidth, config.cityHeight);
 
     const stats = new DataManager();
     stats.registerSource(new ZoningData(city, config));
@@ -76,7 +78,7 @@ cfgLoader.load([
     stats.registerSource(new TravelTimesData(city, config));
     stats.registerSource(new TrafficData(city, config));
     stats.registerSource(new RoadSafetyData(city, config));
-    city.map.events.on('update', () => {
+    city.map.events.on("update", () => {
       stats.calculateAll();
     });
     const powerUpMgr = new PowerUpManager(config);
@@ -89,91 +91,122 @@ cfgLoader.load([
     });
 
     const textureLoader = new TextureLoader(app);
-    textureLoader.addSpritesheet('roads');
-    textureLoader.addSpritesheet('roads-walkable');
-    textureLoader.addSpritesheet('parks');
-    textureLoader.addSpritesheet('water');
-    textureLoader.addFolder('cars', CarSpawner.allTextureIds(config));
-    textureLoader.load()
+    textureLoader.addSpritesheet("roads");
+    textureLoader.addSpritesheet("roads-walkable");
+    textureLoader.addSpritesheet("parks");
+    textureLoader.addSpritesheet("water");
+    textureLoader.addSpritesheet("windturbines_small");
+    //textureLoader.addSpritesheet("windturbine_big");
+    textureLoader.addFolder("cars", CarSpawner.allTextureIds(config));
+    textureLoader
+      .load()
       .then((textures) => {
         $('[data-component="app-container"]').append(app.view);
 
-        const mapEditor = new MapEditor($('.fms-desktop'), city, config, textures, stats);
+        const mapEditor = new MapEditor(
+          $(".fms-desktop"),
+          city,
+          config,
+          textures,
+          stats
+        );
         app.stage.addChild(mapEditor.displayObject);
         mapEditor.displayObject.width = 1920;
         mapEditor.displayObject.height = 1920;
         mapEditor.displayObject.x = 0;
         mapEditor.displayObject.y = 0;
-        app.ticker.add(time => mapEditor.animate(time));
+        app.ticker.add((time) => mapEditor.animate(time));
 
         const carOverlay = new CarOverlay(mapEditor.mapView, config, textures, {
           spawn: !testScenario,
           maxLifetime: !testScenario,
         });
-        app.ticker.add(time => carOverlay.animate(time));
+        app.ticker.add((time) => carOverlay.animate(time));
         const carSpawner = new CarSpawner(carOverlay, config);
         if (!testScenario) {
-          app.ticker.add(time => carSpawner.animate(time));
+          app.ticker.add((time) => carSpawner.animate(time));
         }
 
         const powerUpViewMgr = new PowerUpViewMgr();
-        app.ticker.add(time => powerUpViewMgr.animate(time));
+        app.ticker.add((time) => powerUpViewMgr.animate(time));
         powerUpViewMgr.registerHandler(new TrafficHandler(config, carSpawner));
-        powerUpViewMgr.registerHandler(new AutonomousVehicleHandler(config, carSpawner));
+        powerUpViewMgr.registerHandler(
+          new AutonomousVehicleHandler(config, carSpawner)
+        );
         powerUpViewMgr.registerHandler(new MaxSpeedHandler(config, carOverlay));
-        powerUpViewMgr.registerHandler(new SpawnTramHandler(config, carSpawner));
-        powerUpViewMgr.registerHandler(new WalkableCityHandler(config, mapEditor.mapView));
-        powerUpViewMgr.registerHandler(new DenseCityHandler(config, mapEditor.mapView));
-        powerUpViewMgr.registerHandler(new AutonomousVehicleLidarHandler(config, carOverlay), true);
+        powerUpViewMgr.registerHandler(
+          new SpawnTramHandler(config, carSpawner)
+        );
+        powerUpViewMgr.registerHandler(
+          new WalkableCityHandler(config, mapEditor.mapView)
+        );
+        powerUpViewMgr.registerHandler(
+          new DenseCityHandler(config, mapEditor.mapView)
+        );
+        powerUpViewMgr.registerHandler(
+          new AutonomousVehicleLidarHandler(config, carOverlay),
+          true
+        );
 
         const counterView = new TileCounterView(stats, config);
         const zoneBalanceView = new ZoneBalanceView(stats, config);
-        $('[data-component=counters]').append([
+        $("[data-component=counters]").append([
           counterView.$element,
           zoneBalanceView.$element,
         ]);
 
         const dataInspectorView = new DataInspectorView();
-        $('[data-component=dataInspector]').append(dataInspectorView.$element);
-        mapEditor.events.on('inspect', data => dataInspectorView.display(data));
+        $("[data-component=dataInspector]").append(dataInspectorView.$element);
+        mapEditor.events.on("inspect", (data) =>
+          dataInspectorView.display(data)
+        );
 
         const variables = {
-          'Travel times': 'travel-times',
-          'Green space prox.': 'green-spaces-proximity',
-          'Green space areas': 'green-spaces-areas',
-          'Pollution (all)': 'pollution',
-          'Pollution (resid.)': 'pollution-residential',
-          'Noise (all)': 'noise',
-          'Noise (resid.)': 'noise-residential',
+          "Travel times": "travel-times",
+          "Green space prox.": "green-spaces-proximity",
+          "Green space areas": "green-spaces-areas",
+          "Pollution (all)": "pollution",
+          "Pollution (resid.)": "pollution-residential",
+          "Noise (all)": "noise",
+          "Noise (resid.)": "noise-residential",
         };
 
-        const varSelector = $('<select></select>')
-          .addClass(['form-control', 'mr-2'])
-          .append(Object.keys(variables).map(name => (
-            $('<option></option>').text(name).attr('value', name)
-          )));
+        const varSelector = $("<select></select>")
+          .addClass(["form-control", "mr-2"])
+          .append(
+            Object.keys(variables).map((name) =>
+              $("<option></option>").text(name).attr("value", name)
+            )
+          );
 
-        $('<div></div>').addClass(['form-inline', 'mt-2'])
+        $("<div></div>")
+          .addClass(["form-inline", "mt-2"])
           .append(varSelector)
-          .append($('<button></button>')
-            .attr('type', 'button')
-            .addClass(['btn', 'btn-primary', 'btn-sm'])
-            .text('Calculate')
-            .on('click', () => {
-              const varName = varSelector.val();
-              const varData = typeof variables[varName] === 'string'
-                ? stats.get(variables[varName]) : variables[varName].calculate();
-              dataInspectorView.display({
-                title: varName,
-                values: varData,
-                fractional: (Math.max(...varData) <= 1),
-              });
-            }))
-          .appendTo($('[data-component=dataInspector]'));
+          .append(
+            $("<button></button>")
+              .attr("type", "button")
+              .addClass(["btn", "btn-primary", "btn-sm"])
+              .text("Calculate")
+              .on("click", () => {
+                const varName = varSelector.val();
+                const varData =
+                  typeof variables[varName] === "string"
+                    ? stats.get(variables[varName])
+                    : variables[varName].calculate();
+                dataInspectorView.display({
+                  title: varName,
+                  values: varData,
+                  fractional: Math.max(...varData) <= 1,
+                });
+              })
+          )
+          .appendTo($("[data-component=dataInspector]"));
 
         const powerUpInspector = new PowerUpInspector(config);
-        $('[data-component=powerUpInspector]').append(powerUpInspector.$element);
-        powerUpInspector.events.on('power-up-change', (id, enabled) => {
+        $("[data-component=powerUpInspector]").append(
+          powerUpInspector.$element
+        );
+        powerUpInspector.events.on("power-up-change", (id, enabled) => {
           powerUpMgr.setState(id, enabled);
           stats.calculateAll();
           powerUpViewMgr.update(powerUpInspector.getEnabled());
@@ -183,17 +216,19 @@ cfgLoader.load([
         // Todo: Remove the lines below
         $('[data-component="status"]').append(variableRankListView.$element);
         variableRankListView.setValues({
-          'traffic-density': 0,
-          'travel-times': 0,
+          "traffic-density": 0,
+          "travel-times": 0,
           safety: 0,
           pollution: 0,
           noise: 0,
-          'green-spaces': 0,
+          "green-spaces": 0,
         });
         window.variableRankListView = variableRankListView;
 
         const goalDebugView = new GoalDebugView(stats.getGoals());
-        $('[data-component="goal-debug-container"]').append(goalDebugView.$element);
+        $('[data-component="goal-debug-container"]').append(
+          goalDebugView.$element
+        );
 
         let indexesDirty = true;
         let indexesCooldownTimer = null;
@@ -203,12 +238,12 @@ cfgLoader.load([
           indexesDirty = true;
           if (indexesCooldownTimer === null) {
             variableRankListView.setValues({
-              'green-spaces': stats.get('green-spaces-index'),
-              pollution: stats.get('pollution-index'),
-              noise: stats.get('noise-index'),
-              'travel-times': stats.get('travel-times-index'),
-              'traffic-density': stats.get('traffic-density-index'),
-              safety: stats.get('road-safety-index'),
+              "green-spaces": stats.get("green-spaces-index"),
+              pollution: stats.get("pollution-index"),
+              noise: stats.get("noise-index"),
+              "travel-times": stats.get("travel-times-index"),
+              "traffic-density": stats.get("traffic-density-index"),
+              safety: stats.get("road-safety-index"),
             });
             goalDebugView.setValues(stats.getGoals());
             indexesDirty = false;
@@ -221,16 +256,20 @@ cfgLoader.load([
           }
         }
 
-        stats.events.on('update', () => {
+        stats.events.on("update", () => {
           recalculateIndexes();
         });
         recalculateIndexes();
 
         const citizenRequestView = new CitizenRequestView(config);
-        $('[data-component=citizen-request-container]').append(citizenRequestView.$element);
-        const citizenRequestViewMgr = new CitizenRequestViewMgr(citizenRequestView);
+        $("[data-component=citizen-request-container]").append(
+          citizenRequestView.$element
+        );
+        const citizenRequestViewMgr = new CitizenRequestViewMgr(
+          citizenRequestView
+        );
         citizenRequestViewMgr.handleUpdate(stats.getGoals());
-        stats.events.on('update', () => {
+        stats.events.on("update", () => {
           citizenRequestViewMgr.handleUpdate(stats.getGoals());
         });
 
@@ -240,15 +279,15 @@ cfgLoader.load([
           powerUpViewMgr.update(powerUpMgr.activePowerUps());
         }
 
-        powerUpPanel.events.on('enable', (id) => {
+        powerUpPanel.events.on("enable", (id) => {
           powerUpMgr.setState(id, true);
           updatePowerUps();
         });
-        powerUpPanel.events.on('disable', (id) => {
+        powerUpPanel.events.on("disable", (id) => {
           powerUpMgr.setState(id, false);
           updatePowerUps();
         });
-        $('[data-component=powerUpPanel]').append(powerUpPanel.$element);
+        $("[data-component=powerUpPanel]").append(powerUpPanel.$element);
 
         if (testScenario) {
           testScenario(city, carOverlay);
@@ -261,7 +300,7 @@ cfgLoader.load([
         }
       })
       .catch((err) => {
-        showFatalError('Error loading textures', err);
+        showFatalError("Error loading textures", err);
         console.error(err);
       });
   });

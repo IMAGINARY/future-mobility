@@ -49,8 +49,6 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: "no-store" })
     textureLoader.addSpritesheet("roads-walkable");
     textureLoader.addSpritesheet("parks");
     textureLoader.addSpritesheet("water");
-    textureLoader.addSpritesheet("windturbines_small");
-    //textureLoader.addSpritesheet("windturbines_big");
     textureLoader.addFolder("cars", CarSpawner.allTextureIds(config));
     textureLoader
       .load()
