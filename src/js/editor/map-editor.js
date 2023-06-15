@@ -1,17 +1,17 @@
-const EventEmitter = require('events');
-const City = require('../city');
-const MapView = require('../map-view');
-const MapEditorPalette = require('./map-editor-palette');
-const ModalLoad = require('./modal-load');
-const ModalSave = require('./modal-save');
-const ModalExport = require('./modal-export');
-const ModalImport = require('./modal-import');
-const ObjectStore = require('./object-store');
-const MapTextOverlay = require('../map-text-overlay');
-const { getTileTypeId } = require('../lib/config-helpers');
-const Array2D = require('../lib/array-2d');
-const VariableMapOverlay = require('../variable-map-overlay');
-const TravelTimeCalculator = require('../lib/travel-times');
+const EventEmitter = require("events");
+const City = require("../city");
+const MapView = require("../map-view");
+const MapEditorPalette = require("./map-editor-palette");
+const ModalLoad = require("./modal-load");
+const ModalSave = require("./modal-save");
+const ModalExport = require("./modal-export");
+const ModalImport = require("./modal-import");
+const ObjectStore = require("./object-store");
+const MapTextOverlay = require("../map-text-overlay");
+const { getTileTypeId } = require("../lib/config-helpers");
+const Array2D = require("../lib/array-2d");
+const VariableMapOverlay = require("../variable-map-overlay");
+const TravelTimeCalculator = require("../lib/travel-times");
 
 class MapEditor {
   constructor($element, city, config, textures, dataManager) {
@@ -29,11 +29,14 @@ class MapEditor {
     this.variableMapOverlay = new VariableMapOverlay(this.mapView, this.config);
     this.travelTimeCalculator = new TravelTimeCalculator(this.config);
 
-    this.palette = new MapEditorPalette($('<div></div>').appendTo(this.$element), config);
+    this.palette = new MapEditorPalette(
+      $("<div></div>").appendTo(this.$element),
+      config
+    );
 
-    this.tool = 'nullTool';
+    this.tool = "nullTool";
     this.tileType = this.palette.tileId;
-    this.palette.events.on('change', (tool, toolType) => {
+    this.palette.events.on("change", (tool, toolType) => {
       if (this.tool) {
         this.tools[this.tool].end();
       }
@@ -42,17 +45,18 @@ class MapEditor {
       this.tools[this.tool].start();
     });
 
-    this.palette.events.on('action', (id) => {
+    this.palette.events.on("action", (id) => {
       if (this.actionHandlers[id]) {
         this.actionHandlers[id]();
       }
     });
 
     let lastEdit = null;
-    this.mapView.events.on('action',
-      (...args) => this.tools[this.tool].action(...args));
+    this.mapView.events.on("action", (...args) =>
+      this.tools[this.tool].action(...args)
+    );
 
-    this.objectStore = new ObjectStore('./cities.json');
+    this.objectStore = new ObjectStore("./cities.json");
     this.actionHandlers = {
       load: () => {
         const modal = new ModalLoad(this.config, this.objectStore);
@@ -67,7 +71,7 @@ class MapEditor {
         const modal = new ModalSave(this.config, this.objectStore);
         modal.show().then((id) => {
           if (id) {
-            this.objectStore.set(id === 'new' ? null : id, this.city.toJSON());
+            this.objectStore.set(id === "new" ? null : id, this.city.toJSON());
           }
         });
       },
@@ -95,15 +99,21 @@ class MapEditor {
         start: () => {
           this.mapView.setEditCursor();
         },
-        end: () => {
-
-        },
+        end: () => {},
         action: ([x, y], props) => {
           if (this.tileType !== null) {
             if (lastEdit && props.shiftKey) {
               const [lastX, lastY] = lastEdit;
-              for (let i = Math.min(lastX, x); i <= Math.max(lastX, x); i += 1) {
-                for (let j = Math.min(lastY, y); j <= Math.max(lastY, y); j += 1) {
+              for (
+                let i = Math.min(lastX, x);
+                i <= Math.max(lastX, x);
+                i += 1
+              ) {
+                for (
+                  let j = Math.min(lastY, y);
+                  j <= Math.max(lastY, y);
+                  j += 1
+                ) {
                   this.city.map.set(i, j, this.tileType);
                 }
               }
@@ -124,23 +134,26 @@ class MapEditor {
           this.textOverlay.hide();
         },
         action: ([startX, startY]) => {
-          const data = this.travelTimeCalculator
-            .travelTimes(this.mapView.city.map, [startX, startY]);
+          const data = this.travelTimeCalculator.travelTimes(
+            this.mapView.city.map,
+            [startX, startY]
+          );
           this.textOverlay.display(data);
 
-          const residentalId = getTileTypeId(config, 'residential');
-          const commercialId = getTileTypeId(config, 'commercial');
-          const industrialId = getTileTypeId(config, 'industrial');
+          const residentalId = getTileTypeId(config, "residential");
+          //const commercialId = getTileTypeId(config, 'commercial');
+          const industrialId = getTileTypeId(config, "industrial");
           Array2D.zip(data, city.map.cells, (value, tile, x, y) => {
-            data[y][x] = (
-              (tile === residentalId || tile === commercialId || tile === industrialId)
-                ? value : null
-            );
+            data[y][x] =
+              tile === residentalId /*|| tile === commercialId*/ ||
+              tile === industrialId
+                ? value
+                : null;
           });
 
-          this.events.emit('inspect', {
+          this.events.emit("inspect", {
             title: `Trip len from (${startX}, ${startY}) to RCI`,
-            values: Array2D.flatten(data).filter(v => v !== null),
+            values: Array2D.flatten(data).filter((v) => v !== null),
           });
         },
       },
@@ -148,8 +161,8 @@ class MapEditor {
         start: () => {
           this.mapView.setInspectCursor();
           this.variableMapOverlay.show(
-            this.dataManager.get('pollution-map'),
-            this.config.variableMapOverlay.colors.pollution,
+            this.dataManager.get("pollution-map"),
+            this.config.variableMapOverlay.colors.pollution
           );
         },
         end: () => {
@@ -161,8 +174,8 @@ class MapEditor {
         start: () => {
           this.mapView.setInspectCursor();
           this.variableMapOverlay.show(
-            this.dataManager.get('noise-map'),
-            this.config.variableMapOverlay.colors.noise,
+            this.dataManager.get("noise-map"),
+            this.config.variableMapOverlay.colors.noise
           );
         },
         end: () => {
