@@ -14,7 +14,7 @@ class MapView {
     this.parkTileId = getTileTypeId(config, "park");
     this.waterTileId = getTileTypeId(config, "water");
     this.windTurbineSmallId = getTileTypeId(config, "windTurbineSmall");
-    //this.windTurbineBigId = getTileTypeId(config, "windTurbineBig");
+    this.windTurbineBigId = getTileTypeId(config, "windTurbineBig");
     this.roadTextureKey = "roads";
     this.roadTexturePrefix = "road";
     this.basicTileRenderers = {};
@@ -185,9 +185,9 @@ class MapView {
     if (this.city.map.get(x, y) === this.windTurbineSmallId) {
       this.renderWindTurbineSmallTile(x, y);
     }
-    /*if (this.city.map.get(x, y) === this.windTurbineBigId) {
+    if (this.city.map.get(x, y) === this.windTurbineBigId) {
       this.renderWindTurbineBigTile(x, y);
-    }*/
+    }
   }
 
   renderParkTile(x, y) {
@@ -208,6 +208,13 @@ class MapView {
     const textureNumber = 1 + Math.round(this.randomizedTerrain[y][x] * 8);
     this.getTextureTile(x, y).texture =
       this.textures.windturbines_small[`turbine-0${textureNumber}`];
+    this.getTextureTile(x, y).visible = true;
+  }
+
+  renderWindTurbineBigTile(x, y) {
+    const textureNumber = 1 + Math.round(this.randomizedTerrain[y][x] * 8);
+    this.getTextureTile(x, y).texture =
+      this.textures.windturbines_big[`turbine-0${textureNumber}`];
     this.getTextureTile(x, y).visible = true;
   }
 

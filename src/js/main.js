@@ -96,7 +96,7 @@ cfgLoader
     textureLoader.addSpritesheet("parks");
     textureLoader.addSpritesheet("water");
     textureLoader.addSpritesheet("windturbines_small");
-    //textureLoader.addSpritesheet("windturbine_big");
+    textureLoader.addSpritesheet("windturbines_big");
     textureLoader.addFolder("cars", CarSpawner.allTextureIds(config));
     textureLoader
       .load()

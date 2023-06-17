@@ -27,8 +27,8 @@ tileTypes:
     type: windTurbineSmall
     name: Wind Turbine Small
     # light grey
-    color: "#cfd1cf"
-    editorIcon: "static/fa/wind-power-grey.svg"
+    color: "#cfd1cl"
+    editorIcon: "static/fa/wind-power-small.svg"
     # 2D/3D
     #distance_WEA_m_factor_height_prevailing: 3.0
     #distance_WEA_m_factor_height_NOT_prevailing: 2.0
@@ -37,7 +37,7 @@ tileTypes:
     name: Wind Turbine Big
     # light grey
     color: "#cfd1cl"
-    editorIcon: "static/fa/wind-power.svg"
+    editorIcon: "static/fa/wind-power-big.svg"
     # 2D/3D
     #distance_WEA_m_factor_height_prevailing: 3.0
     #distance_WEA_m_factor_height_NOT_prevailing: 2.0
