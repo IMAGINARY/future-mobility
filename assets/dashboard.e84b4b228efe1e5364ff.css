@@ -322,7 +322,12 @@ body > .tile-counter {
   .index-list .index {
     margin-bottom: 0.75em; }
     .index-list .index .description {
-      display: inline-block;
+      display: inline-flex;
+      align-items: flex-start;
+      flex-direction: column;
+      align-content: center;
+      flex-wrap: nowrap;
+      justify-content: center;
       width: calc(100% - (5em));
       text-overflow: clip;
       background-repeat: no-repeat;
@@ -331,10 +336,10 @@ body > .tile-counter {
       padding-left: 4.05em;
       min-height: 2.8em;
       line-height: 1.2; }
-      .index-list .index .description .name {
+      .index-list .index .description .name-main {
         font-weight: bold;
         font-size: 1.3em; }
-      .index-list .index .description .name-tr {
+      .index-list .index .description .name-translation {
         font-size: 1.1em; }
     .index-list .index .value {
       position: relative;
@@ -439,22 +444,30 @@ body > .tile-counter {
       border-color: transparent #e7e7e6 transparent transparent; }
     .citizen-requests .request-balloon .tileref {
       display: inline-block; }
-      .citizen-requests .request-balloon .tileref .tileref-stub {
-        display: inline-block;
-        width: 0.7em;
-        height: 0.7em;
-        border-radius: 50%;
-        margin-right: 0.15em;
-        margin-left: 0.2em;
-        outline: 0.15em solid white; }
-  .citizen-requests .request-text-de {
+    .citizen-requests .request-balloon .tileref-stub {
+      display: inline-block;
+      width: 0.7em;
+      height: 0.7em;
+      border-radius: 50%;
+      margin-right: 0.15em;
+      margin-left: 0.2em;
+      outline: 0.15em solid white; }
+  .citizen-requests .request-text-main {
     font-weight: bold;
     margin-bottom: 0.5em; }
-    .citizen-requests .request-text-de .large {
+    .citizen-requests .request-text-main .large {
       font-size: 1.4em;
       display: block; }
-  .citizen-requests .request-text-en .large {
+  .citizen-requests .request-text-translation .large {
     display: block; }
+
+.dashboard.with-language-count-1 .citizen-requests .request-text {
+  font-size: 1.2em;
+  font-weight: normal; }
+  .dashboard.with-language-count-1 .citizen-requests .request-text .large {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 0.2em; }
 
 .powerups-selector-main > .row {
   height: calc(100% - 9em); }
@@ -509,9 +522,12 @@ body > .tile-counter {
     width: 80%;
     margin-left: 10%;
     border-radius: 0.5em; }
-    .powerups-selection .no-selection .text-de {
-      font-weight: bold;
+    .powerups-selection .no-selection .text-main {
+      font-weight: bold; }
+    .powerups-selection .no-selection .text {
       margin-bottom: 1em; }
+      .powerups-selection .no-selection .text:last-child {
+        margin-bottom: 0; }
   .powerups-selection .powerup {
     border: none;
     padding: 0 0 0.7em;
@@ -545,6 +561,9 @@ body > .tile-counter {
         margin-left: 0.7em; }
       .powerups-selection .powerup .btn-power-ups-disable:active {
         background-color: #e280f7; }
+
+.dashboard.with-language-count-1 .powerups-selector-main .powerup .description {
+  font-size: 1.25em; }
 
 body.dashboard {
   background-color: #fff;
@@ -584,17 +603,18 @@ body.dashboard {
   line-height: 1.1;
   border-radius: 6em;
   padding: 0.5em 0.5em;
-  margin: 0.5em 0; }
-  .btn-dashboard-action .large {
-    font-size: 1.2em; }
+  margin: 0.5em 0;
+  min-height: 8rem; }
   .btn-dashboard-action .text {
     display: block; }
-  .btn-dashboard-action .text-de {
+  .btn-dashboard-action .text-main {
     font-weight: bold;
     font-size: 1.2em;
     margin-bottom: 0.2em; }
-  .btn-dashboard-action .text-en {
-    font-size: 1.15em; }
+    .btn-dashboard-action .text-main::first-line {
+      font-size: 1.3em; }
+  .btn-dashboard-action .text-translation {
+    font-size: 1.1em; }
   .btn-dashboard-action.disabled, .btn-dashboard-action:disabled {
     color: rgba(255, 255, 255, 0.65) !important; }
 
@@ -820,4 +840,4 @@ body.dashboard[data-show-slide='3'] #slide-3 {
   left: 0; }
 
 
-/*# sourceMappingURL=devtool.ebfc49063403cab9152d.css.map*/
+/*# sourceMappingURL=dashboard.e84b4b228efe1e5364ff.css.map*/

@@ -20,7 +20,12 @@ $index-value-icon-face-py: ($index-value-icon-height - $index-value-icon-face-he
     margin-bottom: 0.75em;
 
     .description {
-      display: inline-block;
+      display: inline-flex;
+      align-items: flex-start;
+      flex-direction: column;
+      align-content: center;
+      flex-wrap: nowrap;
+      justify-content: center;
       width: calc(100% - (#{$index-value-icon-width + $index-value-icon-margin}));
       text-overflow: clip;
       background-repeat: no-repeat;
@@ -30,11 +35,11 @@ $index-value-icon-face-py: ($index-value-icon-height - $index-value-icon-face-he
       min-height: $index-description-icon-height;
       line-height: 1.2;
 
-      .name {
+      .name-main {
         font-weight: bold;
         font-size: 1.3em;
       }
-      .name-tr {
+      .name-translation {
         font-size: 1.1em;
       }
     }

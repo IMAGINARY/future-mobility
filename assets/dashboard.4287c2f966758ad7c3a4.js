@@ -697,6 +697,9 @@ const { getTileType } = __webpack_require__(/*! ./lib/config-helpers */ "./src/j
 class CitizenRequestView {
   constructor(config) {
     this.config = config;
+    this.languages = this.config.dashboard.languages;
+    this.mainLanguage = this.languages[0];
+
     this.$element = $('<div></div>')
       .addClass('citizen-requests');
 
@@ -717,10 +720,14 @@ class CitizenRequestView {
             'background-image': `url(${this.getRandomCitizenIcon(goalId)})`,
           }))
         .append($('<div></div>').addClass('request-balloon')
-          .append($('<div></div>').addClass('request-text-de')
-            .html(this.formatRequestText(this.config.citizenRequests[goalId].de)))
-          .append($('<div></div>').addClass('request-text-en')
-            .html(this.formatRequestText(this.config.citizenRequests[goalId].en))))
+          .append(
+            this.languages.map(lang => (
+              $('<div></div>').addClass(`request-text request-text-${lang}`)
+                .addClass(lang === this.mainLanguage ? 'request-text-main' : 'request-text-translation')
+                .html(this.formatRequestText(this.config.citizenRequests[goalId][lang]))
+            ))
+          )
+        )
         .appendTo(this.$element);
     }
   }
@@ -741,9 +748,8 @@ class CitizenRequestView {
   formatRequestText(text) {
     return text
       .replaceAll(CitizenRequestView.tileRefRegexp, (match, tileSpec, innerText) => (
-        `<span class="tileref tileref-${CitizenRequestView.tileReferences[tileSpec]}">
-<span class="tileref-stub" style="background-color: ${this.tileColors[tileSpec]}"></span> ${innerText}
-</span>`
+        // `<span class="tileref tileref-${CitizenRequestView.tileReferences[tileSpec]}"><span class="tileref-stub" style="background-color: ${this.tileColors[tileSpec]}"></span> ${innerText}</span>`
+        `<span class="tileref-stub" style="background-color: ${this.tileColors[tileSpec]}"></span>&nbsp;${innerText}`
       ))
       .replaceAll(CitizenRequestView.largeTextRegexp, '<span class="large">$1</span>');
   }
@@ -859,15 +865,19 @@ class ActionsPane {
     this.config = config;
     this.$element = $('<div></div>').addClass('actions-pane');
     this.disabled = false;
+    const languages = this.config.dashboard.languages;
+    const mainLanguage = languages[0];
 
     this.buttons = this.config.dashboard.actions.buttons.map(button => (
       $('<button></button>')
         .attr('type', 'button')
         .addClass(`btn btn-block btn-dashboard-action btn-${button.id}`)
-        .append($('<span></span>').addClass('text text-de')
-          .html(button.text.de))
-        .append($('<span></span>').addClass('text text-en')
-          .html(button.text.en))
+        .append(languages.map(lang => (
+          $('<span></span>')
+            .addClass(`text text-${lang}`)
+            .addClass(lang === mainLanguage ? 'text-main' : 'text-translation')
+            .html(button.text[lang])))
+        )
         .attr('id', button.id)
     ));
 
@@ -907,7 +917,7 @@ module.exports = ActionsPane;
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const EventEmitter = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-const { createTitle } = __webpack_require__(/*! ./titles */ "./src/js/dashboard/titles.js");
+const { bindCreateTitle } = __webpack_require__(/*! ./titles */ "./src/js/dashboard/titles.js");
 
 class PowerUpSelector {
   constructor(config, buttonContainer, statusContainer, selectionPageContainer) {
@@ -916,14 +926,20 @@ class PowerUpSelector {
     this.events = new EventEmitter();
     this.activePowerUps = [];
     this.lastActivePowerUps = [];
+    this.languages = this.config.dashboard.languages;
+    this.mainLanguage = this.languages[0];
+    const createTitle = bindCreateTitle(this.languages);
+
 
     this.selectButton = $('<button></button>')
       .attr('type', 'button')
       .addClass('btn btn-block btn-dashboard-action btn-power-ups-activate')
-      .append($('<span></span>').addClass('text text-de')
-        .html(this.config.dashboard.powerUps.button.text.de))
-      .append($('<span></span>').addClass('text text-en')
-        .html(this.config.dashboard.powerUps.button.text.en))
+      .append(this.languages.map(lang => (
+          $('<span></span>')
+            .addClass(`text text-${lang}`)
+            .addClass(lang === this.mainLanguage ? 'text-main' : 'text-translation')
+            .html(this.config.dashboard.powerUps.button.text[lang]
+      ))))
       .on('click', () => {
         this.setSelectablePowerUps(this.pickSelectablePowerUps());
         this.activateCloseTimeout();
@@ -952,11 +968,14 @@ class PowerUpSelector {
         $('<button></button>')
           .attr('type', 'button')
           .addClass('btn btn-block btn-dashboard-action btn-cancel')
-          .append($('<span></span>').addClass('text text-de')
-            .append($('<span></span>').addClass('large')
-              .html('Abbrechen')))
-          .append($('<span></span>').addClass('text text-en')
-            .html('Cancel'))
+          .append(
+            this.languages.map(lang => (
+              $('<span></span>')
+                .addClass(`text text-${lang}`)
+                .addClass(lang === this.mainLanguage ? 'text-main' : 'text-translation')
+                .html(this.config.dashboard.powerUps.cancelButton.text[lang])
+            ))
+          )
           .on('click', () => {
             this.cancelCloseTimeout();
             this.closeSelector();
@@ -1011,17 +1030,25 @@ class PowerUpSelector {
       $('<div></div>').addClass('powerup')
         .attr('type', 'button')
         .append($('<div></div>').addClass('title')
-          .append($('<div></div>').addClass('text-de text-main')
-            .html(props.title.de))
-          .append($('<div></div>').addClass('text-en text-translation')
-            .html(props.title.en)))
+          .append(
+            this.languages.map(lang => (
+              $('<div></div>').addClass(`text text-${lang}`)
+                .addClass(lang === this.mainLanguage ? 'text-main' : 'text-translation')
+                .html(props.title[lang])
+            ))
+          )
+        )
         .append($('<div></div>').addClass('image')
           .attr('style', `background-image: url('static/powerups/${powerUpId}.svg')`))
         .append($('<div></div>').addClass('description')
-          .append($('<div></div>').addClass('text-de text-main')
-            .html(props.description.de))
-          .append($('<div></div>').addClass('text-en text-translation')
-            .html(props.description.en)))
+          .append(
+            this.languages.map(lang => (
+              $('<div></div>').addClass(`text text-${lang}`)
+                .addClass(lang === this.mainLanguage ? 'text-main' : 'text-translation')
+                .html(props.description[lang])
+            ))
+          )
+        )
         .on('click', () => {
           this.events.emit('enable', powerUpId);
           this.disableSelectButton();
@@ -1037,14 +1064,22 @@ class PowerUpSelector {
       $('<div></div>').addClass('powerup')
         .attr('type', 'button')
         .append($('<div></div>').addClass('title')
-          .append($('<div></div>').addClass('text-de text-main')
-            .html(props.title.de))
-          .append($('<div></div>').addClass('text-en text-translation')
-            .html(props.title.en)))
+          .append(
+            this.languages.map(lang => (
+              $('<div></div>').addClass(`text text-${lang}`)
+                .addClass(lang === this.mainLanguage ? 'text-main' : 'text-translation')
+                .html(props.title[lang])
+            ))
+          )
+        )
         .append($('<button></button>').attr('type', 'button')
           .addClass('btn btn-block btn-power-ups-disable')
-          .append($('<span></span>').addClass('text text-de text-main').text('Deaktivieren'))
-          .append($('<span></span>').addClass('text text-en text-translation').text('Disable'))
+          .append(
+            this.languages.map(lang => (
+              $('<span></span>').addClass(`text text-${lang}`)
+              .addClass(lang === this.mainLanguage ? 'text-main' : 'text-translation')
+                .html(this.config.dashboard.powerUps.disableButton.text[lang])
+          )))
           .on('click', () => {
             this.events.emit('disable', powerUpId);
           }))
@@ -1090,10 +1125,13 @@ class PowerUpSelector {
     if (activePowerUps.length === 0) {
       this.statusElement.append(
         $('<div></div>').addClass('no-selection')
-          .append($('<div></div>').addClass('text text-de')
-            .text('Keine Power-Ups aktiv'))
-          .append($('<div></div>').addClass('text text-en')
-            .text('No Power-Ups active'))
+          .append(
+            this.languages.map(lang => (
+              $('<div></div>').addClass(`text text-${lang}`)
+                .addClass(lang === this.mainLanguage ? 'text-main' : 'text-translation')
+                .html(this.config.dashboard.powerUps.noneActive.text[lang])
+            ))
+          )
       );
     } else {
       this.statusElement.append(
@@ -1116,27 +1154,48 @@ module.exports = PowerUpSelector;
   \************************************/
 /***/ ((module) => {
 
-function createTitle(texts) {
+/**
+ * Create a multi-language title for the dashboard
+ *
+ * @param {string[]} languages
+ *  Ordered list of languages to use in the title
+ * @param {Object.<string, string>} texts
+ *  Object with the texts for the title in different languages
+ * @return {*|jQuery}
+ */
+function createTitle(languages, texts) {
   const $answer = $('<div></div>')
     .addClass('dashboard-title');
 
-  const { de, en } = texts;
-  if (de === en) {
-    $answer.append($('<h2>').text(de));
+  const mainLang = languages[0];
+  const allTextsAreEqual = languages.every(lang => texts[lang] === texts[mainLang]);
+
+  if (allTextsAreEqual) {
+    $answer.append($('<h2>').text(texts[mainLang]));
   } else {
-    $answer.append(
-      $('<h2>')
-        .text(de),
-      $('<div></div>')
-        .addClass('dashboard-title-translation')
-        .text(en)
-    );
+    // Append the title in each language
+    $answer.append(languages.map(lang => {
+      return $(lang === mainLang ? '<h2>' : '<div>')
+        .addClass(lang === mainLang ? 'dashboard-title-main' : 'dashboard-title-translation')
+        .text(texts[lang]);
+    }))
   }
 
   return $answer;
 }
 
-module.exports = { createTitle };
+/**
+ * Create a copy of createTitle with the languages bound
+ *
+ * @param {string[]} languages
+ *  Ordered list of languages to use in titles
+ * @return {function(Object.<string, string>): *|jQuery}
+ */
+function bindCreateTitle(languages) {
+  return createTitle.bind(null, languages);
+}
+
+module.exports = { createTitle, bindCreateTitle };
 
 
 /***/ }),
@@ -1150,13 +1209,14 @@ module.exports = { createTitle };
 const IndexView = __webpack_require__(/*! ./index-view */ "./src/js/index-view.js");
 
 class IndexListView {
-  constructor(varDefs) {
+  constructor(config) {
+    this.config = config;
     this.$element = $('<div></div>')
       .addClass('index-list');
 
     this.variableRankViews = Object.fromEntries(
-      Object.entries(varDefs)
-        .map(([id, def]) => [id, new IndexView(id, def)])
+      Object.entries(config.variables)
+        .map(([id, def]) => [id, new IndexView(this.config, id, def)])
     );
 
     this.$element.append(
@@ -1186,19 +1246,26 @@ module.exports = IndexListView;
 /***/ ((module) => {
 
 class IndexView {
-  constructor(id, definition) {
+  constructor(config, id, definition) {
+    this.config = config;
     this.id = id;
     this.definition = definition;
+    this.languages = this.config.dashboard.languages;
+    this.mainLanguage = this.languages[0];
     this.value = null;
     this.$valueElement = $('<div></div>').addClass('value');
     this.$element = $('<div></div>')
       .addClass(['index', `index-${this.id}`])
       .append([
         $('<div></div>').addClass('description')
-          .append([
-            $('<div></div>').addClass('name').text(this.definition.name.de),
-            $('<div></div>').addClass('name-tr').text(this.definition.name.en),
-          ]),
+          .append(
+            this.languages.map(lang => (
+              $('<div></div>')
+                .addClass(`name name-${lang}`)
+                .addClass(lang === this.mainLanguage ? 'name-main' : 'name-translation')
+                .text(this.definition.name[lang])
+            ))
+          ),
         this.$valueElement,
       ]);
   }
@@ -1603,13 +1670,13 @@ var __webpack_exports__ = {};
   \**********************************/
 __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
 const showFatalError = __webpack_require__(/*! ./lib/show-fatal-error */ "./src/js/lib/show-fatal-error.js");
-const VariableRankListView = __webpack_require__(/*! ./index-list-view */ "./src/js/index-list-view.js");
+const IndexListView = __webpack_require__(/*! ./index-list-view */ "./src/js/index-list-view.js");
 const ServerSocketConnector = __webpack_require__(/*! ./server-socket-connector */ "./src/js/server-socket-connector.js");
 const ConnectionStateView = __webpack_require__(/*! ./connection-state-view */ "./src/js/connection-state-view.js");
 const CitizenRequestView = __webpack_require__(/*! ./citizen-request-view */ "./src/js/citizen-request-view.js");
 const CitizenRequestViewMgr = __webpack_require__(/*! ./citizen-request-view-mgr */ "./src/js/citizen-request-view-mgr.js");
 const ActionsPane = __webpack_require__(/*! ./dashboard/actions-pane */ "./src/js/dashboard/actions-pane.js");
-const { createTitle } = __webpack_require__(/*! ./dashboard/titles */ "./src/js/dashboard/titles.js");
+const { bindCreateTitle } = __webpack_require__(/*! ./dashboard/titles */ "./src/js/dashboard/titles.js");
 const PowerUpSelector = __webpack_require__(/*! ./dashboard/power-up-selector */ "./src/js/dashboard/power-up-selector.js");
 
 fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
@@ -1626,6 +1693,14 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
   })
   .then((config) => {
     const connector = new ServerSocketConnector("ws://localhost:4848");
+    const languages = config.dashboard.languages;
+    const mainLanguage = languages[0];
+    const createTitle = bindCreateTitle(languages);
+
+    $('.dashboard')
+      .addClass(`with-language-count-${languages.length}`)
+      .addClass(`with-main-language-${mainLanguage}`)
+      .addClass(languages.map(lang => `with-language-${lang}`).join(' '));
 
     const citizenRequestView = new CitizenRequestView(config);
     $('#col-1')
@@ -1633,11 +1708,11 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
       .append(citizenRequestView.$element);
     const citizenRequestViewMgr = new CitizenRequestViewMgr(citizenRequestView);
 
-    const variableRankListView = new VariableRankListView(config.variables);
+    const indexListView = new IndexListView(config);
     $('#col-2')
       .append(createTitle(config.dashboard.status.title))
-      .append(variableRankListView.$element);
-    variableRankListView.setValues({
+      .append(indexListView.$element);
+    indexListView.setValues({
       'traffic-density': 0,
       'travel-times': 0,
       safety: 0,
@@ -1676,7 +1751,7 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
     });
 
     connector.events.on('vars_update', (variables) => {
-      variableRankListView.setValues(variables);
+      indexListView.setValues(variables);
     });
     connector.events.on('goals_update', (goals) => {
       citizenRequestViewMgr.handleUpdate(goals);
@@ -1702,4 +1777,4 @@ fetch(`${"http://localhost:4848"}/config`, { cache: 'no-store' })
 
 /******/ })()
 ;
-//# sourceMappingURL=dashboard.417611704078eb17cb13.js.map
+//# sourceMappingURL=dashboard.4287c2f966758ad7c3a4.js.map

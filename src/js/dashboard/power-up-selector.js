@@ -1,5 +1,5 @@
 const EventEmitter = require('events');
-const { createTitle } = require('./titles');
+const { bindCreateTitle } = require('./titles');
 
 class PowerUpSelector {
   constructor(config, buttonContainer, statusContainer, selectionPageContainer) {
@@ -8,14 +8,20 @@ class PowerUpSelector {
     this.events = new EventEmitter();
     this.activePowerUps = [];
     this.lastActivePowerUps = [];
+    this.languages = this.config.dashboard.languages;
+    this.mainLanguage = this.languages[0];
+    const createTitle = bindCreateTitle(this.languages);
+
 
     this.selectButton = $('<button></button>')
       .attr('type', 'button')
       .addClass('btn btn-block btn-dashboard-action btn-power-ups-activate')
-      .append($('<span></span>').addClass('text text-de')
-        .html(this.config.dashboard.powerUps.button.text.de))
-      .append($('<span></span>').addClass('text text-en')
-        .html(this.config.dashboard.powerUps.button.text.en))
+      .append(this.languages.map(lang => (
+          $('<span></span>')
+            .addClass(`text text-${lang}`)
+            .addClass(lang === this.mainLanguage ? 'text-main' : 'text-translation')
+            .html(this.config.dashboard.powerUps.button.text[lang]
+      ))))
       .on('click', () => {
         this.setSelectablePowerUps(this.pickSelectablePowerUps());
         this.activateCloseTimeout();
@@ -44,11 +50,14 @@ class PowerUpSelector {
         $('<button></button>')
           .attr('type', 'button')
           .addClass('btn btn-block btn-dashboard-action btn-cancel')
-          .append($('<span></span>').addClass('text text-de')
-            .append($('<span></span>').addClass('large')
-              .html('Abbrechen')))
-          .append($('<span></span>').addClass('text text-en')
-            .html('Cancel'))
+          .append(
+            this.languages.map(lang => (
+              $('<span></span>')
+                .addClass(`text text-${lang}`)
+                .addClass(lang === this.mainLanguage ? 'text-main' : 'text-translation')
+                .html(this.config.dashboard.powerUps.cancelButton.text[lang])
+            ))
+          )
           .on('click', () => {
             this.cancelCloseTimeout();
             this.closeSelector();
@@ -103,17 +112,25 @@ class PowerUpSelector {
       $('<div></div>').addClass('powerup')
         .attr('type', 'button')
         .append($('<div></div>').addClass('title')
-          .append($('<div></div>').addClass('text-de text-main')
-            .html(props.title.de))
-          .append($('<div></div>').addClass('text-en text-translation')
-            .html(props.title.en)))
+          .append(
+            this.languages.map(lang => (
+              $('<div></div>').addClass(`text text-${lang}`)
+                .addClass(lang === this.mainLanguage ? 'text-main' : 'text-translation')
+                .html(props.title[lang])
+            ))
+          )
+        )
         .append($('<div></div>').addClass('image')
           .attr('style', `background-image: url('static/powerups/${powerUpId}.svg')`))
         .append($('<div></div>').addClass('description')
-          .append($('<div></div>').addClass('text-de text-main')
-            .html(props.description.de))
-          .append($('<div></div>').addClass('text-en text-translation')
-            .html(props.description.en)))
+          .append(
+            this.languages.map(lang => (
+              $('<div></div>').addClass(`text text-${lang}`)
+                .addClass(lang === this.mainLanguage ? 'text-main' : 'text-translation')
+                .html(props.description[lang])
+            ))
+          )
+        )
         .on('click', () => {
           this.events.emit('enable', powerUpId);
           this.disableSelectButton();
@@ -129,14 +146,22 @@ class PowerUpSelector {
       $('<div></div>').addClass('powerup')
         .attr('type', 'button')
         .append($('<div></div>').addClass('title')
-          .append($('<div></div>').addClass('text-de text-main')
-            .html(props.title.de))
-          .append($('<div></div>').addClass('text-en text-translation')
-            .html(props.title.en)))
+          .append(
+            this.languages.map(lang => (
+              $('<div></div>').addClass(`text text-${lang}`)
+                .addClass(lang === this.mainLanguage ? 'text-main' : 'text-translation')
+                .html(props.title[lang])
+            ))
+          )
+        )
         .append($('<button></button>').attr('type', 'button')
           .addClass('btn btn-block btn-power-ups-disable')
-          .append($('<span></span>').addClass('text text-de text-main').text('Deaktivieren'))
-          .append($('<span></span>').addClass('text text-en text-translation').text('Disable'))
+          .append(
+            this.languages.map(lang => (
+              $('<span></span>').addClass(`text text-${lang}`)
+              .addClass(lang === this.mainLanguage ? 'text-main' : 'text-translation')
+                .html(this.config.dashboard.powerUps.disableButton.text[lang])
+          )))
           .on('click', () => {
             this.events.emit('disable', powerUpId);
           }))
@@ -182,10 +207,13 @@ class PowerUpSelector {
     if (activePowerUps.length === 0) {
       this.statusElement.append(
         $('<div></div>').addClass('no-selection')
-          .append($('<div></div>').addClass('text text-de')
-            .text('Keine Power-Ups aktiv'))
-          .append($('<div></div>').addClass('text text-en')
-            .text('No Power-Ups active'))
+          .append(
+            this.languages.map(lang => (
+              $('<div></div>').addClass(`text text-${lang}`)
+                .addClass(lang === this.mainLanguage ? 'text-main' : 'text-translation')
+                .html(this.config.dashboard.powerUps.noneActive.text[lang])
+            ))
+          )
       );
     } else {
       this.statusElement.append(

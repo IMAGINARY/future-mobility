@@ -12,7 +12,7 @@ require('../sass/default.scss');
 require('../sass/desktop.scss');
 const ZoneBalanceView = require('./zone-balance-view');
 const DataInspectorView = require('./data-inspector-view');
-const VariableRankListView = require('./index-list-view');
+const IndexListView = require('./index-list-view');
 const PollutionData = require('./data-sources/pollution-data');
 const NoiseData = require('./data-sources/noise-data');
 const GreenSpacesData = require('./data-sources/green-spaces-data');
@@ -179,10 +179,10 @@ cfgLoader.load([
           powerUpViewMgr.update(powerUpInspector.getEnabled());
         });
 
-        const variableRankListView = new VariableRankListView(config.variables);
+        const indexListView = new IndexListView(config);
         // Todo: Remove the lines below
-        $('[data-component="status"]').append(variableRankListView.$element);
-        variableRankListView.setValues({
+        $('[data-component="status"]').append(indexListView.$element);
+        indexListView.setValues({
           'traffic-density': 0,
           'travel-times': 0,
           safety: 0,
@@ -190,7 +190,7 @@ cfgLoader.load([
           noise: 0,
           'green-spaces': 0,
         });
-        window.variableRankListView = variableRankListView;
+        window.variableRankListView = indexListView;
 
         const goalDebugView = new GoalDebugView(stats.getGoals());
         $('[data-component="goal-debug-container"]').append(goalDebugView.$element);
@@ -202,7 +202,7 @@ cfgLoader.load([
         function recalculateIndexes() {
           indexesDirty = true;
           if (indexesCooldownTimer === null) {
-            variableRankListView.setValues({
+            indexListView.setValues({
               'green-spaces': stats.get('green-spaces-index'),
               pollution: stats.get('pollution-index'),
               noise: stats.get('noise-index'),

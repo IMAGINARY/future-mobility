@@ -4,6 +4,9 @@ const { getTileType } = require('./lib/config-helpers');
 class CitizenRequestView {
   constructor(config) {
     this.config = config;
+    this.languages = this.config.dashboard.languages;
+    this.mainLanguage = this.languages[0];
+
     this.$element = $('<div></div>')
       .addClass('citizen-requests');
 
@@ -24,10 +27,14 @@ class CitizenRequestView {
             'background-image': `url(${this.getRandomCitizenIcon(goalId)})`,
           }))
         .append($('<div></div>').addClass('request-balloon')
-          .append($('<div></div>').addClass('request-text-de')
-            .html(this.formatRequestText(this.config.citizenRequests[goalId].de)))
-          .append($('<div></div>').addClass('request-text-en')
-            .html(this.formatRequestText(this.config.citizenRequests[goalId].en))))
+          .append(
+            this.languages.map(lang => (
+              $('<div></div>').addClass(`request-text request-text-${lang}`)
+                .addClass(lang === this.mainLanguage ? 'request-text-main' : 'request-text-translation')
+                .html(this.formatRequestText(this.config.citizenRequests[goalId][lang]))
+            ))
+          )
+        )
         .appendTo(this.$element);
     }
   }
@@ -48,9 +55,8 @@ class CitizenRequestView {
   formatRequestText(text) {
     return text
       .replaceAll(CitizenRequestView.tileRefRegexp, (match, tileSpec, innerText) => (
-        `<span class="tileref tileref-${CitizenRequestView.tileReferences[tileSpec]}">
-<span class="tileref-stub" style="background-color: ${this.tileColors[tileSpec]}"></span> ${innerText}
-</span>`
+        // `<span class="tileref tileref-${CitizenRequestView.tileReferences[tileSpec]}"><span class="tileref-stub" style="background-color: ${this.tileColors[tileSpec]}"></span> ${innerText}</span>`
+        `<span class="tileref-stub" style="background-color: ${this.tileColors[tileSpec]}"></span>&nbsp;${innerText}`
       ))
       .replaceAll(CitizenRequestView.largeTextRegexp, '<span class="large">$1</span>');
   }

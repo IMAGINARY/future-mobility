@@ -6608,6 +6608,9 @@ const { getTileType } = __webpack_require__(/*! ./lib/config-helpers */ "./src/j
 class CitizenRequestView {
   constructor(config) {
     this.config = config;
+    this.languages = this.config.dashboard.languages;
+    this.mainLanguage = this.languages[0];
+
     this.$element = $('<div></div>')
       .addClass('citizen-requests');
 
@@ -6628,10 +6631,14 @@ class CitizenRequestView {
             'background-image': `url(${this.getRandomCitizenIcon(goalId)})`,
           }))
         .append($('<div></div>').addClass('request-balloon')
-          .append($('<div></div>').addClass('request-text-de')
-            .html(this.formatRequestText(this.config.citizenRequests[goalId].de)))
-          .append($('<div></div>').addClass('request-text-en')
-            .html(this.formatRequestText(this.config.citizenRequests[goalId].en))))
+          .append(
+            this.languages.map(lang => (
+              $('<div></div>').addClass(`request-text request-text-${lang}`)
+                .addClass(lang === this.mainLanguage ? 'request-text-main' : 'request-text-translation')
+                .html(this.formatRequestText(this.config.citizenRequests[goalId][lang]))
+            ))
+          )
+        )
         .appendTo(this.$element);
     }
   }
@@ -6652,9 +6659,8 @@ class CitizenRequestView {
   formatRequestText(text) {
     return text
       .replaceAll(CitizenRequestView.tileRefRegexp, (match, tileSpec, innerText) => (
-        `<span class="tileref tileref-${CitizenRequestView.tileReferences[tileSpec]}">
-<span class="tileref-stub" style="background-color: ${this.tileColors[tileSpec]}"></span> ${innerText}
-</span>`
+        // `<span class="tileref tileref-${CitizenRequestView.tileReferences[tileSpec]}"><span class="tileref-stub" style="background-color: ${this.tileColors[tileSpec]}"></span> ${innerText}</span>`
+        `<span class="tileref-stub" style="background-color: ${this.tileColors[tileSpec]}"></span>&nbsp;${innerText}`
       ))
       .replaceAll(CitizenRequestView.largeTextRegexp, '<span class="large">$1</span>');
   }
@@ -8965,13 +8971,14 @@ module.exports = Grid;
 const IndexView = __webpack_require__(/*! ./index-view */ "./src/js/index-view.js");
 
 class IndexListView {
-  constructor(varDefs) {
+  constructor(config) {
+    this.config = config;
     this.$element = $('<div></div>')
       .addClass('index-list');
 
     this.variableRankViews = Object.fromEntries(
-      Object.entries(varDefs)
-        .map(([id, def]) => [id, new IndexView(id, def)])
+      Object.entries(config.variables)
+        .map(([id, def]) => [id, new IndexView(this.config, id, def)])
     );
 
     this.$element.append(
@@ -9001,19 +9008,26 @@ module.exports = IndexListView;
 /***/ ((module) => {
 
 class IndexView {
-  constructor(id, definition) {
+  constructor(config, id, definition) {
+    this.config = config;
     this.id = id;
     this.definition = definition;
+    this.languages = this.config.dashboard.languages;
+    this.mainLanguage = this.languages[0];
     this.value = null;
     this.$valueElement = $('<div></div>').addClass('value');
     this.$element = $('<div></div>')
       .addClass(['index', `index-${this.id}`])
       .append([
         $('<div></div>').addClass('description')
-          .append([
-            $('<div></div>').addClass('name').text(this.definition.name.de),
-            $('<div></div>').addClass('name-tr').text(this.definition.name.en),
-          ]),
+          .append(
+            this.languages.map(lang => (
+              $('<div></div>')
+                .addClass(`name name-${lang}`)
+                .addClass(lang === this.mainLanguage ? 'name-main' : 'name-translation')
+                .text(this.definition.name[lang])
+            ))
+          ),
         this.$valueElement,
       ]);
   }
@@ -11598,7 +11612,7 @@ __webpack_require__(/*! ../sass/default.scss */ "./src/sass/default.scss");
 __webpack_require__(/*! ../sass/desktop.scss */ "./src/sass/desktop.scss");
 const ZoneBalanceView = __webpack_require__(/*! ./zone-balance-view */ "./src/js/zone-balance-view.js");
 const DataInspectorView = __webpack_require__(/*! ./data-inspector-view */ "./src/js/data-inspector-view.js");
-const VariableRankListView = __webpack_require__(/*! ./index-list-view */ "./src/js/index-list-view.js");
+const IndexListView = __webpack_require__(/*! ./index-list-view */ "./src/js/index-list-view.js");
 const PollutionData = __webpack_require__(/*! ./data-sources/pollution-data */ "./src/js/data-sources/pollution-data.js");
 const NoiseData = __webpack_require__(/*! ./data-sources/noise-data */ "./src/js/data-sources/noise-data.js");
 const GreenSpacesData = __webpack_require__(/*! ./data-sources/green-spaces-data */ "./src/js/data-sources/green-spaces-data.js");
@@ -11765,10 +11779,10 @@ cfgLoader.load([
           powerUpViewMgr.update(powerUpInspector.getEnabled());
         });
 
-        const variableRankListView = new VariableRankListView(config.variables);
+        const indexListView = new IndexListView(config);
         // Todo: Remove the lines below
-        $('[data-component="status"]').append(variableRankListView.$element);
-        variableRankListView.setValues({
+        $('[data-component="status"]').append(indexListView.$element);
+        indexListView.setValues({
           'traffic-density': 0,
           'travel-times': 0,
           safety: 0,
@@ -11776,7 +11790,7 @@ cfgLoader.load([
           noise: 0,
           'green-spaces': 0,
         });
-        window.variableRankListView = variableRankListView;
+        window.variableRankListView = indexListView;
 
         const goalDebugView = new GoalDebugView(stats.getGoals());
         $('[data-component="goal-debug-container"]').append(goalDebugView.$element);
@@ -11788,7 +11802,7 @@ cfgLoader.load([
         function recalculateIndexes() {
           indexesDirty = true;
           if (indexesCooldownTimer === null) {
-            variableRankListView.setValues({
+            indexListView.setValues({
               'green-spaces': stats.get('green-spaces-index'),
               pollution: stats.get('pollution-index'),
               noise: stats.get('noise-index'),
@@ -11856,4 +11870,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.2d612c59b7279d0d7d2c.js.map
+//# sourceMappingURL=default.e96e49e771e40c512dd0.js.map

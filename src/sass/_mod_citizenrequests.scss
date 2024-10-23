@@ -44,20 +44,20 @@ $balloon-tip-size: 1.3em;
 
     .tileref {
       display: inline-block;
+    }
 
-      .tileref-stub {
-        display: inline-block;
-        width: 0.7em;
-        height: 0.7em;
-        border-radius: 50%;
-        margin-right: 0.15em;
-        margin-left: 0.2em;
-        outline: 0.15em solid white;
-      }
+    .tileref-stub {
+      display: inline-block;
+      width: 0.7em;
+      height: 0.7em;
+      border-radius: 50%;
+      margin-right: 0.15em;
+      margin-left: 0.2em;
+      outline: 0.15em solid white;
     }
   }
 
-  .request-text-de {
+  .request-text-main {
     font-weight: bold;
     margin-bottom: 0.5em;
 
@@ -67,9 +67,21 @@ $balloon-tip-size: 1.3em;
     }
   }
 
-  .request-text-en {
+  .request-text-translation {
     .large {
       display: block;
+    }
+  }
+}
+
+.dashboard.with-language-count-1 {
+  .citizen-requests .request-text {
+    font-size: 1.2em;
+    font-weight: normal;
+    .large {
+      font-size: 1.1em;
+      font-weight: bold;
+      margin-bottom: 0.2em;
     }
   }
 }

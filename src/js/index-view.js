@@ -1,17 +1,24 @@
 class IndexView {
-  constructor(id, definition) {
+  constructor(config, id, definition) {
+    this.config = config;
     this.id = id;
     this.definition = definition;
+    this.languages = this.config.dashboard.languages;
+    this.mainLanguage = this.languages[0];
     this.value = null;
     this.$valueElement = $('<div></div>').addClass('value');
     this.$element = $('<div></div>')
       .addClass(['index', `index-${this.id}`])
       .append([
         $('<div></div>').addClass('description')
-          .append([
-            $('<div></div>').addClass('name').text(this.definition.name.de),
-            $('<div></div>').addClass('name-tr').text(this.definition.name.en),
-          ]),
+          .append(
+            this.languages.map(lang => (
+              $('<div></div>')
+                .addClass(`name name-${lang}`)
+                .addClass(lang === this.mainLanguage ? 'name-main' : 'name-translation')
+                .text(this.definition.name[lang])
+            ))
+          ),
         this.$valueElement,
       ]);
   }

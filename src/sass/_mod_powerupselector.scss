@@ -67,9 +67,16 @@
     margin-left: 10%;
     border-radius: 0.5em;
 
-    .text-de {
+    .text-main {
       font-weight: bold;
+    }
+
+    .text {
       margin-bottom: 1em;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
     }
   }
 
@@ -117,6 +124,16 @@
 
       &:active {
         background-color: darken($c-bubblegum-light, 20%);
+      }
+    }
+  }
+}
+
+.dashboard.with-language-count-1 {
+  .powerups-selector-main {
+    .powerup {
+      .description {
+        font-size: 1.25em;
       }
     }
   }

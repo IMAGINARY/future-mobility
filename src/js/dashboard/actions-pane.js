@@ -5,15 +5,19 @@ class ActionsPane {
     this.config = config;
     this.$element = $('<div></div>').addClass('actions-pane');
     this.disabled = false;
+    const languages = this.config.dashboard.languages;
+    const mainLanguage = languages[0];
 
     this.buttons = this.config.dashboard.actions.buttons.map(button => (
       $('<button></button>')
         .attr('type', 'button')
         .addClass(`btn btn-block btn-dashboard-action btn-${button.id}`)
-        .append($('<span></span>').addClass('text text-de')
-          .html(button.text.de))
-        .append($('<span></span>').addClass('text text-en')
-          .html(button.text.en))
+        .append(languages.map(lang => (
+          $('<span></span>')
+            .addClass(`text text-${lang}`)
+            .addClass(lang === mainLanguage ? 'text-main' : 'text-translation')
+            .html(button.text[lang])))
+        )
         .attr('id', button.id)
     ));
 

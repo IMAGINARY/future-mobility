@@ -1,12 +1,12 @@
 require('../sass/default.scss');
 const showFatalError = require('./lib/show-fatal-error');
-const VariableRankListView = require('./index-list-view');
+const IndexListView = require('./index-list-view');
 const ServerSocketConnector = require('./server-socket-connector');
 const ConnectionStateView = require('./connection-state-view');
 const CitizenRequestView = require('./citizen-request-view');
 const CitizenRequestViewMgr = require('./citizen-request-view-mgr');
 const ActionsPane = require('./dashboard/actions-pane');
-const { createTitle } = require('./dashboard/titles');
+const { bindCreateTitle } = require('./dashboard/titles');
 const PowerUpSelector = require('./dashboard/power-up-selector');
 
 fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
@@ -23,6 +23,14 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
   })
   .then((config) => {
     const connector = new ServerSocketConnector(process.env.SERVER_SOCKET_URI);
+    const languages = config.dashboard.languages;
+    const mainLanguage = languages[0];
+    const createTitle = bindCreateTitle(languages);
+
+    $('.dashboard')
+      .addClass(`with-language-count-${languages.length}`)
+      .addClass(`with-main-language-${mainLanguage}`)
+      .addClass(languages.map(lang => `with-language-${lang}`).join(' '));
 
     const citizenRequestView = new CitizenRequestView(config);
     $('#col-1')
@@ -30,11 +38,11 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
       .append(citizenRequestView.$element);
     const citizenRequestViewMgr = new CitizenRequestViewMgr(citizenRequestView);
 
-    const variableRankListView = new VariableRankListView(config.variables);
+    const indexListView = new IndexListView(config);
     $('#col-2')
       .append(createTitle(config.dashboard.status.title))
-      .append(variableRankListView.$element);
-    variableRankListView.setValues({
+      .append(indexListView.$element);
+    indexListView.setValues({
       'traffic-density': 0,
       'travel-times': 0,
       safety: 0,
@@ -73,7 +81,7 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
     });
 
     connector.events.on('vars_update', (variables) => {
-      variableRankListView.setValues(variables);
+      indexListView.setValues(variables);
     });
     connector.events.on('goals_update', (goals) => {
       citizenRequestViewMgr.handleUpdate(goals);
