@@ -1,9 +1,9 @@
 @use 'fonts';
 
-@mixin regularText {
-  @include fonts.RobotoCondensedRegular;
+@mixin regular-text {
+  @include fonts.roboto-condensed-regular;
 }
 
-@mixin headingText {
-  @include fonts.RobotoCondensedBold;
+@mixin heading-text {
+  @include fonts.roboto-condensed-bold;
 }

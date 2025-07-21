@@ -1,7 +1,6 @@
 @use "sass:color";
 
 // Button variants
-//
 // Easily pump out default styles, as well as :hover, :focus, :active,
 // and disabled options for all buttons
 
@@ -16,11 +15,13 @@
     background-color: color.adjust($background, $lightness: -10%, $space: hsl);
     border-color: color.adjust($border, $lightness: -25%, $space: hsl);
   }
+
   &:hover {
     color: $color;
     background-color: color.adjust($background, $lightness: -10%, $space: hsl);
     border-color: color.adjust($border, $lightness: -12%, $space: hsl);
   }
+
   &:active,
   &.active,
   .open > &.dropdown-toggle {
@@ -37,6 +38,7 @@
       border-color: color.adjust($border, $lightness: -25%, $space: hsl);
     }
   }
+  
   &.disabled,
   &[disabled],
   fieldset[disabled] & {

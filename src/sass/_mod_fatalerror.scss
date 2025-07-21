@@ -4,7 +4,7 @@
   height: 100%;
   top: 0;
   left: 0;
-  background-color: rgba(92, 6, 6, 0.85);
+  background-color: rgb(92 6 6 / 85%);
   background-image: url('../../static/fa/exclamation-triangle-solid.svg');
   background-size: 100px 100px;
   background-repeat: no-repeat;
@@ -18,8 +18,7 @@
     top: 100px;
     left: 50%;
     width: 600px;
-    margin: auto;
-    margin-bottom: 0.5em;
+    margin: auto auto 0.5em;
     padding-left: 15px;
     padding-right: 15px;
   }

@@ -31,7 +31,7 @@ $balloon-tip-size: 1.3em;
     line-height: 1.2;
     font-size: 1.3em;
 
-    &:after {
+    &::after {
       content: " ";
       display: inline-block;
       position: absolute;
@@ -80,6 +80,7 @@ $balloon-tip-size: 1.3em;
   .citizen-requests .request-text {
     font-size: 1.2em;
     font-weight: normal;
+
     .large {
       font-size: 1.1em;
       font-weight: bold;

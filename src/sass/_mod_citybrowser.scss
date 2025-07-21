@@ -28,7 +28,8 @@ button.city-browser-item-new {
   height: 100%;
   border: none;
   background-color: colors.$c-gray;
-  &:after {
+
+  &::after {
     content: "+";
     display: block;
     font-size: 4em;
@@ -38,6 +39,7 @@ button.city-browser-item-new {
     font-weight: bold;
     color: white;
   }
+
   &.selected {
     border: 3px solid #000;
   }

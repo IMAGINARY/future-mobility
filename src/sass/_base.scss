@@ -9,7 +9,8 @@ html, body {
 }
 
 body {
-  @include type.regularText;
+  @include type.regular-text;
+
   background-color: colors.$c-gray-light;
 
   &.bg-black {
@@ -18,7 +19,8 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  @include type.headingText;
+  @include type.heading-text;
+
   color: colors.$c-black-light;
 }
 

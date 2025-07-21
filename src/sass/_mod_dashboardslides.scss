@@ -15,12 +15,15 @@ body.dashboard {
   .col-powerup-selector-item {
     opacity: 0;
   }
+
   .col-powerup-selector-item:nth-child(1) {
     transition: opacity 0s 1s;
   }
+
   .col-powerup-selector-item:nth-child(2) {
     transition: opacity 0s 1s;
   }
+
   .col-powerup-selector-item:nth-child(3) {
     transition: opacity 0s 1s;
   }
@@ -39,24 +42,30 @@ body.dashboard {
     #slide-1 { left: -100%; }
     #slide-2 { left: 0; }
     #slide-3 { left: 100%; }
+
     .powerups-selector-bottom {
       margin-right: 0;
       transition: margin-right 1s 1s;
     }
+
     #slide-2 .dashboard-title {
       transition: margin-top 1s 1s, margin-bottom 1s 1s;
       margin-top: 0.4em;
       margin-bottom: 1em;
     }
+
     .col-powerup-selector-item {
       opacity: 1;
     }
+
     .col-powerup-selector-item:nth-child(1) {
       transition: opacity 1s 1.3s;
     }
+
     .col-powerup-selector-item:nth-child(2) {
       transition: opacity 1s 1.6s;
     }
+
     .col-powerup-selector-item:nth-child(3) {
       transition: opacity 1s 1.9s;
     }

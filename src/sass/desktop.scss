@@ -8,6 +8,7 @@ $palette-spacing: 63px;
 
 [data-component="app-container"] {
   padding-left: $palette-spacing;
+
   canvas {
     max-height: calc(100vh - 3rem);
   }
@@ -18,7 +19,7 @@ $palette-spacing: 63px;
   left: 15px;
 }
 
-#accordionData {
+#accordion-data {
   position: relative;
   top: auto;
   right: auto;
@@ -31,8 +32,10 @@ $palette-spacing: 63px;
       width: 3em;
       height: 3em;
     }
+
     .request-balloon {
       font-size: 1em;
+
       .large {
         font-size: 1.1em;
       }

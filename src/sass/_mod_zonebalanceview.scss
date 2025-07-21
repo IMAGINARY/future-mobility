@@ -6,6 +6,7 @@ $bar-block-width: 2em;
 .zone-balance {
   background-color: white;
   padding: 0.5em;
+
   .bar {
     display: inline-block;
     width: $bar-block-width * 2;
@@ -27,6 +28,7 @@ $bar-block-width: 2em;
 
     .over, .under {
       margin-left: $bar-block-width;
+
       & > div {
         width: $bar-block-width;
         height: $bar-block-height;

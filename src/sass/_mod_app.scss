@@ -8,6 +8,7 @@ $tile-width: 72px;
   width: 100%;
   height: 100%;
   text-align: center;
+
   canvas {
     display: inline-block;
     max-width: 100%;
@@ -15,7 +16,7 @@ $tile-width: 72px;
   }
 }
 
-#accordionData {
+#accordion-data {
   position: absolute;
   top: 0;
   right: 0;
@@ -25,14 +26,17 @@ $tile-width: 72px;
   &>.card>.card-header {
     padding: 0;
     background-color: #c58eef;
+
     h2 .btn {
-      @include type.headingText;
+      @include type.heading-text;
+
       color: black;
     }
   }
 
   .index-list {
     padding: 1em 0.4em;
+
     .variables {
       font-size: 0.8em;
     }
