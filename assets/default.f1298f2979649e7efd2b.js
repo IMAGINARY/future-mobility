@@ -3715,7 +3715,7 @@ module.exports = __webpack_require__(/*! ./json */ "./node_modules/js-yaml/lib/s
 
 
 
-module.exports = __webpack_require__(/*! ./core */ "./node_modules/js-yaml/lib/schema/core.js").extend({
+module.exports = (__webpack_require__(/*! ./core */ "./node_modules/js-yaml/lib/schema/core.js").extend)({
   implicit: [
     __webpack_require__(/*! ../type/timestamp */ "./node_modules/js-yaml/lib/type/timestamp.js"),
     __webpack_require__(/*! ../type/merge */ "./node_modules/js-yaml/lib/type/merge.js")
@@ -3777,7 +3777,7 @@ module.exports = new Schema({
 
 
 
-module.exports = __webpack_require__(/*! ./failsafe */ "./node_modules/js-yaml/lib/schema/failsafe.js").extend({
+module.exports = (__webpack_require__(/*! ./failsafe */ "./node_modules/js-yaml/lib/schema/failsafe.js").extend)({
   implicit: [
     __webpack_require__(/*! ../type/null */ "./node_modules/js-yaml/lib/type/null.js"),
     __webpack_require__(/*! ../type/bool */ "./node_modules/js-yaml/lib/type/bool.js"),
@@ -4814,32 +4814,6 @@ module.exports = new Type('tag:yaml.org,2002:timestamp', {
   instanceOf: Date,
   represent: representYamlTimestamp
 });
-
-
-/***/ }),
-
-/***/ "./src/sass/default.scss":
-/*!*******************************!*\
-  !*** ./src/sass/default.scss ***!
-  \*******************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-// extracted by mini-css-extract-plugin
-
-
-/***/ }),
-
-/***/ "./src/sass/desktop.scss":
-/*!*******************************!*\
-  !*** ./src/sass/desktop.scss ***!
-  \*******************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-// extracted by mini-css-extract-plugin
 
 
 /***/ }),
@@ -11037,7 +11011,7 @@ module.exports = WalkableCityHandler;
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"cities":[{"map":{"width":16,"height":16,"cells":[[3,3,1,4,4,1,4,4,1,4,4,1,4,4,1,3],[3,3,1,4,4,1,4,4,1,4,4,1,4,4,1,3],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[3,3,1,4,4,1,4,4,1,4,4,1,4,4,1,3]]}},{"map":{"width":16,"height":16,"cells":[[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5]]}},{"map":{"width":16,"height":16,"cells":[[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,1,1,1,1,1,1,5,5,5,5,5,5,5,5,5],[5,1,5,5,5,5,1,5,5,5,5,5,5,5,5,5],[5,1,5,5,5,5,1,5,5,5,5,5,5,5,5,5],[5,1,5,5,5,5,1,5,5,5,5,5,5,5,5,5],[5,1,5,5,5,5,1,5,5,5,5,5,5,5,5,5],[5,1,1,1,1,1,1,1,1,5,5,5,5,5,5,5],[5,5,5,5,5,5,1,5,1,5,5,5,5,5,5,5],[5,5,5,5,5,5,1,1,1,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5]]}}]}');
+module.exports = /*#__PURE__*/JSON.parse('{"cities":[{"map":{"width":16,"height":16,"cells":[[3,3,1,4,4,1,4,4,1,4,4,1,4,4,1,3],[3,3,1,4,4,1,4,4,1,4,4,1,4,4,1,3],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[5,5,1,2,2,1,2,2,1,2,2,1,2,2,1,5],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[3,3,1,5,5,1,2,2,1,2,2,1,5,5,1,3],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[3,3,1,4,4,1,4,4,1,4,4,1,4,4,1,3]]}},{"map":{"width":16,"height":16,"cells":[[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5],[5,5,1,5,5,1,5,5,1,5,5,1,5,5,1,5]]}},{"map":{"width":16,"height":16,"cells":[[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,1,1,1,1,1,1,5,5,5,5,5,5,5,5,5],[5,1,5,5,5,5,1,5,5,5,5,5,5,5,5,5],[5,1,5,5,5,5,1,5,5,5,5,5,5,5,5,5],[5,1,5,5,5,5,1,5,5,5,5,5,5,5,5,5],[5,1,5,5,5,5,1,5,5,5,5,5,5,5,5,5],[5,1,1,1,1,1,1,1,1,5,5,5,5,5,5,5],[5,5,5,5,5,5,1,5,1,5,5,5,5,5,5,5],[5,5,5,5,5,5,1,1,1,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5]]}}]}');
 
 /***/ }),
 
@@ -11510,6 +11484,32 @@ module.exports = ZoneBalanceView;
 
 /***/ }),
 
+/***/ "./src/sass/default.scss":
+/*!*******************************!*\
+  !*** ./src/sass/default.scss ***!
+  \*******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ }),
+
+/***/ "./src/sass/desktop.scss":
+/*!*******************************!*\
+  !*** ./src/sass/desktop.scss ***!
+  \*******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ }),
+
 /***/ "./static/fa/pencil-alt-solid.svg":
 /*!****************************************!*\
   !*** ./static/fa/pencil-alt-solid.svg ***!
@@ -11577,23 +11577,26 @@ module.exports = __webpack_require__.p + "2174451d87ee3f5a3181.svg";
 /******/ 		if (__webpack_require__.g.importScripts) scriptUrl = __webpack_require__.g.location + "";
 /******/ 		var document = __webpack_require__.g.document;
 /******/ 		if (!scriptUrl && document) {
-/******/ 			if (document.currentScript)
-/******/ 				scriptUrl = document.currentScript.src
+/******/ 			if (document.currentScript && document.currentScript.tagName.toUpperCase() === 'SCRIPT')
+/******/ 				scriptUrl = document.currentScript.src;
 /******/ 			if (!scriptUrl) {
 /******/ 				var scripts = document.getElementsByTagName("script");
-/******/ 				if(scripts.length) scriptUrl = scripts[scripts.length - 1].src
+/******/ 				if(scripts.length) {
+/******/ 					var i = scripts.length - 1;
+/******/ 					while (i > -1 && (!scriptUrl || !/^http(s?):/.test(scriptUrl))) scriptUrl = scripts[i--].src;
+/******/ 				}
 /******/ 			}
 /******/ 		}
 /******/ 		// When supporting browsers where an automatic publicPath is not supported you must specify an output.publicPath manually via configuration
 /******/ 		// or pass an empty string ("") and set the __webpack_public_path__ variable from your code to use your own logic.
 /******/ 		if (!scriptUrl) throw new Error("Automatic publicPath is not supported in this browser");
-/******/ 		scriptUrl = scriptUrl.replace(/#.*$/, "").replace(/\?.*$/, "").replace(/\/[^\/]+$/, "/");
+/******/ 		scriptUrl = scriptUrl.replace(/^blob:/, "").replace(/#.*$/, "").replace(/\?.*$/, "").replace(/\/[^\/]+$/, "/");
 /******/ 		__webpack_require__.p = scriptUrl;
 /******/ 	})();
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+// This entry needs to be wrapped in an IIFE because it needs to be isolated against other modules in the chunk.
 (() => {
 /*!************************!*\
   !*** ./src/js/main.js ***!
@@ -11870,4 +11873,4 @@ cfgLoader.load([
 
 /******/ })()
 ;
-//# sourceMappingURL=default.e96e49e771e40c512dd0.js.map
+//# sourceMappingURL=default.f1298f2979649e7efd2b.js.map
