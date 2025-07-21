@@ -4,15 +4,23 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const entryPoints = require('./webpack.entry-points.json');
+
+const entry = Object.fromEntries(Object.entries(entryPoints)
+  .map(([name, def]) => [name, `./src/js/${def.mainJs ? def.mainJs : `main-${name}.js`}`]));
+
+const htmlPlugins = Object.entries(entryPoints).map(([name, def]) => {
+  const htmlFileName = def.html ? def.html : `${name}.html`;
+  return new HtmlWebpackPlugin({
+    template: path.resolve(__dirname, `src/html/${htmlFileName}`),
+    filename: path.resolve(__dirname, htmlFileName),
+    chunks: [name],
+    minify: true,
+  });
+});
 
 module.exports = {
-  entry: {
-    default: './src/js/main.js',
-    devtool: './src/js/main-devtool.js',
-    city: './src/js/main-city.js',
-    dashboard: './src/js/main-dashboard.js',
-    editor: './src/js/main-editor.js',
-  },
+  entry,
   output: {
     filename: '[name].[contenthash].js',
     path: path.resolve(__dirname, 'assets'),
@@ -73,36 +81,7 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: '[name].[contenthash].css',
     }),
-    new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'src/html/index.html'),
-      filename: path.resolve(__dirname, 'index.html'),
-      chunks: ['default'],
-      minify: true,
-    }),
-    new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'src/html/devtool.html'),
-      filename: path.resolve(__dirname, 'devtool.html'),
-      chunks: ['devtool'],
-      minify: true,
-    }),
-    new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'src/html/city.html'),
-      filename: path.resolve(__dirname, 'city.html'),
-      chunks: ['city'],
-      minify: true,
-    }),
-    new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'src/html/editor.html'),
-      filename: path.resolve(__dirname, 'editor.html'),
-      chunks: ['editor'],
-      minify: true,
-    }),
-    new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'src/html/dashboard.html'),
-      filename: path.resolve(__dirname, 'dashboard.html'),
-      chunks: ['dashboard'],
-      minify: true,
-    }),
+    ...htmlPlugins,
     new CleanWebpackPlugin({
       // todo: temporary measure. Dev builds should be done without hashes in the filename.
       cleanOnceBeforeBuildPatterns: ['**/*'],

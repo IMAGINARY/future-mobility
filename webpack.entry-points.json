@@ -1,0 +1,10 @@
+{
+  "default": {
+    "mainJs": "main.js",
+    "html": "index.html"
+  },
+  "city": {},
+  "dashboard": {},
+  "devtool": {},
+  "editor": {}
+}
