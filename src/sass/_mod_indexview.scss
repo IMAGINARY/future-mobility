@@ -1,16 +1,18 @@
+@use "sass:math";
+
 $index-description-icon-width: 2.8em;
 $index-description-icon-height: 2.8em;
 
 $index-value-icon-width: 3.75em;
 $index-value-icon-height: 3.75em;
-$index-value-icon-face-ratio: 2/3;
+$index-value-icon-face-ratio: math.div(2, 3);
 $index-value-icon-margin: 1.25em;
 
 $index-value-icon-face-width: $index-value-icon-width * $index-value-icon-face-ratio;
 $index-value-icon-face-height: $index-value-icon-height * $index-value-icon-face-ratio;
 
-$index-value-icon-face-px: ($index-value-icon-width - $index-value-icon-face-width) / 2;
-$index-value-icon-face-py: ($index-value-icon-height - $index-value-icon-face-height) / 2;
+$index-value-icon-face-px: ($index-value-icon-width - $index-value-icon-face-width) * 0.5;
+$index-value-icon-face-py: ($index-value-icon-height - $index-value-icon-face-height) * 0.5;
 
 .index-list {
   background-color: white;

@@ -1,3 +1,5 @@
+@use 'colors';
+
 .map-editor-palette {
   position: absolute;
   top: 5px;
@@ -36,7 +38,7 @@
 
   .separator {
     height: 6px;
-    border-bottom: 6px solid $c-gray-light;
+    border-bottom: 6px solid colors.$c-gray-light;
     margin-bottom: 4px;
     margin-left: -4px;
     margin-right: -4px;

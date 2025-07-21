@@ -1,3 +1,5 @@
+@use 'colors';
+
 $bar-block-height: 0.75em;
 $bar-block-width: 2em;
 
@@ -45,10 +47,10 @@ $bar-block-width: 2em;
       }
     }
 
-    .status, .over > div, .under > div { background-color: $c-green; }
-    &.p1, &.m1  { .status, .over > div, .under > div  { background-color: $c-yellow; } }
-    &.p2, &.m2  { .status, .over > div, .under > div  { background-color: $c-orange; } }
-    &.p3, &.m3  { .status, .over > div, .under > div  { background-color: $c-red; } }
+    .status, .over > div, .under > div { background-color: colors.$c-green; }
+    &.p1, &.m1  { .status, .over > div, .under > div  { background-color: colors.$c-yellow; } }
+    &.p2, &.m2  { .status, .over > div, .under > div  { background-color: colors.$c-orange; } }
+    &.p3, &.m3  { .status, .over > div, .under > div  { background-color: colors.$c-red; } }
 
     &.p1 {
       .over {

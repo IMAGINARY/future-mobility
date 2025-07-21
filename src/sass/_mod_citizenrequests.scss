@@ -1,3 +1,5 @@
+@use 'colors';
+
 $person-width: 5em;
 $person-height: $person-width;
 $person-margin: 1em;
@@ -25,7 +27,7 @@ $balloon-tip-size: 1.3em;
     border-radius: 0.5em;
     padding: 0.5em 0.8em;
     margin-bottom: 1.5em;
-    background-color: $c-gray-mid;
+    background-color: colors.$c-gray-mid;
     line-height: 1.2;
     font-size: 1.3em;
 
@@ -39,7 +41,7 @@ $balloon-tip-size: 1.3em;
       height: 0;
       border-style: solid;
       border-width: 0 $balloon-tip-size $balloon-tip-size 0;
-      border-color: transparent $c-gray-mid transparent transparent;
+      border-color: transparent colors.$c-gray-mid transparent transparent;
     }
 
     .tileref {

@@ -1,3 +1,6 @@
+@use 'buttons';
+@use 'colors';
+
 body.dashboard {
   background-color: #fff;
   overflow: hidden;
@@ -26,7 +29,7 @@ body.dashboard {
   text-align: center;
   font-size: 2em;
   text-transform: uppercase;
-  background-color: $c-fluo-green;
+  background-color: colors.$c-fluo-green;
   color: black;
 
   h2 {
@@ -75,15 +78,15 @@ body.dashboard {
 }
 
 .btn-show-pollution {
-  @include button-variant(#ffffff, $c-cherry, $c-cherry);
+  @include buttons.button-variant(#ffffff, colors.$c-cherry, colors.$c-cherry);
 }
 
 .btn-show-noise {
-  @include button-variant(#ffffff, $c-grape, $c-grape);
+  @include buttons.button-variant(#ffffff, colors.$c-grape, colors.$c-grape);
 }
 
 .btn-power-ups-activate {
-  @include button-variant(#ffffff, $c-mint, $c-mint);
+  @include buttons.button-variant(#ffffff, colors.$c-mint, colors.$c-mint);
   height: calc(100% - 1em);
 
   &.disabled {
@@ -92,7 +95,7 @@ body.dashboard {
 }
 
 .btn-cancel {
-  @include button-variant(#ffffff, $c-gray-mid, $c-gray-mid);
+  @include buttons.button-variant(#ffffff, colors.$c-gray-mid, colors.$c-gray-mid);
   color: black;
   height: calc(100% - 1em)
 }
