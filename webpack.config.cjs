@@ -1,4 +1,6 @@
 const path = require('path');
+const childProcess = require('child_process');
+const webpack = require('webpack');
 const Dotenv = require('dotenv-webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -18,6 +20,11 @@ const htmlPlugins = Object.entries(entryPoints).map(([name, def]) => {
     minify: true,
   });
 });
+
+const getGitCommitHash = () => childProcess
+  .execSync('git rev-parse --short HEAD')
+  .toString()
+  .trim();
 
 module.exports = {
   entry,
@@ -78,6 +85,10 @@ module.exports = {
   },
   plugins: [
     new Dotenv(),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+      'process.env.GIT_COMMIT_HASH': JSON.stringify(getGitCommitHash()),
+    }),
     new MiniCssExtractPlugin({
       filename: '[name].[contenthash].css',
     }),
