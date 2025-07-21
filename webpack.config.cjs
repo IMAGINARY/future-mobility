@@ -19,6 +19,21 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.(js|jsx)$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            cacheDirectory: './.babel-cache',
+            presets: [
+              // Note: to debug Babel, the cache has to be disabled or emptied
+              ['@babel/preset-env', { useBuiltIns: 'usage', corejs: 3, debug: false }],
+            ],
+            sourceType: 'unambiguous',
+          },
+        },
+      },
+      {
         test: /\.(scss|css)$/,
         exclude: /node_modules/,
         use: [
