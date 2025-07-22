@@ -5,3 +5,11 @@
 ### Breaking Changes
 
 The `1.x.x` branch is not backwards compatible with `0.x.x`.
+
+#### Moved compiled files to `/dist`
+
+Previously, compiled files were located in the root directory and tracked in the repository. 
+Compilation output now goes in the `/dist` directory, which is not included in the repository. 
+
+In case there's some issue that prevents compilation, you can still find compiled files for every
+version in GitHub releases.

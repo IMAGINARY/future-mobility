@@ -1,0 +1,24 @@
+{
+  "patterns": [
+    {
+      "from": "vendor",
+      "to": "../vendor"
+    },
+    {
+      "from": "textures",
+      "to": "../textures"
+    },
+    {
+      "from": "static",
+      "to": "../static"
+    },
+    {
+      "from": "data",
+      "to": "../data"
+    },
+    {
+      "from": "config",
+      "to": "../config"
+    }
+  ]
+}

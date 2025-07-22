@@ -52,7 +52,7 @@ class MapEditor {
     this.mapView.events.on('action',
       (...args) => this.tools[this.tool].action(...args));
 
-    this.objectStore = new ObjectStore('./cities.json');
+    this.objectStore = new ObjectStore('./data/cities.json');
     this.actionHandlers = {
       load: () => {
         const modal = new ModalLoad(this.config, this.objectStore);

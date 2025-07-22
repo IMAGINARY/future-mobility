@@ -1,9 +1,0 @@
-# Override any configurations through this file
-
-#mapView:
-  # Stroke width (in pixels) of the grid overlay of the map view
-#  gridOverlay: 0
-#dashboard:
-#  languages:
-#    - en
-#    - de
