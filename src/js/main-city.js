@@ -19,7 +19,10 @@ const WalkableCityHandler = require('./power-ups/walkable-city-handler');
 const DenseCityHandler = require('./power-ups/dense-city-handler');
 const AutonomousVehicleLidarHandler = require('./power-ups/autonomous-vehicle-lidar-handler');
 
-fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
+const serverHttpUri = process.env.SERVER_HTTP_URI || 'http://localhost:4848';
+const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
+
+fetch(`${serverHttpUri}/config`, { cache: 'no-store' })
   .then(response => {
     if (!response.ok) {
       throw new Error(`HTTP error. Status: ${ response.status }`);
@@ -27,8 +30,8 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
     return response.json();
   })
   .catch((err) => {
-    showFatalError(`Error loading configuration from ${process.env.SERVER_HTTP_URI}`, err);
-    console.error(`Error loading configuration from ${process.env.SERVER_HTTP_URI}`);
+    showFatalError(`Error loading configuration from ${serverHttpUri}`, err);
+    console.error(`Error loading configuration from ${serverHttpUri}`);
     throw err;
   })
   .then((config) => {
@@ -74,7 +77,7 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
         const variableMapOverlay = new VariableMapOverlay(mapView, config);
         app.ticker.add(time => variableMapOverlay.animate(time));
 
-        const connector = new ServerSocketConnector(process.env.SERVER_SOCKET_URI);
+        const connector = new ServerSocketConnector(serverSocketUri);
         connector.events.on('map_update', (cells) => {
           city.map.replace(cells);
         });

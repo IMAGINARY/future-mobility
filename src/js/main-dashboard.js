@@ -9,7 +9,10 @@ const ActionsPane = require('./dashboard/actions-pane');
 const { bindCreateTitle } = require('./dashboard/titles');
 const PowerUpSelector = require('./dashboard/power-up-selector');
 
-fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
+const serverHttpUri = process.env.SERVER_HTTP_URI || 'http://localhost:4848';
+const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
+
+fetch(`${serverHttpUri}/config`, { cache: 'no-store' })
   .then(response => {
     if (!response.ok) {
       throw new Error(`HTTP error. Status: ${ response.status }`);
@@ -17,12 +20,12 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
     return response.json();
   })
   .catch((err) => {
-    showFatalError(`Error loading configuration from ${process.env.SERVER_HTTP_URI}`, err);
-    console.error(`Error loading configuration from ${process.env.SERVER_HTTP_URI}`);
+    showFatalError(`Error loading configuration from ${serverHttpUri}`, err);
+    console.error(`Error loading configuration from ${serverHttpUri}`);
     throw err;
   })
   .then((config) => {
-    const connector = new ServerSocketConnector(process.env.SERVER_SOCKET_URI);
+    const connector = new ServerSocketConnector(serverSocketUri);
     const languages = config.dashboard.languages;
     const mainLanguage = languages[0];
     const createTitle = bindCreateTitle(languages);

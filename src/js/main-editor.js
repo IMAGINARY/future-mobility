@@ -11,7 +11,10 @@ const NoiseData = require('./data-sources/noise-data');
 const DataManager = require('./data-manager');
 const TextureLoader = require('./texture-loader');
 
-fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
+const serverHttpUri = process.env.SERVER_HTTP_URI || 'http://localhost:4848';
+const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
+
+fetch(`${serverHttpUri}/config`, { cache: 'no-store' })
   .then(response => {
     if (!response.ok) {
       throw new Error(`HTTP error. Status: ${ response.status }`);
@@ -19,8 +22,8 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
     return response.json();
   })
   .catch((err) => {
-    showFatalError(`Error loading configuration from ${process.env.SERVER_HTTP_URI}`, err);
-    console.error(`Error loading configuration from ${process.env.SERVER_HTTP_URI}`);
+    showFatalError(`Error loading configuration from ${serverHttpUri}`, err);
+    console.error(`Error loading configuration from ${serverHttpUri}`);
     throw err;
   })
   .then((config) => {
@@ -73,7 +76,7 @@ fetch(`${process.env.SERVER_HTTP_URI}/config`, { cache: 'no-store' })
           noiseVarViewer.update(stats.get('noise-map'));
         });
 
-        const connector = new ServerSocketConnector(process.env.SERVER_SOCKET_URI);
+        const connector = new ServerSocketConnector(serverSocketUri);
         connector.events.once('map_update', (cells) => {
           city.map.replace(cells);
           city.map.events.on('update', () => {
