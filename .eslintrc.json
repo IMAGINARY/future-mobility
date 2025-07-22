@@ -14,8 +14,23 @@
   "globals": {
   },
   "rules": {
-    "comma-dangle": ["error", "always-multiline", { "functions": "never" }],
+    "comma-dangle": ["error", {
+      "arrays": "always-multiline",
+      "objects": "always-multiline",
+      "imports": "always-multiline",
+      "exports": "always-multiline",
+      "functions": "never"
+    }],
     "no-param-reassign": ["error", { "props": false }],
-    "import/extensions": false
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never"
+      }
+    ]
   }
 }
