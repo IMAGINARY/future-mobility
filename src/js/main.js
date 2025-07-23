@@ -1,7 +1,8 @@
+/* eslint-disable no-console */
 /* globals PIXI */
 const yaml = require('js-yaml');
-const CfgReaderFetch = require('./cfg-reader-fetch');
-const CfgLoader = require('./cfg-loader');
+const CfgReaderFetch = require('./cfg-loader/cfg-reader-fetch');
+const CfgLoader = require('./cfg-loader/cfg-loader');
 const City = require('./city');
 const MapEditor = require('./editor/map-editor');
 const CarOverlay = require('./cars/car-overlay');
@@ -43,6 +44,18 @@ const PowerUpPanel = require('./editor/power-up-panel');
 const qs = new URLSearchParams(window.location.search);
 const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
 
+// Accept a settings url param but only if it's made of alphanumeric characters, _ or -, and
+// has a .yml extension.
+let settingsFilename = 'settings.yml';
+const settingsFileUnsafe = qs.get('settings');
+if (qs.get('settings')) {
+  if (!qs.get('settings').match(/^[a-zA-Z0-9_-]+\.yml$/)) {
+    console.warn('Invalid settings file name. Ignoring. Use only alphanumeric characters, _ or -. and .yml extension.');
+  } else {
+    settingsFilename = settingsFileUnsafe;
+  }
+}
+
 const cfgLoader = new CfgLoader(CfgReaderFetch, yaml.load);
 cfgLoader.load([
   'config/city.yml',
@@ -55,7 +68,7 @@ cfgLoader.load([
   'config/cars.yml',
   'config/power-ups.yml',
   'config/default-settings.yml',
-  './settings.yml',
+  settingsFilename,
 ])
   .catch((err) => {
     showFatalError('Error loading configuration', err);

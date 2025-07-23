@@ -3,8 +3,8 @@ const yargs = require('yargs');
 const yaml = require('js-yaml');
 const { hideBin } = require('yargs/helpers');
 const createServer = require('./server');
-const CfgLoader = require('../src/js/cfg-loader');
-const CfgReaderFile = require('../src/js/cfg-reader-file');
+const CfgLoader = require('../src/js/cfg-loader/cfg-loader');
+const CfgReaderFile = require('../src/js/cfg-loader/cfg-reader-file');
 
 const { port, settingsFile } = yargs(hideBin(process.argv))
   .option('p', {

@@ -27,11 +27,21 @@ The clients, in the root directory, are:
 
 ## Configuration
 
-The main configuration file is `config.yml`. The server has to be reloaded after any changes.
+The configuration files are in the `config` directory. The server has to be reloaded after any changes.
 Clients get the configuration from the server through the http API and have to be reloaded after
 the server to take any changes.
 
-The .env file has other configuration keys that affect the environment.
+Any of the configuration keys can be overridden through a `settings.yml` file in the root directory.
+
+Check [`server/README.md`](server/README.md) for information on how to specify an alternative 
+settings file through a command line option or an envvar.
+
+Development clients (`index.html`, `devtool.html`) can indicate an alternative settings file
+through the `settings` query string parameter.  It must reside in the root directory and have a 
+name that only contains letters, numbers, - or _, and ends in `.yml`.
+
+The `.env.sample` file has other configuration keys that affect the software. These can be set 
+through the `.env` file in the root directory, or through environment variables.
 
 ## Server APIs
 
