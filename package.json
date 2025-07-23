@@ -24,6 +24,7 @@
     "@babel/core": "^7.28.0",
     "@babel/preset-env": "^7.28.0",
     "@fontsource/roboto-condensed": "^5.2.6",
+    "@fontsource-utils/scss": "^0.2.1",
     "babel-loader": "^10.0.0",
     "bootstrap": "4.6.2",
     "chart.js": "3.9.1",

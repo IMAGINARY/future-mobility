@@ -26,10 +26,6 @@
       "context": "node_modules/pixi.js/dist"
     },
     {
-      "from": "vendor/roboto-condensed-v19-latin",
-      "to": "../vendor/roboto-condensed-v19-latin"
-    },
-    {
       "from": "textures",
       "to": "../textures"
     },
