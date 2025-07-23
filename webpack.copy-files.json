@@ -1,8 +1,33 @@
 {
   "patterns": [
     {
-      "from": "vendor",
-      "to": "../vendor"
+      "from": "**",
+      "to": "../vendor/jquery/",
+      "context": "node_modules/jquery/dist"
+    },
+    {
+      "from": "**",
+      "to": "../vendor/bootstrap/",
+      "context": "node_modules/bootstrap/dist"
+    },
+    {
+      "from": "**",
+      "to": "../vendor/popper.js/",
+      "context": "node_modules/popper.js/dist"
+    },
+    {
+      "from": "**",
+      "to": "../vendor/chart.js/",
+      "context": "node_modules/chart.js/dist"
+    },
+    {
+      "from": "**",
+      "to": "../vendor/pixi.js/",
+      "context": "node_modules/pixi.js/dist"
+    },
+    {
+      "from": "vendor/roboto-condensed-v19-latin",
+      "to": "../vendor/roboto-condensed-v19-latin"
     },
     {
       "from": "textures",
