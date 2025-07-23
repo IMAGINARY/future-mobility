@@ -13,7 +13,7 @@
     "url": "https://github.com/IMAGINARY/future-mobility/issues"
   },
   "engines": {
-    "node": ">=18.19.0"
+    "node": ">=24.4.1"
   },
   "scripts": {
     "build": "npx webpack",
