@@ -38,10 +38,13 @@
       border-color: color.adjust($border, $lightness: -25%, $space: hsl);
     }
   }
-  
+
   &.disabled,
   &[disabled],
   fieldset[disabled] & {
+    background-color: $background;
+    border-color: $border;
+
     &:hover,
     &:focus,
     &.focus {

@@ -15,7 +15,7 @@ class PowerUpSelector {
 
     this.selectButton = $('<button></button>')
       .attr('type', 'button')
-      .addClass('btn btn-block btn-dashboard-action btn-power-ups-activate')
+      .addClass('btn btn-dashboard-action btn-power-ups-activate')
       .append(this.languages.map(lang => (
           $('<span></span>')
             .addClass(`text text-${lang}`)
@@ -155,7 +155,7 @@ class PowerUpSelector {
           )
         )
         .append($('<button></button>').attr('type', 'button')
-          .addClass('btn btn-block btn-power-ups-disable')
+          .addClass('btn btn-power-ups-disable')
           .append(
             this.languages.map(lang => (
               $('<span></span>').addClass(`text text-${lang}`)

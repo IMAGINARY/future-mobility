@@ -7,11 +7,11 @@ class PowerUpInspector {
     this.values = Object.fromEntries(Object.keys(config.powerUps).map(id => [id, false]));
 
     this.$element = $('<div></div>')
-      .addClass('power-up-switcher');
+      .addClass('power-up-switcher mt-2');
 
     Object.entries(config.powerUps).forEach(([id, def]) => {
       const switchId = `power-up-switch-${id}`;
-      $('<div></div>').addClass('form-group form-check')
+      $('<div></div>').addClass('form-check mb-2')
         .append(
           $('<input type="checkbox">')
             .addClass('form-check-input')

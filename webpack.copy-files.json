@@ -13,7 +13,7 @@
     {
       "from": "**",
       "to": "../vendor/popper.js/",
-      "context": "node_modules/popper.js/dist"
+      "context": "node_modules/@popperjs/core/dist"
     },
     {
       "from": "**",

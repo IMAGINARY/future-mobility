@@ -23,14 +23,16 @@ $tile-width: 72px;
   width: calc(25% - 15px);
   min-width: 200px;
 
-  &>.card>.card-header {
+  & > .accordion-item > .accordion-header {
     padding: 0;
-    background-color: #c58eef;
 
-    h2 .btn {
+    & > .accordion-button {
       @include type.heading-text;
 
+      padding: 0.5rem 0.75rem;
+      background-color: #c58eef;
       color: black;
+      text-decoration: none;
     }
   }
 

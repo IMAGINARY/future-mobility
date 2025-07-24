@@ -16,7 +16,7 @@ class PowerUpPanel {
 
     this.selectButton = $('<button></button>')
       .attr('type', 'button')
-      .addClass('btn btn-block btn-dashboard-action btn-power-ups-activate')
+      .addClass('btn btn-dashboard-action btn-power-ups-activate')
       .append($('<span></span>').addClass('text text-de')
         .html(this.config.dashboard.powerUps.button.text.de))
       .append($('<span></span>').addClass('text text-en')

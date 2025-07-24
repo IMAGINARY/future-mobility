@@ -16,76 +16,64 @@
     <div class="col-md-12">
       <div data-component="app-container"></div>
       <div class="accordion" id="accordion-data">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="mb-0">
-              <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseStatus" >
-                Status
-              </button>
-            </h2>
-          </div>
-          <div id="collapseStatus" class="collapse show" data-parent="#accordion-data">
-            <div class="status" data-component="status"></div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingStatus">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStatus" aria-expanded="true" aria-controls="collapseStatus">
+              Status
+            </button>
+          </h2>
+          <div id="collapseStatus" class="accordion-collapse collapse show" aria-labelledby="headingStatus" data-bs-parent="#accordion-data">
+            <div class="accordion-body status" data-component="status"></div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-header">
-            <h2 class="mb-0">
-              <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseGoals" >
-                Goals
-              </button>
-            </h2>
-          </div>
-          <div id="collapseGoals" class="collapse" data-parent="#accordion-data">
-            <div data-component="citizen-request-container"></div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingGoals">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGoals" aria-expanded="false" aria-controls="collapseGoals">
+              Goals
+            </button>
+          </h2>
+          <div id="collapseGoals" class="accordion-collapse collapse" aria-labelledby="headingGoals" data-bs-parent="#accordion-data">
+            <div class="accordion-body" data-component="citizen-request-container"></div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-header">
-            <h2 class="mb-0">
-              <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapsePowerUps" >
-                Power-Ups
-              </button>
-            </h2>
-          </div>
-          <div id="collapsePowerUps" class="collapse" data-parent="#accordion-data">
-            <div class="p-2" data-component="powerUpInspector"></div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingPowerUps">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePowerUps" aria-expanded="false" aria-controls="collapsePowerUps">
+              Power-Ups
+            </button>
+          </h2>
+          <div id="collapsePowerUps" class="accordion-collapse collapse" aria-labelledby="headingPowerUps" data-bs-parent="#accordion-data">
+            <div class="accordion-body p-2" data-component="powerUpInspector"></div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-header">
-            <h2 class="mb-0">
-              <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseCounters" >
-                Counters
-              </button>
-            </h2>
-          </div>
-          <div id="collapseCounters" class="collapse" data-parent="#accordion-data">
-            <div class="counters" data-component="counters"></div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingCounters">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCounters" aria-expanded="false" aria-controls="collapseCounters">
+              Counters
+            </button>
+          </h2>
+          <div id="collapseCounters" class="accordion-collapse collapse" aria-labelledby="headingCounters" data-bs-parent="#accordion-data">
+            <div class="accordion-body counters" data-component="counters"></div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-header">
-            <h2 class="mb-0">
-              <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseInspector" >
-                Data Inspector
-              </button>
-            </h2>
-          </div>
-          <div id="collapseInspector" class="collapse" data-parent="#accordion-data">
-            <div class="p-2" data-component="dataInspector"></div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingInspector">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInspector" aria-expanded="false" aria-controls="collapseInspector">
+              Data Inspector
+            </button>
+          </h2>
+          <div id="collapseInspector" class="accordion-collapse collapse" aria-labelledby="headingInspector" data-bs-parent="#accordion-data">
+            <div class="accordion-body p-2" data-component="dataInspector"></div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-header">
-            <h2 class="mb-0">
-              <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseGoalInspector" >
-                Goal Inspector
-              </button>
-            </h2>
-          </div>
-          <div id="collapseGoalInspector" class="collapse" data-parent="#accordion-data">
-            <div data-component="goal-debug-container" class="p-2"></div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingGoalInspector">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGoalInspector" aria-expanded="false" aria-controls="collapseGoalInspector">
+              Goal Inspector
+            </button>
+          </h2>
+          <div id="collapseGoalInspector" class="accordion-collapse collapse" aria-labelledby="headingGoalInspector" data-bs-parent="#accordion-data">
+            <div class="accordion-body p-2" data-component="goal-debug-container"></div>
           </div>
         </div>
       </div>

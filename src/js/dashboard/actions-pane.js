@@ -5,13 +5,13 @@ class ActionsPane {
     this.config = config;
     this.$element = $('<div></div>').addClass('actions-pane');
     this.disabled = false;
-    const languages = this.config.dashboard.languages;
+    const {languages} = this.config.dashboard;
     const mainLanguage = languages[0];
 
-    this.buttons = this.config.dashboard.actions.buttons.map(button => (
+    this.buttons = this.config.dashboard.actions.buttons.map((button) => (
       $('<button></button>')
         .attr('type', 'button')
-        .addClass(`btn btn-block btn-dashboard-action btn-${button.id}`)
+        .addClass(`btn btn-dashboard-action btn-${button.id}`)
         .append(languages.map(lang => (
           $('<span></span>')
             .addClass(`text text-${lang}`)
@@ -26,7 +26,7 @@ class ActionsPane {
         .append(
           this.buttons.map(button => (
             $('<div>')
-              .addClass('col-5')
+              .addClass('col-5 d-grid gap-2')
               .append(button)))
         )
     );

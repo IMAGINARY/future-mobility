@@ -1,3 +1,4 @@
+/* globals bootstrap */
 class Modal {
   /**
    * @param {object} options
@@ -21,8 +22,7 @@ class Modal {
     this.$body = $('<div class="modal-body"></div>').appendTo(this.$content);
     this.$footer = $('<div class="modal-footer"></div>').appendTo(this.$content);
 
-    this.$closeButton = $('<button type="button" class="close" data-dismiss="modal">')
-      .append($('<span>&times;</span>'))
+    this.$closeButton = $('<button type="button" class="btn-close" data-bs-dismiss="modal">')
       .appendTo(this.$header);
 
     if (options.title) {
@@ -45,11 +45,16 @@ class Modal {
   async show() {
     return new Promise((resolve) => {
       $('body').append(this.$element);
-      this.$element.modal();
+      // eslint-disable-next-line no-unused-vars
+      const modal = new bootstrap.Modal(this.$element[0], {
+        backdrop: true,
+        focus: true,
+      });
       this.$element.on('hidden.bs.modal', () => {
         this.$element.remove();
         resolve(this.returnValue);
       });
+      modal.show();
     });
   }
 

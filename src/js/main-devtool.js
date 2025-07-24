@@ -178,27 +178,29 @@ cfgLoader.load([
         };
 
         const varSelector = $('<select></select>')
-          .addClass(['form-control', 'mr-2'])
+          .addClass(['form-control', 'form-control-sm', 'd-block'])
           .append(Object.keys(variables).map(name => (
             $('<option></option>').text(name).attr('value', name)
           )));
 
-        $('<div></div>').addClass(['form-inline', 'mt-2'])
-          .append(varSelector)
-          .append($('<button></button>')
-            .attr('type', 'button')
-            .addClass(['btn', 'btn-primary', 'btn-sm'])
-            .text('Calculate')
-            .on('click', () => {
-              const varName = varSelector.val();
-              const varData = typeof variables[varName] === 'string'
-                ? stats.get(variables[varName]) : variables[varName].calculate();
-              dataInspectorView.display({
-                title: varName,
-                values: varData,
-                fractional: (Math.max(...varData) <= 1),
-              });
-            }))
+        $('<div></div>').addClass(['row', 'mt-2'])
+          .append($('<div></div>').addClass('col-8').append(varSelector))
+          .append($('<div></div>').addClass('col-4 d-grid gap-2').append(
+            $('<button></button>')
+              .attr('type', 'button')
+              .addClass(['btn', 'btn-primary', 'btn-sm'])
+              .text('Calculate')
+              .on('click', () => {
+                const varName = varSelector.val();
+                const varData = typeof variables[varName] === 'string'
+                  ? stats.get(variables[varName]) : variables[varName].calculate();
+                dataInspectorView.display({
+                  title: varName,
+                  values: varData,
+                  fractional: (Math.max(...varData) <= 1),
+                });
+              })
+          ))
           .appendTo($('[data-component=dataInspector]'));
 
         const powerUpInspector = new PowerUpInspector(config);
