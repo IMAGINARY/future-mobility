@@ -139,15 +139,13 @@ cfgLoader.load([
 
         const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
         app.stage.addChild(emissionsVarViewer.displayObject);
-        emissionsVarViewer.displayObject.width = 960;
-        emissionsVarViewer.displayObject.height = 960;
+        emissionsVarViewer.scaleToFit(960, 960);
         emissionsVarViewer.displayObject.x = 1920 + 40;
         emissionsVarViewer.displayObject.y = 0;
 
         const noiseVarViewer = new VariableMapView(city.map.width, city.map.height, 0x20e95ff);
         app.stage.addChild(noiseVarViewer.displayObject);
-        noiseVarViewer.displayObject.width = 960;
-        noiseVarViewer.displayObject.height = 960;
+        noiseVarViewer.scaleToFit(960, 960);
         noiseVarViewer.displayObject.x = 1920 + 40;
         noiseVarViewer.displayObject.y = 960;
 

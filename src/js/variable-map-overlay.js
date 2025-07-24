@@ -45,8 +45,7 @@ class VariableMapOverlay {
       mapView.city.map.width,
       mapView.city.map.height
     );
-    this.view.displayObject.width = parentBounds.width;
-    this.view.displayObject.height = parentBounds.height;
+    this.view.scaleToFit(parentBounds.width, parentBounds.height);
     this.view.displayObject.zIndex = 200;
     this.view.displayObject.alpha = 0;
 
