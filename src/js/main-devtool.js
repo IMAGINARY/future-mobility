@@ -145,7 +145,7 @@ cfgLoader.load([
         emissionsVarViewer.displayObject.x = 1920 + 40;
         emissionsVarViewer.displayObject.y = 0;
 
-        const noiseVarViewer = new VariableMapView(city.map.width, city.map.height, 0x20e95ff);
+        const noiseVarViewer = new VariableMapView(city.map.width, city.map.height, 0x0e95ff);
         app.stage.addChild(noiseVarViewer.displayObject);
         noiseVarViewer.scaleToFit(960, 960);
         noiseVarViewer.displayObject.x = 1920 + 40;
