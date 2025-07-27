@@ -26,11 +26,6 @@
       "context": "node_modules/pixi.js/dist"
     },
     {
-      "from": "**",
-      "to": "../vendor/pixi.js@assets/",
-      "context": "node_modules/@pixi/assets/dist"
-    },
-    {
       "from": "textures",
       "to": "../textures"
     },
