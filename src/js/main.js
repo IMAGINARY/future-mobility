@@ -24,7 +24,7 @@ const GoalDebugView = require('./goal-debug-view');
 const DataManager = require('./data-manager');
 const CitizenRequestView = require('./citizen-request-view');
 const CitizenRequestViewMgr = require('./citizen-request-view-mgr');
-const TextureLoader = require('./texture-loader');
+const AssetsLoader = require('./assets-loader');
 const CarSpawner = require('./cars/car-spawner');
 const TrafficData = require('./data-sources/traffic-data');
 const RoadSafetyData = require('./data-sources/road-safety-data');
@@ -95,19 +95,21 @@ cfgLoader.load([
     const powerUpMgr = new PowerUpManager(config);
     stats.registerModifier(new PowerUpDataModifier(config, powerUpMgr));
 
+    // Todo: Move to config
+    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
     const app = new PIXI.Application({
       width: 1920,
       height: 1920,
       backgroundColor: 0xf2f2f2,
     });
 
-    const textureLoader = new TextureLoader(app);
-    textureLoader.addSpritesheet('roads');
-    textureLoader.addSpritesheet('roads-walkable');
-    textureLoader.addSpritesheet('parks');
-    textureLoader.addSpritesheet('water');
-    textureLoader.addFolder('cars', CarSpawner.allTextureIds(config));
-    textureLoader.load()
+    const assetsLoader = new AssetsLoader();
+    assetsLoader.addSpritesheet('roads');
+    assetsLoader.addSpritesheet('roads-walkable');
+    assetsLoader.addSpritesheet('parks');
+    assetsLoader.addSpritesheet('water');
+    assetsLoader.addFolder('cars', CarSpawner.allTextureIds(config));
+    assetsLoader.load()
       .then((textures) => {
         $('[data-component="app-container"]').append(app.view);
 

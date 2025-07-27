@@ -7,7 +7,7 @@ const ServerSocketConnector = require('./server-socket-connector');
 const ConnectionStateView = require('./connection-state-view');
 const showFatalError = require('./lib/show-fatal-error');
 const CarOverlay = require('./cars/car-overlay');
-const TextureLoader = require('./texture-loader');
+const AssetsLoader = require('./assets-loader');
 const CarSpawner = require('./cars/car-spawner');
 const VariableMapOverlay = require('./variable-map-overlay');
 const PowerUpViewMgr = require('./power-up-view-mgr');
@@ -37,18 +37,20 @@ fetch(`${serverHttpUri}/config`, { cache: 'no-store' })
   .then((config) => {
     const city = new City(config.cityWidth, config.cityHeight);
 
+    // Todo: Move to config
+    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
     const app = new PIXI.Application({
       width: 1152,
       height: 1152,
       backgroundColor: 0xa6a6a6,
     });
-    const textureLoader = new TextureLoader(app);
-    textureLoader.addSpritesheet('roads');
-    textureLoader.addSpritesheet('roads-walkable');
-    textureLoader.addSpritesheet('parks');
-    textureLoader.addSpritesheet('water');
-    textureLoader.addFolder('cars', CarSpawner.allTextureIds(config));
-    textureLoader.load()
+    const assetsLoader = new AssetsLoader();
+    assetsLoader.addSpritesheet('roads');
+    assetsLoader.addSpritesheet('roads-walkable');
+    assetsLoader.addSpritesheet('parks');
+    assetsLoader.addSpritesheet('water');
+    assetsLoader.addFolder('cars', CarSpawner.allTextureIds(config));
+    assetsLoader.load()
       .then((textures) => {
         $('[data-component="app-container"]').append(app.view);
 

@@ -9,7 +9,7 @@ const showFatalError = require('./lib/show-fatal-error');
 const PollutionData = require('./data-sources/pollution-data');
 const NoiseData = require('./data-sources/noise-data');
 const DataManager = require('./data-manager');
-const TextureLoader = require('./texture-loader');
+const AssetsLoader = require('./assets-loader');
 
 const serverHttpUri = process.env.SERVER_HTTP_URI || 'http://localhost:4848';
 const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
@@ -37,16 +37,18 @@ fetch(`${serverHttpUri}/config`, { cache: 'no-store' })
       stats.calculateAll();
     });
 
+    // Todo: Move to config
+    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
     const app = new PIXI.Application({
       width: 3840,
       height: 1920,
       backgroundColor: 0xf2f2f2,
     });
-    const textureLoader = new TextureLoader(app);
-    textureLoader.addSpritesheet('roads');
-    textureLoader.addSpritesheet('parks');
-    textureLoader.addSpritesheet('water');
-    textureLoader.load()
+    const assetsLoader = new AssetsLoader();
+    assetsLoader.addSpritesheet('roads');
+    assetsLoader.addSpritesheet('parks');
+    assetsLoader.addSpritesheet('water');
+    assetsLoader.load()
       .then((textures) => {
         $('[data-component="app-container"]').append(app.view);
         // const mapView = new MapView(city, config, textures);
