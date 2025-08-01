@@ -54,6 +54,17 @@ You can use [Swagger Editor](https://editor.swagger.io/) and the
 [AsyncAPI Playground](https://playground.asyncapi.io/) to format the respective specifications in
 a friendly format.
 
+## Sentry
+
+The app supports Sentry.
+
+The `city.html` and `dashboard.html` entry points can take the DSN from the `sentry-dsn` query 
+string parameter.
+
+It can also get the DSN from the `sentry.dsn` configuration key in the  `settings-exhibit.yml` file.
+
+The server also supports Sentry. Check the [`server/README.md`](server/README.md) for details.
+
 ## License
 
 Copyright (c) 2021 IMAGINARY gGmbH

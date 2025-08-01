@@ -18,11 +18,18 @@ const SpawnTramHandler = require('./power-ups/spawn-tram');
 const WalkableCityHandler = require('./power-ups/walkable-city-handler');
 const DenseCityHandler = require('./power-ups/dense-city-handler');
 const AutonomousVehicleLidarHandler = require('./power-ups/autonomous-vehicle-lidar-handler');
+const initSentry = require('./helpers/sentry');
 
+const qs = new URLSearchParams(window.location.search);
+const sentryDSN = qs.get('sentry-dsn');
 const serverHttpUri = process.env.SERVER_HTTP_URI || 'http://localhost:4848';
 const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
 
 (async function main() {
+  let sentryInitialized = false;
+  if (sentryDSN) {
+    sentryInitialized = !!initSentry(sentryDSN);
+  }
   let config;
   try {
     const response = await fetch(`${serverHttpUri}/config`, { cache: 'no-store' });
@@ -35,6 +42,10 @@ const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
     console.error(`Error loading configuration from ${serverHttpUri}`);
     console.error(err);
     return;
+  }
+
+  if (!sentryInitialized && config?.sentry?.dsn) {
+    sentryInitialized = !!initSentry(config.sentry.dsn);
   }
 
   const city = new City(config.cityWidth, config.cityHeight);

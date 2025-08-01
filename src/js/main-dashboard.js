@@ -8,11 +8,18 @@ const CitizenRequestViewMgr = require('./citizen-request-view-mgr');
 const ActionsPane = require('./dashboard/actions-pane');
 const { bindCreateTitle } = require('./dashboard/titles');
 const PowerUpSelector = require('./dashboard/power-up-selector');
+const initSentry = require('./helpers/sentry');
 
+const qs = new URLSearchParams(window.location.search);
+const sentryDSN = qs.get('sentry-dsn');
 const serverHttpUri = process.env.SERVER_HTTP_URI || 'http://localhost:4848';
 const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
 
 (async function main() {
+  let sentryInitialized = false;
+  if (sentryDSN) {
+    sentryInitialized = !!initSentry(sentryDSN);
+  }
   let config;
   try {
     const response = await fetch(`${serverHttpUri}/config`, { cache: 'no-store' });
@@ -25,6 +32,10 @@ const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
     console.error(`Error loading configuration from ${serverHttpUri}`);
     console.error(err);
     return;
+  }
+
+  if (!sentryInitialized && config?.sentry?.dsn) {
+    sentryInitialized = !!initSentry(config.sentry.dsn);
   }
 
   const connector = new ServerSocketConnector(serverSocketUri);

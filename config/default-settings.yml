@@ -20,3 +20,8 @@ variableMapOverlay:
   transitionDuration: 1
   # Amount of time (in seconds) that the overlay is shown for (not counting transitions)
   overlayDuration: 5
+sentry:
+  # Sentry DSN for error tracking
+  # Override this value through settings-exhibit.yml, not here.
+  # see README.md for alternatives.
+  # dsn: "xxx"
