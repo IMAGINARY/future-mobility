@@ -59,7 +59,6 @@ class AssetsLoader {
     })
       .then(() => PIXI.Assets.loadBundle(this.getAllBundleIds()))
       .then((bundles) => {
-        console.log('Assets loaded:', bundles);
         const textures = {};
         Object.entries(bundles).forEach(([bundleName, bundle]) => {
           Object.entries(bundle).forEach(([itemName, item]) => {
