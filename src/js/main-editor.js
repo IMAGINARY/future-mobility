@@ -14,85 +14,89 @@ const AssetsLoader = require('./assets-loader');
 const serverHttpUri = process.env.SERVER_HTTP_URI || 'http://localhost:4848';
 const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
 
-fetch(`${serverHttpUri}/config`, { cache: 'no-store' })
-  .then(response => {
+(async function main() {
+  let config;
+  try {
+    const response = await fetch(`${serverHttpUri}/config`, { cache: 'no-store' });
     if (!response.ok) {
-      throw new Error(`HTTP error. Status: ${ response.status }`);
+      throw new Error(`HTTP error. Status: ${response.status}`);
     }
-    return response.json();
-  })
-  .catch((err) => {
+    config = await response.json();
+  } catch (err) {
     showFatalError(`Error loading configuration from ${serverHttpUri}`, err);
     console.error(`Error loading configuration from ${serverHttpUri}`);
-    throw err;
-  })
-  .then((config) => {
-    // const city = City.fromJSON(Cities.cities[0]);
-    const city = new City(config.cityWidth, config.cityHeight);
-
-    const stats = new DataManager();
-    stats.registerSource(new PollutionData(city, config));
-    stats.registerSource(new NoiseData(city, config));
-    city.map.events.on('update', () => {
-      stats.calculateAll();
-    });
-
-    // Todo: Move to config
-    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
-    const app = new PIXI.Application({
-      width: 3840,
-      height: 1920,
-      backgroundColor: 0xf2f2f2,
-    });
-    const assetsLoader = new AssetsLoader();
-    assetsLoader.addSpritesheet('roads');
-    assetsLoader.addSpritesheet('parks');
-    assetsLoader.addSpritesheet('water');
-    assetsLoader.load()
-      .then((textures) => {
-        $('[data-component="app-container"]').append(app.view);
-        // const mapView = new MapView(city, config, textures);
-        const mapView = new MapEditor($('body'), city, config, textures);
-        app.stage.addChild(mapView.displayObject);
-        mapView.displayObject.width = 1920;
-        mapView.displayObject.height = 1920;
-        mapView.displayObject.x = 0;
-        mapView.displayObject.y = 0;
-
-        const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x953202);
-        app.stage.addChild(emissionsVarViewer.displayObject);
-        emissionsVarViewer.scaleToFit(960, 960);
-        emissionsVarViewer.displayObject.x = 1920 + 40;
-        emissionsVarViewer.displayObject.y = 0;
-
-        const noiseVarViewer = new VariableMapView(city.map.width, city.map.height, 0x0e95ff);
-        app.stage.addChild(noiseVarViewer.displayObject);
-        noiseVarViewer.scaleToFit(960, 960);
-        noiseVarViewer.displayObject.x = 1920 + 40;
-        noiseVarViewer.displayObject.y = 960;
-
-        city.map.events.on('update', () => {
-          emissionsVarViewer.update(stats.get('pollution-map'));
-          noiseVarViewer.update(stats.get('noise-map'));
-        });
-
-        const connector = new ServerSocketConnector(serverSocketUri);
-        connector.events.once('map_update', (cells) => {
-          city.map.replace(cells);
-          city.map.events.on('update', () => {
-            connector.setMap(city.map.cells);
-          });
-        });
-        connector.events.on('connect', () => {
-          connector.getMap();
-        });
-        const connStateView = new ConnectionStateView(connector);
-        $('body').append(connStateView.$element);
-      })
-      .catch((err) => {
-        showFatalError('Error loading textures', err);
-      });
-  })
-  .catch((err) => {
     console.error(err);
+    return;
+  }
+
+  // const city = City.fromJSON(Cities.cities[0]);
+  const city = new City(config.cityWidth, config.cityHeight);
+
+  const stats = new DataManager();
+  stats.registerSource(new PollutionData(city, config));
+  stats.registerSource(new NoiseData(city, config));
+  city.map.events.on('update', () => {
+    stats.calculateAll();
   });
+
+  // Todo: Move to config
+  PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+  const app = new PIXI.Application({
+    width: 3840,
+    height: 1920,
+    backgroundColor: 0xf2f2f2,
+  });
+  const assetsLoader = new AssetsLoader();
+  assetsLoader.addSpritesheet('roads');
+  assetsLoader.addSpritesheet('parks');
+  assetsLoader.addSpritesheet('water');
+
+  let textures;
+  try {
+    textures = await assetsLoader.load();
+  } catch (err) {
+    showFatalError('Error loading textures', err);
+    return;
+  }
+
+  $('[data-component="app-container"]').append(app.view);
+  // const mapView = new MapView(city, config, textures);
+  const mapView = new MapEditor($('body'), city, config, textures);
+  app.stage.addChild(mapView.displayObject);
+  mapView.displayObject.width = 1920;
+  mapView.displayObject.height = 1920;
+  mapView.displayObject.x = 0;
+  mapView.displayObject.y = 0;
+
+  const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x953202);
+  app.stage.addChild(emissionsVarViewer.displayObject);
+  emissionsVarViewer.scaleToFit(960, 960);
+  emissionsVarViewer.displayObject.x = 1920 + 40;
+  emissionsVarViewer.displayObject.y = 0;
+
+  const noiseVarViewer = new VariableMapView(city.map.width, city.map.height, 0x0e95ff);
+  app.stage.addChild(noiseVarViewer.displayObject);
+  noiseVarViewer.scaleToFit(960, 960);
+  noiseVarViewer.displayObject.x = 1920 + 40;
+  noiseVarViewer.displayObject.y = 960;
+
+  city.map.events.on('update', () => {
+    emissionsVarViewer.update(stats.get('pollution-map'));
+    noiseVarViewer.update(stats.get('noise-map'));
+  });
+
+  const connector = new ServerSocketConnector(serverSocketUri);
+  connector.events.once('map_update', (cells) => {
+    city.map.replace(cells);
+    city.map.events.on('update', () => {
+      connector.setMap(city.map.cells);
+    });
+  });
+  connector.events.on('connect', () => {
+    connector.getMap();
+  });
+  const connStateView = new ConnectionStateView(connector);
+  $('body').append(connStateView.$element);
+}()).catch((err) => {
+  console.error(err);
+});

@@ -1,4 +1,5 @@
 /* globals PIXI */
+/* eslint-disable no-console */
 const yaml = require('js-yaml');
 const CfgReaderFetch = require('./cfg-loader/cfg-reader-fetch');
 const CfgLoader = require('./cfg-loader/cfg-loader');
@@ -55,25 +56,23 @@ if (qs.get('settings')) {
 }
 
 const cfgLoader = new CfgLoader(CfgReaderFetch, yaml.load);
-cfgLoader.load([
-  'config/city.yml',
-  'config/tiles.yml',
-  'config/variables.yml',
-  'config/goals.yml',
-  'config/citizen-requests.yml',
-  'config/dashboard.yml',
-  'config/traffic.yml',
-  'config/cars.yml',
-  'config/power-ups.yml',
-  'config/default-settings.yml',
-  settingsFilename,
-])
-  .catch((err) => {
-    showFatalError('Error loading configuration', err);
-    console.error('Error loading configuration');
-    console.error(err);
-  })
-  .then((config) => {
+
+(async function main() {
+  try {
+    const config = await cfgLoader.load([
+      'config/city.yml',
+      'config/tiles.yml',
+      'config/variables.yml',
+      'config/goals.yml',
+      'config/citizen-requests.yml',
+      'config/dashboard.yml',
+      'config/traffic.yml',
+      'config/cars.yml',
+      'config/power-ups.yml',
+      'config/default-settings.yml',
+      settingsFilename,
+    ]);
+
     const city = (testScenario && testScenario.city)
       ? City.fromJSON(testScenario.city)
       : new City(config.cityWidth, config.cityHeight);
@@ -107,177 +106,185 @@ cfgLoader.load([
     assetsLoader.addSpritesheet('parks');
     assetsLoader.addSpritesheet('water');
     assetsLoader.addFolder('cars', CarSpawner.allTextureIds(config));
-    assetsLoader.load()
-      .then((textures) => {
-        $('[data-component="app-container"]').append(app.view);
 
-        const mapEditor = new MapEditor($('body'), city, config, textures, stats);
-        app.stage.addChild(mapEditor.displayObject);
-        mapEditor.displayObject.width = 1920;
-        mapEditor.displayObject.height = 1920;
-        mapEditor.displayObject.x = 0;
-        mapEditor.displayObject.y = 0;
-        app.ticker.add(time => mapEditor.animate(time));
+    let textures;
+    try {
+      textures = await assetsLoader.load();
+    } catch (err) {
+      showFatalError('Error loading textures', err);
+      console.error(err);
+      return;
+    }
 
-        const carOverlay = new CarOverlay(mapEditor.mapView, config, textures, {
-          spawn: !testScenario,
-          maxLifetime: !testScenario,
-        });
-        app.ticker.add(time => carOverlay.animate(time));
-        const carSpawner = new CarSpawner(carOverlay, config);
-        if (!testScenario) {
-          app.ticker.add(time => carSpawner.animate(time));
-        }
+    $('[data-component="app-container"]').append(app.view);
 
-        const powerUpViewMgr = new PowerUpViewMgr();
-        app.ticker.add(time => powerUpViewMgr.animate(time));
-        powerUpViewMgr.registerHandler(new TrafficHandler(config, carSpawner));
-        powerUpViewMgr.registerHandler(new AutonomousVehicleHandler(config, carSpawner));
-        powerUpViewMgr.registerHandler(new MaxSpeedHandler(config, carOverlay));
-        powerUpViewMgr.registerHandler(new SpawnTramHandler(config, carSpawner));
-        powerUpViewMgr.registerHandler(new WalkableCityHandler(config, mapEditor.mapView));
-        powerUpViewMgr.registerHandler(new DenseCityHandler(config, mapEditor.mapView));
-        powerUpViewMgr.registerHandler(new AutonomousVehicleLidarHandler(config, carOverlay), true);
+    const mapEditor = new MapEditor($('body'), city, config, textures, stats);
+    app.stage.addChild(mapEditor.displayObject);
+    mapEditor.displayObject.width = 1920;
+    mapEditor.displayObject.height = 1920;
+    mapEditor.displayObject.x = 0;
+    mapEditor.displayObject.y = 0;
+    app.ticker.add((time) => mapEditor.animate(time));
 
-        const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
-        app.stage.addChild(emissionsVarViewer.displayObject);
-        emissionsVarViewer.scaleToFit(960, 960);
-        emissionsVarViewer.displayObject.x = 1920 + 40;
-        emissionsVarViewer.displayObject.y = 0;
+    const carOverlay = new CarOverlay(mapEditor.mapView, config, textures, {
+      spawn: !testScenario,
+      maxLifetime: !testScenario,
+    });
+    app.ticker.add((time) => carOverlay.animate(time));
+    const carSpawner = new CarSpawner(carOverlay, config);
+    if (!testScenario) {
+      app.ticker.add((time) => carSpawner.animate(time));
+    }
 
-        const noiseVarViewer = new VariableMapView(city.map.width, city.map.height, 0x0e95ff);
-        app.stage.addChild(noiseVarViewer.displayObject);
-        noiseVarViewer.scaleToFit(960, 960);
-        noiseVarViewer.displayObject.x = 1920 + 40;
-        noiseVarViewer.displayObject.y = 960;
+    const powerUpViewMgr = new PowerUpViewMgr();
+    app.ticker.add((time) => powerUpViewMgr.animate(time));
+    powerUpViewMgr.registerHandler(new TrafficHandler(config, carSpawner));
+    powerUpViewMgr.registerHandler(new AutonomousVehicleHandler(config, carSpawner));
+    powerUpViewMgr.registerHandler(new MaxSpeedHandler(config, carOverlay));
+    powerUpViewMgr.registerHandler(new SpawnTramHandler(config, carSpawner));
+    powerUpViewMgr.registerHandler(new WalkableCityHandler(config, mapEditor.mapView));
+    powerUpViewMgr.registerHandler(new DenseCityHandler(config, mapEditor.mapView));
+    powerUpViewMgr.registerHandler(new AutonomousVehicleLidarHandler(config, carOverlay), true);
 
-        stats.events.on('update', () => {
-          emissionsVarViewer.update(stats.get('pollution-map'));
-          noiseVarViewer.update(stats.get('noise-map'));
-        });
+    const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
+    app.stage.addChild(emissionsVarViewer.displayObject);
+    emissionsVarViewer.scaleToFit(960, 960);
+    emissionsVarViewer.displayObject.x = 1920 + 40;
+    emissionsVarViewer.displayObject.y = 0;
 
-        const counterView = new TileCounterView(stats, config);
-        const zoneBalanceView = new ZoneBalanceView(stats, config);
-        $('[data-component=counters]').append([
-          counterView.$element,
-          zoneBalanceView.$element,
-        ]);
+    const noiseVarViewer = new VariableMapView(city.map.width, city.map.height, 0x0e95ff);
+    app.stage.addChild(noiseVarViewer.displayObject);
+    noiseVarViewer.scaleToFit(960, 960);
+    noiseVarViewer.displayObject.x = 1920 + 40;
+    noiseVarViewer.displayObject.y = 960;
 
-        const dataInspectorView = new DataInspectorView();
-        $('[data-component=dataInspector]').append(dataInspectorView.$element);
-        mapEditor.events.on('inspect', data => dataInspectorView.display(data));
+    stats.events.on('update', () => {
+      emissionsVarViewer.update(stats.get('pollution-map'));
+      noiseVarViewer.update(stats.get('noise-map'));
+    });
 
-        const variables = {
-          'Travel times': 'travel-times',
-          'Green space prox.': 'green-spaces-proximity',
-          'Green space areas': 'green-spaces-areas',
-          'Pollution (all)': 'pollution',
-          'Pollution (resid.)': 'pollution-residential',
-          'Noise (all)': 'noise',
-          'Noise (resid.)': 'noise-residential',
-        };
+    const counterView = new TileCounterView(stats, config);
+    const zoneBalanceView = new ZoneBalanceView(stats, config);
+    $('[data-component=counters]').append([
+      counterView.$element,
+      zoneBalanceView.$element,
+    ]);
 
-        const varSelector = $('<select></select>')
-          .addClass(['form-control', 'form-control-sm', 'd-block'])
-          .append(Object.keys(variables).map(name => (
-            $('<option></option>').text(name).attr('value', name)
-          )));
+    const dataInspectorView = new DataInspectorView();
+    $('[data-component=dataInspector]').append(dataInspectorView.$element);
+    mapEditor.events.on('inspect', (data) => dataInspectorView.display(data));
 
-        $('<div></div>').addClass(['row', 'mt-2'])
-          .append($('<div></div>').addClass('col-8').append(varSelector))
-          .append($('<div></div>').addClass('col-4 d-grid gap-2').append(
-            $('<button></button>')
-              .attr('type', 'button')
-              .addClass(['btn', 'btn-primary', 'btn-sm'])
-              .text('Calculate')
-              .on('click', () => {
-                const varName = varSelector.val();
-                const varData = typeof variables[varName] === 'string'
-                  ? stats.get(variables[varName]) : variables[varName].calculate();
-                dataInspectorView.display({
-                  title: varName,
-                  values: varData,
-                  fractional: (Math.max(...varData) <= 1),
-                });
-              })
-          ))
-          .appendTo($('[data-component=dataInspector]'));
+    const variables = {
+      'Travel times': 'travel-times',
+      'Green space prox.': 'green-spaces-proximity',
+      'Green space areas': 'green-spaces-areas',
+      'Pollution (all)': 'pollution',
+      'Pollution (resid.)': 'pollution-residential',
+      'Noise (all)': 'noise',
+      'Noise (resid.)': 'noise-residential',
+    };
 
-        const powerUpInspector = new PowerUpInspector(config);
-        $('[data-component=powerUpInspector]').append(powerUpInspector.$element);
-        powerUpInspector.events.on('power-up-change', (id, enabled) => {
-          powerUpMgr.setState(id, enabled);
-          stats.calculateAll();
-          powerUpViewMgr.update(powerUpInspector.getEnabled());
-        });
+    const varSelector = $('<select></select>')
+      .addClass(['form-control', 'form-control-sm', 'd-block'])
+      .append(Object.keys(variables).map((name) => (
+        $('<option></option>').text(name).attr('value', name)
+      )));
 
-        const indexListView = new IndexListView(config);
-        // Todo: Remove the lines below
-        $('[data-component="status"]').append(indexListView.$element);
-        indexListView.setValues({
-          'traffic-density': 0,
-          'travel-times': 0,
-          safety: 0,
-          pollution: 0,
-          noise: 0,
-          'green-spaces': 0,
-        });
-        window.variableRankListView = indexListView;
-
-        const goalDebugView = new GoalDebugView(stats.getGoals());
-        $('[data-component="goal-debug-container"]').append(goalDebugView.$element);
-
-        let indexesDirty = true;
-        let indexesCooldownTimer = null;
-        const indexesCooldownTime = 1000;
-
-        function recalculateIndexes() {
-          indexesDirty = true;
-          if (indexesCooldownTimer === null) {
-            indexListView.setValues({
-              'green-spaces': stats.get('green-spaces-index'),
-              pollution: stats.get('pollution-index'),
-              noise: stats.get('noise-index'),
-              'travel-times': stats.get('travel-times-index'),
-              'traffic-density': stats.get('traffic-density-index'),
-              safety: stats.get('road-safety-index'),
+    $('<div></div>').addClass(['row', 'mt-2'])
+      .append($('<div></div>').addClass('col-8').append(varSelector))
+      .append($('<div></div>').addClass('col-4 d-grid gap-2').append(
+        $('<button></button>')
+          .attr('type', 'button')
+          .addClass(['btn', 'btn-primary', 'btn-sm'])
+          .text('Calculate')
+          .on('click', () => {
+            const varName = varSelector.val();
+            const varData = typeof variables[varName] === 'string'
+              ? stats.get(variables[varName]) : variables[varName].calculate();
+            dataInspectorView.display({
+              title: varName,
+              values: varData,
+              fractional: (Math.max(...varData) <= 1),
             });
-            goalDebugView.setValues(stats.getGoals());
-            indexesDirty = false;
-            indexesCooldownTimer = setTimeout(() => {
-              indexesCooldownTimer = null;
-              if (indexesDirty) {
-                recalculateIndexes();
-              }
-            }, indexesCooldownTime);
-          }
-        }
+          })
+      ))
+      .appendTo($('[data-component=dataInspector]'));
 
-        stats.events.on('update', () => {
-          recalculateIndexes();
+    const powerUpInspector = new PowerUpInspector(config);
+    $('[data-component=powerUpInspector]').append(powerUpInspector.$element);
+    powerUpInspector.events.on('power-up-change', (id, enabled) => {
+      powerUpMgr.setState(id, enabled);
+      stats.calculateAll();
+      powerUpViewMgr.update(powerUpInspector.getEnabled());
+    });
+
+    const indexListView = new IndexListView(config);
+    // Todo: Remove the lines below
+    $('[data-component="status"]').append(indexListView.$element);
+    indexListView.setValues({
+      'traffic-density': 0,
+      'travel-times': 0,
+      safety: 0,
+      pollution: 0,
+      noise: 0,
+      'green-spaces': 0,
+    });
+    window.variableRankListView = indexListView;
+
+    const goalDebugView = new GoalDebugView(stats.getGoals());
+    $('[data-component="goal-debug-container"]').append(goalDebugView.$element);
+
+    let indexesDirty = true;
+    let indexesCooldownTimer = null;
+    const indexesCooldownTime = 1000;
+
+    const recalculateIndexes = () => {
+      indexesDirty = true;
+      if (indexesCooldownTimer === null) {
+        indexListView.setValues({
+          'green-spaces': stats.get('green-spaces-index'),
+          pollution: stats.get('pollution-index'),
+          noise: stats.get('noise-index'),
+          'travel-times': stats.get('travel-times-index'),
+          'traffic-density': stats.get('traffic-density-index'),
+          safety: stats.get('road-safety-index'),
         });
-        recalculateIndexes();
-
-        const citizenRequestView = new CitizenRequestView(config);
-        $('[data-component=citizen-request-container]').append(citizenRequestView.$element);
-        const citizenRequestViewMgr = new CitizenRequestViewMgr(citizenRequestView);
-        citizenRequestViewMgr.handleUpdate(stats.getGoals());
-        stats.events.on('update', () => {
-          citizenRequestViewMgr.handleUpdate(stats.getGoals());
-        });
-
-        if (testScenario) {
-          testScenario(city, carOverlay);
-          if (!window.test) {
-            window.test = {};
+        goalDebugView.setValues(stats.getGoals());
+        indexesDirty = false;
+        indexesCooldownTimer = setTimeout(() => {
+          indexesCooldownTimer = null;
+          if (indexesDirty) {
+            recalculateIndexes();
           }
-          window.test.city = city;
-          window.test.carOverlay = carOverlay;
-          window.test.cars = carOverlay.cars;
-        }
-      })
-      .catch((err) => {
-        showFatalError('Error loading textures', err);
-        console.error(err);
-      });
-  });
+        }, indexesCooldownTime);
+      }
+    };
+
+    stats.events.on('update', () => {
+      recalculateIndexes();
+    });
+    recalculateIndexes();
+
+    const citizenRequestView = new CitizenRequestView(config);
+    $('[data-component=citizen-request-container]').append(citizenRequestView.$element);
+    const citizenRequestViewMgr = new CitizenRequestViewMgr(citizenRequestView);
+    citizenRequestViewMgr.handleUpdate(stats.getGoals());
+    stats.events.on('update', () => {
+      citizenRequestViewMgr.handleUpdate(stats.getGoals());
+    });
+
+    if (testScenario) {
+      testScenario(city, carOverlay);
+      if (!window.test) {
+        window.test = {};
+      }
+      window.test.city = city;
+      window.test.carOverlay = carOverlay;
+      window.test.cars = carOverlay.cars;
+    }
+  } catch (err) {
+    showFatalError('Error loading configuration', err);
+    console.error('Error loading configuration');
+    console.error(err);
+  }
+}());

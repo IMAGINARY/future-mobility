@@ -22,89 +22,93 @@ const AutonomousVehicleLidarHandler = require('./power-ups/autonomous-vehicle-li
 const serverHttpUri = process.env.SERVER_HTTP_URI || 'http://localhost:4848';
 const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
 
-fetch(`${serverHttpUri}/config`, { cache: 'no-store' })
-  .then(response => {
+(async function main() {
+  let config;
+  try {
+    const response = await fetch(`${serverHttpUri}/config`, { cache: 'no-store' });
     if (!response.ok) {
-      throw new Error(`HTTP error. Status: ${ response.status }`);
+      throw new Error(`HTTP error. Status: ${response.status}`);
     }
-    return response.json();
-  })
-  .catch((err) => {
+    config = await response.json();
+  } catch (err) {
     showFatalError(`Error loading configuration from ${serverHttpUri}`, err);
     console.error(`Error loading configuration from ${serverHttpUri}`);
-    throw err;
-  })
-  .then((config) => {
-    const city = new City(config.cityWidth, config.cityHeight);
-
-    // Todo: Move to config
-    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
-    const app = new PIXI.Application({
-      width: 1152,
-      height: 1152,
-      backgroundColor: 0xa6a6a6,
-    });
-    const assetsLoader = new AssetsLoader();
-    assetsLoader.addSpritesheet('roads');
-    assetsLoader.addSpritesheet('roads-walkable');
-    assetsLoader.addSpritesheet('parks');
-    assetsLoader.addSpritesheet('water');
-    assetsLoader.addFolder('cars', CarSpawner.allTextureIds(config));
-    assetsLoader.load()
-      .then((textures) => {
-        $('[data-component="app-container"]').append(app.view);
-
-        const mapView = new MapView(city, config, textures);
-        app.stage.addChild(mapView.displayObject);
-        mapView.displayObject.width = 1152;
-        mapView.displayObject.height = 1152;
-        mapView.displayObject.x = 0;
-        mapView.displayObject.y = 0;
-
-        const carOverlay = new CarOverlay(mapView, config, textures);
-        app.ticker.add(time => carOverlay.animate(time));
-        const carSpawner = new CarSpawner(carOverlay, config);
-        app.ticker.add(time => carSpawner.animate(time));
-
-        const powerUpViewMgr = new PowerUpViewMgr();
-        app.ticker.add(time => powerUpViewMgr.animate(time));
-        powerUpViewMgr.registerHandler(new TrafficHandler(config, carSpawner));
-        powerUpViewMgr.registerHandler(new AutonomousVehicleHandler(config, carSpawner));
-        powerUpViewMgr.registerHandler(new MaxSpeedHandler(config, carOverlay));
-        powerUpViewMgr.registerHandler(new SpawnTramHandler(config, carSpawner));
-        powerUpViewMgr.registerHandler(new WalkableCityHandler(config, mapView));
-        powerUpViewMgr.registerHandler(new DenseCityHandler(config, mapView));
-        powerUpViewMgr.registerHandler(new AutonomousVehicleLidarHandler(config, carOverlay), true);
-
-        const variableMapOverlay = new VariableMapOverlay(mapView, config);
-        app.ticker.add(time => variableMapOverlay.animate(time));
-
-        const connector = new ServerSocketConnector(serverSocketUri);
-        connector.events.on('map_update', (cells) => {
-          city.map.replace(cells);
-        });
-        connector.events.on('connect', () => {
-          connector.getMap();
-          connector.getActivePowerUps();
-        });
-        connector.events.on('view_show_map_var', (variable, data) => {
-          variableMapOverlay.show(data,
-            config.variableMapOverlay.colors[variable] || 0x000000);
-          setTimeout(() => {
-            variableMapOverlay.hide();
-          }, config.variableMapOverlay.overlayDuration * 1000);
-        });
-        connector.events.on('power_ups_update', (activePowerUps) => {
-          powerUpViewMgr.update(activePowerUps);
-        });
-
-        const connStateView = new ConnectionStateView(connector);
-        $('body').append(connStateView.$element);
-      })
-      .catch((err) => {
-        showFatalError('Error loading textures', err);
-      });
-  })
-  .catch((err) => {
     console.error(err);
+    return;
+  }
+
+  const city = new City(config.cityWidth, config.cityHeight);
+
+  // Todo: Move to config
+  PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+  const app = new PIXI.Application({
+    width: 1152,
+    height: 1152,
+    backgroundColor: 0xa6a6a6,
   });
+  const assetsLoader = new AssetsLoader();
+  assetsLoader.addSpritesheet('roads');
+  assetsLoader.addSpritesheet('roads-walkable');
+  assetsLoader.addSpritesheet('parks');
+  assetsLoader.addSpritesheet('water');
+  assetsLoader.addFolder('cars', CarSpawner.allTextureIds(config));
+
+  let textures;
+  try {
+    textures = await assetsLoader.load();
+  } catch (err) {
+    showFatalError('Error loading textures', err);
+    return;
+  }
+
+  $('[data-component="app-container"]').append(app.view);
+
+  const mapView = new MapView(city, config, textures);
+  app.stage.addChild(mapView.displayObject);
+  mapView.displayObject.width = 1152;
+  mapView.displayObject.height = 1152;
+  mapView.displayObject.x = 0;
+  mapView.displayObject.y = 0;
+
+  const carOverlay = new CarOverlay(mapView, config, textures);
+  app.ticker.add((time) => carOverlay.animate(time));
+  const carSpawner = new CarSpawner(carOverlay, config);
+  app.ticker.add((time) => carSpawner.animate(time));
+
+  const powerUpViewMgr = new PowerUpViewMgr();
+  app.ticker.add((time) => powerUpViewMgr.animate(time));
+  powerUpViewMgr.registerHandler(new TrafficHandler(config, carSpawner));
+  powerUpViewMgr.registerHandler(new AutonomousVehicleHandler(config, carSpawner));
+  powerUpViewMgr.registerHandler(new MaxSpeedHandler(config, carOverlay));
+  powerUpViewMgr.registerHandler(new SpawnTramHandler(config, carSpawner));
+  powerUpViewMgr.registerHandler(new WalkableCityHandler(config, mapView));
+  powerUpViewMgr.registerHandler(new DenseCityHandler(config, mapView));
+  powerUpViewMgr.registerHandler(new AutonomousVehicleLidarHandler(config, carOverlay), true);
+
+  const variableMapOverlay = new VariableMapOverlay(mapView, config);
+  app.ticker.add((time) => variableMapOverlay.animate(time));
+
+  const connector = new ServerSocketConnector(serverSocketUri);
+  connector.events.on('map_update', (cells) => {
+    city.map.replace(cells);
+  });
+  connector.events.on('connect', () => {
+    connector.getMap();
+    connector.getActivePowerUps();
+  });
+  connector.events.on('view_show_map_var', (variable, data) => {
+    variableMapOverlay.show(
+      data,
+      config.variableMapOverlay.colors[variable] || 0x000000
+    );
+    setTimeout(() => {
+      variableMapOverlay.hide();
+    }, config.variableMapOverlay.overlayDuration * 1000);
+  });
+  connector.events.on('power_ups_update', (activePowerUps) => {
+    powerUpViewMgr.update(activePowerUps);
+  });
+
+  const connStateView = new ConnectionStateView(connector);
+  $('body').append(connStateView.$element);
+}());
