@@ -12,4 +12,19 @@ function showFatalError(text, error) {
   $('html').addClass('with-fatal-error');
 }
 
-module.exports = showFatalError;
+function installFatalErrorHandler() {
+  const handleErrorEvent = (event) => {
+    if (event.error) {
+      showFatalError('Fatal error', event.error);
+    } else if (event.reason) {
+      showFatalError('Fatal error', new Error(event.reason));
+    } else {
+      showFatalError('Fatal error', new Error(event.message));
+    }
+  };
+
+  window.addEventListener('error', handleErrorEvent);
+  window.addEventListener('unhandledrejection', handleErrorEvent);
+}
+
+module.exports = { showFatalError, installFatalErrorHandler };

@@ -1,11 +1,9 @@
 /* eslint-disable no-console */
 /* globals PIXI */
+require('../sass/default.scss');
+const ConnectionStateView = require('./connection-state-view');
 const City = require('./city');
 const MapView = require('./map-view');
-require('../sass/default.scss');
-const ServerSocketConnector = require('./server-socket-connector');
-const ConnectionStateView = require('./connection-state-view');
-const showFatalError = require('./lib/show-fatal-error');
 const CarOverlay = require('./cars/car-overlay');
 const AssetsLoader = require('./assets-loader');
 const CarSpawner = require('./cars/car-spawner');
@@ -18,45 +16,10 @@ const SpawnTramHandler = require('./power-ups/spawn-tram');
 const WalkableCityHandler = require('./power-ups/walkable-city-handler');
 const DenseCityHandler = require('./power-ups/dense-city-handler');
 const AutonomousVehicleLidarHandler = require('./power-ups/autonomous-vehicle-lidar-handler');
-const initSentry = require('./helpers/sentry');
-
-const qs = new URLSearchParams(window.location.search);
-const sentryDSN = qs.get('sentry-dsn');
-const serverHttpUri = process.env.SERVER_HTTP_URI || 'http://localhost:4848';
-const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
+const initClientApp = require('./init/init-client-app');
 
 (async function main() {
-  let sentryInitialized = false;
-  if (sentryDSN) {
-    sentryInitialized = !!initSentry(sentryDSN);
-  }
-  let config;
-  try {
-    const response = await fetch(`${serverHttpUri}/config`, { cache: 'no-store' });
-    if (!response.ok) {
-      throw new Error(`HTTP error. Status: ${response.status}`);
-    }
-    config = await response.json();
-  } catch (err) {
-    showFatalError(`Error loading configuration from ${serverHttpUri}`, err);
-    console.error(`Error loading configuration from ${serverHttpUri}`);
-    console.error(err);
-    return;
-  }
-
-  if (!sentryInitialized && config?.sentry?.dsn) {
-    sentryInitialized = !!initSentry(config.sentry.dsn);
-  }
-
-  const city = new City(config.cityWidth, config.cityHeight);
-
-  // Todo: Move to config
-  PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
-  const app = new PIXI.Application({
-    width: 1152,
-    height: 1152,
-    backgroundColor: 0xa6a6a6,
-  });
+  const { config, connector } = await initClientApp();
   const assetsLoader = new AssetsLoader();
   assetsLoader.addSpritesheet('roads');
   assetsLoader.addSpritesheet('roads-walkable');
@@ -68,9 +31,18 @@ const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
   try {
     textures = await assetsLoader.load();
   } catch (err) {
-    showFatalError('Error loading textures', err);
-    return;
+    throw new Error(`Error loading textures: ${err.message}`);
   }
+
+  const city = new City(config.cityWidth, config.cityHeight);
+
+  // Todo: Move to config
+  PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+  const app = new PIXI.Application({
+    width: 1152,
+    height: 1152,
+    backgroundColor: 0xa6a6a6,
+  });
 
   $('[data-component="app-container"]').append(app.view);
 
@@ -99,14 +71,15 @@ const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
   const variableMapOverlay = new VariableMapOverlay(mapView, config);
   app.ticker.add((time) => variableMapOverlay.animate(time));
 
-  const connector = new ServerSocketConnector(serverSocketUri);
   connector.events.on('map_update', (cells) => {
     city.map.replace(cells);
   });
+
   connector.events.on('connect', () => {
     connector.getMap();
     connector.getActivePowerUps();
   });
+
   connector.events.on('view_show_map_var', (variable, data) => {
     variableMapOverlay.show(
       data,
@@ -116,6 +89,7 @@ const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
       variableMapOverlay.hide();
     }, config.variableMapOverlay.overlayDuration * 1000);
   });
+
   connector.events.on('power_ups_update', (activePowerUps) => {
     powerUpViewMgr.update(activePowerUps);
   });

@@ -1,44 +1,16 @@
 require('../sass/default.scss');
-const showFatalError = require('./lib/show-fatal-error');
-const IndexListView = require('./index-list-view');
-const ServerSocketConnector = require('./server-socket-connector');
 const ConnectionStateView = require('./connection-state-view');
+const IndexListView = require('./index-list-view');
 const CitizenRequestView = require('./citizen-request-view');
 const CitizenRequestViewMgr = require('./citizen-request-view-mgr');
 const ActionsPane = require('./dashboard/actions-pane');
 const { bindCreateTitle } = require('./dashboard/titles');
 const PowerUpSelector = require('./dashboard/power-up-selector');
-const initSentry = require('./helpers/sentry');
-
-const qs = new URLSearchParams(window.location.search);
-const sentryDSN = qs.get('sentry-dsn');
-const serverHttpUri = process.env.SERVER_HTTP_URI || 'http://localhost:4848';
-const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
+const initClientApp = require('./init/init-client-app');
 
 (async function main() {
-  let sentryInitialized = false;
-  if (sentryDSN) {
-    sentryInitialized = !!initSentry(sentryDSN);
-  }
-  let config;
-  try {
-    const response = await fetch(`${serverHttpUri}/config`, { cache: 'no-store' });
-    if (!response.ok) {
-      throw new Error(`HTTP error. Status: ${response.status}`);
-    }
-    config = await response.json();
-  } catch (err) {
-    showFatalError(`Error loading configuration from ${serverHttpUri}`, err);
-    console.error(`Error loading configuration from ${serverHttpUri}`);
-    console.error(err);
-    return;
-  }
+  const { config, connector } = await initClientApp();
 
-  if (!sentryInitialized && config?.sentry?.dsn) {
-    sentryInitialized = !!initSentry(config.sentry.dsn);
-  }
-
-  const connector = new ServerSocketConnector(serverSocketUri);
   const { languages } = config.dashboard;
   const mainLanguage = languages[0];
   const createTitle = bindCreateTitle(languages);
@@ -118,6 +90,4 @@ const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
 
   const connStateView = new ConnectionStateView(connector);
   $('body').append(connStateView.$element);
-}()).catch((err) => {
-  console.error(err);
-});
+}());

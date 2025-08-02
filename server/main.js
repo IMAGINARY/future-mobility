@@ -6,6 +6,7 @@ const Sentry = require('@sentry/node');
 const createServer = require('./server');
 const CfgLoader = require('../src/js/cfg-loader/cfg-loader');
 const CfgReaderFile = require('../src/js/cfg-loader/cfg-reader-file');
+const configFiles = require('../src/js/init/config-files');
 
 const { port, settingsFile, sentryDsn } = yargs(hideBin(process.argv))
   .option('p', {
@@ -36,16 +37,7 @@ const cfgLoader = new CfgLoader(CfgReaderFile, yaml.load);
   let config;
   try {
     config = await cfgLoader.load([
-      '../config/city.yml',
-      '../config/tiles.yml',
-      '../config/variables.yml',
-      '../config/goals.yml',
-      '../config/citizen-requests.yml',
-      '../config/dashboard.yml',
-      '../config/traffic.yml',
-      '../config/cars.yml',
-      '../config/power-ups.yml',
-      '../config/default-settings.yml',
+      ...configFiles.map((name) => `../config/${name}.yml`),
       settingsFile,
     ]);
   } catch (err) {

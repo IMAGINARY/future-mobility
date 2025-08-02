@@ -1,32 +1,28 @@
 /* globals PIXI */
+require('../sass/default.scss');
 const City = require('./city');
 const MapEditor = require('./editor/map-editor');
 const VariableMapView = require('./variable-map-view');
-require('../sass/default.scss');
-const ServerSocketConnector = require('./server-socket-connector');
 const ConnectionStateView = require('./connection-state-view');
-const showFatalError = require('./lib/show-fatal-error');
 const PollutionData = require('./data-sources/pollution-data');
 const NoiseData = require('./data-sources/noise-data');
 const DataManager = require('./data-manager');
 const AssetsLoader = require('./assets-loader');
-
-const serverHttpUri = process.env.SERVER_HTTP_URI || 'http://localhost:4848';
-const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
+const initClientApp = require('./init/init-client-app');
 
 (async function main() {
-  let config;
+  const { config, connector } = await initClientApp();
+
+  const assetsLoader = new AssetsLoader();
+  assetsLoader.addSpritesheet('roads');
+  assetsLoader.addSpritesheet('parks');
+  assetsLoader.addSpritesheet('water');
+
+  let textures;
   try {
-    const response = await fetch(`${serverHttpUri}/config`, { cache: 'no-store' });
-    if (!response.ok) {
-      throw new Error(`HTTP error. Status: ${response.status}`);
-    }
-    config = await response.json();
+    textures = await assetsLoader.load();
   } catch (err) {
-    showFatalError(`Error loading configuration from ${serverHttpUri}`, err);
-    console.error(`Error loading configuration from ${serverHttpUri}`);
-    console.error(err);
-    return;
+    throw new Error(`Error loading textures: ${err.message}`);
   }
 
   // const city = City.fromJSON(Cities.cities[0]);
@@ -46,18 +42,6 @@ const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
     height: 1920,
     backgroundColor: 0xf2f2f2,
   });
-  const assetsLoader = new AssetsLoader();
-  assetsLoader.addSpritesheet('roads');
-  assetsLoader.addSpritesheet('parks');
-  assetsLoader.addSpritesheet('water');
-
-  let textures;
-  try {
-    textures = await assetsLoader.load();
-  } catch (err) {
-    showFatalError('Error loading textures', err);
-    return;
-  }
 
   $('[data-component="app-container"]').append(app.view);
   // const mapView = new MapView(city, config, textures);
@@ -85,7 +69,6 @@ const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
     noiseVarViewer.update(stats.get('noise-map'));
   });
 
-  const connector = new ServerSocketConnector(serverSocketUri);
   connector.events.once('map_update', (cells) => {
     city.map.replace(cells);
     city.map.events.on('update', () => {
@@ -97,6 +80,4 @@ const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
   });
   const connStateView = new ConnectionStateView(connector);
   $('body').append(connStateView.$element);
-}()).catch((err) => {
-  console.error(err);
-});
+}());
