@@ -48,7 +48,7 @@ function initApp(config) {
       apiSpec: '../specs/openapi.yaml',
       validateRequests: true,
       validateResponses: true,
-    }),
+    })
   );
 
   app.get('/config', (req, res) => {
@@ -178,7 +178,7 @@ function initApp(config) {
     socket.on('error', (err) => {
       console.error(`Socket error (code: ${err.code})`);
       console.error(err);
-    })
+    });
   });
 
   wss.on('close', () => {
@@ -186,30 +186,30 @@ function initApp(config) {
   });
 
   wss.on('error', (err) => {
-    console.error('WebSocket Server error: ${err.message}');
+    console.error(`WebSocket Server error: ${err.message}`);
     console.error(err);
   });
 
   wss.on('wsClientError', (err) => {
-    console.error('WebSocket Server client error: ${err.message}');
+    console.error(`WebSocket Server client error: ${err.message}`);
     console.error(err);
   });
 
   city.map.events.on('update', () => {
-    wss.clients.forEach(socket => sendMapUpdateMessage(socket));
+    wss.clients.forEach((socket) => sendMapUpdateMessage(socket));
   });
 
   stats.events.on('update', () => {
-    wss.clients.forEach(socket => sendVariablesMessage(socket));
-    wss.clients.forEach(socket => sendGoalsMessage(socket));
+    wss.clients.forEach((socket) => sendVariablesMessage(socket));
+    wss.clients.forEach((socket) => sendGoalsMessage(socket));
   });
 
   powerUpMgr.events.on('update', () => {
-    wss.clients.forEach(socket => sendPowerUpsUpdate(socket));
+    wss.clients.forEach((socket) => sendPowerUpsUpdate(socket));
   });
 
   viewRepeater.on('view_show_map_var', (variable) => {
-    wss.clients.forEach(socket => sendViewShowMapVar(socket, variable));
+    wss.clients.forEach((socket) => sendViewShowMapVar(socket, variable));
   });
 
   return [app, wss];

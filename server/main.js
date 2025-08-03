@@ -3,7 +3,7 @@ const yargs = require('yargs');
 const yaml = require('js-yaml');
 const { hideBin } = require('yargs/helpers');
 const Sentry = require('@sentry/node');
-const createServer = require('./server');
+const initApp = require('./app');
 const CfgLoader = require('../src/js/cfg-loader/cfg-loader');
 const CfgReaderFile = require('../src/js/cfg-loader/cfg-reader-file');
 const configFiles = require('../src/js/init/config-files');
@@ -54,8 +54,16 @@ const cfgLoader = new CfgLoader(CfgReaderFile, yaml.load);
       sentryInitialized = true;
     }
 
-    createServer(port, config);
+    const [app, wss] = initApp(config);
+    const server = app.listen(port);
     console.log(`Listening on port ${port}`);
+
+    server.on('upgrade', (request, socket, head) => {
+      console.log('Upgrade request');
+      wss.handleUpgrade(request, socket, head, (socket2) => {
+        wss.emit('connection', socket2, request);
+      });
+    });
   } catch (err) {
     console.error(err);
     Sentry.captureException(err);
