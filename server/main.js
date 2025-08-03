@@ -54,7 +54,7 @@ const cfgLoader = new CfgLoader(CfgReaderFile, yaml.load);
       sentryInitialized = true;
     }
 
-    const [app, wss] = initApp(config);
+    const [app, wss] = await initApp(config);
     const server = app.listen(port);
     console.log(`Listening on port ${port}`);
 

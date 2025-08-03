@@ -80,7 +80,7 @@ const initClientApp = require('./init/init-client-app');
     connector.getActivePowerUps();
   });
 
-  connector.events.on('view_show_map_var', (variable, data) => {
+  connector.events.on('display_map_var', (variable, data) => {
     variableMapOverlay.show(
       data,
       config.variableMapOverlay.colors[variable] || 0x000000

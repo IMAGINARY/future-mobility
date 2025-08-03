@@ -86,8 +86,8 @@ class ServerSocketConnector {
       this.events.emit('vars_update', message.variables);
     } else if (message.type === 'goals_update') {
       this.events.emit('goals_update', message.goals);
-    } else if (message.type === 'view_show_map_var') {
-      this.events.emit('view_show_map_var', message.variable, message.data);
+    } else if (message.type === 'display_map_var') {
+      this.events.emit('display_map_var', message.variable, message.data);
     } else if (message.type === 'power_ups_update') {
       this.events.emit('power_ups_update', message.powerUps);
     } else if (message.type === 'pong') {
@@ -167,7 +167,7 @@ class ServerSocketConnector {
 
   viewShowMapVariable(variable) {
     this.send({
-      type: 'view_show_map_var',
+      type: 'request_map_var_display',
       variable,
     });
   }

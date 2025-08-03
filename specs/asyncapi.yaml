@@ -1,65 +1,160 @@
-asyncapi: 2.0.0
-id: https://github.com/IMAGINARY/future-mobility
+asyncapi: 3.0.0
+id: 'https://github.com/IMAGINARY/future-mobility'
 info:
-  description: WebSocket API for Future of Mobility server
-  version: 1.0.0
   title: Future of Mobility Server WebSocket API
+  version: 1.0.0
+  description: WebSocket API for Future of Mobility server
   contact:
     email: eric.londaits@imaginary.org
   license:
     name: MIT
-    url: https://opensource.org/licenses/MIT
-
+    url: 'https://opensource.org/licenses/MIT'
 servers:
   production:
-    url: localhost:4848
+    host: 'localhost:4848'
+    pathname: /
     protocol: ws
     description: Default local server
-
 channels:
-  /:
-    publish:
-      description: Send messages to the API
-      operationId: processReceivedMessage
-      message:
-        oneOf:
-          - $ref: '#/components/messages/ping'
-          - $ref: '#/components/messages/get_map'
-          - $ref: '#/components/messages/set_map'
-    subscribe:
-      description: Messages that you receive from the API
-      operationId: sendMessage
-      message:
-        oneOf:
-          - $ref: '#/components/messages/pong'
-          - $ref: '#/components/messages/map_update'
-
+  root:
+    address: /
+    messages:
+      ping:
+        $ref: '#/components/messages/ping'
+      get_map:
+        $ref: '#/components/messages/get_map'
+      set_map:
+        $ref: '#/components/messages/set_map'
+      get_vars:
+        $ref: '#/components/messages/get_vars'
+      get_goals:
+        $ref: '#/components/messages/get_goals'
+      request_map_var_display:
+        $ref: '#/components/messages/request_map_var_display'
+      get_active_power_ups:
+        $ref: '#/components/messages/get_active_power_ups'
+      enable_power_up:
+        $ref: '#/components/messages/enable_power_up'
+      disable_power_up:
+        $ref: '#/components/messages/disable_power_up'
+      pong:
+        $ref: '#/components/messages/pong'
+      map_update:
+        $ref: '#/components/messages/map_update'
+      vars_update:
+        $ref: '#/components/messages/vars_update'
+      goals_update:
+        $ref: '#/components/messages/goals_update'
+      display_map_var:
+        $ref: '#/components/messages/display_map_var'
+      power_ups_update:
+        $ref: '#/components/messages/power_ups_update'
+operations:
+  processReceivedMessage:
+    action: receive
+    channel:
+      $ref: '#/channels/root'
+    description: Send messages to the API
+    messages:
+      - $ref: '#/channels/root/messages/ping'
+      - $ref: '#/channels/root/messages/get_map'
+      - $ref: '#/channels/root/messages/set_map'
+      - $ref: '#/channels/root/messages/get_vars'
+      - $ref: '#/channels/root/messages/get_goals'
+      - $ref: '#/channels/root/messages/request_map_var_display'
+      - $ref: '#/channels/root/messages/get_active_power_ups'
+      - $ref: '#/channels/root/messages/enable_power_up'
+      - $ref: '#/channels/root/messages/disable_power_up'
+  sendMessage:
+    action: send
+    channel:
+      $ref: '#/channels/root'
+    description: Messages that you receive from the API
+    messages:
+      - $ref: '#/channels/root/messages/pong'
+      - $ref: '#/channels/root/messages/map_update'
+      - $ref: '#/channels/root/messages/vars_update'
+      - $ref: '#/channels/root/messages/goals_update'
+      - $ref: '#/channels/root/messages/display_map_var'
+      - $ref: '#/channels/root/messages/power_ups_update'
 components:
   messages:
     ping:
       summary: Ping the server to check if the connection is alive.
       payload:
-        $ref: "#/components/schemas/ping"
+        $ref: '#/components/schemas/ping'
       x-response:
-        $ref: "#/components/schemas/pong"
+        $ref: '#/components/schemas/pong'
     pong:
       summary: Response to a ping sent by the client.
       payload:
-        $ref: "#/components/schemas/pong"
+        $ref: '#/components/schemas/pong'
     get_map:
       summary: Ask the server to send a map_update with the current map layout.
       payload:
-        $ref: "#/components/schemas/get_map"
+        $ref: '#/components/schemas/get_map'
       x-response:
-        $ref: "#/components/schemas/map_update"
+        $ref: '#/components/schemas/map_update'
     set_map:
       summary: Update the city map
       payload:
-        $ref: "#/components/schemas/set_map"
+        $ref: '#/components/schemas/set_map'
     map_update:
       summary: Sent by the server when the map layout has changed.
       payload:
-        $ref: "#/components/schemas/map_update"
+        $ref: '#/components/schemas/map_update'
+    get_vars:
+      summary: Request the current variables from the server.
+      payload:
+        $ref: '#/components/schemas/get_vars'
+      x-response:
+        $ref: '#/components/schemas/vars_update'
+    vars_update:
+      summary: Sent by the server when the variables have changed.
+      payload:
+        $ref: '#/components/schemas/vars_update'
+    get_goals:
+      summary: Request the current goals from the server.
+      payload:
+        $ref: '#/components/schemas/get_goals'
+      x-response:
+        $ref: '#/components/schemas/goals_update'
+    goals_update:
+      summary: Sent by the server when the goals have changed.
+      payload:
+        $ref: '#/components/schemas/goals_update'
+    request_map_var_display:
+      summary: Request a variable to be displayed on the map.
+      payload:
+          $ref: '#/components/schemas/request_map_var_display'
+      x-response:
+          $ref: '#/components/schemas/display_map_var'
+    display_map_var:
+      summary: Display a mapped variable
+      payload:
+        $ref: '#/components/schemas/display_map_var'
+    get_active_power_ups:
+      summary: Request the currently active power-ups.
+      payload:
+        $ref: '#/components/schemas/get_active_power_ups'
+      x-response:
+        $ref: '#/components/schemas/power_ups_update'
+    enable_power_up:
+      summary: Enable a power-up.
+      payload:
+        $ref: '#/components/schemas/enable_power_up'
+      x-response:
+        $ref: '#/components/schemas/power_ups_update'
+    disable_power_up:
+      summary: Disable a power-up.
+      payload:
+        $ref: '#/components/schemas/disable_power_up'
+      x-response:
+        $ref: '#/components/schemas/power_ups_update'
+    power_ups_update:
+      summary: Sent by the server when the active power-ups have changed.
+      payload:
+        $ref: '#/components/schemas/power_ups_update'
   schemas:
     ping:
       type: object
@@ -86,7 +181,7 @@ components:
           type: string
           const: set_map
         cells:
-          $ref: "#/components/schemas/Cells"
+          $ref: '#/components/schemas/cells'
     map_update:
       type: object
       properties:
@@ -94,8 +189,106 @@ components:
           type: string
           const: map_update
         cells:
-          $ref: "#/components/schemas/Cells"
-    Cells:
+          $ref: '#/components/schemas/cells'
+    get_vars:
+      type: object
+      properties:
+        type:
+          type: string
+          const: get_vars
+    vars_update:
+      type: object
+      properties:
+        type:
+          type: string
+          const: vars_update
+        variables:
+          type: object
+    get_goals:
+      type: object
+      properties:
+        type:
+          type: string
+          const: get_goals
+    goals_update:
+      type: object
+      properties:
+        type:
+          type: string
+          const: goals_update
+        goals:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              category:
+                type: string
+              priority:
+                type: integer
+              condition:
+                type: boolean
+              progress:
+                type: number
+                minimum: 0
+                maximum: 1
+    request_map_var_display:
+      type: object
+      properties:
+        type:
+          type: string
+          const: request_map_var_display
+        variable:
+          type: string
+          description: Name of the mapped variable
+    display_map_var:
+      type: object
+      properties:
+        type:
+          type: string
+          const: display_map_var
+        variable:
+          type: string
+          description: Name of the mapped variable
+        data:
+          $ref: '#/components/schemas/mapped_var'
+    get_active_power_ups:
+      type: object
+      properties:
+        type:
+          type: string
+          const: get_active_power_ups
+    enable_power_up:
+      type: object
+      properties:
+        type:
+          type: string
+          const: enable_power_up
+        powerUpId:
+          type: string
+          description: ID of the power-up to enable
+    disable_power_up:
+      type: object
+      properties:
+        type:
+          type: string
+          const: disable_power_up
+        powerUpId:
+          type: string
+          description: ID of the power-up to disable
+    power_ups_update:
+        type: object
+        properties:
+          type:
+            type: string
+            const: power_ups_update
+          powerUps:
+            type: array
+            description: List of currently active power-ups IDs
+            items:
+              type: string
+    cells:
       type: array
       description: |
         Content of the cells that make up the city map as an array of arrays.
@@ -106,4 +299,23 @@ components:
           type: integer
           minimum: 0
           description: Tile type id
-      example: [ [ 1, 2, 3], [4, 5, 6], [7, 8, 9] ]
+      example:
+        - - 1
+          - 2
+          - 3
+        - - 4
+          - 5
+          - 6
+        - - 7
+          - 8
+          - 9
+    mapped_var:
+      type: array
+      description: |
+        Content of the cells that make up the mapped variable as an array of arrays.
+        The outer array contains the rows.
+      items:
+        type: array
+        items:
+          type: number
+          description: Value of the mapped variable at this cell

@@ -4,6 +4,7 @@ const express = require('express');
 const ws = require('ws');
 const cors = require('cors');
 const OpenApiValidator = require('express-openapi-validator');
+const AsyncApiValidator = require('asyncapi-validator');
 const City = require('../src/js/city');
 const DataManager = require('../src/js/data-manager');
 const ZoningData = require('../src/js/data-sources/zoning-data');
@@ -17,7 +18,7 @@ const RoadSafetyData = require('../src/js/data-sources/road-safety-data');
 const PowerUpManager = require('../src/js/power-up-manager');
 const PowerUpDataModifier = require('../src/js/power-up-data-modifier');
 
-function initApp(config) {
+async function initApp(config) {
   console.log(`Initializing ${config.cityWidth} x ${config.cityHeight} city.`);
   const city = new City(config.cityWidth, config.cityHeight);
   const stats = new DataManager({
@@ -75,15 +76,36 @@ function initApp(config) {
     });
   });
 
+  const wss = new ws.Server({ noServer: true, clientTracking: true });
+  const viewRepeater = new EventEmitter();
+  const asyncApiValidator = await AsyncApiValidator.fromSource('../specs/asyncapi.yaml', {
+    // Note: The property x-parser-message-name is provided by the parser used by AsyncApiValidator.
+    //   It holds the messageId, taken from the key that references the message.
+    //   Its use saves us from having to specify the message name redundantly
+    //   (using the `name` property) for each message in the asyncapi.yaml file.
+    msgIdentifier: 'x-parser-message-name',
+  });
+
+  function validateAndSend(socket, payload) {
+    try {
+      asyncApiValidator.validate(payload?.type, payload, 'root', 'send');
+      socket.send(JSON.stringify(payload));
+    } catch (err) {
+      console.error(`Error validating message: ${err.message}`);
+      console.error(err);
+      console.log('Payload:', payload);
+    }
+  }
+
   function sendMapUpdateMessage(socket) {
-    socket.send(JSON.stringify({
+    validateAndSend(socket, {
       type: 'map_update',
       cells: city.map.cells,
-    }));
+    });
   }
 
   function sendVariablesMessage(socket) {
-    socket.send(JSON.stringify({
+    validateAndSend(socket, {
       type: 'vars_update',
       variables: {
         'green-spaces': stats.get('green-spaces-index'),
@@ -93,39 +115,36 @@ function initApp(config) {
         'traffic-density': stats.get('traffic-density-index'),
         safety: stats.get('road-safety-index'),
       },
-    }));
+    });
   }
 
   function sendGoalsMessage(socket) {
-    socket.send(JSON.stringify({
+    validateAndSend(socket, {
       type: 'goals_update',
       goals: stats.getGoals(),
-    }));
+    });
   }
 
-  function sendViewShowMapVar(socket, variable) {
-    socket.send(JSON.stringify({
-      type: 'view_show_map_var',
+  function sendDisplayMapVar(socket, variable) {
+    validateAndSend(socket, {
+      type: 'display_map_var',
       variable,
       data: stats.get(`${variable}-map`),
-    }));
+    });
   }
 
   function sendPowerUpsUpdate(socket) {
-    socket.send(JSON.stringify({
+    validateAndSend(socket, {
       type: 'power_ups_update',
       powerUps: powerUpMgr.activePowerUps(),
-    }));
+    });
   }
 
   function sendPong(socket) {
-    socket.send(JSON.stringify({
+    validateAndSend(socket, {
       type: 'pong',
-    }));
+    });
   }
-
-  const wss = new ws.Server({ noServer: true, clientTracking: true });
-  const viewRepeater = new EventEmitter();
 
   wss.on('connection', (socket) => {
     console.log(`Connected (${wss.clients.size} clients)`);
@@ -133,6 +152,13 @@ function initApp(config) {
     socket.on('message', (data) => {
       const message = JSON.parse(data);
       if (typeof message === 'object' && typeof message.type === 'string') {
+        try {
+          asyncApiValidator.validate(message.type, message, 'root', 'receive');
+        } catch (err) {
+          console.error(`Error validating message: ${err.message}`);
+          console.error(err);
+          return;
+        }
         switch (message.type) {
           case 'get_map':
             sendMapUpdateMessage(socket);
@@ -146,8 +172,8 @@ function initApp(config) {
           case 'get_goals':
             sendGoalsMessage(socket);
             break;
-          case 'view_show_map_var':
-            viewRepeater.emit('view_show_map_var', message.variable);
+          case 'request_map_var_display':
+            viewRepeater.emit('request_map_var_display', message.variable);
             break;
           case 'get_active_power_ups':
             sendPowerUpsUpdate(socket);
@@ -208,8 +234,8 @@ function initApp(config) {
     wss.clients.forEach((socket) => sendPowerUpsUpdate(socket));
   });
 
-  viewRepeater.on('view_show_map_var', (variable) => {
-    wss.clients.forEach((socket) => sendViewShowMapVar(socket, variable));
+  viewRepeater.on('request_map_var_display', (variable) => {
+    wss.clients.forEach((socket) => sendDisplayMapVar(socket, variable));
   });
 
   return [app, wss];
