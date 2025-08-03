@@ -67,14 +67,13 @@ const initClientApp = require('./init/init-client-app');
   city.map.events.on('update', () => {
     emissionsVarViewer.update(stats.get('pollution-map'));
     noiseVarViewer.update(stats.get('noise-map'));
+    connector.setMap(city.map.cells);
   });
 
   connector.events.once('map_update', (cells) => {
     city.map.replace(cells);
-    city.map.events.on('update', () => {
-      connector.setMap(city.map.cells);
-    });
   });
+
   connector.events.on('connect', () => {
     connector.getMap();
   });
