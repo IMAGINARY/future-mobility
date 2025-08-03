@@ -121,6 +121,10 @@ components:
           description: Tile type id
       example: [ [ 1, 2, 3 ], [ 4, 5, 6 ], [ 7, 8 , 9 ] ]
     Config:
+      title: App configuration
+      description: |
+        Configuration for the Future of Mobility exhibit.
+        This schema is not complete. It only includes a few properties for a minimal validation.
       type: object
       properties:
         cityWidth:
@@ -134,29 +138,5 @@ components:
         tileTypes:
           type: object
           title: Tile type definitions
-          additionalProperties:
-            type: object
-            properties:
-              name:
-                type: string
-                title: Tile type name
-              color:
-                type: string
-                title: Tile type color
-                pattern: "^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$"
-              editorIcon:
-                type: string
-                title: Path to the icon to use in the map editor for this tile type
-              emissions:
-                type: number
-                minimum: -1
-                maximum: 1
-                title: CO2 emission index of tiles of this type
-                description: |
-                  CO2 emission index of tiles of this type
-                  - 0 means no emissons.
-                  - 1 is maximum emissions.
-                  - Negative means the tile absorbs emissions around it.
-            required: [ name, color ]
       required: [ cityWidth, cityHeight, tileTypes ]
 
