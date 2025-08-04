@@ -15,7 +15,6 @@ class ServerSocketConnector {
     this.pingTimeout = null;
     this.pongTimeout = null;
     this.reconnectTimeout = null;
-    this.connect();
   }
 
   connect() {

@@ -96,4 +96,5 @@ const initClientApp = require('./init/init-client-app');
 
   const connStateView = new ConnectionStateView(connector);
   $('body').append(connStateView.$element);
+  connector.connect();
 }());
