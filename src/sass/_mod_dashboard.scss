@@ -1,6 +1,14 @@
 @use 'buttons';
 @use 'colors';
 
+.dashboard-app,
+.dashboard,
+.powerups-selector {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
 .dashboard-title {
   padding: 0.4em 0 0.3em;
   margin-bottom: 1em;
@@ -25,7 +33,7 @@
   }
 }
 
-body.dashboard {
+.dashboard {
   background-color: #fff;
   overflow: hidden;
 
