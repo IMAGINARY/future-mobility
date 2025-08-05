@@ -27,6 +27,7 @@ class DashboardApp {
 
     this.$element = $('<div></div>')
       .addClass('dashboard-app')
+      .addClass(`theme-${this.config?.dashboard?.theme ?? 'default'}`)
       .addClass(`with-language-count-${languages.length}`)
       .addClass(`with-main-language-${mainLanguage}`)
       .addClass(languages.map((lang) => `with-language-${lang}`).join(' '));

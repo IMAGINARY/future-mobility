@@ -3,6 +3,7 @@ dashboard:
   languages:
     - de
     - en
+  theme: default
   goals:
     title:
       de: "Ziele"

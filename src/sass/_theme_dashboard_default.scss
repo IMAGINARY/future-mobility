@@ -1,0 +1,78 @@
+@use 'buttons';
+@use 'colors';
+@use 'sass:color';
+
+.dashboard-app.theme-default {
+  // Dashboard title
+  .dashboard-title {
+    text-transform: uppercase;
+    background-color: colors.$c-fluo-green;
+    color: black;
+
+    h2 {
+      color: black;
+      text-transform: uppercase;
+    }
+  }
+
+  // Dashboard action button
+  .btn-dashboard-action {
+    border-radius: 6em;
+  }
+
+  // Button variants (using mixin)
+  .btn-show-pollution {
+    @include buttons.button-variant(#ffffff, colors.$c-cherry, colors.$c-cherry);
+  }
+
+  .btn-show-noise {
+    @include buttons.button-variant(#ffffff, colors.$c-grape, colors.$c-grape);
+  }
+
+  .btn-power-ups-activate {
+    @include buttons.button-variant(#ffffff, colors.$c-mint, colors.$c-mint);
+  }
+
+  .btn-cancel {
+    @include buttons.button-variant(#ffffff, colors.$c-gray-mid, colors.$c-gray-mid);
+
+    color: black;
+  }
+
+  .powerup {
+    background-color: colors.$c-bubblegum;
+    border-radius: 0.5em;
+  }
+
+  .btn-power-ups-disable {
+    background-color: colors.$c-bubblegum-light;
+    border-radius: 1em;
+
+    &:active {
+      background-color: color.adjust(colors.$c-bubblegum-light, $lightness: -20%, $space: hsl);
+    }
+  }
+
+  .powerups-selection {
+    .no-selection {
+      background-color: colors.$c-gray-light;
+      border-radius: 0.5em;
+    }
+  }
+
+  .powerups-selector-main {
+    .powerup {
+      background-color: colors.$c-fluo-purple;
+      border-radius: 0.5em;
+
+      &:active {
+        background-color: color.adjust(colors.$c-fluo-purple, $lightness: -10%, $space: hsl);
+      }
+
+      .title {
+        border-radius: 0.5em;
+      }
+    }
+  }
+}
+
