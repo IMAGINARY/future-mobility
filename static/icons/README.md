@@ -7,3 +7,4 @@ Adaptations by IMAGINARY gGmbH.
 - traffic-density: Composed using individual icons from OpenMoji.
 - safety: Componsed using individual icons from OpenMoji. Car hood line redrawn.
 - greens-spaces: Based on an icon from OpenMoji. Tree trunk redrawn and the river was added.
+- dark versions of all icons: Stroke and fill colors changed to white.
