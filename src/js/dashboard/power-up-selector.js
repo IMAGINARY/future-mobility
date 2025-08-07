@@ -10,6 +10,7 @@ class PowerUpSelector {
     this.languages = this.config.dashboard.languages;
     [this.mainLanguage] = this.languages;
     const createTitle = bindCreateTitle(this.languages);
+    const cancelText = this.config.dashboard.powerUps.cancelButton.text;
 
     this.optionContainers = [];
     for (let i = 0; i < 3; i += 1) {
@@ -49,7 +50,9 @@ class PowerUpSelector {
                           $('<span></span>')
                             .addClass(`text text-${lang}`)
                             .addClass(lang === this.mainLanguage ? 'text-main' : 'text-translation')
-                            .html(this.config.dashboard.powerUps.cancelButton.text[lang])
+                            .html(lang === this.mainLanguage
+                              ? `<span class='large'>${cancelText[lang]}</span>`
+                              : cancelText[lang])
                         ))
                       )
                       .on('click', () => {
