@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 const EventEmitter = require('events');
+const logger = require('winston');
 const express = require('express');
 const ws = require('ws');
 const cors = require('cors');
@@ -19,23 +20,35 @@ const PowerUpManager = require('../src/js/power-up-manager');
 const PowerUpDataModifier = require('../src/js/power-up-data-modifier');
 
 async function initApp(config) {
-  console.log(`Initializing ${config.cityWidth} x ${config.cityHeight} city.`);
+  logger.verbose(`Initializing ${config.cityWidth} x ${config.cityHeight} city.`);
   const city = new City(config.cityWidth, config.cityHeight);
+  logger.verbose(`Initializing DataManager with throttle time ${config.dataManager.throttleTime} ms.`);
   const stats = new DataManager({
     throttleTime: config.dataManager.throttleTime,
   });
+  logger.verbose('Registering data sources:');
+  logger.verbose('- ZoningData');
   stats.registerSource(new ZoningData(city, config));
+  logger.verbose('- ZoneBalanceData');
   stats.registerSource(new ZoneBalanceData(city, config));
+  logger.verbose('- PollutionData');
   stats.registerSource(new PollutionData(city, config));
+  logger.verbose('- NoiseData');
   stats.registerSource(new NoiseData(city, config));
+  logger.verbose('- GreenSpacesData');
   stats.registerSource(new GreenSpacesData(city, config));
+  logger.verbose('- TravelTimesData');
   stats.registerSource(new TravelTimesData(city, config));
+  logger.verbose('- TrafficData');
   stats.registerSource(new TrafficData(city, config));
+  logger.verbose('- RoadSafetyData');
   stats.registerSource(new RoadSafetyData(city, config));
   city.map.events.on('update', () => {
     stats.throttledCalculateAll();
   });
+  logger.verbose('Initializing PowerUpManager');
   const powerUpMgr = new PowerUpManager(config);
+  logger.verbose('Registering PowerUpManager as a DataModifier');
   stats.registerModifier(new PowerUpDataModifier(config, powerUpMgr));
   powerUpMgr.events.on('update', () => {
     stats.throttledCalculateAll();
@@ -91,9 +104,9 @@ async function initApp(config) {
       asyncApiValidator.validate(payload?.type, payload, 'root', 'send');
       socket.send(JSON.stringify(payload));
     } catch (err) {
-      console.error(`Error validating message: ${err.message}`);
-      console.error(err);
-      console.log('Payload:', payload);
+      logger.error(`Error validating message: ${err.message}`);
+      logger.error(err);
+      logger.log('Payload:', payload);
     }
   }
 
@@ -147,7 +160,7 @@ async function initApp(config) {
   }
 
   wss.on('connection', (socket) => {
-    console.log(`Connected (${wss.clients.size} clients)`);
+    logger.info(`Connected (${wss.clients.size} clients)`);
 
     socket.on('message', (data) => {
       const message = JSON.parse(data);
@@ -155,8 +168,8 @@ async function initApp(config) {
         try {
           asyncApiValidator.validate(message.type, message, 'root', 'receive');
         } catch (err) {
-          console.error(`Error validating message: ${err.message}`);
-          console.error(err);
+          logger.error(`Error validating message: ${err.message}`);
+          logger.error(err);
           return;
         }
         switch (message.type) {
@@ -188,37 +201,37 @@ async function initApp(config) {
             sendPong(socket);
             break;
           default:
-            console.warn(`Error: Received message of unknown type '${message.type}'`);
+            logger.warn(`Error: Received message of unknown type '${message.type}'`);
             break;
         }
       } else {
-        console.error('Error: Received invalid message via websocket');
-        console.trace(message);
+        logger.error('Error: Received invalid message via websocket');
+        logger.error(message);
       }
     });
 
     socket.on('close', (code, reason) => {
-      console.log(`Socket closed (code: ${code} reason: '${reason}')`);
+      logger.info(`Socket closed (code: ${code} reason: '${reason}')`);
     });
 
     socket.on('error', (err) => {
-      console.error(`Socket error (code: ${err.code})`);
-      console.error(err);
+      logger.error(`Socket error (code: ${err.code})`);
+      logger.error(err);
     });
   });
 
   wss.on('close', () => {
-    console.error('WebSocket Server closed');
+    logger.info('WebSocket Server closed');
   });
 
   wss.on('error', (err) => {
-    console.error(`WebSocket Server error: ${err.message}`);
-    console.error(err);
+    logger.error(`WebSocket Server error: ${err.message}`);
+    logger.error(err);
   });
 
   wss.on('wsClientError', (err) => {
-    console.error(`WebSocket Server client error: ${err.message}`);
-    console.error(err);
+    logger.error(`WebSocket Server client error: ${err.message}`);
+    logger.error(err);
   });
 
   city.map.events.on('update', () => {
