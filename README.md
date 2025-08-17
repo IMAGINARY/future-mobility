@@ -43,6 +43,14 @@ name that only contains letters, numbers, - or _, and ends in `.yml`.
 The `.env.sample` file has other configuration keys that affect the software. These can be set 
 through the `.env` file in the root directory, or through environment variables.
 
+## Query String Parameters
+
+The clients support the following query string parameters:
+
+- **`loglevel`**: Sets the log level for the client. Possible values are `warn`, `info`, and 
+    `debug`. Default is `info`.
+- **`sentry-dsn`**: See below in the [Sentry](#Sentry) section.
+
 ## Server APIs
 
 The server has both an HTTP and a WebSocket API. Their specifications are:

@@ -1,5 +1,4 @@
 /* globals PIXI */
-/* eslint-disable no-console */
 require('../sass/default.scss');
 const City = require('./city');
 const MapEditor = require('./editor/map-editor');

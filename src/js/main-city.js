@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /* globals PIXI */
 require('../sass/default.scss');
 const ConnectionStateView = require('./connection-state-view');

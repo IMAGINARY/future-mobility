@@ -1,5 +1,5 @@
-/* eslint-disable no-console */
 const EventEmitter = require('events');
+const { logger } = require('./helpers/logger');
 
 const PING_TIME = 1000 * 10;
 const PONG_WAIT_TIME = 1000 * 10;
@@ -22,7 +22,7 @@ class ServerSocketConnector {
     this.cancelReconnect();
 
     this.events.emit('connecting');
-    console.log(`Connecting to ${this.uri}...`);
+    logger.info(`Connecting to ${this.uri}...`);
     this.ws = new WebSocket(this.uri);
     this.ws.onopen = this.handleOpen.bind(this);
     this.ws.onclose = this.handleClose.bind(this);
@@ -47,7 +47,7 @@ class ServerSocketConnector {
       this.connect();
     }, RECONNECT_TIME);
     this.events.emit('connectWait');
-    console.log(`Will attempt to reconnect in ${RECONNECT_TIME / 1000} seconds...`);
+    logger.info(`Will attempt to reconnect in ${RECONNECT_TIME / 1000} seconds...`);
   }
 
   handleOpen() {
@@ -56,7 +56,7 @@ class ServerSocketConnector {
 
     this.connected = true;
     this.isClosing = false;
-    console.log('Connected.');
+    logger.info('Connected.');
     this.events.emit('connect');
     this.schedulePing();
   }
@@ -68,7 +68,7 @@ class ServerSocketConnector {
     this.cancelPongTimeout();
     // ev.code is defined here https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent
     // but according to people the only code one normally gets is 1006 (Abnormal Closure)
-    console.error(
+    logger.error(
       `Disconnected with code ${ev.code}`,
       ev.code === 1006 ? ': Abnormal closure' : '',
       ev.reason ? `(reason: ${ev.reason})` : ''
@@ -130,8 +130,8 @@ class ServerSocketConnector {
     this.cancelPongTimeout();
     this.pongTimeout = setTimeout(() => {
       this.pongTimeout = null;
-      console.warn(`PONG not received after ${PONG_WAIT_TIME / 1000} seconds`);
-      console.warn('Closing connection');
+      logger.warn(`PONG not received after ${PONG_WAIT_TIME / 1000} seconds`);
+      logger.warn('Closing connection');
       if (!this.isClosing) {
         this.isClosing = true;
         this.events.emit('closing');

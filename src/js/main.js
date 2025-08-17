@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /* globals PIXI */
 require('../sass/default.scss');
 require('../sass/desktop.scss');

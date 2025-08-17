@@ -1,17 +1,22 @@
 const initSentry = require('../helpers/sentry');
 const { installFatalErrorHandler } = require('../lib/show-fatal-error');
 const ServerSocketConnector = require('../server-socket-connector');
-
-const qs = new URLSearchParams(window.location.search);
-const sentryDSN = qs.get('sentry-dsn');
-const serverHttpUri = process.env.SERVER_HTTP_URI || 'http://localhost:4848';
-const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
+const { configureLogger, logger } = require('../helpers/logger');
 
 async function initClientApp() {
+  const qs = new URLSearchParams(window.location.search);
+  const sentryDSN = qs.get('sentry-dsn');
+  const serverHttpUri = process.env.SERVER_HTTP_URI || 'http://localhost:4848';
+  const serverSocketUri = process.env.SERVER_SOCKET_URI || 'ws://localhost:4848';
+
   installFatalErrorHandler();
+  configureLogger({
+    level: qs.get('loglevel') || 'info',
+  });
 
   let sentryInitialized = false;
   if (sentryDSN) {
+    logger.info('Initializing Sentry with DSN from query string');
     sentryInitialized = !!initSentry(sentryDSN);
   }
   let config;
@@ -26,6 +31,7 @@ async function initClientApp() {
   }
 
   if (!sentryInitialized && config?.sentry?.dsn) {
+    logger.info('Initializing Sentry with DSN from config');
     sentryInitialized = !!initSentry(config.sentry.dsn);
   }
 

@@ -70,16 +70,13 @@ const initClientApp = require('./init/init-client-app');
   });
 
   connector.events.once('map_update', (cells) => {
-    console.log('Received map update from server');
     city.map.replace(cells);
-    console.log('Now sending my changes');
     city.map.events.on('update', () => {
       connector.setMap(city.map.cells);
     });
   });
 
   connector.events.on('connect', () => {
-    console.log('Connected to server');
     connector.getMap();
   });
   const connStateView = new ConnectionStateView(connector);
