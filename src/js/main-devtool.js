@@ -46,7 +46,7 @@ const { initStandaloneApp } = require('./init/init-standalone-app');
   assetsLoader.addSpritesheet('roads-walkable');
   assetsLoader.addSpritesheet('parks');
   assetsLoader.addSpritesheet('water');
-  assetsLoader.addFolder('cars', CarSpawner.allTextureIds(config));
+  assetsLoader.addSpritesheet('cars');
 
   let textures;
   try {

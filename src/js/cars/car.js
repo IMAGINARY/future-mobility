@@ -43,9 +43,8 @@ class Car {
   static createSprite(texture) {
     const sprite = new PIXI.Sprite();
     sprite.texture = texture;
-    sprite.width = texture.width;
-    sprite.height = texture.height;
-    // sprite.roundPixels = true;
+    sprite.width = texture.width * texture.resolution;
+    sprite.height = texture.height * texture.resolution;
     sprite.anchor.set(SPRITE_ANCHOR_X, SPRITE_ANCHOR_Y);
     sprite.visible = true;
     sprite.alpha = 0;

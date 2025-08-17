@@ -24,7 +24,7 @@ const initClientApp = require('./init/init-client-app');
   assetsLoader.addSpritesheet('roads-walkable');
   assetsLoader.addSpritesheet('parks');
   assetsLoader.addSpritesheet('water');
-  assetsLoader.addFolder('cars', CarSpawner.allTextureIds(config));
+  assetsLoader.addSpritesheet('cars');
 
   let textures;
   try {

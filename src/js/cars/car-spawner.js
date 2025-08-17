@@ -20,28 +20,6 @@ class CarSpawner {
     this.DefaultDriver = CarDriver;
   }
 
-  /**
-   * Returns of all the texture ids of the cars in the config file
-   */
-  static allTextureIds(config) {
-    const textures = {};
-    Object.entries(config.carTypes).forEach(([id, props]) => {
-      if (props.variants) {
-        Object.assign(textures,
-          Object.fromEntries(props.variants.map(variant => [`${id}-${variant}`, true])));
-      } else {
-        textures[id] = true;
-      }
-
-      if (props.wagons) {
-        Object.assign(textures,
-          Object.fromEntries(props.wagons.flat().map(wagonId => [wagonId, true])));
-      }
-    });
-
-    return Object.keys(textures);
-  }
-
   setModeDistribution(modeDistribution, tags = []) {
     this.modeDistribution = modeDistribution;
     this.modeRandomizer = weightedRandomizer(Object.entries(modeDistribution));
