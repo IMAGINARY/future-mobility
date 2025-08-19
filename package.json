@@ -21,11 +21,18 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-airbnb": "^19.0.4",
+    "stylelint": "^16.22.0",
+    "stylelint-config-standard-scss": "^15.0.1"
+  },
+  "dependencies": {
     "@babel/core": "^7.28.0",
     "@babel/preset-env": "^7.28.0",
     "@fontsource-utils/scss": "^0.2.1",
     "@fontsource/roboto-condensed": "^5.2.6",
     "@popperjs/core": "^2.11.8",
+    "@sentry/browser": "^10.0.0",
     "babel-loader": "^10.0.0",
     "bootstrap": "5.3.7",
     "chart.js": "4.5.0",
@@ -33,26 +40,19 @@
     "copy-webpack-plugin": "^13.0.0",
     "core-js": "^3.44.0",
     "css-loader": "^7.1.2",
+    "deepmerge": "^4.3.1",
     "dotenv-webpack": "^8.1.1",
-    "eslint": "^8.57.1",
-    "eslint-config-airbnb": "^19.0.4",
     "html-webpack-plugin": "^5.6.3",
     "jquery": "3.7.1",
+    "js-yaml": "^4.0.0",
+    "loglevel": "^1.9.2",
     "mini-css-extract-plugin": "^2.9.2",
     "pixi.js": "^7.4.3",
     "sass": "^1.89.2",
     "sass-loader": "^16.0.5",
-    "stylelint": "^16.22.0",
-    "stylelint-config-standard-scss": "^15.0.1",
     "terser-webpack-plugin": "^5.3.14",
+    "vec2": "^1.6.1",
     "webpack": "^5.100.2",
     "webpack-cli": "^6.0.1"
-  },
-  "dependencies": {
-    "@sentry/browser": "^10.0.0",
-    "deepmerge": "^4.3.1",
-    "js-yaml": "^4.0.0",
-    "loglevel": "^1.9.2",
-    "vec2": "^1.6.1"
   }
 }

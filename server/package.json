@@ -16,11 +16,11 @@
     "test": "jest"
   },
   "devDependencies": {
-    "@sentry/node": "^10.0.0",
     "jest": "^27.0.6",
     "supertest": "^6.1.4"
   },
   "dependencies": {
+    "@sentry/node": "^10.0.0",
     "asyncapi-validator": "^5.1.1",
     "cors": "^2.8.5",
     "express": "^4.17.1",
