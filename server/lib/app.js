@@ -6,53 +6,10 @@ const ws = require('ws');
 const cors = require('cors');
 const OpenApiValidator = require('express-openapi-validator');
 const AsyncApiValidator = require('asyncapi-validator');
-const City = require('../src/js/city');
-const DataManager = require('../src/js/data-manager');
-const ZoningData = require('../src/js/data-sources/zoning-data');
-const ZoneBalanceData = require('../src/js/data-sources/zone-balance-data');
-const PollutionData = require('../src/js/data-sources/pollution-data');
-const NoiseData = require('../src/js/data-sources/noise-data');
-const GreenSpacesData = require('../src/js/data-sources/green-spaces-data');
-const TravelTimesData = require('../src/js/data-sources/travel-times-data');
-const TrafficData = require('../src/js/data-sources/traffic-data');
-const RoadSafetyData = require('../src/js/data-sources/road-safety-data');
-const PowerUpManager = require('../src/js/power-up-manager');
-const PowerUpDataModifier = require('../src/js/power-up-data-modifier');
+const ModelManager = require('./model-manager');
 
 async function initApp(config) {
-  logger.verbose(`Initializing ${config.cityWidth} x ${config.cityHeight} city.`);
-  const city = new City(config.cityWidth, config.cityHeight);
-  logger.verbose(`Initializing DataManager with throttle time ${config.dataManager.throttleTime} ms.`);
-  const stats = new DataManager({
-    throttleTime: config.dataManager.throttleTime,
-  });
-  logger.verbose('Registering data sources:');
-  logger.verbose('- ZoningData');
-  stats.registerSource(new ZoningData(city, config));
-  logger.verbose('- ZoneBalanceData');
-  stats.registerSource(new ZoneBalanceData(city, config));
-  logger.verbose('- PollutionData');
-  stats.registerSource(new PollutionData(city, config));
-  logger.verbose('- NoiseData');
-  stats.registerSource(new NoiseData(city, config));
-  logger.verbose('- GreenSpacesData');
-  stats.registerSource(new GreenSpacesData(city, config));
-  logger.verbose('- TravelTimesData');
-  stats.registerSource(new TravelTimesData(city, config));
-  logger.verbose('- TrafficData');
-  stats.registerSource(new TrafficData(city, config));
-  logger.verbose('- RoadSafetyData');
-  stats.registerSource(new RoadSafetyData(city, config));
-  city.map.events.on('update', () => {
-    stats.throttledCalculateAll();
-  });
-  logger.verbose('Initializing PowerUpManager');
-  const powerUpMgr = new PowerUpManager(config);
-  logger.verbose('Registering PowerUpManager as a DataModifier');
-  stats.registerModifier(new PowerUpDataModifier(config, powerUpMgr));
-  powerUpMgr.events.on('update', () => {
-    stats.throttledCalculateAll();
-  });
+  const modelManager = new ModelManager(config);
 
   const app = express();
   app.use(cors());
@@ -70,17 +27,18 @@ async function initApp(config) {
   });
 
   app.get('/city', (req, res) => {
-    res.json(city.toJSON());
+    res.json(modelManager.getCity().toJSON());
   });
 
   app.post('/city/map', (req, res) => {
     if (typeof req.body !== 'object' || !Array.isArray(req.body.cells)) {
       res.status(500).json({ status: 'error', error: 'Invalid input format' });
     }
-    city.map.replace(req.body.cells);
+    modelManager.setCityMap(req.body.cells);
     res.json({ status: 'ok' });
   });
 
+  // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
     // format error
     res.status(err.status || 500).json({
@@ -113,43 +71,36 @@ async function initApp(config) {
   function sendMapUpdateMessage(socket) {
     validateAndSend(socket, {
       type: 'map_update',
-      cells: city.map.cells,
+      cells: modelManager.getCity().map.cells,
     });
   }
 
   function sendVariablesMessage(socket) {
     validateAndSend(socket, {
       type: 'vars_update',
-      variables: {
-        'green-spaces': stats.get('green-spaces-index'),
-        pollution: stats.get('pollution-index'),
-        noise: stats.get('noise-index'),
-        'travel-times': stats.get('travel-times-index'),
-        'traffic-density': stats.get('traffic-density-index'),
-        safety: stats.get('road-safety-index'),
-      },
+      variables: modelManager.getMainVariables(),
     });
   }
 
   function sendGoalsMessage(socket) {
     validateAndSend(socket, {
       type: 'goals_update',
-      goals: stats.getGoals(),
+      goals: modelManager.getGoals(),
     });
   }
 
-  function sendDisplayMapVar(socket, variable) {
+  function sendDisplayMapVar(socket, varName) {
     validateAndSend(socket, {
       type: 'display_map_var',
-      variable,
-      data: stats.get(`${variable}-map`),
+      variable: varName,
+      data: modelManager.getMappedVariable(varName),
     });
   }
 
   function sendPowerUpsUpdate(socket) {
     validateAndSend(socket, {
       type: 'power_ups_update',
-      powerUps: powerUpMgr.activePowerUps(),
+      powerUps: modelManager.getActivePowerUps(),
     });
   }
 
@@ -177,7 +128,7 @@ async function initApp(config) {
             sendMapUpdateMessage(socket);
             break;
           case 'set_map':
-            city.map.replace(message.cells);
+            modelManager.setCityMap(message.cells);
             break;
           case 'get_vars':
             sendVariablesMessage(socket);
@@ -192,10 +143,10 @@ async function initApp(config) {
             sendPowerUpsUpdate(socket);
             break;
           case 'enable_power_up':
-            powerUpMgr.enable(message.powerUpId);
+            modelManager.enablePowerUp(message.powerUpId);
             break;
           case 'disable_power_up':
-            powerUpMgr.disable(message.powerUpId);
+            modelManager.disablePowerUp(message.powerUpId);
             break;
           case 'ping':
             sendPong(socket);
@@ -234,16 +185,16 @@ async function initApp(config) {
     logger.error(err);
   });
 
-  city.map.events.on('update', () => {
+  modelManager.events.on('city-map-update', () => {
     wss.clients.forEach((socket) => sendMapUpdateMessage(socket));
   });
 
-  stats.events.on('update', () => {
+  modelManager.events.on('stats-update', () => {
     wss.clients.forEach((socket) => sendVariablesMessage(socket));
     wss.clients.forEach((socket) => sendGoalsMessage(socket));
   });
 
-  powerUpMgr.events.on('update', () => {
+  modelManager.events.on('power-ups-update', () => {
     wss.clients.forEach((socket) => sendPowerUpsUpdate(socket));
   });
 

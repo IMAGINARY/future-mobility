@@ -2,7 +2,7 @@ const EventEmitter = require('events');
 
 class DataManager {
   constructor(userOptions = {}) {
-    this.options = Object.assign({}, DataManager.DefaultOptions, userOptions);
+    this.options = { ...DataManager.DefaultOptions, ...userOptions};
     this.sources = [];
     this.variables = {};
     this.events = new EventEmitter();

@@ -2,7 +2,7 @@
 
 const yaml = require('js-yaml');
 const request = require('supertest');
-const initApp = require('../app');
+const initApp = require('../lib/app');
 const CfgLoader = require('../../src/js/cfg-loader/cfg-loader');
 const CfgReaderFile = require('../../src/js/cfg-loader/cfg-reader-file');
 
