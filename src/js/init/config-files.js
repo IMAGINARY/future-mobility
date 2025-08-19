@@ -8,6 +8,7 @@ const configFiles = [
   'traffic',
   'cars',
   'power-ups',
+  'textures',
   'default-settings',
 ];
 

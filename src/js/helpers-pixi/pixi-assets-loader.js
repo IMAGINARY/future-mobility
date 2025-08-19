@@ -1,12 +1,12 @@
 /* globals PIXI */
 
-class AssetsLoader {
+class PixiAssetsLoader {
   constructor(basePath = null) {
     this.basePath = basePath || './textures';
     this.bundles = {};
   }
 
-  addToManifest(bundle, name, srcs) {
+  addBundle(bundle, name, srcs) {
     if (this.bundles[bundle] === undefined) {
       this.bundles[bundle] = [];
     }
@@ -17,6 +17,14 @@ class AssetsLoader {
       name,
       srcs,
     });
+  }
+
+  addSpritesheet(name) {
+    this.addBundle(name, name, `${name}.json`);
+  }
+
+  addSpritesheets(names) {
+    names.forEach((name) => this.addSpritesheet(name));
   }
 
   getManifest() {
@@ -36,11 +44,7 @@ class AssetsLoader {
     return Object.keys(this.bundles);
   }
 
-  addSpritesheet(name) {
-    this.addToManifest(name, name, `${name}.json`);
-  }
-
-  load() {
+  async load() {
     return PIXI.Assets.init({
       basePath: this.basePath,
       manifest: this.getManifest(),
@@ -61,6 +65,12 @@ class AssetsLoader {
         return textures;
       });
   }
+
+  static async loadSpritesheets(basePath, names) {
+    const loader = new PixiAssetsLoader(basePath);
+    loader.addSpritesheets(names);
+    return loader.load();
+  }
 }
 
-module.exports = AssetsLoader;
+module.exports = PixiAssetsLoader;

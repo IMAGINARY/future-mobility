@@ -91,6 +91,14 @@ class CarOverlay {
         .sort((a, b) => a.path.progress - b.path.progress)
         .shift();
   }
+
+  getCarTexture(type) {
+    const texture = this.textures.cars[type];
+    if (!texture) {
+      throw new Error(`Unknown car texture: ${type}`);
+    }
+    return texture;
+  }
 }
 
 CarOverlay.defaultOptions = {

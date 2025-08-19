@@ -4,7 +4,7 @@ const ConnectionStateView = require('./connection-state-view');
 const City = require('./city');
 const MapView = require('./map-view');
 const CarOverlay = require('./cars/car-overlay');
-const AssetsLoader = require('./assets-loader');
+const PixiAssetsLoader = require('./helpers-pixi/pixi-assets-loader');
 const CarSpawner = require('./cars/car-spawner');
 const VariableMapOverlay = require('./variable-map-overlay');
 const PowerUpViewMgr = require('./power-up-view-mgr');
@@ -19,16 +19,12 @@ const initClientApp = require('./init/init-client-app');
 
 (async function main() {
   const { config, connector } = await initClientApp();
-  const assetsLoader = new AssetsLoader();
-  assetsLoader.addSpritesheet('roads');
-  assetsLoader.addSpritesheet('roads-walkable');
-  assetsLoader.addSpritesheet('parks');
-  assetsLoader.addSpritesheet('water');
-  assetsLoader.addSpritesheet('cars');
-
   let textures;
   try {
-    textures = await assetsLoader.load();
+    textures = await PixiAssetsLoader.loadSpritesheets(
+      config.textures.basePath,
+      config.textures.sets.mobilityCityMap
+    );
   } catch (err) {
     throw new Error(`Error loading textures: ${err.message}`);
   }

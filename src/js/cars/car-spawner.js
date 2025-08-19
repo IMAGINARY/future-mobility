@@ -91,11 +91,11 @@ class CarSpawner {
       ? this.config.carTypes[carType].variants.map(variant => `${carType}-${variant}`)
       : [carType]);
 
-    return this.overlay.textures.cars[randomItem(options)];
+    return this.overlay.getCarTexture(randomItem(options));
   }
 
-  getRandomWagonTextures(carType) {
-    return this.config.carTypes[carType].wagons.map(wagonDef => (
+  getRandomWagonType(carType) {
+    return this.config.carTypes[carType].wagons.map((wagonDef) => (
       Array.isArray(wagonDef) ? randomItem(wagonDef) : wagonDef
     ));
   }
@@ -119,8 +119,8 @@ class CarSpawner {
 
       if (this.config.carTypes[carType].wagons) {
         let lastWagon = car;
-        this.getRandomWagonTextures(carType).forEach((wagonTextureId) => {
-          const wagonTexture = this.overlay.textures.cars[wagonTextureId];
+        this.getRandomWagonType(carType).forEach((wagonType) => {
+          const wagonTexture = this.overlay.getCarTexture(wagonType);
           const wagon = new Car(
             this.overlay, wagonTexture, tile.x, tile.y, entrySide, lane, maxSpeed
           );

@@ -161,15 +161,23 @@ class MapView {
     }
   }
 
+  getTexture(type, id) {
+    const texture = this.textures?.[type]?.[id];
+    if (!texture) {
+      throw new Error(`Missing texture: ${type} / ${id}`);
+    }
+    return texture;
+  }
+
   renderParkTile(x, y) {
     const textureNumber = 1 + Math.round(this.randomizedTerrain[y][x] * 8);
-    this.getTextureTile(x, y).texture = this.textures.parks[`park-0${textureNumber}`];
+    this.getTextureTile(x, y).texture = this.getTexture('parks', `park-0${textureNumber}`);
     this.getTextureTile(x, y).visible = true;
   }
 
   renderWaterTile(x, y) {
     const textureNumber = 1 + Math.round(this.randomizedTerrain[y][x] * 8);
-    this.getTextureTile(x, y).texture = this.textures.water[`water-0${textureNumber}`];
+    this.getTextureTile(x, y).texture = this.getTexture('water', `water-0${textureNumber}`);
     this.getTextureTile(x, y).visible = true;
   }
 
@@ -178,7 +186,7 @@ class MapView {
       .map(([x, y]) => (!this.city.map.isValidCoords(x, y)
       || this.city.map.get(x, y) === this.roadTileId
         ? '1' : '0')).join('');
-    this.getTextureTile(i, j).texture = this.textures[this.roadTextureKey][`${this.roadTexturePrefix}${connMask}`];
+    this.getTextureTile(i, j).texture = this.getTexture(this.roadTextureKey, `${this.roadTexturePrefix}${connMask}`);
     this.getTextureTile(i, j).visible = true;
   }
 

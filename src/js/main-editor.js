@@ -7,20 +7,18 @@ const ConnectionStateView = require('./connection-state-view');
 const PollutionData = require('./data-sources/pollution-data');
 const NoiseData = require('./data-sources/noise-data');
 const DataManager = require('./data-manager');
-const AssetsLoader = require('./assets-loader');
+const PixiAssetsLoader = require('./helpers-pixi/pixi-assets-loader');
 const initClientApp = require('./init/init-client-app');
 
 (async function main() {
   const { config, connector } = await initClientApp();
 
-  const assetsLoader = new AssetsLoader();
-  assetsLoader.addSpritesheet('roads');
-  assetsLoader.addSpritesheet('parks');
-  assetsLoader.addSpritesheet('water');
-
   let textures;
   try {
-    textures = await assetsLoader.load();
+    textures = await PixiAssetsLoader.loadSpritesheets(
+      config.textures.basePath,
+      config.textures.sets.mobilityCityMap
+    );
   } catch (err) {
     throw new Error(`Error loading textures: ${err.message}`);
   }

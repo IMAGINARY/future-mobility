@@ -19,7 +19,7 @@ const GoalDebugView = require('./goal-debug-view');
 const DataManager = require('./data-manager');
 const CitizenRequestView = require('./citizen-request-view');
 const CitizenRequestViewMgr = require('./citizen-request-view-mgr');
-const AssetsLoader = require('./assets-loader');
+const PixiAssetsLoader = require('./helpers-pixi/pixi-assets-loader');
 const CarSpawner = require('./cars/car-spawner');
 const TrafficData = require('./data-sources/traffic-data');
 const RoadSafetyData = require('./data-sources/road-safety-data');
@@ -41,16 +41,12 @@ const { initStandaloneApp } = require('./init/init-standalone-app');
   const qs = new URLSearchParams(window.location.search);
   const testScenario = qs.get('test') ? TestScenarios[qs.get('test')] : null;
 
-  const assetsLoader = new AssetsLoader();
-  assetsLoader.addSpritesheet('roads');
-  assetsLoader.addSpritesheet('roads-walkable');
-  assetsLoader.addSpritesheet('parks');
-  assetsLoader.addSpritesheet('water');
-  assetsLoader.addSpritesheet('cars');
-
   let textures;
   try {
-    textures = await assetsLoader.load();
+    textures = await PixiAssetsLoader.loadSpritesheets(
+      config.textures.basePath,
+      config.textures.sets.mobilityCityMap
+    );
   } catch (err) {
     throw new Error(`Error loading textures: ${err.message}`);
   }

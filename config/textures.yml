@@ -1,0 +1,9 @@
+textures:
+  basePath: textures
+  sets:
+    mobilityCityMap:
+      - roads
+      - roads-walkable
+      - parks
+      - water
+      - cars
