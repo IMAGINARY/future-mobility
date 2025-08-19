@@ -36,6 +36,7 @@ and so can be used from GitHub Pages.
 - `server`: Code for the application server. It has its own `package.json` file. It uses some code
   files from the `src` directory, which enables the same code to be used in the server and the 
   clients (including the stand-alone demo client).
+  See [server/ARCHITECTURE.md](server/ARCHITECTURE.md) for more details.
   - `server/test`: Test code and support files for testing the server.
 - `src`: Client source code:
   - `src/html`: HTML templates for the different client apps.
@@ -62,3 +63,7 @@ used for all views. `MapEditor` uses the same class, but adds a tool palette and
 to handle its functionality (these are in the `editor` subdirectory).
 
 The `VariableView` renders variables that are calculated for each tile of the map.
+
+## Server
+
+See [server/ARCHITECTURE.md](server/ARCHITECTURE.md) for more details.
