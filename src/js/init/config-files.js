@@ -9,6 +9,7 @@ const configFiles = [
   'cars',
   'power-ups',
   'textures',
+  'map-editor',
   'default-settings',
 ];
 

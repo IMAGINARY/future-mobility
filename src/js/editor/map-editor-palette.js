@@ -4,12 +4,31 @@ class MapEditorPalette {
     this.mapEditor = mapEditor;
 
     this.activeButton = null;
-    this.tileId = null;
-
     this.$element = $('<div></div>')
       .addClass('map-editor-palette');
 
-    this.buttons = Object.entries(config.tileTypes).map(([id, typeCfg]) => $('<button></button>')
+    const { tileTypes } = this.config;
+    const { actions, tools } = this.config.mapEditor.palette;
+
+    this.tileButtons = this.createTileButtons(tileTypes);
+    this.toolButtons = this.createToolButtons(tools);
+    this.actionButtons = this.createActionButtons(actions);
+
+    this.$element.append([
+      ...this.tileButtons,
+      '<div class="separator"></div>',
+      ...this.toolButtons,
+      '<div class="separator"></div>',
+      ...this.actionButtons,
+    ]);
+
+    if (this.tileButtons.length) {
+      this.tileButtons[0].click();
+    }
+  }
+
+  createTileButtons(tileTypes) {
+    return Object.entries(tileTypes).map(([id, typeCfg]) => $('<button></button>')
       .attr({
         type: 'button',
         title: typeCfg.name,
@@ -29,13 +48,12 @@ class MapEditorPalette {
         }
         this.activeButton = $(ev.target);
         this.activeButton.addClass('active');
-        this.tileId = Number(id);
         this.mapEditor.activateTool('tile', Number(id));
       }));
+  }
 
-    this.buttons.push($('<div class="separator"></div>'));
-
-    this.toolButtons = MapEditorPalette.Tools.map((tool) => $('<button></button>')
+  createToolButtons(tools) {
+    return tools.map((tool) => $('<button></button>')
       .attr({
         type: 'button',
         title: tool.title,
@@ -56,12 +74,10 @@ class MapEditorPalette {
         this.activeButton.addClass('active');
         this.mapEditor.activateTool(tool.id);
       }));
+  }
 
-    this.buttons.push(...this.toolButtons);
-
-    this.buttons.push($('<div class="separator"></div>'));
-
-    const actionButtons = MapEditorPalette.Actions.map((action) => $('<button></button>')
+  createActionButtons(actions) {
+    return actions.map((action) => $('<button></button>')
       .attr({
         type: 'button',
         title: action.title,
@@ -77,55 +93,7 @@ class MapEditorPalette {
       .on('click', () => {
         this.mapEditor.runAction(action.id);
       }));
-
-    this.buttons.push(...actionButtons);
-
-    this.$element.append(this.buttons);
-    if (this.buttons.length) {
-      this.buttons[0].click();
-    }
   }
 }
-
-MapEditorPalette.Actions = [
-  {
-    id: 'load',
-    title: 'Load map',
-    icon: 'static/fa/folder-open-solid.svg',
-  },
-  {
-    id: 'save',
-    title: 'Save map',
-    icon: 'static/fa/save-solid.svg',
-  },
-  {
-    id: 'import',
-    title: 'Import map',
-    icon: 'static/fa/file-import-solid.svg',
-  },
-  {
-    id: 'export',
-    title: 'Export map',
-    icon: 'static/fa/file-export-solid.svg',
-  },
-];
-
-MapEditorPalette.Tools = [
-  {
-    id: 'measureDistance',
-    title: 'Measure distance',
-    icon: 'static/fa/ruler-horizontal-solid.svg',
-  },
-  {
-    id: 'showPollution',
-    title: 'Show pollution',
-    icon: 'static/fa/smog-solid.svg',
-  },
-  {
-    id: 'showNoise',
-    title: 'Show noise',
-    icon: 'static/fa/drum-solid.svg',
-  },
-];
 
 module.exports = MapEditorPalette;

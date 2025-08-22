@@ -155,11 +155,32 @@ class MapEditorController {
     this.mapView.enableTileInteractivity();
   }
 
-  activateTool(tool, toolType = null) {
-    if (this.tool) {
+  addTool(id, props) {
+    if (this.tools[id]) {
+      throw new Error(`Attempted to add tool with existing id "${id}" to MapEditorController.`);
+    }
+    this.tools[id] = {
+      start: props.start || (() => {}),
+      end: props.end || (() => {}),
+      action: props.action || (() => {}),
+    };
+  }
+
+  addAction(id, handler) {
+    if (this.actionHandlers[id]) {
+      throw new Error(`Attempted to add action with existing id "${id}" to MapEditorController.`);
+    }
+    this.actionHandlers[id] = handler;
+  }
+
+  activateTool(toolId, toolType = null) {
+    if (!this.tools[toolId]) {
+      throw new Error(`Attempted to activate undefined "${toolId}" tool.`);
+    }
+    if (this.tool !== 'nullTool') {
       this.tools[this.tool].end();
     }
-    this.tool = tool;
+    this.tool = toolId;
     this.tileType = toolType;
     this.tools[this.tool].start();
   }
@@ -168,7 +189,7 @@ class MapEditorController {
     if (this.actionHandlers[id]) {
       this.actionHandlers[id]();
     } else {
-      console.warn(`No action handler for "${id}" defined.`);
+      throw new Error(`Attempted to run undefined "${id}" action.`);
     }
   }
 

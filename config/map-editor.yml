@@ -1,0 +1,25 @@
+mapEditor:
+  palette:
+    tools:
+      - id: measureDistance
+        title: Measure distance
+        icon: 'static/fa/ruler-horizontal-solid.svg'
+      - id: showPollution
+        title: Show pollution
+        icon: 'static/fa/smog-solid.svg'
+      - id: showNoise
+        title: Show noise
+        icon: 'static/fa/drum-solid.svg'
+    actions:
+      - id: load
+        title: Load Map
+        icon: 'static/fa/folder-open-solid.svg'
+      - id: save
+        title: Save Map
+        icon: 'static/fa/save-solid.svg'
+      - id: import
+        title: Import Map
+        icon: 'static/fa/file-import-solid.svg'
+      - id: export
+        title: Export Map
+        icon: 'static/fa/file-export-solid.svg'
