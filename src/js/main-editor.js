@@ -1,7 +1,9 @@
 /* globals PIXI */
 require('../sass/default.scss');
 const City = require('./city');
-const MapEditor = require('./editor/map-editor');
+const MapView = require('./map-view');
+const MapEditorController = require('./editor/map-editor-controller');
+const MapEditorPalette = require('./editor/map-editor-palette');
 const VariableMapView = require('./variable-map-view');
 const ConnectionStateView = require('./connection-state-view');
 const PollutionData = require('./data-sources/pollution-data');
@@ -42,13 +44,17 @@ const initClientApp = require('./init/init-client-app');
   });
 
   $('[data-component="app-container"]').append(app.view);
-  // const mapView = new MapView(city, config, textures);
-  const mapView = new MapEditor($('body'), city, config, textures);
+  const mapView = new MapView(city, config, textures);
   app.stage.addChild(mapView.displayObject);
   mapView.displayObject.width = 1920;
   mapView.displayObject.height = 1920;
   mapView.displayObject.x = 0;
   mapView.displayObject.y = 0;
+
+  const mapEditorController = new MapEditorController(config, mapView, stats);
+  const mapEditorPalette = new MapEditorPalette(config, mapEditorController);
+  $('body').append(mapEditorPalette.$element);
+  app.ticker.add((time) => mapEditorController.animate(time));
 
   const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x953202);
   app.stage.addChild(emissionsVarViewer.displayObject);

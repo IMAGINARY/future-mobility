@@ -1,14 +1,13 @@
-const EventEmitter = require('events');
-
 class MapEditorPalette {
-  constructor($element, config) {
-    this.$element = $element;
+  constructor(config, mapEditor) {
     this.config = config;
+    this.mapEditor = mapEditor;
+
     this.activeButton = null;
     this.tileId = null;
-    this.events = new EventEmitter();
 
-    this.$element.addClass('map-editor-palette');
+    this.$element = $('<div></div>')
+      .addClass('map-editor-palette');
 
     this.buttons = Object.entries(config.tileTypes).map(([id, typeCfg]) => $('<button></button>')
       .attr({
@@ -31,12 +30,12 @@ class MapEditorPalette {
         this.activeButton = $(ev.target);
         this.activeButton.addClass('active');
         this.tileId = Number(id);
-        this.events.emit('change', 'tile', Number(id));
+        this.mapEditor.activateTool('tile', Number(id));
       }));
 
     this.buttons.push($('<div class="separator"></div>'));
 
-    this.toolButtons = MapEditorPalette.Tools.map(tool => $('<button></button>')
+    this.toolButtons = MapEditorPalette.Tools.map((tool) => $('<button></button>')
       .attr({
         type: 'button',
         title: tool.title,
@@ -55,14 +54,14 @@ class MapEditorPalette {
         }
         this.activeButton = $(ev.target);
         this.activeButton.addClass('active');
-        this.events.emit('change', tool.id);
+        this.mapEditor.activateTool(tool.id);
       }));
 
     this.buttons.push(...this.toolButtons);
 
     this.buttons.push($('<div class="separator"></div>'));
 
-    const actionButtons = MapEditorPalette.Actions.map(action => $('<button></button>')
+    const actionButtons = MapEditorPalette.Actions.map((action) => $('<button></button>')
       .attr({
         type: 'button',
         title: action.title,
@@ -76,7 +75,7 @@ class MapEditorPalette {
         backgroundImage: `url(${action.icon})`,
       })
       .on('click', () => {
-        this.events.emit('action', action.id);
+        this.mapEditor.runAction(action.id);
       }));
 
     this.buttons.push(...actionButtons);

@@ -13,11 +13,22 @@
   <component name="PhpCodeSniffer">
     <phpcs_settings>
       <PhpCSConfiguration tool_path="$USER_HOME$/.composer/vendor/squizlabs/php_codesniffer/scripts/phpcs" />
+      <phpcs_by_interpreter asDefaultInterpreter="true" interpreter_id="0a6f66fb-4dcc-4aa1-9a55-43b4eba10063" tool_path="/Users/ericlondaits/.composer/vendor/squizlabs/php_codesniffer/scripts/phpcs" timeout="30000" />
     </phpcs_settings>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="5.5.0" />
+  <component name="PhpStan">
+    <PhpStan_settings>
+      <phpstan_by_interpreter asDefaultInterpreter="true" interpreter_id="0a6f66fb-4dcc-4aa1-9a55-43b4eba10063" timeout="60000" />
+    </PhpStan_settings>
+  </component>
   <component name="PhpStanOptionsConfiguration">
     <option name="transferred" value="true" />
+  </component>
+  <component name="Psalm">
+    <Psalm_settings>
+      <psalm_fixer_by_interpreter asDefaultInterpreter="true" interpreter_id="0a6f66fb-4dcc-4aa1-9a55-43b4eba10063" timeout="60000" />
+    </Psalm_settings>
   </component>
   <component name="PsalmOptionsConfiguration">
     <option name="transferred" value="true" />

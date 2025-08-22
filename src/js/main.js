@@ -2,7 +2,9 @@
 require('../sass/default.scss');
 require('../sass/desktop.scss');
 const City = require('./city');
-const MapEditor = require('./editor/map-editor');
+const MapView = require('./map-view');
+const MapEditorController = require('./editor/map-editor-controller');
+const MapEditorPalette = require('./editor/map-editor-palette');
 const CarOverlay = require('./cars/car-overlay');
 const TileCounterView = require('./tile-counter-view');
 const TestScenarios = require('./test/scenarios');
@@ -81,15 +83,19 @@ const { initStandaloneApp } = require('./init/init-standalone-app');
 
   $('[data-component="app-container"]').append(app.view);
 
-  const mapEditor = new MapEditor($('.fms-desktop'), city, config, textures, stats);
-  app.stage.addChild(mapEditor.displayObject);
-  mapEditor.displayObject.width = 1920;
-  mapEditor.displayObject.height = 1920;
-  mapEditor.displayObject.x = 0;
-  mapEditor.displayObject.y = 0;
-  app.ticker.add((time) => mapEditor.animate(time));
+  const mapView = new MapView(city, config, textures);
+  app.stage.addChild(mapView.displayObject);
+  mapView.displayObject.width = 1920;
+  mapView.displayObject.height = 1920;
+  mapView.displayObject.x = 0;
+  mapView.displayObject.y = 0;
 
-  const carOverlay = new CarOverlay(mapEditor.mapView, config, textures, {
+  const mapEditorController = new MapEditorController(config, mapView, stats);
+  const mapEditorPalette = new MapEditorPalette(config, mapEditorController);
+  $('.fms-desktop').append(mapEditorPalette.$element);
+  app.ticker.add((time) => mapEditorController.animate(time));
+
+  const carOverlay = new CarOverlay(mapView, config, textures, {
     spawn: !testScenario,
     maxLifetime: !testScenario,
   });
@@ -105,8 +111,8 @@ const { initStandaloneApp } = require('./init/init-standalone-app');
   powerUpViewMgr.registerHandler(new AutonomousVehicleHandler(config, carSpawner));
   powerUpViewMgr.registerHandler(new MaxSpeedHandler(config, carOverlay));
   powerUpViewMgr.registerHandler(new SpawnTramHandler(config, carSpawner));
-  powerUpViewMgr.registerHandler(new WalkableCityHandler(config, mapEditor.mapView));
-  powerUpViewMgr.registerHandler(new DenseCityHandler(config, mapEditor.mapView));
+  powerUpViewMgr.registerHandler(new WalkableCityHandler(config, mapView));
+  powerUpViewMgr.registerHandler(new DenseCityHandler(config, mapView));
   powerUpViewMgr.registerHandler(new AutonomousVehicleLidarHandler(config, carOverlay), true);
 
   const counterView = new TileCounterView(stats, config);
@@ -118,7 +124,7 @@ const { initStandaloneApp } = require('./init/init-standalone-app');
 
   const dataInspectorView = new DataInspectorView();
   $('[data-component=dataInspector]').append(dataInspectorView.$element);
-  mapEditor.events.on('inspect', (data) => dataInspectorView.display(data));
+  mapEditorController.events.on('inspect', (data) => dataInspectorView.display(data));
 
   const variables = {
     'Travel times': 'travel-times',
