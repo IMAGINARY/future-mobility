@@ -52,9 +52,9 @@ const initClientApp = require('./init/init-client-app');
   mapView.displayObject.y = 0;
 
   const mapEditorController = new MapEditorController(config, mapView, stats);
+
   const mapEditorPalette = new MapEditorPalette(config, mapEditorController);
   $('body').append(mapEditorPalette.$element);
-  app.ticker.add((time) => mapEditorController.animate(time));
 
   const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x953202);
   app.stage.addChild(emissionsVarViewer.displayObject);

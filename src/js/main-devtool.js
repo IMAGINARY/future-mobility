@@ -37,6 +37,8 @@ const WalkableCityHandler = require('./power-ups/walkable-city-handler');
 const DenseCityHandler = require('./power-ups/dense-city-handler');
 const AutonomousVehicleLidarHandler = require('./power-ups/autonomous-vehicle-lidar-handler');
 const { initStandaloneApp } = require('./init/init-standalone-app');
+const MeasureDistanceTool = require('./editor/fms-measure-distance-tool');
+const ShowMappedVariableTool = require('./editor/show-mapped-variable-tool');
 
 (async function main() {
   const { config } = await initStandaloneApp();
@@ -90,9 +92,12 @@ const { initStandaloneApp } = require('./init/init-standalone-app');
   mapView.displayObject.y = 0;
 
   const mapEditorController = new MapEditorController(config, mapView, stats);
+  const measureDistanceTool = new MeasureDistanceTool(config, mapEditorController);
+  const mappedVariableTool = new ShowMappedVariableTool(config, mapEditorController, stats);
+  app.ticker.add((time) => mappedVariableTool.animate(time));
+
   const mapEditorPalette = new MapEditorPalette(config, mapEditorController);
   $('body').append(mapEditorPalette.$element);
-  app.ticker.add((time) => mapEditorController.animate(time));
 
   const carOverlay = new CarOverlay(mapEditorController.mapView, config, textures, {
     spawn: !testScenario,
@@ -140,7 +145,7 @@ const { initStandaloneApp } = require('./init/init-standalone-app');
 
   const dataInspectorView = new DataInspectorView();
   $('[data-component=dataInspector]').append(dataInspectorView.$element);
-  mapEditorController.events.on('inspect', (data) => dataInspectorView.display(data));
+  measureDistanceTool.events.on('inspect', (data) => dataInspectorView.display(data));
 
   const variables = {
     'Travel times': 'travel-times',

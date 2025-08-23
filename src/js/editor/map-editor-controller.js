@@ -5,11 +5,8 @@ const ModalSave = require('./modal-save');
 const ModalExport = require('./modal-export');
 const ModalImport = require('./modal-import');
 const ObjectStore = require('./object-store');
-const MapTextOverlay = require('../map-text-overlay');
-const { getTileTypeId } = require('../lib/config-helpers');
-const Array2D = require('../lib/array-2d');
-const VariableMapOverlay = require('../variable-map-overlay');
-const TravelTimeCalculator = require('../lib/travel-times');
+const TileTool = require('./tile-tool');
+const { logger } = require('../helpers/logger');
 
 class MapEditorController {
   constructor(config, mapView, dataManager) {
@@ -18,18 +15,15 @@ class MapEditorController {
     this.dataManager = dataManager;
 
     this.events = new EventEmitter();
-
-    this.textOverlay = new MapTextOverlay(this.mapView);
-    this.variableMapOverlay = new VariableMapOverlay(this.mapView, this.config);
-    this.travelTimeCalculator = new TravelTimeCalculator(this.config);
-
-    this.tool = 'nullTool';
-    this.tileType = null;
-    let lastEdit = null;
+    this.currTool = null;
 
     this.mapView.events.on(
       'action',
-      (...args) => this.tools[this.tool].action(...args)
+      (...args) => {
+        if (this.currTool && this.currTool.onAction) {
+          this.currTool.onAction(...args);
+        }
+      }
     );
 
     this.objectStore = new ObjectStore('./data/cities.json');
@@ -65,136 +59,60 @@ class MapEditorController {
       },
     };
 
-    this.tools = {
-      nullTool: {
-        start: () => {},
-        end: () => {},
-        action: () => {},
-      },
-      tile: {
-        start: () => {
-          this.mapView.setEditCursor();
-        },
-        end: () => {
-
-        },
-        action: ([x, y], props) => {
-          if (this.tileType !== null) {
-            if (lastEdit && props.shiftKey) {
-              const [lastX, lastY] = lastEdit;
-              for (let i = Math.min(lastX, x); i <= Math.max(lastX, x); i += 1) {
-                for (let j = Math.min(lastY, y); j <= Math.max(lastY, y); j += 1) {
-                  this.mapView.city.map.set(i, j, this.tileType);
-                }
-              }
-            } else {
-              this.mapView.city.map.set(x, y, this.tileType);
-            }
-            lastEdit = [x, y];
-          }
-        },
-      },
-      measureDistance: {
-        start: () => {
-          this.mapView.setInspectCursor();
-          this.textOverlay.clear();
-          this.textOverlay.show();
-        },
-        end: () => {
-          this.textOverlay.hide();
-        },
-        action: ([startX, startY]) => {
-          const data = this.travelTimeCalculator
-            .travelTimes(this.mapView.city.map, [startX, startY]);
-          this.textOverlay.display(data);
-
-          const residentalId = getTileTypeId(config, 'residential');
-          const commercialId = getTileTypeId(config, 'commercial');
-          const industrialId = getTileTypeId(config, 'industrial');
-          Array2D.zip(data, this.mapView.city.map.cells, (value, tile, x, y) => {
-            data[y][x] = (
-              (tile === residentalId || tile === commercialId || tile === industrialId)
-                ? value : null
-            );
-          });
-
-          this.events.emit('inspect', {
-            title: `Trip len from (${startX}, ${startY}) to RCI`,
-            values: Array2D.flatten(data).filter(v => v !== null),
-          });
-        },
-      },
-      showPollution: {
-        start: () => {
-          this.mapView.setInspectCursor();
-          this.variableMapOverlay.show(
-            this.dataManager.get('pollution-map'),
-            this.config.variableMapOverlay.colors.pollution,
-          );
-        },
-        end: () => {
-          this.variableMapOverlay.hide();
-        },
-        action: () => {},
-      },
-      showNoise: {
-        start: () => {
-          this.mapView.setInspectCursor();
-          this.variableMapOverlay.show(
-            this.dataManager.get('noise-map'),
-            this.config.variableMapOverlay.colors.noise,
-          );
-        },
-        end: () => {
-          this.variableMapOverlay.hide();
-        },
-        action: () => {},
-      },
-    };
-
+    this.tools = {};
+    this.addTool('tile', new TileTool(this.config, this));
     this.mapView.enableTileInteractivity();
   }
 
-  addTool(id, props) {
-    if (this.tools[id]) {
+  addTool(id, tool) {
+    logger.debug(`MapEditorController: Adding tool "${id}"`);
+    if (this.hasTool(id)) {
       throw new Error(`Attempted to add tool with existing id "${id}" to MapEditorController.`);
     }
-    this.tools[id] = {
-      start: props.start || (() => {}),
-      end: props.end || (() => {}),
-      action: props.action || (() => {}),
-    };
+    this.tools[id] = tool;
+    this.events.emit('toolAdded', id);
+  }
+
+  hasTool(toolId) {
+    return !!this.tools[toolId];
   }
 
   addAction(id, handler) {
-    if (this.actionHandlers[id]) {
+    logger.debug(`MapEditorController: Adding action "${id}"`);
+    if (this.hasAction(id)) {
       throw new Error(`Attempted to add action with existing id "${id}" to MapEditorController.`);
     }
     this.actionHandlers[id] = handler;
+    this.events.emit('actionAdded', id);
   }
 
-  activateTool(toolId, toolType = null) {
-    if (!this.tools[toolId]) {
+  hasAction(actionId) {
+    return !!this.actionHandlers[actionId];
+  }
+
+  activateTool(toolId, props = null) {
+    logger.debug(`MapEditorController: Activating tool "${toolId}" with props:`, props);
+    if (!this.hasTool(toolId)) {
       throw new Error(`Attempted to activate undefined "${toolId}" tool.`);
     }
-    if (this.tool !== 'nullTool') {
-      this.tools[this.tool].end();
+    if (this.currTool && this.currTool.onEnd) {
+      this.currTool.onEnd();
     }
-    this.tool = toolId;
-    this.tileType = toolType;
-    this.tools[this.tool].start();
+    this.events.emit('toolActivated', toolId, props);
+    this.currTool = this.tools[toolId];
+    if (this.currTool.onStart) {
+      this.currTool.onStart(props || {});
+    }
   }
 
   runAction(id) {
-    if (this.actionHandlers[id]) {
+    logger.debug(`MapEditorController: Running action "${id}"`);
+    if (this.hasAction(id)) {
+      this.events.emit('actionRun', id);
       this.actionHandlers[id]();
     } else {
       throw new Error(`Attempted to run undefined "${id}" action.`);
     }
-  }
-
-  animate(time) {
-    this.variableMapOverlay.animate(time);
   }
 }
 

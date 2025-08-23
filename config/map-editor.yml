@@ -1,16 +1,24 @@
 mapEditor:
   palette:
-    tools:
+    toolButtons:
       - id: measureDistance
         title: Measure distance
         icon: 'static/fa/ruler-horizontal-solid.svg'
       - id: showPollution
         title: Show pollution
         icon: 'static/fa/smog-solid.svg'
+        tool: showMappedVar
+        props:
+          variableName: pollution-map
+          color: 0xa41a00
       - id: showNoise
         title: Show noise
         icon: 'static/fa/drum-solid.svg'
-    actions:
+        tool: showMappedVar
+        props:
+          variableName: noise-map
+          color: 0x4001ff
+    actionButtons:
       - id: load
         title: Load Map
         icon: 'static/fa/folder-open-solid.svg'

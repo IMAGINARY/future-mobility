@@ -1,18 +1,19 @@
 class MapEditorPalette {
-  constructor(config, mapEditor) {
+  constructor(config, mapEditorController) {
     this.config = config;
-    this.mapEditor = mapEditor;
+    this.mapEditorController = mapEditorController;
 
     this.activeButton = null;
     this.$element = $('<div></div>')
       .addClass('map-editor-palette');
 
     const { tileTypes } = this.config;
-    const { actions, tools } = this.config.mapEditor.palette;
+    const toolButtonDefs = this.config.mapEditor.palette.toolButtons;
+    const actionButtonDefs = this.config.mapEditor.palette.actionButtons;
 
     this.tileButtons = this.createTileButtons(tileTypes);
-    this.toolButtons = this.createToolButtons(tools);
-    this.actionButtons = this.createActionButtons(actions);
+    this.toolButtons = this.createToolButtons(toolButtonDefs);
+    this.actionButtons = this.createActionButtons(actionButtonDefs);
 
     this.$element.append([
       ...this.tileButtons,
@@ -21,6 +22,14 @@ class MapEditorPalette {
       '<div class="separator"></div>',
       ...this.actionButtons,
     ]);
+
+    this.mapEditorController.events.on('toolAdded', () => {
+      this.updateButtonState();
+    });
+    this.mapEditorController.events.on('actionAdded', () => {
+      this.updateButtonState();
+    });
+    this.updateButtonState();
 
     if (this.tileButtons.length) {
       this.tileButtons[0].click();
@@ -48,51 +57,66 @@ class MapEditorPalette {
         }
         this.activeButton = $(ev.target);
         this.activeButton.addClass('active');
-        this.mapEditor.activateTool('tile', Number(id));
+        this.mapEditorController.activateTool('tile', { tileType: Number(id) });
       }));
   }
 
-  createToolButtons(tools) {
-    return tools.map((tool) => $('<button></button>')
+  createToolButtons(toolButtonDefs) {
+    return toolButtonDefs.map((buttonDef) => $('<button></button>')
       .attr({
         type: 'button',
-        title: tool.title,
+        title: buttonDef.title,
       })
+      .data('tool-id', buttonDef.tool || buttonDef.id)
       .addClass([
         'editor-palette-button',
         'editor-palette-button-tool',
-        `editor-palette-button-tool-${tool.id}`,
+        `editor-palette-button-tool-${buttonDef.id}`,
       ])
       .css({
-        backgroundImage: `url(${tool.icon})`,
+        backgroundImage: `url(${buttonDef.icon})`,
       })
+      .prop('disabled', true)
       .on('click', (ev) => {
         if (this.activeButton) {
           this.activeButton.removeClass('active');
         }
         this.activeButton = $(ev.target);
         this.activeButton.addClass('active');
-        this.mapEditor.activateTool(tool.id);
+        this.mapEditorController.activateTool(
+          buttonDef.tool || buttonDef.id,
+          buttonDef.props || null
+        );
       }));
   }
 
-  createActionButtons(actions) {
-    return actions.map((action) => $('<button></button>')
+  createActionButtons(actionButtonDefs) {
+    return actionButtonDefs.map((buttonDef) => $('<button></button>')
       .attr({
         type: 'button',
-        title: action.title,
+        title: buttonDef.title,
       })
+      .data('action-id', buttonDef.id)
       .addClass([
         'editor-palette-button',
         'editor-palette-button-action',
-        `editor-palette-button-action-${action.id}`,
+        `editor-palette-button-action-${buttonDef.id}`,
       ])
       .css({
-        backgroundImage: `url(${action.icon})`,
+        backgroundImage: `url(${buttonDef.icon})`,
       })
       .on('click', () => {
-        this.mapEditor.runAction(action.id);
+        this.mapEditorController.runAction(buttonDef.id);
       }));
+  }
+
+  updateButtonState() {
+    this.toolButtons.forEach(($button) => {
+      $button.prop('disabled', !this.mapEditorController.hasTool($button.data('tool-id')));
+    });
+    this.actionButtons.forEach(($button) => {
+      $button.prop('disabled', !this.mapEditorController.hasAction($button.data('action-id')));
+    });
   }
 }
 
