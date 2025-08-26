@@ -39,6 +39,7 @@ const AutonomousVehicleLidarHandler = require('./power-ups/autonomous-vehicle-li
 const { initStandaloneApp } = require('./init/init-standalone-app');
 const MeasureDistanceTool = require('./editor/fms-measure-distance-tool');
 const ShowMappedVariableTool = require('./editor/show-mapped-variable-tool');
+const injectTileRenderers = require('./init/inject-tile-renderers');
 
 (async function main() {
   const { config } = await initStandaloneApp();
@@ -59,7 +60,9 @@ const ShowMappedVariableTool = require('./editor/show-mapped-variable-tool');
     ? City.fromJSON(testScenario.city)
     : new City(config.cityWidth, config.cityHeight);
 
-  const stats = new DataManager();
+  const stats = new DataManager({
+    throttleTime: config.dataManager.throttleTime,
+  });
   stats.registerSource(new ZoningData(city, config));
   stats.registerSource(new ZoneBalanceData(city, config));
   stats.registerSource(new PollutionData(city, config));
@@ -69,7 +72,7 @@ const ShowMappedVariableTool = require('./editor/show-mapped-variable-tool');
   stats.registerSource(new TrafficData(city, config));
   stats.registerSource(new RoadSafetyData(city, config));
   city.map.events.on('update', () => {
-    stats.calculateAll();
+    stats.throttledCalculateAll();
   });
   const powerUpMgr = new PowerUpManager(config);
   stats.registerModifier(new PowerUpDataModifier(config, powerUpMgr));
@@ -90,6 +93,8 @@ const ShowMappedVariableTool = require('./editor/show-mapped-variable-tool');
   mapView.displayObject.height = 1920;
   mapView.displayObject.x = 0;
   mapView.displayObject.y = 0;
+  injectTileRenderers(config, mapView);
+  app.ticker.add(() => mapView.animate());
 
   const mapEditorController = new MapEditorController(config, mapView, stats);
   const measureDistanceTool = new MeasureDistanceTool(config, mapEditorController);

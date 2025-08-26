@@ -16,6 +16,7 @@ const WalkableCityHandler = require('./power-ups/walkable-city-handler');
 const DenseCityHandler = require('./power-ups/dense-city-handler');
 const AutonomousVehicleLidarHandler = require('./power-ups/autonomous-vehicle-lidar-handler');
 const initClientApp = require('./init/init-client-app');
+const injectTileRenderers = require('./init/inject-tile-renderers');
 
 (async function main() {
   const { config, connector } = await initClientApp();
@@ -47,6 +48,8 @@ const initClientApp = require('./init/init-client-app');
   mapView.displayObject.height = 1152;
   mapView.displayObject.x = 0;
   mapView.displayObject.y = 0;
+  injectTileRenderers(config, mapView);
+  app.ticker.add(() => mapView.animate());
 
   const carOverlay = new CarOverlay(mapView, config, textures);
   app.ticker.add((time) => carOverlay.animate(time));

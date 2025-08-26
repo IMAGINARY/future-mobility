@@ -1,6 +1,6 @@
 const PowerUpViewHandler = require('../power-up-view-handler');
-const MapView = require('../map-view');
 const { getTileTypeId } = require('../lib/config-helpers');
+const TwoColorTileRenderer = require('../tile-renderers/two-color-tile-renderer');
 
 class DenseCityHandler extends PowerUpViewHandler {
   constructor(config, mapView) {
@@ -8,51 +8,51 @@ class DenseCityHandler extends PowerUpViewHandler {
     this.config = config;
     this.mapView = mapView;
 
-    const residentialId = getTileTypeId(this.config, 'residential');
-    const commercialId = getTileTypeId(this.config, 'commercial');
+    this.residentialTileId = getTileTypeId(this.config, 'residential');
+    this.commercialTileId = getTileTypeId(this.config, 'commercial');
 
-    this.colors = {
-      residential: this.config.tileTypes[residentialId].color,
-      commercial: this.config.tileTypes[commercialId].color,
-    };
+    this.residentialColor = this.config.tileTypes[this.residentialTileId].color;
+    this.commercialColor = this.config.tileTypes[this.commercialTileId].color;
+
+    this.denseResidentialTileRenderer = new TwoColorTileRenderer(
+      this.mapView,
+      this.residentialColor,
+      this.commercialColor
+    );
+
+    this.denseCommercialTileRenderer = new TwoColorTileRenderer(
+      this.mapView,
+      this.commercialColor,
+      this.residentialColor
+    );
   }
 
   onEnable(powerUp) {
     if (powerUp === 'dense-city') {
-      this.mapView.basicTileRenderers.residential = this.renderResidential.bind(this);
-      this.mapView.basicTileRenderers.commercial = this.renderCommercial.bind(this);
-      this.mapView.handleCityUpdate(this.mapView.city.map.allCells());
+      this.mapView.addTileTypeRenderer(
+        this.residentialTileId,
+        this.denseResidentialTileRenderer
+      );
+      this.mapView.addTileTypeRenderer(
+        this.commercialTileId,
+        this.denseCommercialTileRenderer
+      );
+      this.mapView.scheduleRender();
     }
   }
 
   onDisable(powerUp) {
     if (powerUp === 'dense-city') {
-      this.mapView.basicTileRenderers.residential = null;
-      this.mapView.basicTileRenderers.commercial = null;
-      this.mapView.handleCityUpdate(this.mapView.city.map.allCells());
+      this.mapView.removeTileTypeRenderer(
+        this.residentialTileId,
+        this.denseResidentialTileRenderer
+      );
+      this.mapView.removeTileTypeRenderer(
+        this.commercialTileId,
+        this.denseCommercialTileRenderer
+      );
+      this.mapView.scheduleRender();
     }
-  }
-
-  renderResidential(i, j) {
-    this.mapView.getBgTile(i, j)
-      .clear()
-      .beginFill(Number(`0x${this.colors.residential.substr(1)}`), 1)
-      .drawRect(0, 0, MapView.TILE_SIZE, MapView.TILE_SIZE)
-      .beginFill(Number(`0x${this.colors.commercial.substr(1)}`), 1)
-      .drawRect(MapView.TILE_SIZE / 2, MapView.TILE_SIZE / 2,
-        MapView.TILE_SIZE / 2, MapView.TILE_SIZE / 2)
-      .endFill();
-  }
-
-  renderCommercial(i, j) {
-    this.mapView.getBgTile(i, j)
-      .clear()
-      .beginFill(Number(`0x${this.colors.commercial.substr(1)}`), 1)
-      .drawRect(0, 0, MapView.TILE_SIZE, MapView.TILE_SIZE)
-      .beginFill(Number(`0x${this.colors.residential.substr(1)}`), 1)
-      .drawRect(MapView.TILE_SIZE / 2, MapView.TILE_SIZE / 2,
-        MapView.TILE_SIZE / 2, MapView.TILE_SIZE / 2)
-      .endFill();
   }
 }
 

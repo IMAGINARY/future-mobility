@@ -11,6 +11,7 @@ const NoiseData = require('./data-sources/noise-data');
 const DataManager = require('./data-manager');
 const PixiAssetsLoader = require('./helpers-pixi/pixi-assets-loader');
 const initClientApp = require('./init/init-client-app');
+const injectTileRenderers = require('./init/inject-tile-renderers');
 
 (async function main() {
   const { config, connector } = await initClientApp();
@@ -28,7 +29,9 @@ const initClientApp = require('./init/init-client-app');
   // const city = City.fromJSON(Cities.cities[0]);
   const city = new City(config.cityWidth, config.cityHeight);
 
-  const stats = new DataManager();
+  const stats = new DataManager({
+    throttleTime: config.dataManager.throttleTime,
+  });
   stats.registerSource(new PollutionData(city, config));
   stats.registerSource(new NoiseData(city, config));
   city.map.events.on('update', () => {
@@ -50,6 +53,8 @@ const initClientApp = require('./init/init-client-app');
   mapView.displayObject.height = 1920;
   mapView.displayObject.x = 0;
   mapView.displayObject.y = 0;
+  injectTileRenderers(config, mapView);
+  app.ticker.add(() => mapView.animate());
 
   const mapEditorController = new MapEditorController(config, mapView, stats);
 

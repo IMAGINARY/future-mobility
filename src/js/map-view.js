@@ -1,8 +1,10 @@
 /* globals PIXI */
 const EventEmitter = require('events');
 const Array2D = require('./lib/array-2d');
-const { getTileTypeId } = require('./lib/config-helpers');
 const PencilCursor = require('../../static/fa/pencil-alt-solid.svg');
+const SolidColorTileRenderer = require('./tile-renderers/solid-color-tile-renderer');
+const shallowEqual = require('./helpers/shallow-equal');
+const { logger } = require('./helpers/logger');
 
 class MapView {
   constructor(city, config, textures) {
@@ -10,12 +12,11 @@ class MapView {
     this.config = config;
     this.textures = textures;
     this.events = new EventEmitter();
-    this.roadTileId = getTileTypeId(config, 'road');
-    this.parkTileId = getTileTypeId(config, 'park');
-    this.waterTileId = getTileTypeId(config, 'water');
-    this.roadTextureKey = 'roads';
-    this.roadTexturePrefix = 'road';
-    this.basicTileRenderers = {};
+    this.tileRenderers = {};
+    this.defaultTileRenderer = this.createDefaultTileRenderer();
+    this.mapState = Array2D.create(this.city.map.width, this.city.map.height, null);
+    this.stagingMapState = Array2D.create(this.city.map.width, this.city.map.height, null);
+    this.mapStateUpdated = true;
 
     this.randomizedTerrain = Array2D.create(this.city.map.width, this.city.map.height);
     Array2D.fill(this.randomizedTerrain, () => Math.random());
@@ -38,7 +39,6 @@ class MapView {
       textureTile.height = MapView.TILE_SIZE;
       textureTile.roundPixels = true;
       this.textureTiles[y][x] = textureTile;
-      this.renderTile(x, y);
     });
 
     this.zoningLayer = new PIXI.Container();
@@ -55,8 +55,23 @@ class MapView {
       this.renderGrid(this.config.mapView.gridOverlay);
     }
 
-    this.city.map.events.on('update', this.handleCityUpdate.bind(this));
-    this.handleCityUpdate(this.city.map.allCells());
+    this.city.map.events.on('update', () => { this.scheduleRender(); });
+    this.render();
+  }
+
+  createDefaultTileRenderer() {
+    // Get the colors for each tile type
+    const colorMap = Object.fromEntries(
+      Object.entries(this.config.tileTypes)
+        .map(([type, def]) => {
+          if (def.color === undefined) {
+            throw new Error(`Tile type ${type} is missing a color definition`);
+          }
+
+          return [type, Number(`0x${def.color.substr(1)}`)]; // Remove leading '#'
+        })
+    );
+    return new SolidColorTileRenderer(this, colorMap);
   }
 
   addOverlay(displayObject) {
@@ -140,6 +155,35 @@ class MapView {
     this.zoningLayer.on('pointercancel', onEndPointer);
   }
 
+  /**
+   * Registers a tile renderer for a specific type of tile.
+   *
+   * Existing renderers are pushed to a stack.
+   * @param {string} type
+   * @param {object} renderer
+   */
+  addTileTypeRenderer(type, renderer) {
+    if (this.tileRenderers[type] === undefined) {
+      this.tileRenderers[type] = [];
+    }
+    this.tileRenderers[type].push(renderer);
+  }
+
+  /**
+   * Removes a tile renderer for a specific type of tile.
+   *
+   * @param {string} type
+   * @param {object} renderer
+   */
+  removeTileTypeRenderer(type, renderer) {
+    if (this.tileRenderers[type] !== undefined) {
+      const index = this.tileRenderers[type].indexOf(renderer);
+      if (index !== -1) {
+        this.tileRenderers[type].splice(index, 1);
+      }
+    }
+  }
+
   getBgTile(x, y) {
     return this.bgTiles[y][x];
   }
@@ -148,16 +192,38 @@ class MapView {
     return this.textureTiles[y][x];
   }
 
-  renderTile(x, y) {
-    this.renderBasicTile(x, y);
-    if (this.city.map.get(x, y) === this.parkTileId) {
-      this.renderParkTile(x, y);
+  renderTile(x, y, props) {
+    if (props.bgColor !== undefined) {
+      this.getBgTile(x, y)
+        .clear()
+        .beginFill(props.bgColor, 1)
+        .drawRect(0, 0, MapView.TILE_SIZE, MapView.TILE_SIZE)
+        .endFill();
     }
-    if (this.city.map.get(x, y) === this.waterTileId) {
-      this.renderWaterTile(x, y);
+    if (props.bgColor1 !== undefined && props.bgColor2 !== undefined) {
+      // Todo: This rendering option should be deprecated when possible.
+      //   Right now it only exists to support the dense-city power-up.
+      //   Once the FMS uses tile orientation, we can use oriented textures
+      //   to color buildings within the residential and commercial tiles using
+      //   different colors instead of doing this kind of pattern fill.
+      this.getBgTile(x, y)
+        .clear()
+        .beginFill(props.bgColor1, 1)
+        .drawRect(0, 0, MapView.TILE_SIZE, MapView.TILE_SIZE)
+        .beginFill(props.bgColor2, 1)
+        .drawRect(
+          MapView.TILE_SIZE / 2,
+          MapView.TILE_SIZE / 2,
+          MapView.TILE_SIZE / 2,
+          MapView.TILE_SIZE / 2
+        )
+        .endFill();
     }
-    if (this.city.map.get(x, y) === this.roadTileId) {
-      this.renderRoadTile(x, y);
+    if (props.bundle && props.texture) {
+      this.getTextureTile(x, y).texture = this.getTexture(props.bundle, props.texture);
+      this.getTextureTile(x, y).visible = true;
+    } else {
+      this.getTextureTile(x, y).visible = false;
     }
   }
 
@@ -167,41 +233,6 @@ class MapView {
       throw new Error(`Missing texture: ${type} / ${id}`);
     }
     return texture;
-  }
-
-  renderParkTile(x, y) {
-    const textureNumber = 1 + Math.round(this.randomizedTerrain[y][x] * 8);
-    this.getTextureTile(x, y).texture = this.getTexture('parks', `park-0${textureNumber}`);
-    this.getTextureTile(x, y).visible = true;
-  }
-
-  renderWaterTile(x, y) {
-    const textureNumber = 1 + Math.round(this.randomizedTerrain[y][x] * 8);
-    this.getTextureTile(x, y).texture = this.getTexture('water', `water-0${textureNumber}`);
-    this.getTextureTile(x, y).visible = true;
-  }
-
-  renderRoadTile(i, j) {
-    const connMask = [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]]
-      .map(([x, y]) => (!this.city.map.isValidCoords(x, y)
-      || this.city.map.get(x, y) === this.roadTileId
-        ? '1' : '0')).join('');
-    this.getTextureTile(i, j).texture = this.getTexture(this.roadTextureKey, `${this.roadTexturePrefix}${connMask}`);
-    this.getTextureTile(i, j).visible = true;
-  }
-
-  renderBasicTile(i, j) {
-    const tileType = this.config.tileTypes[this.city.map.get(i, j)] || null;
-    if (this.basicTileRenderers[tileType.type]) {
-      this.basicTileRenderers[tileType.type](i, j);
-    } else {
-      this.getBgTile(i, j)
-        .clear()
-        .beginFill(tileType ? Number(`0x${tileType.color.substr(1)}`) : 0, 1)
-        .drawRect(0, 0, MapView.TILE_SIZE, MapView.TILE_SIZE)
-        .endFill();
-    }
-    this.getTextureTile(i, j).visible = false;
   }
 
   renderGrid(strokeWidth) {
@@ -228,14 +259,38 @@ class MapView {
     }
   }
 
-  handleCityUpdate(updates) {
-    updates.forEach(([i, j]) => {
-      this.renderTile(i, j);
-      // Todo: This should be optimized so it's not called twice per frame for the same tile.
-      this.city.map.adjacentCells(i, j)
-        .filter(([x, y]) => this.city.map.get(x, y) === this.roadTileId)
-        .forEach(([x, y]) => this.renderRoadTile(x, y));
+  updateStagingMapState() {
+    this.city.map.allCells().forEach(([x, y]) => {
+      const cellType = this.city.map.get(x, y);
+      const renderer = (this.tileRenderers?.[cellType]?.slice(-1)[0]) || this.defaultTileRenderer;
+      this.stagingMapState[y][x] = renderer.render(cellType, x, y);
     });
+  }
+
+  scheduleRender() {
+    this.mapStateUpdated = true;
+  }
+
+  render() {
+    if (this.mapStateUpdated) {
+      logger.debug('Rendering map updates');
+      this.updateStagingMapState();
+      let updatedTiles = 0;
+      this.city.map.allCells().forEach(([x, y]) => {
+        if (!shallowEqual(this.stagingMapState[y][x], this.mapState[y][x])) {
+          // Render only changed tiles
+          this.mapState[y][x] = this.stagingMapState[y][x];
+          this.renderTile(x, y, this.mapState[y][x]);
+          updatedTiles += 1;
+        }
+      });
+      logger.debug(`Rendered ${updatedTiles} updated tiles`);
+      // Swap staging and current state
+      const temp = this.mapState;
+      this.mapState = this.stagingMapState;
+      this.stagingMapState = temp;
+      this.mapStateUpdated = false;
+    }
   }
 
   showGrid() {
@@ -244,6 +299,10 @@ class MapView {
 
   hideGrid() {
     this.gridOverlay.visible = false;
+  }
+
+  animate() {
+    this.render();
   }
 }
 
