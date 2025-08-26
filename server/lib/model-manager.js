@@ -25,7 +25,7 @@ class ModelManager {
       this.stats.registerSource(new DataSource(this.city, this.config));
     });
 
-    this.city.map.events.on('update', () => {
+    this.city.events.on('update', () => {
       this.stats.throttledCalculateAll();
     });
 
@@ -37,7 +37,7 @@ class ModelManager {
       this.stats.throttledCalculateAll();
     });
 
-    this.city.map.events.on('update', () => {
+    this.city.events.on('update', () => {
       this.events.emit('city-map-update');
     });
 
@@ -55,7 +55,7 @@ class ModelManager {
   }
 
   setCityMap(cells) {
-    this.city.map.replace(cells);
+    this.city.setMap(cells);
   }
 
   getGoals() {

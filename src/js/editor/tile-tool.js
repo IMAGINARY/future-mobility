@@ -13,15 +13,22 @@ class TileTool {
 
   onAction([x, y], props) {
     if (this.tileType !== null) {
+      // If shift is held, fill in a rectangle from the last edit position to the current position
       if (this.lastEdit && props.shiftKey) {
         const [lastX, lastY] = this.lastEdit;
         for (let i = Math.min(lastX, x); i <= Math.max(lastX, x); i += 1) {
           for (let j = Math.min(lastY, y); j <= Math.max(lastY, y); j += 1) {
-            this.mapView.city.map.set(i, j, this.tileType);
+            this.mapView.city.setCell(i, j, this.tileType);
           }
         }
+      } else if (this.mapView.city.map.get(x, y) === this.tileType && props.type === 'down') {
+        // Single cell edit
+        // If the cell is already of the selected type, rotate it
+        const currentOrientation = this.mapView.city.mapOrientation[y][x];
+        const newOrientation = (currentOrientation + 1) % 4;
+        this.mapView.city.setCellOrientation(x, y, newOrientation);
       } else {
-        this.mapView.city.map.set(x, y, this.tileType);
+        this.mapView.city.setCell(x, y, this.tileType);
       }
       this.lastEdit = [x, y];
     }

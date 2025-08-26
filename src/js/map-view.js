@@ -55,7 +55,7 @@ class MapView {
       this.renderGrid(this.config.mapView.gridOverlay);
     }
 
-    this.city.map.events.on('update', () => { this.scheduleRender(); });
+    this.city.events.on('update', () => { this.scheduleRender(); });
     this.render();
   }
 
@@ -126,6 +126,7 @@ class MapView {
         // this.pointerActive = true;
         pointers[ev.data.pointerId] = { lastTile: { x, y } };
         this.events.emit('action', [x, y], {
+          type: 'down',
           shiftKey: ev.data.originalEvent.shiftKey,
         });
       });
@@ -138,6 +139,7 @@ class MapView {
         if (pointers[ev.data.pointerId].lastTile !== tileCoords) {
           if (tileCoords) {
             this.events.emit('action', [tileCoords.x, tileCoords.y], {
+              type: 'move',
               shiftKey: ev.data.originalEvent.shiftKey,
             });
           }

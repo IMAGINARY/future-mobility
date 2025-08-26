@@ -71,7 +71,7 @@ const injectTileRenderers = require('./init/inject-tile-renderers');
   stats.registerSource(new TravelTimesData(city, config));
   stats.registerSource(new TrafficData(city, config));
   stats.registerSource(new RoadSafetyData(city, config));
-  city.map.events.on('update', () => {
+  city.events.on('update', () => {
     stats.throttledCalculateAll();
   });
   const powerUpMgr = new PowerUpManager(config);

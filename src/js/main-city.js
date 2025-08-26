@@ -70,7 +70,7 @@ const injectTileRenderers = require('./init/inject-tile-renderers');
   app.ticker.add((time) => variableMapOverlay.animate(time));
 
   connector.events.on('map_update', (cells) => {
-    city.map.replace(cells);
+    city.setMap(cells);
   });
 
   connector.events.on('connect', () => {

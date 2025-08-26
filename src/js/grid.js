@@ -1,4 +1,3 @@
-const EventEmitter = require('events');
 const Array2D = require('./lib/array-2d');
 
 /**
@@ -16,7 +15,6 @@ class Grid {
     this.width = width;
     this.height = height;
     this.cells = cells || Array2D.create(width, height, 0);
-    this.events = new EventEmitter();
   }
 
   /**
@@ -70,17 +68,6 @@ class Grid {
    */
   set(x, y, value) {
     this.cells[y][x] = value;
-
-    /**
-     * Update event.
-     *
-     * Argument is an array of updated cells. Each updated cell is represented
-     * by an array with three elements: [x, y, value]
-     *
-     * @event Grid.events#update
-     * @type {[[number, number, number]]}
-     */
-    this.events.emit('update', [[x, y, value]]);
   }
 
   /**
@@ -96,7 +83,6 @@ class Grid {
 
   replace(cells) {
     Array2D.copy(cells, this.cells);
-    this.events.emit('update', this.allCells());
   }
 
   /**

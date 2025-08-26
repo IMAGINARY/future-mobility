@@ -34,7 +34,7 @@ const injectTileRenderers = require('./init/inject-tile-renderers');
   });
   stats.registerSource(new PollutionData(city, config));
   stats.registerSource(new NoiseData(city, config));
-  city.map.events.on('update', () => {
+  city.events.on('update', () => {
     stats.calculateAll();
   });
 
@@ -73,14 +73,14 @@ const injectTileRenderers = require('./init/inject-tile-renderers');
   noiseVarViewer.displayObject.x = 1920 + 40;
   noiseVarViewer.displayObject.y = 960;
 
-  city.map.events.on('update', () => {
+  city.events.on('update', () => {
     emissionsVarViewer.update(stats.get('pollution-map'));
     noiseVarViewer.update(stats.get('noise-map'));
   });
 
   connector.events.once('map_update', (cells) => {
-    city.map.replace(cells);
-    city.map.events.on('update', () => {
+    city.setMap(cells);
+    city.events.on('update', () => {
       connector.setMap(city.map.cells);
     });
   });
