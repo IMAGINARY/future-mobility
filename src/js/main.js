@@ -41,6 +41,7 @@ const MeasureDistanceTool = require('./editor/fms-measure-distance-tool');
 const { initStandaloneApp } = require('./init/init-standalone-app');
 const ShowMappedVariableTool = require('./editor/show-mapped-variable-tool');
 const injectTileRenderers = require('./init/inject-tile-renderers');
+const OrientationInspectionOverlay = require('./orientation-inspection-overlay');
 
 (async function main() {
   const { config } = await initStandaloneApp();
@@ -85,6 +86,8 @@ const injectTileRenderers = require('./init/inject-tile-renderers');
     height: 1920,
     backgroundColor: 0xf2f2f2,
   });
+  // eslint-disable-next-line no-underscore-dangle
+  window.__PIXI_DEVTOOLS__ = { app };
 
   $('[data-component="app-container"]').append(app.view);
 
@@ -124,6 +127,14 @@ const injectTileRenderers = require('./init/inject-tile-renderers');
   powerUpViewMgr.registerHandler(new WalkableCityHandler(config, mapView));
   powerUpViewMgr.registerHandler(new DenseCityHandler(config, mapView));
   powerUpViewMgr.registerHandler(new AutonomousVehicleLidarHandler(config, carOverlay), true);
+
+  if (qs.get('debug-orientations')) {
+    const orientationInspectionOverlay = new OrientationInspectionOverlay(config,
+      textures,
+      mapView
+    );
+    orientationInspectionOverlay.show();
+  }
 
   const counterView = new TileCounterView(stats, config);
   const zoneBalanceView = new ZoneBalanceView(stats, config);

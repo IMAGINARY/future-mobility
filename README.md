@@ -50,6 +50,7 @@ The clients support the following query string parameters:
 - **`loglevel`**: Sets the log level for the client. Possible values are `warn`, `info`, and 
     `debug`. Default is `info`.
 - **`sentry-dsn`**: See below in the [Sentry](#Sentry) section.
+- **`debug-orientations`**: If true, shows a debug overlay with the detected tile orientations.
 
 ## Server APIs
 

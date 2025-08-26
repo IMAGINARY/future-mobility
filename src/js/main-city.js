@@ -17,8 +17,10 @@ const DenseCityHandler = require('./power-ups/dense-city-handler');
 const AutonomousVehicleLidarHandler = require('./power-ups/autonomous-vehicle-lidar-handler');
 const initClientApp = require('./init/init-client-app');
 const injectTileRenderers = require('./init/inject-tile-renderers');
+const OrientationInspectionOverlay = require('./orientation-inspection-overlay');
 
 (async function main() {
+  const qs = new URLSearchParams(window.location.search);
   const { config, connector } = await initClientApp();
   let textures;
   try {
@@ -68,6 +70,14 @@ const injectTileRenderers = require('./init/inject-tile-renderers');
 
   const variableMapOverlay = new VariableMapOverlay(mapView, config);
   app.ticker.add((time) => variableMapOverlay.animate(time));
+
+  if (qs.get('debug-orientations')) {
+    const orientationInspectionOverlay = new OrientationInspectionOverlay(config,
+      textures,
+      mapView
+    );
+    orientationInspectionOverlay.show();
+  }
 
   connector.events.on('map_update', (cells) => {
     city.setMap(cells);

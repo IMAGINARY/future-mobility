@@ -40,6 +40,7 @@ const { initStandaloneApp } = require('./init/init-standalone-app');
 const MeasureDistanceTool = require('./editor/fms-measure-distance-tool');
 const ShowMappedVariableTool = require('./editor/show-mapped-variable-tool');
 const injectTileRenderers = require('./init/inject-tile-renderers');
+const OrientationInspectionOverlay = require('./orientation-inspection-overlay');
 
 (async function main() {
   const { config } = await initStandaloneApp();
@@ -123,6 +124,14 @@ const injectTileRenderers = require('./init/inject-tile-renderers');
   powerUpViewMgr.registerHandler(new WalkableCityHandler(config, mapEditorController.mapView));
   powerUpViewMgr.registerHandler(new DenseCityHandler(config, mapEditorController.mapView));
   powerUpViewMgr.registerHandler(new AutonomousVehicleLidarHandler(config, carOverlay), true);
+
+  if (qs.get('debug-orientations')) {
+    const orientationInspectionOverlay = new OrientationInspectionOverlay(config,
+      textures,
+      mapView
+    );
+    orientationInspectionOverlay.show();
+  }
 
   const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
   app.stage.addChild(emissionsVarViewer.displayObject);
