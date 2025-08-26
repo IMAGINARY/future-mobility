@@ -10,7 +10,7 @@ citizenRequestView:
   cooldown: 90
 dataManager:
   # Minimum interval for recalculating the simulation's variables
-  throttleTime: 1000
+  throttleTime: 250
 variableMapOverlay:
   # Colors used for showing variables (with alpha 0.9 for max pollution)
   colors:
