@@ -54,8 +54,8 @@ class ModelManager {
     return this.city;
   }
 
-  setCityMap(cells) {
-    this.city.setMap(cells);
+  setCityMap(cells, orientations = null) {
+    this.city.setMap(cells, orientations);
   }
 
   getGoals() {

@@ -1,5 +1,6 @@
 const EventEmitter = require('events');
 const { logger } = require('./helpers/logger');
+const { unpackCompactCells, cityToCompactCells } = require('./city-compact-serialization');
 
 const PING_TIME = 1000 * 10;
 const PONG_WAIT_TIME = 1000 * 10;
@@ -10,7 +11,8 @@ class ServerSocketConnector {
     this.uri = uri;
     this.ws = null;
     this.connected = false;
-    this.isClosing = false; // Must track because the socket might enter CLOSING state and not close immediately
+    // Track closing state because socket may enter CLOSING and not close immediately.
+    this.isClosing = false;
     this.events = new EventEmitter();
     this.pingTimeout = null;
     this.pongTimeout = null;
@@ -80,7 +82,8 @@ class ServerSocketConnector {
   handleMessage(ev) {
     const message = JSON.parse(ev.data);
     if (message.type === 'map_update') {
-      this.events.emit('map_update', message.cells);
+      const cityParts = unpackCompactCells(message.cells);
+      this.events.emit('map_update', cityParts.types, cityParts.orientations);
     } else if (message.type === 'vars_update') {
       this.events.emit('vars_update', message.variables);
     } else if (message.type === 'goals_update') {
@@ -149,7 +152,8 @@ class ServerSocketConnector {
     this.send('get_map');
   }
 
-  setMap(cells) {
+  setMap(city) {
+    const cells = cityToCompactCells(city);
     this.send({
       type: 'set_map',
       cells,

@@ -79,8 +79,8 @@ const OrientationInspectionOverlay = require('./orientation-inspection-overlay')
     orientationInspectionOverlay.show();
   }
 
-  connector.events.on('map_update', (cells) => {
-    city.setMap(cells);
+  connector.events.on('map_update', (cells, orientations) => {
+    city.setMap(cells, orientations);
   });
 
   connector.events.on('connect', () => {

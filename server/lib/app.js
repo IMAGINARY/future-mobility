@@ -7,6 +7,7 @@ const cors = require('cors');
 const OpenApiValidator = require('express-openapi-validator');
 const AsyncApiValidator = require('asyncapi-validator');
 const ModelManager = require('./model-manager');
+const { cityToCompactJSON, unpackCompactCells, cityToCompactCells } = require('../../src/js/city-compact-serialization');
 
 async function initApp(config) {
   const modelManager = new ModelManager(config);
@@ -27,14 +28,15 @@ async function initApp(config) {
   });
 
   app.get('/city', (req, res) => {
-    res.json(modelManager.getCity().toJSON());
+    res.json(cityToCompactJSON(modelManager.getCity()));
   });
 
   app.post('/city/map', (req, res) => {
     if (typeof req.body !== 'object' || !Array.isArray(req.body.cells)) {
       res.status(500).json({ status: 'error', error: 'Invalid input format' });
     }
-    modelManager.setCityMap(req.body.cells);
+    const mapParts = unpackCompactCells(req.body.cells);
+    modelManager.setCityMap(mapParts.types, mapParts.orientations);
     res.json({ status: 'ok' });
   });
 
@@ -64,14 +66,14 @@ async function initApp(config) {
     } catch (err) {
       logger.error(`Error validating message: ${err.message}`);
       logger.error(err);
-      logger.log('Payload:', payload);
+      logger.error('Payload:', payload);
     }
   }
 
   function sendMapUpdateMessage(socket) {
     validateAndSend(socket, {
       type: 'map_update',
-      cells: modelManager.getCity().map.cells,
+      cells: cityToCompactCells(modelManager.getCity()),
     });
   }
 
@@ -124,36 +126,47 @@ async function initApp(config) {
           return;
         }
         switch (message.type) {
-          case 'get_map':
+          case 'get_map': {
             sendMapUpdateMessage(socket);
             break;
-          case 'set_map':
-            modelManager.setCityMap(message.cells);
+          }
+          case 'set_map': {
+            const cityParts = unpackCompactCells(message.cells);
+            modelManager.setCityMap(cityParts.types, cityParts.orientations);
             break;
-          case 'get_vars':
+          }
+          case 'get_vars': {
             sendVariablesMessage(socket);
             break;
-          case 'get_goals':
+          }
+          case 'get_goals': {
             sendGoalsMessage(socket);
             break;
-          case 'request_map_var_display':
+          }
+          case 'request_map_var_display': {
             viewRepeater.emit('request_map_var_display', message.variable);
             break;
-          case 'get_active_power_ups':
+          }
+          case 'get_active_power_ups': {
             sendPowerUpsUpdate(socket);
             break;
-          case 'enable_power_up':
+          }
+          case 'enable_power_up': {
             modelManager.enablePowerUp(message.powerUpId);
             break;
-          case 'disable_power_up':
+          }
+          case 'disable_power_up': {
             modelManager.disablePowerUp(message.powerUpId);
             break;
-          case 'ping':
+          }
+          case 'ping': {
             sendPong(socket);
             break;
-          default:
+          }
+          default: {
             logger.warn(`Error: Received message of unknown type '${message.type}'`);
             break;
+          }
         }
       } else {
         logger.error('Error: Received invalid message via websocket');

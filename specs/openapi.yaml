@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   description: HTTP API for Future of Mobility server
-  version: 1.0.0
+  version: 2.0.0
   title: Future of Mobility Server HTTP API
   contact:
     email: eric.londaits@imaginary.org
@@ -46,7 +46,9 @@ paths:
               type: object
               properties:
                 cells:
-                  $ref: "#/components/schemas/Cells"
+                  oneOf:
+                    - $ref: "#/components/schemas/Cells"
+                    - $ref: "#/components/schemas/CellsAndOrientation"
               required: [ cells ]
       responses:
         "200":
@@ -105,7 +107,7 @@ components:
           title: Height (in tiles) of the city map.
           example: 16
         cells:
-          "$ref": "#/components/schemas/Cells"
+          $ref: "#/components/schemas/CellsAndOrientation"
       required: [ width, height, cells ]
     Cells:
       type: array
@@ -120,6 +122,19 @@ components:
           minimum: 0
           description: Tile type id
       example: [ [ 1, 2, 3 ], [ 4, 5, 6 ], [ 7, 8 , 9 ] ]
+    CellsAndOrientation:
+      type: array
+      title: Cells of the city map with orientation
+      description: |
+        Content of the cells that make up the city map, and their orientation, as an array of arrays.
+        The outer array contains the rows. Each cell is a string that combines the tile type id
+        (a number) and the orientation (a letter: n, e, s, w).
+      items:
+        type: array
+        items:
+          type: string
+          description: Tile type id and orientation (e.g. "3n" for tile type 3 oriented north)
+      example: [ [ "1n", "2e", "3s" ], [ "4w", "5n", "6e" ], [ "7s", "8w" , "9n" ] ]
     Config:
       title: App configuration
       description: |
@@ -139,4 +154,3 @@ components:
           type: object
           title: Tile type definitions
       required: [ cityWidth, cityHeight, tileTypes ]
-

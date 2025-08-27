@@ -78,10 +78,10 @@ const injectTileRenderers = require('./init/inject-tile-renderers');
     noiseVarViewer.update(stats.get('noise-map'));
   });
 
-  connector.events.once('map_update', (cells) => {
-    city.setMap(cells);
+  connector.events.once('map_update', (cells, orientations) => {
+    city.setMap(cells, orientations);
     city.events.on('update', () => {
-      connector.setMap(city.map.cells);
+      connector.setMap(city);
     });
   });
 

@@ -2,7 +2,7 @@ asyncapi: 3.0.0
 id: 'https://github.com/IMAGINARY/future-mobility'
 info:
   title: Future of Mobility Server WebSocket API
-  version: 1.0.0
+  version: 2.0.0
   description: WebSocket API for Future of Mobility server
   contact:
     email: eric.londaits@imaginary.org
@@ -181,7 +181,9 @@ components:
           type: string
           const: set_map
         cells:
-          $ref: '#/components/schemas/cells'
+          oneOf:
+            - $ref: '#/components/schemas/cells'
+            - $ref: '#/components/schemas/cellsAndOrientation'
     map_update:
       type: object
       properties:
@@ -189,7 +191,7 @@ components:
           type: string
           const: map_update
         cells:
-          $ref: '#/components/schemas/cells'
+          $ref: '#/components/schemas/cellsAndOrientation'
     get_vars:
       type: object
       properties:
@@ -309,6 +311,17 @@ components:
         - - 7
           - 8
           - 9
+    cellsAndOrientation:
+      type: array
+      description: |
+        Content of the cells that make up the city map, and their orientation, as an array of arrays.
+        The outer array contains the rows. Each cell is a string that combines the tile type id
+        (a number) and the orientation (a letter: n, e, s, w).
+      items:
+        type: array
+        items:
+          type: string
+          description: Cell type id combined with orientation (e.g., "1n", "2e")
     mapped_var:
       type: array
       description: |
