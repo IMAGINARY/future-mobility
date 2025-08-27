@@ -4,7 +4,7 @@ const City = require('../../src/js/city');
 const DataManager = require('../../src/js/data-manager');
 const PowerUpManager = require('../../src/js/power-up-manager');
 const PowerUpDataModifier = require('../../src/js/power-up-data-modifier');
-const dataSrcCfg = require('./data-src-cfg');
+const dataSrcCfg = require('../../src/js/init/data-src-cfg');
 
 class ModelManager {
   constructor(config) {
