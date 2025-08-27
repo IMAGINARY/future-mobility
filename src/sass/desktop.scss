@@ -8,6 +8,7 @@ $palette-spacing: 63px;
 
 [data-component="app-container"] {
   padding-left: $palette-spacing;
+  text-align: left;
 
   canvas {
     max-height: calc(100vh - 3rem);
@@ -15,8 +16,8 @@ $palette-spacing: 63px;
 }
 
 .map-editor-palette {
-  top: 24px;
-  left: 15px;
+  top: 5px;
+  left: 5px;
 }
 
 #accordion-data {
@@ -24,23 +25,6 @@ $palette-spacing: 63px;
   top: auto;
   right: auto;
   width: auto;
-}
-
-.citizen-requests {
-  .request {
-    .request-person {
-      width: 3em;
-      height: 3em;
-    }
-
-    .request-balloon {
-      font-size: 1em;
-
-      .large {
-        font-size: 1.1em;
-      }
-    }
-  }
 }
 
 .btn-dashboard-action {

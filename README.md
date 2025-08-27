@@ -36,7 +36,7 @@ Any of the configuration keys can be overridden through a `settings.yml` file in
 Check [`server/README.md`](server/README.md) for information on how to specify an alternative 
 settings file through a command line option or an envvar.
 
-Development clients (`index.html`, `devtool.html`) can indicate an alternative settings file
+The development client (`index.html`) can indicate an alternative settings file
 through the `settings` query string parameter.  It must reside in the root directory and have a 
 name that only contains letters, numbers, - or _, and ends in `.yml`.
 

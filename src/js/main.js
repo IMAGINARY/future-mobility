@@ -5,6 +5,7 @@ const City = require('./city');
 const MapView = require('./map-view');
 const MapEditorController = require('./editor/map-editor-controller');
 const MapEditorPalette = require('./editor/map-editor-palette');
+const VariableMapView = require('./variable-map-view');
 const CarOverlay = require('./cars/car-overlay');
 const TileCounterView = require('./tile-counter-view');
 const TestScenarios = require('./test/scenarios');
@@ -36,9 +37,8 @@ const SpawnTramHandler = require('./power-ups/spawn-tram');
 const WalkableCityHandler = require('./power-ups/walkable-city-handler');
 const DenseCityHandler = require('./power-ups/dense-city-handler');
 const AutonomousVehicleLidarHandler = require('./power-ups/autonomous-vehicle-lidar-handler');
-const PowerUpPanel = require('./editor/power-up-panel');
-const MeasureDistanceTool = require('./editor/fms-measure-distance-tool');
 const { initStandaloneApp } = require('./init/init-standalone-app');
+const MeasureDistanceTool = require('./editor/fms-measure-distance-tool');
 const ShowMappedVariableTool = require('./editor/show-mapped-variable-tool');
 const injectTileRenderers = require('./init/inject-tile-renderers');
 const OrientationInspectionOverlay = require('./orientation-inspection-overlay');
@@ -82,10 +82,11 @@ const OrientationInspectionOverlay = require('./orientation-inspection-overlay')
   // Todo: Move to config
   PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
   const app = new PIXI.Application({
-    width: 1920,
+    width: 1920 + 1920 / 2 + 40,
     height: 1920,
     backgroundColor: 0xf2f2f2,
   });
+
   // eslint-disable-next-line no-underscore-dangle
   window.__PIXI_DEVTOOLS__ = { app };
 
@@ -108,7 +109,7 @@ const OrientationInspectionOverlay = require('./orientation-inspection-overlay')
   const mapEditorPalette = new MapEditorPalette(config, mapEditorController);
   $('.fms-desktop').append(mapEditorPalette.$element);
 
-  const carOverlay = new CarOverlay(mapView, config, textures, {
+  const carOverlay = new CarOverlay(mapEditorController.mapView, config, textures, {
     spawn: !testScenario,
     maxLifetime: !testScenario,
   });
@@ -135,6 +136,23 @@ const OrientationInspectionOverlay = require('./orientation-inspection-overlay')
     );
     orientationInspectionOverlay.show();
   }
+
+  const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
+  app.stage.addChild(emissionsVarViewer.displayObject);
+  emissionsVarViewer.scaleToFit(1920 / 2, 1920 / 2);
+  emissionsVarViewer.displayObject.x = 1920 + 40;
+  emissionsVarViewer.displayObject.y = 0;
+
+  const noiseVarViewer = new VariableMapView(city.map.width, city.map.height, 0x0e95ff);
+  app.stage.addChild(noiseVarViewer.displayObject);
+  noiseVarViewer.scaleToFit(1920 / 2, 1920 / 2);
+  noiseVarViewer.displayObject.x = 1920 + 40;
+  noiseVarViewer.displayObject.y = 1920 / 2;
+
+  stats.events.on('update', () => {
+    emissionsVarViewer.update(stats.get('pollution-map'));
+    noiseVarViewer.update(stats.get('noise-map'));
+  });
 
   const counterView = new TileCounterView(stats, config);
   const zoneBalanceView = new ZoneBalanceView(stats, config);
@@ -245,22 +263,6 @@ const OrientationInspectionOverlay = require('./orientation-inspection-overlay')
   stats.events.on('update', () => {
     citizenRequestViewMgr.handleUpdate(stats.getGoals());
   });
-
-  const powerUpPanel = new PowerUpPanel(config);
-  const updatePowerUps = () => {
-    stats.calculateAll();
-    powerUpViewMgr.update(powerUpMgr.activePowerUps());
-  };
-
-  powerUpPanel.events.on('enable', (id) => {
-    powerUpMgr.setState(id, true);
-    updatePowerUps();
-  });
-  powerUpPanel.events.on('disable', (id) => {
-    powerUpMgr.setState(id, false);
-    updatePowerUps();
-  });
-  $('[data-component=powerUpPanel]').append(powerUpPanel.$element);
 
   if (testScenario) {
     testScenario(city, carOverlay);
