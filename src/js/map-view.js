@@ -33,10 +33,11 @@ class MapView {
       this.bgTiles[y][x] = bgTile;
 
       const textureTile = new PIXI.Sprite();
-      textureTile.x = x * MapView.TILE_SIZE;
-      textureTile.y = y * MapView.TILE_SIZE;
+      textureTile.x = x * MapView.TILE_SIZE + MapView.TILE_SIZE / 2;
+      textureTile.y = y * MapView.TILE_SIZE + MapView.TILE_SIZE / 2;
       textureTile.width = MapView.TILE_SIZE;
       textureTile.height = MapView.TILE_SIZE;
+      textureTile.pivot.set(MapView.TILE_SIZE / 2, MapView.TILE_SIZE / 2);
       textureTile.roundPixels = true;
       this.textureTiles[y][x] = textureTile;
     });
@@ -222,7 +223,10 @@ class MapView {
         .endFill();
     }
     if (props.bundle && props.texture) {
-      this.getTextureTile(x, y).texture = this.getTexture(props.bundle, props.texture);
+      const textureTile = this.getTextureTile(x, y);
+      textureTile.texture = this.getTexture(props.bundle, props.texture);
+      textureTile.angle = props.textureAngle || 0;
+
       this.getTextureTile(x, y).visible = true;
     } else {
       this.getTextureTile(x, y).visible = false;
@@ -263,9 +267,10 @@ class MapView {
 
   updateStagingMapState() {
     this.city.map.allCells().forEach(([x, y]) => {
-      const cellType = this.city.map.get(x, y);
+      const cellType = this.city.getCellType(x, y);
+      const cellOrientation = this.city.getCellOrientation(x, y);
       const renderer = (this.tileRenderers?.[cellType]?.slice(-1)[0]) || this.defaultTileRenderer;
-      this.stagingMapState[y][x] = renderer.render(cellType, x, y);
+      this.stagingMapState[y][x] = renderer.render(cellType, x, y, cellOrientation);
     });
   }
 
