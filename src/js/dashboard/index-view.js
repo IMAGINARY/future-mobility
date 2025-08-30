@@ -4,7 +4,7 @@ class IndexView {
     this.id = id;
     this.definition = definition;
     this.languages = this.config.dashboard.languages;
-    this.mainLanguage = this.languages[0];
+    [this.mainLanguage] = this.languages;
     this.value = null;
     this.$valueElement = $('<div></div>').addClass('value');
     this.$element = $('<div></div>')
@@ -12,7 +12,7 @@ class IndexView {
       .append([
         $('<div></div>').addClass('description')
           .append(
-            this.languages.map(lang => (
+            this.languages.map((lang) => (
               $('<div></div>')
                 .addClass(`name name-${lang}`)
                 .addClass(lang === this.mainLanguage ? 'name-main' : 'name-translation')

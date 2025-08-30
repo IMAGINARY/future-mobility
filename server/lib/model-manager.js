@@ -5,6 +5,7 @@ const DataManager = require('../../src/js/data-manager');
 const PowerUpManager = require('../../src/js/power-up-manager');
 const PowerUpDataModifier = require('../../src/js/power-up-data-modifier');
 const dataSrcCfg = require('../../src/js/init/data-src-cfg');
+const createThrottledFunction = require('../../src/js/helpers/throttled');
 
 class ModelManager {
   constructor(config) {
@@ -25,8 +26,12 @@ class ModelManager {
       this.stats.registerSource(new DataSource(this.city, this.config));
     });
 
+    this.recalculateStats = createThrottledFunction(() => {
+      this.stats.calculateAll();
+    }, config.dataManager.throttleTime);
+
     this.city.events.on('update', () => {
-      this.stats.throttledCalculateAll();
+      this.recalculateStats();
     });
 
     logger.verbose('Initializing PowerUpManager');
@@ -34,7 +39,7 @@ class ModelManager {
     logger.verbose('Registering PowerUpManager as a DataModifier');
     this.stats.registerModifier(new PowerUpDataModifier(this.config, this.powerUpMgr));
     this.powerUpMgr.events.on('update', () => {
-      this.stats.throttledCalculateAll();
+      this.recalculateStats();
     });
 
     this.city.events.on('update', () => {
@@ -74,7 +79,7 @@ class ModelManager {
   }
 
   getActivePowerUps() {
-    return this.powerUpMgr.activePowerUps();
+    return this.powerUpMgr.getEnabled();
   }
 
   enablePowerUp(powerUpName) {

@@ -1,8 +1,7 @@
 /* globals Chart */
-
 const {
   average, sortedMedian, sortedFirstQuartile, sortedThirdQuartile,
-} = require('./lib/statistics');
+} = require('../lib/statistics');
 
 class DataInspectorView {
   constructor() {
@@ -30,7 +29,7 @@ class DataInspectorView {
 
     const info = DataInspectorView.distributionInfo(data.values);
     this.$infoPane.empty()
-      .append(info.map(indicator => $('<div></div>').addClass('indicator')
+      .append(info.map((indicator) => $('<div></div>').addClass('indicator')
         .append($('<span></span>').addClass('label').text(`${indicator.title}: `))
         .append($('<span></span>').addClass('value').text(indicator.value))));
   }

@@ -42,10 +42,10 @@ class MeasureDistanceTool {
       );
     });
 
-    this.events.emit('inspect', {
-      title: `Trip len from (${startX}, ${startY}) to RCI`,
-      values: Array2D.flatten(data).filter((v) => v !== null),
-    });
+    this.mapEditorController.notifyDataToInspectors(
+      `Trip len from (${startX}, ${startY}) to RCI`,
+      Array2D.flatten(data).filter((v) => v !== null)
+    );
   }
 }
 

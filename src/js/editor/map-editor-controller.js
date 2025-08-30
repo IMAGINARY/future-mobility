@@ -7,6 +7,7 @@ const ModalImport = require('./modal-import');
 const ObjectStore = require('./object-store');
 const TileTool = require('./tile-tool');
 const { logger } = require('../helpers/logger');
+const Array2D = require('../lib/array-2d');
 
 class MapEditorController {
   constructor(config, mapView, dataManager) {
@@ -113,6 +114,10 @@ class MapEditorController {
     } else {
       throw new Error(`Attempted to run undefined "${id}" action.`);
     }
+  }
+
+  notifyDataToInspectors(title, values) {
+    this.events.emit('inspect', { title, values });
   }
 }
 

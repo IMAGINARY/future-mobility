@@ -26,6 +26,15 @@ const dataSrcCfg = {
     'traffic-density': 'traffic-density-index',
     safety: 'road-safety-index',
   },
+  devToolVariables: {
+    'travel-times': 'Travel times',
+    'green-spaces-proximity': 'Green space prox.',
+    'green-spaces-areas': 'Green space areas',
+    pollution: 'Pollution (all)',
+    'pollution-residential': 'Pollution (resid.)',
+    noise: 'Noise (all)',
+    'noise-residential': 'Noise (resid.)',
+  },
 };
 
 module.exports = dataSrcCfg;

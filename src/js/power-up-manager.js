@@ -31,7 +31,7 @@ class PowerUpManager {
     }
   }
 
-  activePowerUps() {
+  getEnabled() {
     return Object.entries(this.powerUps)
       .filter(([, enabled]) => enabled)
       .map(([id]) => id);

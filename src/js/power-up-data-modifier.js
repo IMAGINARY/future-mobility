@@ -8,7 +8,7 @@ class PowerUpDataModifier {
   getModifiers(variableId) {
     const modifiers = [];
 
-    this.manager.activePowerUps().forEach((powerUp) => {
+    this.manager.getEnabled().forEach((powerUp) => {
       if (this.config.powerUps[powerUp] && this.config.powerUps[powerUp].modifiers
         && this.config.powerUps[powerUp].modifiers[variableId]) {
         modifiers.push(this.config.powerUps[powerUp].modifiers[variableId]);

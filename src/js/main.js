@@ -19,11 +19,8 @@ const TestScenarios = require('./test/scenarios');
 const dataSrcCfg = require('./init/data-src-cfg');
 const injectMapViewExtensions = require('./init/inject-mapView-extensions');
 const initDevMappedVariableViewers = require('./init/init-dev-mapped-variable-viewers');
-const initDevIndexesPane = require('./init/init-dev-indexes-pane');
-const initDevCitizenRequestsPane = require('./init/init-dev-citizen-requests-pane');
-const initDevPowerUpsPane = require('./init/init-dev-powerups-pane');
-const initDevDataInspectorPane = require('./init/init-dev-data-inspector-pane');
-const initDevCountersPane = require('./init/init-dev-counters-pane');
+const initDevTools = require('./init/init-dev-tools');
+const createThrottledFunction = require('./helpers/throttled');
 
 (async function main() {
   const { config } = await initStandaloneApp();
@@ -72,13 +69,15 @@ const initDevCountersPane = require('./init/init-dev-counters-pane');
   dataSrcCfg.dataSources.forEach((DataSrc) => {
     stats.registerSource(new DataSrc(city, config));
   });
-  city.events.on('update', () => {
-    stats.throttledCalculateAll();
-  });
+  city.events.on('update', createThrottledFunction(() => {
+    stats.calculateAll();
+  }, config.dataManager.throttleTime));
+
   const powerUpMgr = new PowerUpManager(config);
   stats.registerModifier(new PowerUpDataModifier(config, powerUpMgr));
 
   const mapEditorController = new MapEditorController(config, mapView, stats);
+  // eslint-disable-next-line no-unused-vars
   const measureDistanceTool = new MeasureDistanceTool(config, mapEditorController);
   const mappedVariableTool = new ShowMappedVariableTool(config, mapEditorController, stats);
   app.ticker.add((time) => mappedVariableTool.animate(time));
@@ -89,6 +88,9 @@ const initDevCountersPane = require('./init/init-dev-counters-pane');
   const powerUpViewMgr = new PowerUpViewMgr();
   app.ticker.add((time) => powerUpViewMgr.animate(time));
   injectMapViewExtensions(config, textures, mapView, powerUpViewMgr);
+  powerUpMgr.events.on('update', () => {
+    powerUpViewMgr.update(powerUpMgr.getEnabled());
+  });
 
   if (qs.get('debug-orientations')) {
     const orientationInspectionOverlay = new OrientationInspectionOverlay(
@@ -99,14 +101,8 @@ const initDevCountersPane = require('./init/init-dev-counters-pane');
     orientationInspectionOverlay.show();
   }
 
-  // Todo: Temporary ugliness
-  // This should go into a proper development tools component
-  // ... but at least this way the panes can be disabled or changed easily
-  // without a full refactor.
   initDevMappedVariableViewers(config, app.stage, city, stats);
-  initDevIndexesPane(config, stats);
-  initDevPowerUpsPane(config, stats, powerUpMgr, powerUpViewMgr);
-  initDevCountersPane(config, stats);
-  initDevDataInspectorPane(config, stats, measureDistanceTool);
-  initDevCitizenRequestsPane(config, stats);
+  $('[data-component="dev-tools"]').replaceWith(
+    initDevTools(config, mapView, mapEditorController, stats, powerUpMgr)
+  );
 }());
