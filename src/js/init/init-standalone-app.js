@@ -34,6 +34,7 @@ async function initStandaloneApp() {
       ...configFiles.map((name) => `config/${name}.yml`),
       settingsFilename,
     ]);
+    Object.freeze(config);
     logger.debug('Configuration loaded successfully', config);
   } catch (err) {
     throw new Error(`Error loading configuration: ${err.message}`);

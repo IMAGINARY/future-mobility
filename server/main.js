@@ -65,6 +65,7 @@ const cfgLoader = new CfgLoader(CfgReaderFile, yaml.load);
       ...configFiles.map((name) => `../config/${name}.yml`),
       settingsFile,
     ]);
+    Object.freeze(config);
     logger.verbose('Configuration loaded');
     if (outputConfiguration) {
       logger.info('Active configuration:');

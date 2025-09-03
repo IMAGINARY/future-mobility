@@ -26,6 +26,7 @@ async function initClientApp() {
       throw new Error(`HTTP error. Status: ${response.status}`);
     }
     config = await response.json();
+    Object.freeze(config);
   } catch (err) {
     throw new Error(`Error loading configuration from ${serverHttpUri}`);
   }
