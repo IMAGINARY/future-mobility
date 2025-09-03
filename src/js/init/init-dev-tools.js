@@ -25,10 +25,7 @@ function initDevTools(config, mapView, mapEditorController, stats, powerUpMgr) {
   devTools.addToSection('status', indexListView.$element);
   stats.events.on('update', () => {
     indexListView.setValues(
-      Object.fromEntries(
-        Object.entries(mainVariables)
-          .map(([key, varId]) => [key, stats.get(varId)])
-      )
+      mapObject(mainVariables, ([key, varId]) => [key, stats.get(varId)])
     );
   });
 
