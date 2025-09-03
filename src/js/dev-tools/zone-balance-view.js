@@ -1,23 +1,18 @@
+const mapObject = require('../helpers/map-object');
+
 class ZoneBalanceView {
-  constructor(stats, config) {
-    this.stats = stats;
+  constructor(config, levelDefs) {
     this.config = config;
-    this.stats.events.on('update', this.handleUpdate.bind(this));
 
     this.$element = $('<div></div>')
       .addClass('zone-balance');
 
-    this.levels = {
-      residential: 0,
-      commercial: 0,
-      industrial: 0,
-    };
+    this.levelDefs = levelDefs;
+    this.levels = mapObject(this.levelDefs, ([id]) => [id, 0]);
 
-    const tileTypes = Object.keys(this.levels);
-
-    this.ui = Object.fromEntries(tileTypes.map(type => [type,
-      $('<div></div>').addClass(['bar', `bar-${type}`]).append([
-        $('<div></div>').addClass('label').text(type[0].toUpperCase()),
+    this.ui = Object.fromEntries(Object.keys(this.levelDefs).map((id) => [id,
+      $('<div></div>').addClass(['bar', `bar-${id}`]).append([
+        $('<div></div>').addClass('label').text(id[0].toUpperCase()),
         $('<div></div>').addClass('over')
           .append($('<div></div><div></div><div></div>')),
         $('<div></div>').addClass('status'),
@@ -26,25 +21,25 @@ class ZoneBalanceView {
       ])]));
 
     this.$element.append(Object.values(this.ui));
-    this.handleUpdate();
   }
 
   static levelAsClass(level) {
     return `${Math.sign(level) >= 0 ? 'p' : 'm'}${Math.abs(level)}`;
   }
 
-  handleUpdate() {
-    Object.entries(this.levels).forEach(([type, level]) => {
-      const diff = this.stats.get(`${type}-difference`);
+  update(stats) {
+    Object.entries(this.levelDefs).forEach(([id, variable]) => {
+      const level = this.levels[id];
+      const diff = stats.get(variable); // `${type}-difference`);
       const currLevel = Math.sign(diff) * (Math.ceil(Math.abs(diff) / 0.25) - 1);
       if (currLevel !== level) {
         const oldClass = ZoneBalanceView.levelAsClass(level);
         const newClass = ZoneBalanceView.levelAsClass(currLevel);
-        this.ui[type]
+        this.ui[id]
           .removeClass(oldClass)
           .addClass(newClass);
 
-        this.levels[type] = currLevel;
+        this.levels[id] = currLevel;
       }
     });
   }

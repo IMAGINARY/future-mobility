@@ -66,8 +66,16 @@ function initDevTools(config, mapView, mapEditorController, stats, powerUpMgr) {
     counterView.update(stats);
   });
 
-  const zoneBalanceView = new ZoneBalanceView(stats, config);
+  const zoneBalanceView = new ZoneBalanceView(config, {
+    residential: 'residential-difference',
+    commercial: 'commercial-difference',
+    industrial: 'industrial-difference',
+  });
   devTools.addToSection('counters', zoneBalanceView.$element);
+  stats.events.on('update', () => {
+    zoneBalanceView.update(stats);
+  });
+  zoneBalanceView.update(stats);
 
   //
   // Data inspector section
