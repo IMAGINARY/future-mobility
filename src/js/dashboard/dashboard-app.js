@@ -1,7 +1,7 @@
 const EventEmitter = require('events');
 const PowerUpSelector = require('./power-up-selector');
-const CitizenRequestView = require('../citizen-request-view');
-const CitizenRequestViewMgr = require('../citizen-request-view-mgr');
+const CitizenRequestView = require('./citizen-request-view');
+const CitizenRequestViewMgr = require('./citizen-request-view-mgr');
 const IndexListView = require('./index-list-view');
 const ActionsPane = require('./actions-pane');
 const { bindCreateTitle } = require('./titles');

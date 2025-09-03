@@ -5,9 +5,10 @@ const PowerUpInspector = require('../dev-tools/power-up-inspector');
 const TileCounterView = require('../dev-tools/tile-counter-view');
 const ZoneBalanceView = require('../dev-tools/zone-balance-view');
 const DataInspectorComponent = require('../dev-tools/data-inspector-component');
-const CitizenRequestView = require('../citizen-request-view');
-const CitizenRequestViewMgr = require('../citizen-request-view-mgr');
+const CitizenRequestView = require('../dashboard/citizen-request-view');
+const CitizenRequestViewMgr = require('../dashboard/citizen-request-view-mgr');
 const GoalDebugView = require('../dev-tools/goal-debug-view');
+const mapObject = require('../helpers/map-object');
 
 function initDevTools(config, mapView, mapEditorController, stats, powerUpMgr) {
   const devTools = new DevToolsComponent();
