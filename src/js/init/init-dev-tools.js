@@ -1,6 +1,6 @@
 const DevToolsComponent = require('../dev-tools/dev-tools-component');
 const IndexListView = require('../dashboard/index-list-view');
-const { mainVariables, devToolVariables } = require('./data-src-cfg');
+const { devToolVariables } = require('./data-src-cfg');
 const PowerUpInspector = require('../dev-tools/power-up-inspector');
 const TileCounterView = require('../dev-tools/tile-counter-view');
 const ZoneBalanceView = require('../dev-tools/zone-balance-view');
@@ -18,15 +18,18 @@ function initDevTools(config, mapView, mapEditorController, stats, powerUpMgr) {
   // Status section
   //
   devTools.addSection('status', 'Status', true);
-  const indexListView = new IndexListView(config);
+  const indexListView = new IndexListView(config, config.dashboard.status.indexes);
   indexListView.setValues(Object.fromEntries(
-    Object.entries(mainVariables)
-      .map(([key]) => [key, 0])
+    Object.entries(config.dashboard.status.indexes)
+      .map(([id]) => [id, 0])
   ));
   devTools.addToSection('status', indexListView.$element);
   stats.events.on('update', () => {
     indexListView.setValues(
-      mapObject(mainVariables, ([key, varId]) => [key, stats.get(varId)])
+      mapObject(
+        config.dashboard.status.indexes,
+        ([key, props]) => [key, stats.get(props.variable)]
+      )
     );
   });
 

@@ -1,13 +1,13 @@
 const IndexView = require('./index-view');
 
 class IndexListView {
-  constructor(config) {
+  constructor(config, indexes) {
     this.config = config;
     this.$element = $('<div></div>')
       .addClass('index-list');
 
     this.variableRankViews = Object.fromEntries(
-      Object.entries(config.variables)
+      Object.entries(indexes)
         .map(([id, def]) => [id, new IndexView(this.config, id, def)])
     );
 

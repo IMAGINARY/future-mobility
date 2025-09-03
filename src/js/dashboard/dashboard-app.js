@@ -18,7 +18,7 @@ class DashboardApp {
 
     this.citizenRequestView = new CitizenRequestView(this.config);
     this.citizenRequestViewMgr = new CitizenRequestViewMgr(this.citizenRequestView);
-    this.indexListView = new IndexListView(this.config);
+    this.indexListView = new IndexListView(this.config, this.config.dashboard.status.indexes);
     this.actionsPane = new ActionsPane(this.config);
     this.powerUpStatus = new PowerUpStatus(this.config);
     this.powerUpSelector = new PowerUpSelector(this.config);

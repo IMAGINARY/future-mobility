@@ -1,7 +1,6 @@
 const configFiles = [
   'city',
   'tiles',
-  'variables',
   'goals',
   'citizen-requests',
   'dashboard',

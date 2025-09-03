@@ -69,8 +69,8 @@ class ModelManager {
 
   getMainVariables() {
     return Object.fromEntries(
-      Object.entries(dataSrcCfg.mainVariables)
-        .map(([name, srcVar]) => [name, this.stats.get(srcVar)])
+      Object.entries(this.config.dashboard.status.indexes)
+        .map(([id, props]) => [id, this.stats.get(props.variable)])
     );
   }
 

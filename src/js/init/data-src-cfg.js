@@ -18,14 +18,6 @@ const dataSrcCfg = {
     TrafficData,
     RoadSafetyData,
   ],
-  mainVariables: {
-    'green-spaces': 'green-spaces-index',
-    pollution: 'pollution-index',
-    noise: 'noise-index',
-    'travel-times': 'travel-times-index',
-    'traffic-density': 'traffic-density-index',
-    safety: 'road-safety-index',
-  },
   devToolVariables: {
     'travel-times': 'Travel times',
     'green-spaces-proximity': 'Green space prox.',

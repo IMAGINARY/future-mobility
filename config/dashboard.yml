@@ -12,6 +12,37 @@ dashboard:
     title:
       de: "Status"
       en: "Status"
+    indexes:
+      traffic-density:
+        name:
+          de: Verkehrsdichte
+          en: Traffic Density
+        variable: traffic-density-index
+      travel-times:
+        name:
+          de: Fahrzeiten
+          en: Travel times
+        variable: travel-times-index
+      safety:
+        name:
+          de: Verkehrssicherheit
+          en: Road traffic safety
+        variable: road-safety-index
+      pollution:
+        name:
+          de: Luftverschmutzung
+          en: Pollution level
+        variable: pollution-index
+      noise:
+        name:
+          de: Lärmbelastung
+          en: Noise level
+        variable: noise-index
+      green-spaces:
+        name:
+          de: Freifläche
+          en: Green spaces
+        variable: green-spaces-index
   powerUps:
     title:
       de: "Power-Ups"
