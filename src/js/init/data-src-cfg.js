@@ -18,15 +18,6 @@ const dataSrcCfg = {
     TrafficData,
     RoadSafetyData,
   ],
-  devToolVariables: {
-    'travel-times': 'Travel times',
-    'green-spaces-proximity': 'Green space prox.',
-    'green-spaces-areas': 'Green space areas',
-    pollution: 'Pollution (all)',
-    'pollution-residential': 'Pollution (resid.)',
-    noise: 'Noise (all)',
-    'noise-residential': 'Noise (resid.)',
-  },
 };
 
 module.exports = dataSrcCfg;

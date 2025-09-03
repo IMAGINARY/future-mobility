@@ -1,6 +1,5 @@
 const DevToolsComponent = require('../dev-tools/dev-tools-component');
 const IndexListView = require('../dashboard/index-list-view');
-const { devToolVariables } = require('./data-src-cfg');
 const PowerUpInspector = require('../dev-tools/power-up-inspector');
 const TileCounterView = require('../dev-tools/tile-counter-view');
 const ZoneBalanceView = require('../dev-tools/zone-balance-view');
@@ -86,7 +85,7 @@ function initDevTools(config, mapView, mapEditorController, stats, powerUpMgr) {
   devTools.addSection('data-inspector', 'Data Inspector');
   const dataInspectorComponent = new DataInspectorComponent(
     stats,
-    devToolVariables
+    config?.devTools?.dataInspector?.variables ?? {}
   );
   devTools.addToSection('data-inspector', dataInspectorComponent.$element);
   mapEditorController.events.on('inspect', (data) => dataInspectorComponent
