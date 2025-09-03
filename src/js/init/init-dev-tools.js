@@ -9,6 +9,7 @@ const CitizenRequestView = require('../dashboard/citizen-request-view');
 const CitizenRequestViewMgr = require('../dashboard/citizen-request-view-mgr');
 const GoalDebugView = require('../dev-tools/goal-debug-view');
 const mapObject = require('../helpers/map-object');
+const { roadDensityCounter, roadIntersectionCounter } = require('../dev-tools/fms-tile-counters');
 
 function initDevTools(config, mapView, mapEditorController, stats, powerUpMgr) {
   const devTools = new DevToolsComponent();
@@ -56,8 +57,14 @@ function initDevTools(config, mapView, mapEditorController, stats, powerUpMgr) {
   // Counters section
   //
   devTools.addSection('counters', 'Counters');
-  const counterView = new TileCounterView(stats, config);
+  const counterView = new TileCounterView(config, [
+    roadDensityCounter,
+    roadIntersectionCounter,
+  ]);
   devTools.addToSection('counters', counterView.$element);
+  stats.events.on('update', () => {
+    counterView.update(stats);
+  });
 
   const zoneBalanceView = new ZoneBalanceView(stats, config);
   devTools.addToSection('counters', zoneBalanceView.$element);
