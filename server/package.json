@@ -13,6 +13,7 @@
   },
   "scripts": {
     "start": "node main.js",
+    "start (dev)": "node main.js -o --debug-level verbose",
     "test": "jest"
   },
   "devDependencies": {
