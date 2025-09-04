@@ -1,21 +1,43 @@
-const VariableMapView = require('../variable-map-view');
+const CanvasVariableMapView = require('../canvas-variable-map-view');
 
-function initDevMappedVariableViewers(config, parentDisplayObject, city, stats) {
-  const emissionsVarViewer = new VariableMapView(city.map.width, city.map.height, 0x8f2500);
-  parentDisplayObject.addChild(emissionsVarViewer.displayObject);
-  emissionsVarViewer.scaleToFit(1920 / 2, 1920 / 2);
-  emissionsVarViewer.displayObject.x = 1920 + 40;
-  emissionsVarViewer.displayObject.y = 0;
+function initDevMappedVariableViewers(config, $parent, city, stats) {
+  const emissionsVarCanvasViewer = new CanvasVariableMapView(
+    city.map.width,
+    city.map.height,
+    0x8f2500,
+    0xffffff
+  );
+  $parent.append(
+    $('<div></div>')
+      .addClass('mb-3')
+      .append([
+        $('<h2></h2>')
+          .addClass('small')
+          .text('Pollution'),
+        emissionsVarCanvasViewer.$canvas,
+      ])
+  );
 
-  const noiseVarViewer = new VariableMapView(city.map.width, city.map.height, 0x0e95ff);
-  parentDisplayObject.addChild(noiseVarViewer.displayObject);
-  noiseVarViewer.scaleToFit(1920 / 2, 1920 / 2);
-  noiseVarViewer.displayObject.x = 1920 + 40;
-  noiseVarViewer.displayObject.y = 1920 / 2;
+  const noiseVarCanvasViewer = new CanvasVariableMapView(
+    city.map.width,
+    city.map.height,
+    0x0e95ff,
+    0xffffff
+  );
+  $parent.append(
+    $('<div></div>')
+      .addClass('mb-3')
+      .append([
+        $('<h2></h2>')
+          .addClass('small')
+          .text('Noise'),
+        noiseVarCanvasViewer.$canvas,
+      ])
+  );
 
   stats.events.on('update', () => {
-    emissionsVarViewer.update(stats.get('pollution-map'));
-    noiseVarViewer.update(stats.get('noise-map'));
+    emissionsVarCanvasViewer.update(stats.get('pollution-map'));
+    noiseVarCanvasViewer.update(stats.get('noise-map'));
   });
 }
 

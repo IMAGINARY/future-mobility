@@ -44,9 +44,9 @@ const createThrottledFunction = require('./helpers/throttled');
   // Todo: Move to config
   PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
   const app = new PIXI.Application({
-    width: 1920 + 1920 / 2 + 40,
-    height: 1920,
-    backgroundColor: 0xf2f2f2,
+    width: 1152,
+    height: 1152,
+    backgroundColor: 0xa6a6a6,
   });
 
   // eslint-disable-next-line no-underscore-dangle
@@ -56,8 +56,8 @@ const createThrottledFunction = require('./helpers/throttled');
 
   const mapView = new MapView(city, config, textures);
   app.stage.addChild(mapView.displayObject);
-  mapView.displayObject.width = 1920;
-  mapView.displayObject.height = 1920;
+  mapView.displayObject.width = 1152;
+  mapView.displayObject.height = 1152;
   mapView.displayObject.x = 0;
   mapView.displayObject.y = 0;
   app.ticker.add(() => mapView.animate());
@@ -101,7 +101,7 @@ const createThrottledFunction = require('./helpers/throttled');
     orientationInspectionOverlay.show();
   }
 
-  initDevMappedVariableViewers(config, app.stage, city, stats);
+  initDevMappedVariableViewers(config, $('[data-component="var-maps"]'), city, stats);
   $('[data-component="dev-tools"]').replaceWith(
     initDevTools(config, mapView, mapEditorController, stats, powerUpMgr)
   );

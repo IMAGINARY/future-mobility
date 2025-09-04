@@ -17,3 +17,10 @@
     border: 1px solid #fff;
   }
 }
+
+canvas.variable-map-view {
+  display: block;
+  image-rendering: pixelated;
+  width: 100%;
+  height: auto;
+}
