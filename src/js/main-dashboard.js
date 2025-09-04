@@ -1,7 +1,7 @@
 require('../sass/default.scss');
-const ConnectionStateView = require('./connection-state-view');
-const initClientApp = require('./init/init-client-app');
-const DashboardApp = require('./dashboard/dashboard-app');
+const ConnectionStateView = require('./lib/net/connection-state-view');
+const initClientApp = require('./lib/init/init-client-app');
+const DashboardApp = require('./lib/dashboard/dashboard-app');
 
 (async function main() {
   const { config, connector } = await initClientApp();

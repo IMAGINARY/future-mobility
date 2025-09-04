@@ -1,26 +1,26 @@
 /* globals PIXI */
 require('../sass/default.scss');
 require('../sass/desktop.scss');
-const City = require('./city');
-const MapView = require('./map-view');
-const MapEditorController = require('./editor/map-editor-controller');
-const MapEditorPalette = require('./editor/map-editor-palette');
-const DataManager = require('./data-manager');
-const PixiAssetsLoader = require('./helpers-pixi/pixi-assets-loader');
-const PowerUpManager = require('./power-up-manager');
-const PowerUpDataModifier = require('./power-up-data-modifier');
-const PowerUpViewMgr = require('./power-up-view-mgr');
-const { initStandaloneApp } = require('./init/init-standalone-app');
-const MeasureDistanceTool = require('./editor/fms-measure-distance-tool');
-const ShowMappedVariableTool = require('./editor/show-mapped-variable-tool');
-const injectTileRenderers = require('./init/inject-tile-renderers');
-const OrientationInspectionOverlay = require('./orientation-inspection-overlay');
-const TestScenarios = require('./test/scenarios');
-const dataSrcCfg = require('./init/data-src-cfg');
-const injectMapViewExtensions = require('./init/inject-mapView-extensions');
-const initDevMappedVariableViewers = require('./init/init-dev-mapped-variable-viewers');
-const initDevTools = require('./init/init-dev-tools');
-const createThrottledFunction = require('./helpers/throttled');
+const City = require('./lib/model/city');
+const MapView = require('./lib/view-pixi/map-view');
+const MapEditorController = require('./lib/editor/map-editor-controller');
+const MapEditorPalette = require('./lib/editor/map-editor-palette');
+const DataManager = require('./lib/model/data-manager');
+const PixiAssetsLoader = require('./lib/helpers-pixi/pixi-assets-loader');
+const PowerUpManager = require('./lib/model/power-up-manager');
+const PowerUpDataModifier = require('./lib/model/power-up-data-modifier');
+const PowerUpViewMgr = require('./lib/power-ups/power-up-view-mgr');
+const { initStandaloneApp } = require('./lib/init/init-standalone-app');
+const MeasureDistanceTool = require('./lib/editor/fms-measure-distance-tool');
+const ShowMappedVariableTool = require('./lib/editor/show-mapped-variable-tool');
+const injectTileRenderers = require('./lib/init/inject-tile-renderers');
+const OrientationInspectionOverlay = require('./lib/view-pixi/orientation-inspection-overlay');
+const TestScenarios = require('./lib/test/scenarios');
+const dataSrcCfg = require('./lib/init/inject-data-src-cfg');
+const injectMapViewExtensions = require('./lib/init/inject-mapView-extensions');
+const initDevMappedVariableViewers = require('./lib/init/inject-dev-mapped-variable-viewers');
+const initDevTools = require('./lib/init/init-dev-tools');
+const createThrottledFunction = require('./lib/helpers/throttled');
 
 (async function main() {
   const { config } = await initStandaloneApp();

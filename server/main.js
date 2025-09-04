@@ -4,9 +4,9 @@ const { hideBin } = require('yargs/helpers');
 const Sentry = require('@sentry/node');
 const initApp = require('./lib/app');
 const initWinston = require('./lib/init-winston');
-const CfgLoader = require('../src/js/cfg-loader/cfg-loader');
-const CfgReaderFile = require('../src/js/cfg-loader/cfg-reader-file');
-const configFiles = require('../src/js/init/config-files');
+const CfgLoader = require('../src/js/lib/cfg-loader/cfg-loader');
+const CfgReaderFile = require('../src/js/lib/cfg-loader/cfg-reader-file');
+const configFiles = require('../src/js/lib/init/inject-config-files');
 
 const {
   logLevel, outputConfiguration, port, settingsFile, sentryDsn,

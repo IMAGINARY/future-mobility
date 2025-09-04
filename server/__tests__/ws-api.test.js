@@ -2,8 +2,8 @@
 const yaml = require('js-yaml');
 const WebSocket = require('ws');
 const initWinston = require('../lib/init-winston');
-const CfgLoader = require('../../src/js/cfg-loader/cfg-loader');
-const CfgReaderFile = require('../../src/js/cfg-loader/cfg-reader-file');
+const CfgLoader = require('../../src/js/lib/cfg-loader/cfg-loader');
+const CfgReaderFile = require('../../src/js/lib/cfg-loader/cfg-reader-file');
 const initApp = require('../lib/app');
 
 const TEST_PORT = 3012;

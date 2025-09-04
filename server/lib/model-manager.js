@@ -1,11 +1,11 @@
 const EventEmitter = require('events');
 const logger = require('winston');
-const City = require('../../src/js/city');
-const DataManager = require('../../src/js/data-manager');
-const PowerUpManager = require('../../src/js/power-up-manager');
-const PowerUpDataModifier = require('../../src/js/power-up-data-modifier');
-const dataSrcCfg = require('../../src/js/init/data-src-cfg');
-const createThrottledFunction = require('../../src/js/helpers/throttled');
+const City = require('../../src/js/lib/model/city');
+const DataManager = require('../../src/js/lib/model/data-manager');
+const PowerUpManager = require('../../src/js/lib/model/power-up-manager');
+const PowerUpDataModifier = require('../../src/js/lib/model/power-up-data-modifier');
+const dataSrcCfg = require('../../src/js/lib/init/inject-data-src-cfg');
+const createThrottledFunction = require('../../src/js/lib/helpers/throttled');
 
 class ModelManager {
   constructor(config) {

@@ -7,7 +7,7 @@ const cors = require('cors');
 const OpenApiValidator = require('express-openapi-validator');
 const AsyncApiValidator = require('asyncapi-validator');
 const ModelManager = require('./model-manager');
-const { cityToCompactJSON, unpackCompactCells, cityToCompactCells } = require('../../src/js/city-compact-serialization');
+const { cityToCompactJSON, unpackCompactCells, cityToCompactCells } = require('../../src/js/lib/data/city-compact-serialization');
 
 async function initApp(config) {
   const modelManager = new ModelManager(config);

@@ -1,14 +1,14 @@
 /* globals PIXI */
 require('../sass/default.scss');
 require('../sass/desktop.scss');
-const City = require('./city');
-const MapView = require('./map-view');
-const MapEditorController = require('./editor/map-editor-controller');
-const MapEditorPalette = require('./editor/map-editor-palette');
-const ConnectionStateView = require('./connection-state-view');
-const PixiAssetsLoader = require('./helpers-pixi/pixi-assets-loader');
-const initClientApp = require('./init/init-client-app');
-const injectTileRenderers = require('./init/inject-tile-renderers');
+const City = require('./lib/model/city');
+const MapView = require('./lib/view-pixi/map-view');
+const MapEditorController = require('./lib/editor/map-editor-controller');
+const MapEditorPalette = require('./lib/editor/map-editor-palette');
+const ConnectionStateView = require('./lib/net/connection-state-view');
+const PixiAssetsLoader = require('./lib/helpers-pixi/pixi-assets-loader');
+const initClientApp = require('./lib/init/init-client-app');
+const injectTileRenderers = require('./lib/init/inject-tile-renderers');
 
 (async function main() {
   const { config, connector } = await initClientApp();

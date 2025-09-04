@@ -4,8 +4,8 @@ const yaml = require('js-yaml');
 const request = require('supertest');
 const initWinston = require('../lib/init-winston');
 const initApp = require('../lib/app');
-const CfgLoader = require('../../src/js/cfg-loader/cfg-loader');
-const CfgReaderFile = require('../../src/js/cfg-loader/cfg-reader-file');
+const CfgLoader = require('../../src/js/lib/cfg-loader/cfg-loader');
+const CfgReaderFile = require('../../src/js/lib/cfg-loader/cfg-reader-file');
 
 let app = null;
 initWinston({ level: 'quiet' });

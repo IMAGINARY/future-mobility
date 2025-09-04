@@ -1,15 +1,15 @@
 /* globals PIXI */
 require('../sass/default.scss');
-const ConnectionStateView = require('./connection-state-view');
-const City = require('./city');
-const MapView = require('./map-view');
-const PixiAssetsLoader = require('./helpers-pixi/pixi-assets-loader');
-const VariableMapOverlay = require('./variable-map-overlay');
-const PowerUpViewMgr = require('./power-up-view-mgr');
-const initClientApp = require('./init/init-client-app');
-const injectTileRenderers = require('./init/inject-tile-renderers');
-const OrientationInspectionOverlay = require('./orientation-inspection-overlay');
-const injectMapViewExtensions = require('./init/inject-mapView-extensions');
+const ConnectionStateView = require('./lib/net/connection-state-view');
+const City = require('./lib/model/city');
+const MapView = require('./lib/view-pixi/map-view');
+const PixiAssetsLoader = require('./lib/helpers-pixi/pixi-assets-loader');
+const VariableMapOverlay = require('./lib/view-pixi/variable-map-overlay');
+const PowerUpViewMgr = require('./lib/power-ups/power-up-view-mgr');
+const initClientApp = require('./lib/init/init-client-app');
+const injectTileRenderers = require('./lib/init/inject-tile-renderers');
+const OrientationInspectionOverlay = require('./lib/view-pixi/orientation-inspection-overlay');
+const injectMapViewExtensions = require('./lib/init/inject-mapView-extensions');
 
 (async function main() {
   const qs = new URLSearchParams(window.location.search);
