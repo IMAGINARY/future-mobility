@@ -11,13 +11,12 @@ const PowerUpManager = require('./lib/model/power-up-manager');
 const PowerUpDataModifier = require('./lib/model/power-up-data-modifier');
 const PowerUpViewMgr = require('./lib/power-ups/power-up-view-mgr');
 const { initStandaloneApp } = require('./lib/init/init-standalone-app');
-const MeasureDistanceTool = require('./lib/editor/fms-measure-distance-tool');
-const ShowMappedVariableTool = require('./lib/editor/show-mapped-variable-tool');
 const injectTileRenderers = require('./lib/init/inject-tile-renderers');
 const OrientationInspectionOverlay = require('./lib/view-pixi/orientation-inspection-overlay');
 const TestScenarios = require('./lib/test/scenarios');
 const dataSrcCfg = require('./lib/init/inject-data-src-cfg');
 const injectMapViewExtensions = require('./lib/init/inject-mapView-extensions');
+const injectMapEditorExtensions = require('./lib/init/inject-mapEditor-extensions');
 const initDevMappedVariableViewers = require('./lib/init/inject-dev-mapped-variable-viewers');
 const initDevTools = require('./lib/init/init-dev-tools');
 const createThrottledFunction = require('./lib/helpers/throttled');
@@ -77,13 +76,9 @@ const createThrottledFunction = require('./lib/helpers/throttled');
   stats.registerModifier(new PowerUpDataModifier(config, powerUpMgr));
 
   const mapEditorController = new MapEditorController(config, mapView, stats);
-  // eslint-disable-next-line no-unused-vars
-  const measureDistanceTool = new MeasureDistanceTool(config, mapEditorController);
-  const mappedVariableTool = new ShowMappedVariableTool(config, mapEditorController, stats);
-  app.ticker.add((time) => mappedVariableTool.animate(time));
-
   const mapEditorPalette = new MapEditorPalette(config, mapEditorController);
   $('.fms-desktop').append(mapEditorPalette.$element);
+  injectMapEditorExtensions(config, mapView, stats, mapEditorController, mapEditorPalette);
 
   const powerUpViewMgr = new PowerUpViewMgr();
   app.ticker.add((time) => powerUpViewMgr.animate(time));
