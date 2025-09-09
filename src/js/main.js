@@ -20,6 +20,7 @@ const injectMapEditorExtensions = require('./lib/init/inject-mapEditor-extension
 const initDevMappedVariableViewers = require('./lib/init/inject-dev-mapped-variable-viewers');
 const initDevTools = require('./lib/init/init-dev-tools');
 const createThrottledFunction = require('./lib/helpers/throttled');
+const initDevMenu = require('./lib/init/init-dev-menu');
 
 (async function main() {
   const { config } = await initStandaloneApp();
@@ -100,4 +101,9 @@ const createThrottledFunction = require('./lib/helpers/throttled');
   $('[data-component="dev-tools"]').replaceWith(
     initDevTools(config, mapView, mapEditorController, stats, powerUpMgr)
   );
+
+  const devMenu = initDevMenu(config, mapView, mapEditorController, stats, powerUpMgr);
+  if (devMenu) {
+    $('body').append(devMenu).addClass('with-dev-menu');
+  }
 }());

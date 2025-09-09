@@ -1,0 +1,31 @@
+body.with-dev-menu {
+  padding-top: 40px;
+
+  .map-editor-palette {
+    margin-top: 40px;
+  }
+
+  [data-component="app-container"] {
+    canvas {
+      max-height: calc(100vh - 4rem);
+    }
+  }
+}
+
+.dev-menu {
+  .nav {
+    --bs-nav-link-padding-y: 0;
+  }
+
+  .navbar-brand {
+    font-weight: bold;
+    font-size: 1rem;
+    padding: 0;
+    color: white;
+  }
+
+  .nav-link {
+    --bs-nav-link-color: white;
+    --bs-nav-link-hover-color: white;
+  }
+}
