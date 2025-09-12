@@ -5,15 +5,24 @@ class CitizenRequestView {
   constructor(config) {
     this.config = config;
     this.languages = this.config.dashboard.languages;
-    this.mainLanguage = this.languages[0];
+    [this.mainLanguage] = this.languages;
 
     this.$element = $('<div></div>')
       .addClass('citizen-requests');
 
     this.requests = {};
 
+    // Fetch tileReferences from config or fallback to default
+    this.tileReferences = config?.tileReferences || {};
+
+    // Create tileRefRegexp dynamically based on tileReferences
+    const tileRefKeys = Object.keys(this.tileReferences);
+    this.tileRefRegexp = tileRefKeys.length > 0
+      ? new RegExp(`([${tileRefKeys.join('')}])\\[([^\\]]+)\\]`, 'g')
+      : null;
+
     this.tileColors = Object.fromEntries(
-      Object.entries(CitizenRequestView.tileReferences)
+      Object.entries(this.tileReferences)
         .map(([key, type]) => [key, getTileType(this.config, type).color])
     );
   }
@@ -28,13 +37,12 @@ class CitizenRequestView {
           }))
         .append($('<div></div>').addClass('request-balloon')
           .append(
-            this.languages.map(lang => (
+            this.languages.map((lang) => (
               $('<div></div>').addClass(`request-text request-text-${lang}`)
                 .addClass(lang === this.mainLanguage ? 'request-text-main' : 'request-text-translation')
                 .html(this.formatRequestText(this.config.citizenRequests[goalId][lang]))
             ))
-          )
-        )
+          ))
         .appendTo(this.$element);
     }
   }
@@ -53,26 +61,17 @@ class CitizenRequestView {
   }
 
   formatRequestText(text) {
-    return text
-      .replaceAll(CitizenRequestView.tileRefRegexp, (match, tileSpec, innerText) => (
-        // `<span class="tileref tileref-${CitizenRequestView.tileReferences[tileSpec]}"><span class="tileref-stub" style="background-color: ${this.tileColors[tileSpec]}"></span> ${innerText}</span>`
+    let result = text;
+
+    if (this.tileRefRegexp) {
+      result = result.replaceAll(this.tileRefRegexp, (match, tileSpec, innerText) => (
         `<span class="tileref-stub" style="background-color: ${this.tileColors[tileSpec]}"></span>&nbsp;${innerText}`
-      ))
-      .replaceAll(CitizenRequestView.largeTextRegexp, '<span class="large">$1</span>');
+      ));
+    }
+
+    return result.replaceAll(CitizenRequestView.largeTextRegexp, '<span class="large">$1</span>');
   }
 }
-
-CitizenRequestView.tileReferences = {
-  W: 'water',
-  P: 'park',
-  R: 'residential',
-  C: 'commercial',
-  I: 'industrial',
-  X: 'road',
-};
-CitizenRequestView.tileRefRegexp = new RegExp(
-  `([${Object.keys(CitizenRequestView.tileReferences).join('')}])\\[([^\\]]+)\\]`, 'g'
-);
 
 CitizenRequestView.largeTextRegexp = /\*([^*]+)\*/g;
 

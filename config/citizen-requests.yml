@@ -114,3 +114,10 @@ citizenIcons:
     - static/openmoji/bw/person-frowning.svg
     - static/openmoji/bw/woman-frowning.svg
     - static/openmoji/bw/man-frowning.svg
+tileReferences:
+  W: water
+  P: park
+  R: residential
+  C: commercial
+  I: industrial
+  X: road
