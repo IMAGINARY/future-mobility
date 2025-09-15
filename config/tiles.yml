@@ -24,6 +24,7 @@ tileTypes:
     name: Industrial
     color: '#ffeb53'
     editorIcon: 'static/fa/industry-solid.svg'
+    editorOrder: 4
     randomFrequency: 64
     emissions: 0.3
     noise: 0.1
@@ -32,6 +33,7 @@ tileTypes:
     name: Commercial
     color: '#5095ff'
     editorIcon: 'static/fa/building-regular.svg'
+    editorOrder: 3
     randomFrequency: 64
     noise: 0.20
   5:

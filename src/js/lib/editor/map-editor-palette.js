@@ -40,32 +40,34 @@ class MapEditorPalette {
   }
 
   createTileButtons(tileTypes) {
-    Object.entries(tileTypes).forEach(([id, typeCfg]) => {
-      const button = $('<button></button>')
-        .attr({
-          type: 'button',
-          title: typeCfg.name,
-        })
-        .addClass([
-          'editor-palette-button',
-          'editor-palette-button-tile',
-          `editor-palette-button-tile-${id}`,
-        ])
-        .css({
-          backgroundColor: typeCfg.color,
-          backgroundImage: `url(${typeCfg.editorIcon})`,
-        })
-        .on('click', (ev) => {
-          if (this.activeButton) {
-            this.activeButton.removeClass('active');
-          }
-          this.activeButton = $(ev.target);
-          this.activeButton.addClass('active');
-          this.mapEditorController.activateTool('tile', { tileType: Number(id) });
-        });
-      this.tileButtons.push(button);
-      this.tileButtonsById[id] = button;
-    });
+    Object.entries(tileTypes)
+      .sort((a, b) => (a[1]?.editorOrder ?? a[0]) - (b[1]?.editorOrder ?? b[0]))
+      .forEach(([id, typeCfg]) => {
+        const button = $('<button></button>')
+          .attr({
+            type: 'button',
+            title: typeCfg.name,
+          })
+          .addClass([
+            'editor-palette-button',
+            'editor-palette-button-tile',
+            `editor-palette-button-tile-${id}`,
+          ])
+          .css({
+            backgroundColor: typeCfg.color,
+            backgroundImage: `url(${typeCfg.editorIcon})`,
+          })
+          .on('click', (ev) => {
+            if (this.activeButton) {
+              this.activeButton.removeClass('active');
+            }
+            this.activeButton = $(ev.target);
+            this.activeButton.addClass('active');
+            this.mapEditorController.activateTool('tile', { tileType: Number(id) });
+          });
+        this.tileButtons.push(button);
+        this.tileButtonsById[id] = button;
+      });
   }
 
   createToolButtons(toolButtonDefs) {
