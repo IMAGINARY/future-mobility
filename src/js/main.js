@@ -21,6 +21,7 @@ const initDevMappedVariableViewers = require('./lib/init/inject-dev-mapped-varia
 const initDevTools = require('./lib/init/init-dev-tools');
 const createThrottledFunction = require('./lib/helpers/throttled');
 const initDevMenu = require('./lib/init/init-dev-menu');
+const KeyboardController = require('./lib/dev-tools/keyboard-controller');
 
 (async function main() {
   const { config } = await initStandaloneApp();
@@ -54,6 +55,7 @@ const initDevMenu = require('./lib/init/init-dev-menu');
 
   $('[data-component="app-container"]').append(app.view);
 
+  const keyboardController = new KeyboardController();
   const mapView = new MapView(city, config, textures);
   app.stage.addChild(mapView.displayObject);
   mapView.displayObject.width = 1152;
@@ -79,6 +81,7 @@ const initDevMenu = require('./lib/init/init-dev-menu');
   const mapEditorController = new MapEditorController(config, mapView, stats);
   const mapEditorPalette = new MapEditorPalette(config, mapEditorController);
   $('.fms-desktop').append(mapEditorPalette.$element);
+  keyboardController.registerKeyActions(mapEditorPalette.getKeyboardShortcuts());
   injectMapEditorExtensions(config, mapView, stats, mapEditorController, mapEditorPalette);
 
   const powerUpViewMgr = new PowerUpViewMgr();
@@ -97,12 +100,19 @@ const initDevMenu = require('./lib/init/init-dev-menu');
     orientationInspectionOverlay.show();
   }
 
-  initDevMappedVariableViewers(config, $('[data-component="var-maps"]'), city, stats);
+  initDevMappedVariableViewers(config, $('[data-component="var-maps"]'), city, stats, keyboardController);
   $('[data-component="dev-tools"]').replaceWith(
-    initDevTools(config, mapView, mapEditorController, stats, powerUpMgr)
+    initDevTools(config, mapView, mapEditorController, stats, powerUpMgr, keyboardController)
   );
 
-  const devMenu = initDevMenu(config, mapView, mapEditorController, stats, powerUpMgr);
+  const devMenu = initDevMenu(
+    config,
+    mapView,
+    mapEditorController,
+    stats,
+    powerUpMgr,
+    keyboardController
+  );
   if (devMenu) {
     $('body').append(devMenu).addClass('with-dev-menu');
   }

@@ -11,7 +11,10 @@ class MapEditorPalette {
     const toolButtonDefs = this.config.mapEditor.palette.toolButtons;
     const actionButtonDefs = this.config.mapEditor.palette.actionButtons;
 
-    this.tileButtons = this.createTileButtons(tileTypes);
+    this.tileButtons = [];
+    this.tileButtonsById = {};
+
+    this.createTileButtons(tileTypes);
     this.toolButtons = this.createToolButtons(toolButtonDefs);
     this.actionButtons = this.createActionButtons(actionButtonDefs);
 
@@ -37,28 +40,32 @@ class MapEditorPalette {
   }
 
   createTileButtons(tileTypes) {
-    return Object.entries(tileTypes).map(([id, typeCfg]) => $('<button></button>')
-      .attr({
-        type: 'button',
-        title: typeCfg.name,
-      })
-      .addClass([
-        'editor-palette-button',
-        'editor-palette-button-tile',
-        `editor-palette-button-tile-${id}`,
-      ])
-      .css({
-        backgroundColor: typeCfg.color,
-        backgroundImage: `url(${typeCfg.editorIcon})`,
-      })
-      .on('click', (ev) => {
-        if (this.activeButton) {
-          this.activeButton.removeClass('active');
-        }
-        this.activeButton = $(ev.target);
-        this.activeButton.addClass('active');
-        this.mapEditorController.activateTool('tile', { tileType: Number(id) });
-      }));
+    Object.entries(tileTypes).forEach(([id, typeCfg]) => {
+      const button = $('<button></button>')
+        .attr({
+          type: 'button',
+          title: typeCfg.name,
+        })
+        .addClass([
+          'editor-palette-button',
+          'editor-palette-button-tile',
+          `editor-palette-button-tile-${id}`,
+        ])
+        .css({
+          backgroundColor: typeCfg.color,
+          backgroundImage: `url(${typeCfg.editorIcon})`,
+        })
+        .on('click', (ev) => {
+          if (this.activeButton) {
+            this.activeButton.removeClass('active');
+          }
+          this.activeButton = $(ev.target);
+          this.activeButton.addClass('active');
+          this.mapEditorController.activateTool('tile', { tileType: Number(id) });
+        });
+      this.tileButtons.push(button);
+      this.tileButtonsById[id] = button;
+    });
   }
 
   createToolButtons(toolButtonDefs) {
@@ -117,6 +124,21 @@ class MapEditorPalette {
     this.actionButtons.forEach(($button) => {
       $button.prop('disabled', !this.mapEditorController.hasAction($button.data('action-id')));
     });
+  }
+
+  getKeyboardShortcuts() {
+    // Return a mapping of keyboard keys to tool IDs for quick access
+    const shortcuts = {};
+    // Each tile button gets a number key (1-9), in order of apparition
+    this.tileButtons.forEach(($button, index) => {
+      if (index < 9) {
+        shortcuts[(index + 1).toString()] = () => {
+          $button.click();
+        };
+      }
+    });
+
+    return shortcuts;
   }
 }
 
