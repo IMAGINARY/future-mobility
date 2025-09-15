@@ -34,7 +34,6 @@ class OrientationInspectionOverlay {
       return newTile;
     });
 
-    console.log('tiles', this.tiles);
     this.displayObject.addChild(...Array2D.flatten(this.tiles));
   }
 

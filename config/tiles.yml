@@ -9,6 +9,7 @@ tileTypes:
     name: Road
     color: '#8f8f8f'
     editorIcon: 'static/fa/road-solid.svg'
+    randomFrequency: 160
     emissions: 0.1
     noise: 0.20
   2:
@@ -16,12 +17,14 @@ tileTypes:
     name: Residential
     color: '#fd6451'
     editorIcon: 'static/fa/home-solid.svg'
+    randomFrequency: 128
     noise: 0.05
   3:
     type: industrial
     name: Industrial
     color: '#ffeb53'
     editorIcon: 'static/fa/industry-solid.svg'
+    randomFrequency: 64
     emissions: 0.3
     noise: 0.1
   4:
@@ -29,15 +32,18 @@ tileTypes:
     name: Commercial
     color: '#5095ff'
     editorIcon: 'static/fa/building-regular.svg'
+    randomFrequency: 64
     noise: 0.20
   5:
     type: park
     name: Park
     color: '#2ee517'
     editorIcon: 'static/fa/tree-solid.svg'
+    randomFrequency: 96
     emissions: -0.2
   6:
     type: water
     name: Water
     color: '#19fff7'
     editorIcon: 'static/fa/water-solid.svg'
+    randomFrequency: 96
