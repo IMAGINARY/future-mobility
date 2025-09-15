@@ -31,3 +31,10 @@ mapEditor:
       - id: export
         title: Export Map
         icon: 'static/fa/file-export-solid.svg'
+  mapRandomizer:
+    # Probability that the randomizer will repeat the tile above or to the left instead of
+    # choosing a new random tile.
+    repeatProbability: 0.3
+    # Types of tiles that will never be placed by the randomizer. Use tile types (e.g. 'park')
+    # instead of numerical IDs
+    excludedTileTypes: []

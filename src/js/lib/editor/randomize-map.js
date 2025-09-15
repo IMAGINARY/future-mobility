@@ -6,15 +6,17 @@ const { Orientation } = require('../model/city');
  *
  * @param {object} config
  * @param {[[Number]]} cells
- * @param {Number} repeatProbability
  */
-function randomizeMap(config, city, repeatProbability = 0) {
+function randomizeMap(config, city) {
+  const repeatProbability = config?.mapEditor?.mapRandomizer?.repeatProbability ?? 0;
+  const excludedTileTypes = config?.mapEditor?.mapRandomizer?.excludedTileTypes ?? [];
+
   // Build weighted tile pool
   const pool = [];
   const { tileTypes } = config;
   Object.keys(tileTypes).forEach((idStr) => {
     const id = Number(idStr);
-    if (id > 0) {
+    if (id > 0 && !excludedTileTypes.includes(tileTypes[id].type)) {
       const freq = tileTypes[id].randomFrequency || 1;
       for (let i = 0; i < freq; i += 1) {
         pool.push(id);

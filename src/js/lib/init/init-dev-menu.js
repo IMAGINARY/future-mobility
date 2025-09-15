@@ -5,7 +5,7 @@ const randomizeMap = require('../editor/randomize-map');
 function initDevMenu(config, mapView, mapEditorController, stats, powerUpMgr) {
   const devMenu = new DevMenu('FMS Editor');
   devMenu.addDropdown('Map', {
-    Randomize: () => { randomizeMap(config, mapView.city, 0.15); },
+    Randomize: () => { randomizeMap(config, mapView.city); },
   });
   devMenu.addDropdown('Test', {
     First: () => { console.log('First item clicked'); },
