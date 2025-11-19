@@ -1,14 +1,19 @@
 // eslint-disable-next-line no-unused-vars
-const DevMenu = require('../dev-tools/dev-menu');
+const DevMenuBar = require('../dev-tools/dev-menu-bar');
 const randomizeMap = require('../editor/randomize-map');
 
 function initDevMenu(config, mapView, mapEditorController, stats, powerUpMgr) {
-  const devMenu = new DevMenu('FMS Editor');
-  devMenu.addDropdown('Map', {
-    Randomize: () => { randomizeMap(config, mapView.city); },
-  });
+  const devMenuBar = new DevMenuBar('FMS Editor');
+  devMenuBar.addMenu('map', 'Map');
+  devMenuBar.addItem(
+    'map',
+    'Randomize',
+    () => { randomizeMap(config, mapView.city); }
+  );
 
-  return devMenu.$element;
+  devMenuBar.addItem('view', 'View');
+
+  return devMenuBar.$element;
 }
 
 module.exports = initDevMenu;

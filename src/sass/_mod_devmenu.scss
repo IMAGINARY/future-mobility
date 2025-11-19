@@ -28,4 +28,18 @@ body.with-dev-menu {
     --bs-nav-link-color: white;
     --bs-nav-link-hover-color: white;
   }
+
+  .dropdown-item {
+    position: relative;
+    padding-left: 1.5em;
+
+    &.checked {
+      &::before {
+        content: "✓ ";
+        display: inline-block;
+        position: absolute;
+        left: 0.5em;
+      }
+    }
+  }
 }
