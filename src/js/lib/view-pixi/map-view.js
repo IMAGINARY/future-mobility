@@ -22,6 +22,9 @@ class MapView {
     Array2D.fill(this.randomizedTerrain, () => Math.random());
 
     this.displayObject = new PIXI.Container();
+    // PIXI.ColorMatrixFilter is not deprecated, as far as I can tell...
+    this.colorMatrix = new PIXI.ColorMatrixFilter();
+    this.displayObject.filters = [this.colorMatrix];
 
     this.bgTiles = Array2D.create(this.city.map.width, this.city.map.height, null);
     this.textureTiles = Array2D.create(this.city.map.width, this.city.map.height, null);
@@ -306,6 +309,14 @@ class MapView {
 
   hideGrid() {
     this.gridOverlay.visible = false;
+  }
+
+  disableColors() {
+    this.colorMatrix.desaturate();
+  }
+
+  enableColors() {
+    this.colorMatrix.reset();
   }
 
   animate() {
