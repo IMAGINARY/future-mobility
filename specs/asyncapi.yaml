@@ -25,12 +25,14 @@ channels:
         $ref: '#/components/messages/get_map'
       set_map:
         $ref: '#/components/messages/set_map'
+      set_map_mode:
+        $ref: '#/components/messages/set_map_mode'
+      get_map_mode:
+        $ref: '#/components/messages/get_map_mode'
       get_vars:
         $ref: '#/components/messages/get_vars'
       get_goals:
         $ref: '#/components/messages/get_goals'
-      request_map_var_display:
-        $ref: '#/components/messages/request_map_var_display'
       get_active_power_ups:
         $ref: '#/components/messages/get_active_power_ups'
       enable_power_up:
@@ -41,12 +43,12 @@ channels:
         $ref: '#/components/messages/pong'
       map_update:
         $ref: '#/components/messages/map_update'
+      map_mode_update:
+        $ref: '#/components/messages/map_mode_update'
       vars_update:
         $ref: '#/components/messages/vars_update'
       goals_update:
         $ref: '#/components/messages/goals_update'
-      display_map_var:
-        $ref: '#/components/messages/display_map_var'
       power_ups_update:
         $ref: '#/components/messages/power_ups_update'
 operations:
@@ -59,9 +61,10 @@ operations:
       - $ref: '#/channels/root/messages/ping'
       - $ref: '#/channels/root/messages/get_map'
       - $ref: '#/channels/root/messages/set_map'
+      - $ref: '#/channels/root/messages/set_map_mode'
+      - $ref: '#/channels/root/messages/get_map_mode'
       - $ref: '#/channels/root/messages/get_vars'
       - $ref: '#/channels/root/messages/get_goals'
-      - $ref: '#/channels/root/messages/request_map_var_display'
       - $ref: '#/channels/root/messages/get_active_power_ups'
       - $ref: '#/channels/root/messages/enable_power_up'
       - $ref: '#/channels/root/messages/disable_power_up'
@@ -73,9 +76,9 @@ operations:
     messages:
       - $ref: '#/channels/root/messages/pong'
       - $ref: '#/channels/root/messages/map_update'
+      - $ref: '#/channels/root/messages/map_mode_update'
       - $ref: '#/channels/root/messages/vars_update'
       - $ref: '#/channels/root/messages/goals_update'
-      - $ref: '#/channels/root/messages/display_map_var'
       - $ref: '#/channels/root/messages/power_ups_update'
 components:
   messages:
@@ -99,10 +102,24 @@ components:
       summary: Update the city map
       payload:
         $ref: '#/components/schemas/set_map'
+    get_map_mode:
+      summary: Request the current map mode (client -> server).
+      payload:
+        $ref: '#/components/schemas/get_map_mode'
+      x-response:
+        $ref: '#/components/schemas/map_mode_update'
+    set_map_mode:
+      summary: Set the current map display mode (client -> server).
+      payload:
+        $ref: '#/components/schemas/set_map_mode'
     map_update:
       summary: Sent by the server when the map layout has changed.
       payload:
         $ref: '#/components/schemas/map_update'
+    map_mode_update:
+      summary: Sent by the server when the map mode or the mapped variable display has changed.
+      payload:
+        $ref: '#/components/schemas/map_mode_update'
     get_vars:
       summary: Request the current variables from the server.
       payload:
@@ -123,16 +140,6 @@ components:
       summary: Sent by the server when the goals have changed.
       payload:
         $ref: '#/components/schemas/goals_update'
-    request_map_var_display:
-      summary: Request a variable to be displayed on the map.
-      payload:
-          $ref: '#/components/schemas/request_map_var_display'
-      x-response:
-          $ref: '#/components/schemas/display_map_var'
-    display_map_var:
-      summary: Display a mapped variable
-      payload:
-        $ref: '#/components/schemas/display_map_var'
     get_active_power_ups:
       summary: Request the currently active power-ups.
       payload:
@@ -168,6 +175,12 @@ components:
         type:
           type: string
           const: pong
+    get_map_mode:
+      type: object
+      properties:
+        type:
+          type: string
+          const: get_map_mode
     get_map:
       type: object
       properties:
@@ -184,6 +197,19 @@ components:
           oneOf:
             - $ref: '#/components/schemas/cells'
             - $ref: '#/components/schemas/cellsAndOrientation'
+    set_map_mode:
+      type: object
+      properties:
+        type:
+          type: string
+          const: set_map_mode
+        mode:
+          type: string
+          description: Identifier of the map mode to set
+        duration:
+          type: integer
+          minimum: 0
+          description: Duration in milliseconds for how long the mode should be set (optional)
     map_update:
       type: object
       properties:
@@ -192,6 +218,18 @@ components:
           const: map_update
         cells:
           $ref: '#/components/schemas/cellsAndOrientation'
+    map_mode_update:
+      type: object
+      properties:
+        type:
+          type: string
+          const: map_mode_update
+        mode:
+          type: string
+          description: Identifier of the current map mode
+        data:
+          $ref: '#/components/schemas/mapped_var'
+          description: Mapped variable data (optional)
     get_vars:
       type: object
       properties:
@@ -235,26 +273,6 @@ components:
                 type: number
                 minimum: 0
                 maximum: 1
-    request_map_var_display:
-      type: object
-      properties:
-        type:
-          type: string
-          const: request_map_var_display
-        variable:
-          type: string
-          description: Name of the mapped variable
-    display_map_var:
-      type: object
-      properties:
-        type:
-          type: string
-          const: display_map_var
-        variable:
-          type: string
-          description: Name of the mapped variable
-        data:
-          $ref: '#/components/schemas/mapped_var'
     get_active_power_ups:
       type: object
       properties:

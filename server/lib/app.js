@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-const EventEmitter = require('events');
 const logger = require('winston');
 const express = require('express');
 const ws = require('ws');
@@ -50,7 +49,6 @@ async function initApp(config) {
   });
 
   const wss = new ws.Server({ noServer: true, clientTracking: true });
-  const viewRepeater = new EventEmitter();
   const asyncApiValidator = await AsyncApiValidator.fromSource('../specs/asyncapi.yaml', {
     // Note: The property x-parser-message-name is provided by the parser used by AsyncApiValidator.
     //   It holds the messageId, taken from the key that references the message.
@@ -77,6 +75,17 @@ async function initApp(config) {
     });
   }
 
+  function sendMapModeUpdateMessage(socket) {
+    const mode = modelManager.getCityMapMode();
+    const data = modelManager.getMappedVariable(mode);
+
+    validateAndSend(socket, {
+      type: 'map_mode_update',
+      mode,
+      ...(data !== null ? { data } : {}),
+    });
+  }
+
   function sendVariablesMessage(socket) {
     validateAndSend(socket, {
       type: 'vars_update',
@@ -88,14 +97,6 @@ async function initApp(config) {
     validateAndSend(socket, {
       type: 'goals_update',
       goals: modelManager.getGoals(),
-    });
-  }
-
-  function sendDisplayMapVar(socket, varName) {
-    validateAndSend(socket, {
-      type: 'display_map_var',
-      variable: varName,
-      data: modelManager.getMappedVariable(varName),
     });
   }
 
@@ -135,16 +136,20 @@ async function initApp(config) {
             modelManager.setCityMap(cityParts.types, cityParts.orientations);
             break;
           }
+          case 'get_map_mode': {
+            sendMapModeUpdateMessage(socket);
+            break;
+          }
+          case 'set_map_mode': {
+            modelManager.setCityMapMode(message.mode, message.duration || null);
+            break;
+          }
           case 'get_vars': {
             sendVariablesMessage(socket);
             break;
           }
           case 'get_goals': {
             sendGoalsMessage(socket);
-            break;
-          }
-          case 'request_map_var_display': {
-            viewRepeater.emit('request_map_var_display', message.variable);
             break;
           }
           case 'get_active_power_ups': {
@@ -202,6 +207,10 @@ async function initApp(config) {
     wss.clients.forEach((socket) => sendMapUpdateMessage(socket));
   });
 
+  modelManager.events.on('city-map-mode-update', () => {
+    wss.clients.forEach((socket) => sendMapModeUpdateMessage(socket));
+  });
+
   modelManager.events.on('stats-update', () => {
     wss.clients.forEach((socket) => sendVariablesMessage(socket));
     wss.clients.forEach((socket) => sendGoalsMessage(socket));
@@ -209,10 +218,6 @@ async function initApp(config) {
 
   modelManager.events.on('power-ups-update', () => {
     wss.clients.forEach((socket) => sendPowerUpsUpdate(socket));
-  });
-
-  viewRepeater.on('request_map_var_display', (variable) => {
-    wss.clients.forEach((socket) => sendDisplayMapVar(socket, variable));
   });
 
   return [app, wss];

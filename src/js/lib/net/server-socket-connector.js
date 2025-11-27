@@ -84,12 +84,12 @@ class ServerSocketConnector {
     if (message.type === 'map_update') {
       const cityParts = unpackCompactCells(message.cells);
       this.events.emit('map_update', cityParts.types, cityParts.orientations);
+    } else if (message.type === 'map_mode_update') {
+      this.events.emit('map_mode_update', message.mode, message.data);
     } else if (message.type === 'vars_update') {
       this.events.emit('vars_update', message.variables);
     } else if (message.type === 'goals_update') {
       this.events.emit('goals_update', message.goals);
-    } else if (message.type === 'display_map_var') {
-      this.events.emit('display_map_var', message.variable, message.data);
     } else if (message.type === 'power_ups_update') {
       this.events.emit('power_ups_update', message.powerUps);
     } else if (message.type === 'pong') {
@@ -160,19 +160,24 @@ class ServerSocketConnector {
     });
   }
 
+  getMapMode() {
+    this.send('get_map_mode');
+  }
+
+  setMapMode(mode, duration = null) {
+    this.send({
+      type: 'set_map_mode',
+      mode,
+      ...(duration !== null ? { duration } : {}),
+    });
+  }
+
   getVars() {
     this.send('get_vars');
   }
 
   getGoals() {
     this.send('get_goals');
-  }
-
-  viewShowMapVariable(variable) {
-    this.send({
-      type: 'request_map_var_display',
-      variable,
-    });
   }
 
   enablePowerUp(powerUpId) {

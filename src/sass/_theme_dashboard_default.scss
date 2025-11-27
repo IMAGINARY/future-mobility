@@ -21,11 +21,11 @@
   }
 
   // Button variants (using mixin)
-  .btn-show-pollution {
+  .btn-mode-pollution {
     @include buttons.button-variant(#ffffff, colors.$c-cherry, colors.$c-cherry);
   }
 
-  .btn-show-noise {
+  .btn-mode-noise {
     @include buttons.button-variant(#ffffff, colors.$c-grape, colors.$c-grape);
   }
 

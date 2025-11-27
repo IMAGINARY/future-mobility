@@ -27,8 +27,18 @@ const DashboardApp = require('./lib/dashboard/dashboard-app');
     connector.disablePowerUp(powerUpId);
   });
 
-  dashboardApp.events.on('action', (actionId) => {
-    connector.viewShowMapVariable(actionId.replace('show-', ''));
+  dashboardApp.events.on('action', (actionId, duration = null) => {
+    if (actionId.startsWith('mode-')) {
+      connector.setMapMode(actionId.replace('mode-', ''), duration);
+    }
+  });
+
+  connector.events.on('map_mode_update', (mode) => {
+    if (mode === 'default') {
+      dashboardApp.actionsPane.enableAll();
+    } else {
+      dashboardApp.actionsPane.disableAll();
+    }
   });
 
   connector.events.on('vars_update', (variables) => {
@@ -41,6 +51,7 @@ const DashboardApp = require('./lib/dashboard/dashboard-app');
     dashboardApp.updateActivePowerUps(activePowerUps);
   });
   connector.events.on('connect', () => {
+    connector.getMapMode();
     connector.getVars();
     connector.getGoals();
     connector.getActivePowerUps();

@@ -15,6 +15,9 @@ class ModelManager {
     logger.verbose(`Initializing ${config.cityWidth} x ${config.cityHeight} city.`);
     this.city = new City(config.cityWidth, config.cityHeight);
 
+    this.cityMapMode = 'default';
+    this.cityMapModeTimer = null;
+
     logger.verbose(`Initializing DataManager with throttle time ${config.dataManager.throttleTime} ms.`);
     this.stats = new DataManager({
       throttleTime: config.dataManager.throttleTime,
@@ -63,6 +66,28 @@ class ModelManager {
     this.city.setMap(cells, orientations);
   }
 
+  getCityMapMode() {
+    return this.cityMapMode;
+  }
+
+  setCityMapMode(mode = 'default', duration = null) {
+    logger.verbose(`Setting city map mode to "${mode}"${duration !== null ? ` for ${duration} ms` : ''}.`);
+    if (this.cityMapModeTimer !== null) {
+      logger.verbose('Clearing existing city map mode timer.');
+      clearTimeout(this.cityMapModeTimer);
+      this.cityMapModeTimer = null;
+    }
+    this.cityMapMode = mode;
+    this.events.emit('city-map-mode-update');
+    if (duration !== null) {
+      this.cityMapModeTimer = setTimeout(() => {
+        logger.verbose('City map mode duration expired, reverting to "default" mode.');
+        this.cityMapModeTimer = null;
+        this.setCityMapMode('default');
+      }, duration);
+    }
+  }
+
   getGoals() {
     return this.stats.getGoals();
   }
@@ -75,7 +100,8 @@ class ModelManager {
   }
 
   getMappedVariable(name) {
-    return this.stats.get(`${name}-map`);
+    const varName = `${name}-map`;
+    return this.stats.has(varName) ? this.stats.get(varName) : null;
   }
 
   getActivePowerUps() {

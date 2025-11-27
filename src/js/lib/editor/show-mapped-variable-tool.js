@@ -6,7 +6,7 @@ class ShowMappedVariableTool {
     this.mapEditorController = mapEditorController;
     this.dataManager = dataManager;
     this.mapView = this.mapEditorController.mapView;
-    this.variableMapOverlay = new VariableMapOverlay(this.mapView, this.config);
+    this.variableMapOverlay = new VariableMapOverlay(this.config, this.mapView);
 
     this.mapEditorController.addTool('showMappedVar', this);
   }

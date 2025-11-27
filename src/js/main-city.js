@@ -4,12 +4,13 @@ const ConnectionStateView = require('./lib/net/connection-state-view');
 const City = require('./lib/model/city');
 const MapView = require('./lib/view-pixi/map-view');
 const PixiAssetsLoader = require('./lib/helpers-pixi/pixi-assets-loader');
-const VariableMapOverlay = require('./lib/view-pixi/variable-map-overlay');
 const PowerUpViewMgr = require('./lib/power-ups/power-up-view-mgr');
 const initClientApp = require('./lib/init/init-client-app');
 const injectTileRenderers = require('./lib/init/inject-tile-renderers');
 const OrientationInspectionOverlay = require('./lib/view-pixi/orientation-inspection-overlay');
 const injectMapViewExtensions = require('./lib/init/inject-mapView-extensions');
+const initMapModes = require('./lib/init/init-map-modes');
+const MapViewModeMgr = require('./lib/view-pixi/map-view-mode-mgr');
 
 (async function main() {
   const qs = new URLSearchParams(window.location.search);
@@ -50,8 +51,8 @@ const injectMapViewExtensions = require('./lib/init/inject-mapView-extensions');
 
   injectMapViewExtensions(config, textures, mapView, powerUpViewMgr);
 
-  const variableMapOverlay = new VariableMapOverlay(mapView, config);
-  app.ticker.add((time) => variableMapOverlay.animate(time));
+  const mapViewModeMgr = new MapViewModeMgr(mapView);
+  initMapModes(config, mapView, mapViewModeMgr);
 
   if (qs.get('debug-orientations')) {
     const orientationInspectionOverlay = new OrientationInspectionOverlay(
@@ -66,19 +67,14 @@ const injectMapViewExtensions = require('./lib/init/inject-mapView-extensions');
     city.setMap(cells, orientations);
   });
 
-  connector.events.on('connect', () => {
-    connector.getMap();
-    connector.getActivePowerUps();
+  connector.events.on('map_mode_update', (mapMode, data) => {
+    mapViewModeMgr.setMode(mapMode, data);
   });
 
-  connector.events.on('display_map_var', (variable, data) => {
-    variableMapOverlay.show(
-      data,
-      config.variableMapOverlay.colors[variable] || 0x000000
-    );
-    setTimeout(() => {
-      variableMapOverlay.hide();
-    }, config.variableMapOverlay.overlayDuration * 1000);
+  connector.events.on('connect', () => {
+    connector.getMap();
+    connector.getMapMode();
+    connector.getActivePowerUps();
   });
 
   connector.events.on('power_ups_update', (activePowerUps) => {

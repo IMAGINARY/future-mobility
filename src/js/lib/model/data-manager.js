@@ -37,6 +37,10 @@ class DataManager {
     this.dataModifiers.push(modifier);
   }
 
+  has(variableId) {
+    return this.variables[variableId] !== undefined;
+  }
+
   /**
    * Get the value of a variable.
    *

@@ -21,7 +21,8 @@ version in GitHub releases.
 
 #### Changes to the Websocket API
 
-The `view_show_map_var` message was replaced by `request_map_var_display` and `display_map_var`.
+The `view_show_map_var` message was removed;
+A new protocol for handling mapped vars was created using `set_map_mode`, `get_map_mode` and `map_mode_update`.
 
 #### Updated dependencies
 

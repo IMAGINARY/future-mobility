@@ -71,11 +71,11 @@ dashboard:
         en: 'Disable'
   actions:
     buttons:
-      - id: show-pollution
+      - id: mode-pollution
         text:
           de: "<span class='large'>Luftverschmutzung</span><br>anzeigen"
           en: "Show pollution"
-      - id: show-noise
+      - id: mode-noise
         text:
           de: "<span class='large'>Lärmbelastung</span><br>anzeigen"
           en: "Show noise"

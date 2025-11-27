@@ -93,15 +93,14 @@ class DashboardApp {
 
     this.actionsPane.buttons.forEach(($button) => $button.on('click', (ev) => {
       const actionId = ev.currentTarget.id;
-      if ((actionId === 'show-pollution' || actionId === 'show-noise')) {
+      if ((actionId === 'mode-pollution' || actionId === 'mode-noise')) {
         this.actionsPane.disableAll();
-
-        setTimeout(() => {
-          this.actionsPane.enableAll();
-        }, (config.variableMapOverlay.overlayDuration
-          + config.variableMapOverlay.transitionDuration) * 1000);
-
-        this.events.emit('action', actionId);
+        this.events.emit(
+          'action',
+          actionId,
+          (config.variableMapOverlay.overlayDuration
+            + config.variableMapOverlay.transitionDuration) * 1000
+        );
       }
       ev.stopPropagation();
     }));
