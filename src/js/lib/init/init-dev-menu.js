@@ -2,7 +2,7 @@
 const DevMenuBar = require('../dev-tools/dev-menu-bar');
 const randomizeMap = require('../editor/randomize-map');
 
-function initDevMenu(config, mapView, mapEditorController, stats, powerUpMgr) {
+function initDevMenu(config, mapView, mapViewModeMgr, mapEditorController, stats, powerUpMgr) {
   const devMenuBar = new DevMenuBar('FMS Editor');
   devMenuBar.addMenu('map', 'Map');
   devMenuBar.addItem(
@@ -11,7 +11,22 @@ function initDevMenu(config, mapView, mapEditorController, stats, powerUpMgr) {
     () => { randomizeMap(config, mapView.city); }
   );
 
-  devMenuBar.addItem('view', 'View');
+  devMenuBar.addMenu('view', 'View');
+  devMenuBar.addItem('view', 'Default', () => {
+    mapViewModeMgr.setMode('default');
+  }, {
+    checked: () => mapViewModeMgr.getCurrentMode() === 'default',
+  });
+  devMenuBar.addItem('view', 'Noise', () => {
+    mapViewModeMgr.setMode('noise', stats.get('noise-map'));
+  }, {
+    checked: () => mapViewModeMgr.getCurrentMode() === 'noise',
+  });
+  devMenuBar.addItem('view', 'Pollution', () => {
+    mapViewModeMgr.setMode('pollution', stats.get('pollution-map'));
+  }, {
+    checked: () => mapViewModeMgr.getCurrentMode() === 'pollution',
+  });
 
   return devMenuBar.$element;
 }

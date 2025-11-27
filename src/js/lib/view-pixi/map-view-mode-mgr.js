@@ -10,6 +10,7 @@ class MapViewModeMgr {
 
     this.mapView.city.events.on('update', this.handleMapUpdate.bind(this));
     this.addMode('default', new DefaultMapViewModeHandler());
+    this.setMode('default');
   }
 
   clearModeTimeout() {
@@ -26,6 +27,10 @@ class MapViewModeMgr {
         this.setMode();
       }, timeoutMs);
     }
+  }
+
+  getCurrentMode() {
+    return this.currentMode;
   }
 
   /**

@@ -22,6 +22,8 @@ const initDevTools = require('./lib/init/init-dev-tools');
 const createThrottledFunction = require('./lib/helpers/throttled');
 const initDevMenu = require('./lib/init/init-dev-menu');
 const KeyboardController = require('./lib/dev-tools/keyboard-controller');
+const MapViewModeMgr = require('./lib/view-pixi/map-view-mode-mgr');
+const initMapModes = require('./lib/init/init-map-modes');
 
 (async function main() {
   const { config } = await initStandaloneApp();
@@ -87,6 +89,9 @@ const KeyboardController = require('./lib/dev-tools/keyboard-controller');
   const powerUpViewMgr = new PowerUpViewMgr();
   app.ticker.add((time) => powerUpViewMgr.animate(time));
   injectMapViewExtensions(config, textures, mapView, powerUpViewMgr);
+  const mapViewModeMgr = new MapViewModeMgr(mapView);
+  initMapModes(config, mapView, mapViewModeMgr);
+
   powerUpMgr.events.on('update', () => {
     powerUpViewMgr.update(powerUpMgr.getEnabled());
   });
@@ -108,6 +113,7 @@ const KeyboardController = require('./lib/dev-tools/keyboard-controller');
   const devMenu = initDevMenu(
     config,
     mapView,
+    mapViewModeMgr,
     mapEditorController,
     stats,
     powerUpMgr,
