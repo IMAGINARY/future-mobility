@@ -22,10 +22,6 @@ class MapView {
     Array2D.fill(this.randomizedTerrain, () => Math.random());
 
     this.displayObject = new PIXI.Container();
-    // PIXI.ColorMatrixFilter is not deprecated, as far as I can tell...
-    this.colorMatrix = new PIXI.ColorMatrixFilter();
-    this.displayObject.filters = [this.colorMatrix];
-
     this.bgTiles = Array2D.create(this.city.map.width, this.city.map.height, null);
     this.textureTiles = Array2D.create(this.city.map.width, this.city.map.height, null);
 
@@ -45,14 +41,21 @@ class MapView {
       this.textureTiles[y][x] = textureTile;
     });
 
+    this.graphicsLayer = new PIXI.Container();
+    // PIXI.ColorMatrixFilter is not deprecated, as far as I can tell...
+    this.colorMatrix = new PIXI.ColorMatrixFilter();
+    this.graphicsLayer.filters = [this.colorMatrix];
+    this.displayObject.addChild(this.graphicsLayer);
     this.zoningLayer = new PIXI.Container();
     this.zoningLayer.addChild(...Array2D.flatten(this.bgTiles));
-    this.displayObject.addChild(this.zoningLayer);
+    this.graphicsLayer.addChild(this.zoningLayer);
     this.tileTextureLayer = new PIXI.Container();
     this.tileTextureLayer.addChild(...Array2D.flatten(this.textureTiles));
-    this.displayObject.addChild(this.tileTextureLayer);
-    this.overlayContainer = new PIXI.Container();
-    this.displayObject.addChild(this.overlayContainer);
+    this.graphicsLayer.addChild(this.tileTextureLayer);
+    this.graphicsOverlayLayer = new PIXI.Container();
+    this.graphicsLayer.addChild(this.graphicsOverlayLayer);
+    this.dataOverlayLayer = new PIXI.Container();
+    this.displayObject.addChild(this.dataOverlayLayer);
     this.gridOverlay = this.createGridOverlay();
     this.displayObject.addChild(this.gridOverlay);
     if (this.config.mapView && this.config.mapView.gridOverlay) {
@@ -78,9 +81,18 @@ class MapView {
     return new SolidColorTileRenderer(this, colorMap);
   }
 
-  addOverlay(displayObject) {
-    this.overlayContainer.addChild(displayObject);
-    this.overlayContainer.sortChildren();
+  addGraphicsOverlay(displayObject) {
+    this.addOverlayToLayer(this.graphicsOverlayLayer, displayObject);
+  }
+
+  addDataOverlay(displayObject) {
+    this.addOverlayToLayer(this.dataOverlayLayer, displayObject);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  addOverlayToLayer(layer, displayObject) {
+    layer.addChild(displayObject);
+    layer.sortChildren();
   }
 
   createGridOverlay() {

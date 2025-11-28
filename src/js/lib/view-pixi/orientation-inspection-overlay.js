@@ -13,7 +13,7 @@ class OrientationInspectionOverlay {
       visible: false,
     });
     this.displayObject.zIndex = 1000;
-    this.mapView.addOverlay(this.displayObject);
+    this.mapView.addDataOverlay(this.displayObject);
     this.tiles = Array2D.create(this.mapView.city.map.width, this.mapView.city.map.height, null);
     this.initOverlay();
     this.state = Array2D.create(this.mapView.city.map.width, this.mapView.city.map.height, null);

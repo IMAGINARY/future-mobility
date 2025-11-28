@@ -38,7 +38,7 @@ class AutonomousVehicleLidarHandler extends PowerUpViewHandler {
     overlay.x = 0;
     overlay.y = 0;
     overlay.zIndex = this.carOverlay.displayObject.zIndex - 20;
-    this.carOverlay.mapView.addOverlay(overlay);
+    this.carOverlay.mapView.addGraphicsOverlay(overlay);
 
     return overlay;
   }

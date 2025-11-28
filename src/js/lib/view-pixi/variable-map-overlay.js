@@ -17,7 +17,7 @@ class VariableMapOverlay {
     this.view.displayObject.zIndex = 200;
     this.view.displayObject.alpha = 0;
 
-    this.mapView.addOverlay(this.view.displayObject);
+    this.mapView.addDataOverlay(this.view.displayObject);
   }
 
   show(data, color) {

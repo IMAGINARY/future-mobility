@@ -17,7 +17,7 @@ class MapTextOverlay {
     this.displayObject = new PIXI.Container();
     this.displayObject.visible = this.visible;
     this.displayObject.zIndex = 1000;
-    this.mapView.addOverlay(this.displayObject);
+    this.mapView.addDataOverlay(this.displayObject);
     this.createBackground();
     this.createTexts();
   }
