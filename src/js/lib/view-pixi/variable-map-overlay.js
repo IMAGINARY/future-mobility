@@ -7,6 +7,7 @@ class VariableMapOverlay {
     this.config = config;
 
     this.transition = null;
+    this.currentColor = null;
     const parentBounds = mapView.displayObject.getLocalBounds();
     this.view = new VariableMapView(
       mapView.city.map.width,
@@ -23,7 +24,8 @@ class VariableMapOverlay {
     if (this.transition !== null) {
       this.transition.finish();
     }
-    this.view.update(data, color);
+    this.currentColor = color;
+    this.view.update(data, this.currentColor);
     this.transition = new VariableMapOverlayTransition(
       this.config.variableMapOverlay.transitionDuration * 60,
       this.view.displayObject,
@@ -32,6 +34,10 @@ class VariableMapOverlay {
         this.transition = null;
       }
     );
+  }
+
+  update(data) {
+    this.view.update(data, this.currentColor);
   }
 
   hide() {

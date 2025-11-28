@@ -40,6 +40,10 @@ class MapViewModeHandler {
     // default no-op implementation
   }
 
+  onDataUpdate(data) {
+    // default no-op implementation
+  }
+
   /**
    * Validator to check if an arbitrary object implements at least part of the required protocol.
    * Returns true if the object provides at least one of the protocol methods (or is an instance).
@@ -53,7 +57,8 @@ class MapViewModeHandler {
     // Otherwise accept partial implementations (at least one method)
     return typeof handler.onEnter === 'function'
       || typeof handler.onExit === 'function'
-      || typeof handler.onMapUpdate === 'function';
+      || typeof handler.onMapUpdate === 'function'
+      || typeof handler.onDataUpdate === 'function';
   }
 }
 

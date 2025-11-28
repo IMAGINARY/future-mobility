@@ -21,6 +21,10 @@ class VariableMapMapViewModeHandler extends MapViewModeHandler {
   onExit() {
     this.variableMapOverlay.hide();
   }
+
+  onDataUpdate(data) {
+    this.variableMapOverlay.update(data);
+  }
 }
 
 module.exports = VariableMapMapViewModeHandler;
