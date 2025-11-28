@@ -44,6 +44,8 @@ class MapView {
     this.graphicsLayer = new PIXI.Container();
     // PIXI.ColorMatrixFilter is not deprecated, as far as I can tell...
     this.colorMatrix = new PIXI.ColorMatrixFilter();
+    this.colorMatrix.grayscale(0.65);
+    this.colorMatrix.alpha = 0;
     this.graphicsLayer.filters = [this.colorMatrix];
     this.displayObject.addChild(this.graphicsLayer);
     this.zoningLayer = new PIXI.Container();
@@ -323,12 +325,12 @@ class MapView {
     this.gridOverlay.visible = false;
   }
 
-  disableColors() {
-    this.colorMatrix.desaturate();
+  setTileSaturation(saturation) {
+    this.colorMatrix.alpha = 1 - saturation;
   }
 
-  enableColors() {
-    this.colorMatrix.reset();
+  resetTileSaturation() {
+    this.colorMatrix.alpha = 0;
   }
 
   animate() {
