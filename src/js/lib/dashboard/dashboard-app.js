@@ -98,7 +98,7 @@ class DashboardApp {
 
     this.actionsPane.buttons.forEach(($button) => $button.on('click', (ev) => {
       const actionId = ev.currentTarget.id;
-      if ((actionId === 'mode-pollution' || actionId === 'mode-noise')) {
+      if (actionId) {
         this.actionsPane.disableAll();
         this.events.emit(
           'action',
