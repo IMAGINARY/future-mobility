@@ -79,14 +79,14 @@ class DashboardApp {
             $('<div></div>')
               .addClass(['row', 'h-18'])
               .append(
-                config?.dashboard?.actions?.title
-                  ? createTitle(config?.dashboard?.actions?.title)
-                  : null
-              )
-              .append(
                 $('<div></div>')
                   .attr('id', 'col-actions')
                   .addClass('col-8')
+                  .append(
+                    config?.dashboard?.actions?.title
+                      ? createTitle(config?.dashboard?.actions?.title)
+                      : null
+                  )
                   .append(this.actionsPane.$element),
                 $('<div></div>')
                   .attr('id', 'col-actions-powerup')
