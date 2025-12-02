@@ -146,10 +146,13 @@ class Array2D {
    * @return {any}
    */
   /**
-   * Fills the items in the array with the result of a callback
+   * Fills the items in the array with the result of a callback.
    *
-   * @param a {any[][]}
-   * @param callback {coordinateCallback}
+   * Iterates over every coordinate and assigns the callback return value
+   * to the corresponding cell.
+   *
+   * @param {any[][]} a 2D array to fill
+   * @param {coordinateCallback} callback Function called with (x, y) returning the value to assign
    */
   static fill(a, callback) {
     for (let y = 0; y < a.length; y += 1) {
@@ -167,11 +170,15 @@ class Array2D {
    * @param y {number}
    */
   /**
+   * Reduces the 2D array to a single value.
    *
-   * @param a {any[][]}
-   * @param callback {reduceCallback}
-   * @param initialValue {any}
-   * @return {any}
+   * The callback is invoked for each cell in row-major order with the
+   * accumulator and the cell value and its coordinates.
+   *
+   * @param {any[][]} a 2D array to reduce
+   * @param {reduceCallback} callback Function called as (accumulator, currentValue, x, y)
+   * @param {any} initialValue Initial accumulator value
+   * @return {any} The final accumulator value
    */
   static reduce(a, callback, initialValue) {
     let accumulator = initialValue;
@@ -183,6 +190,12 @@ class Array2D {
     return accumulator;
   }
 
+  /**
+   * Calls a callback for each element in the 2D array.
+   *
+   * @param {any[][]} a 2D array to iterate
+   * @param {(value: any, x: number, y: number) => void} callback Function called with (value, x, y)
+   */
   static forEach(a, callback) {
     for (let y = 0; y < a.length; y += 1) {
       for (let x = 0; x < a[y].length; x += 1) {
@@ -191,6 +204,16 @@ class Array2D {
     }
   }
 
+  /**
+   * Iterates two 2D arrays in lockstep and calls a callback for overlapping cells.
+   *
+   * Iteration stops at the minimum width/height of the two arrays.
+   *
+   * @param {any[][]} a First 2D array
+   * @param {any[][]} b Second 2D array
+   * @param {(aValue: any, bValue: any, x: number, y: number) => void} callback
+   *   Function called with (a[y][x], b[y][x], x, y)
+   */
   static zip(a, b, callback) {
     const yMax = Math.min(a.length, b.length);
     for (let y = 0; y < yMax; y += 1) {
@@ -199,6 +222,25 @@ class Array2D {
         callback(a[y][x], b[y][x], x, y);
       }
     }
+  }
+
+  /**
+   * Returns a new 2D array by applying a mapping function to every element.
+   *
+   * The resulting 2D array has the same dimensions as the input.
+   *
+   * @param {any[][]} a Source 2D array
+   * @param {(value: any, x: number, y: number) => any} callback Function producing the mapped value
+   * @return {any[][]} New 2D array with mapped values
+   */
+  static map(a, callback) {
+    const result = Array2D.create(a[0].length, a.length);
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        result[y][x] = callback(a[y][x], x, y);
+      }
+    }
+    return result;
   }
 }
 
