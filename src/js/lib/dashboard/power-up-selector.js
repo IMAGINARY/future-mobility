@@ -100,6 +100,7 @@ class PowerUpSelector {
 
   renderPowerUp(powerUpId) {
     const props = this.config.powerUps[powerUpId];
+    const imageName = props.image || `${powerUpId}.svg`;
     return (
       $('<div></div>').addClass('powerup')
         .attr('type', 'button')
@@ -112,7 +113,7 @@ class PowerUpSelector {
             ))
           ))
         .append($('<div></div>').addClass('image')
-          .attr('style', `background-image: url('static/powerups/${powerUpId}.svg')`))
+          .attr('style', `background-image: url('static/powerups/${imageName}')`))
         .append($('<div></div>').addClass('description')
           .append(
             this.languages.map((lang) => (
