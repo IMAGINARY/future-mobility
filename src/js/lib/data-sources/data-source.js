@@ -1,4 +1,29 @@
 class DataSource {
+  #dataManager = null;
+
+  /**
+   * Called by DataManager during registration.
+   * Override for post-registration initialization.
+   * @param {DataManager} dataManager
+   * @protected
+   */
+  onRegistered(dataManager) {
+    this.#dataManager = dataManager;
+  }
+
+  /**
+   * Access DataManager for cross-source queries.
+   * @protected
+   * @returns {DataManager}
+   * @throws {Error} If called before registration
+   */
+  getDataManager() {
+    if (this.#dataManager === null) {
+      throw new Error(`${this.constructor.name}: Not registered yet.`);
+    }
+    return this.#dataManager;
+  }
+
   /**
    * Get the list of variables provided by this data source.
    *

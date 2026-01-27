@@ -62,7 +62,7 @@ class TravelTimesData extends DataSource {
       + (this.longTravelPercentage <= this.levels[3] ? 1 : 0);
 
     return Math.max(1, Math.min(5,
-      this.dataManager.getModifiers('travel-times-index')
+      this.getDataManager().getModifiers('travel-times-index')
         .reduce((acc, modifier) => acc + modifier, base)));
   }
 

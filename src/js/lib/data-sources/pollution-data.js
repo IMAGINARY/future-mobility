@@ -41,7 +41,7 @@ class PollutionData extends DataSource {
   }
 
   calculate() {
-    const emissionFactors = this.dataManager.getModifiers('emissions-factors');
+    const emissionFactors = this.getDataManager().getModifiers('emissions-factors');
     const emissionsPerTileType = Object.fromEntries(
       Object.entries(this.config.tileTypes)
         .map(([id, def]) => [id,

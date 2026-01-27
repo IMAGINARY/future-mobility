@@ -39,7 +39,7 @@ class NoiseData extends DataSource {
   }
 
   calculate() {
-    const noiseFactors = this.dataManager.getModifiers('noise-factors');
+    const noiseFactors = this.getDataManager().getModifiers('noise-factors');
     const noisePerTileType = Object.fromEntries(
       Object.entries(this.config.tileTypes)
         .map(([id, def]) => [id,

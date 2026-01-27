@@ -20,10 +20,10 @@ class TrafficData extends DataSource {
   }
 
   calculate() {
-    this.zoneCount = this.dataManager.get('zones-residential-count')
-      + this.dataManager.get('zones-commercial-count')
-      + this.dataManager.get('zones-industrial-count');
-    this.roadCount = this.dataManager.get('zones-road-count');
+    this.zoneCount = this.getDataManager().get('zones-residential-count')
+      + this.getDataManager().get('zones-commercial-count')
+      + this.getDataManager().get('zones-industrial-count');
+    this.roadCount = this.getDataManager().get('zones-road-count');
   }
 
   getTrafficDensityIndex() {
@@ -34,7 +34,7 @@ class TrafficData extends DataSource {
         || (Math.abs(1 - (this.roadCount / this.zoneCount)) <= this.fairDelta) ? 1 : 0);
 
     return Math.max(1, Math.min(5,
-      this.dataManager.getModifiers('traffic-density-index')
+      this.getDataManager().getModifiers('traffic-density-index')
         .reduce((acc, modifier) => acc + modifier, base)));
   }
 

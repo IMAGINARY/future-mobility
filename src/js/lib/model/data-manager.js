@@ -23,7 +23,7 @@ class DataManager {
       throw new Error(`Source ${dataSource.constructor.name} already registered.`);
     }
     this.sources.push(dataSource);
-    dataSource.dataManager = this;
+    dataSource.onRegistered(this);
 
     Object.entries(dataSource.getVariables()).forEach(([id, callback]) => {
       if (this.variables[id] !== undefined) {
