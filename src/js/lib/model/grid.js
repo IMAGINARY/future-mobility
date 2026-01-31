@@ -80,17 +80,6 @@ class Grid {
     this.cells[y][x] = value;
   }
 
-  /**
-   * Backwards compatibility function that maps (x, y) to a single index in a flat array
-   * @deprecated
-   * @param x {number}
-   * @param y {number}
-   * @return {number}
-   */
-  offset(x, y) {
-    return y * this.width + x;
-  }
-
   replace(cells) {
     Array2D.copy(cells, this.cells);
   }
