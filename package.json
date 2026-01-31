@@ -18,15 +18,21 @@
   "scripts": {
     "build": "npx webpack",
     "watch": "npx webpack --watch",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --passWithNoTests",
     "lint": "eslint \"src/**/*.{js,jsx}\" --max-warnings=0",
     "lint:style": "stylelint \"src/**/*.{css,scss}\""
   },
   "devDependencies": {
     "eslint": "^8.57.1",
     "eslint-config-airbnb": "^19.0.4",
+    "jest": "^30.0.5",
     "stylelint": "^16.22.0",
     "stylelint-config-standard-scss": "^15.0.1"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/test/**/*.test.js"],
+    "transform": {}
   },
   "dependencies": {
     "@babel/core": "^7.28.0",

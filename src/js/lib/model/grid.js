@@ -12,6 +12,18 @@ class Grid {
    * @param {number[][]} cells
    */
   constructor(width, height, cells = null) {
+    if (width <= 0 || height <= 0) {
+      throw new Error('Width and height must be greater than 0');
+    }
+    if (cells !== null) {
+      if (!Array2D.isValid(cells)) {
+        throw new Error('Cells must be a valid 2D array');
+      }
+      const [cellsWidth, cellsHeight] = Array2D.size(cells);
+      if (cellsWidth !== width || cellsHeight !== height) {
+        throw new Error('Cells dimensions must match width and height');
+      }
+    }
     this.width = width;
     this.height = height;
     this.cells = cells || Array2D.create(width, height, 0);

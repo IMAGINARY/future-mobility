@@ -12,6 +12,9 @@ class Array2D {
    * @return {any[][]}
    */
   static create(width, height, initValue = 0) {
+    if (width <= 0 || height <= 0) {
+      throw new Error('Width and height must be greater than 0');
+    }
     const rows = [];
     for (let i = 0; i < height; i += 1) {
       const row = [];
