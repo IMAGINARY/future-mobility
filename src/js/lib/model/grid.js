@@ -72,8 +72,6 @@ class Grid {
   /**
    * Set the value at (x, y)
    *
-   * @fires Grid.events#update
-   *
    * @param {number} x
    * @param {number} y
    * @param {number} value
@@ -105,7 +103,7 @@ class Grid {
    * @return {boolean}
    */
   isValidCoords(x, y) {
-    return x >= 0 && y >= 0 && x < this.width && y < this.height;
+    return Array2D.isValidCoords(this.cells, x, y);
   }
 
   /**
@@ -129,9 +127,7 @@ class Grid {
    * @return {[[number, number, number]]}
    */
   adjacentCells(i, j) {
-    return [[i, j - 1], [i + 1, j], [i, j + 1], [i - 1, j]]
-      .filter(([x, y]) => this.isValidCoords(x, y))
-      .map(([x, y]) => [x, y, this.get(x, y)]);
+    return Array2D.adjacentCells(this.cells, i, j);
   }
 
   /**
@@ -147,26 +143,7 @@ class Grid {
    * @return {[[number, number]]}
    */
   nearbyCoords(x, y, distance) {
-    const coords = [];
-    // Top
-    for (let i = x - distance; i < x + distance; i += 1) {
-      coords.push([i, y - distance]);
-    }
-    // Right
-    for (let i = y - distance; i < y + distance; i += 1) {
-      coords.push([x + distance, i]);
-    }
-    // Bottom
-    for (let i = x + distance; i > x - distance; i -= 1) {
-      coords.push([i, y + distance]);
-    }
-    // Left
-    for (let i = y + distance; i > y - distance; i -= 1) {
-      coords.push([x - distance, i]);
-    }
-
-    return coords
-      .filter(([eachX, eachY]) => this.isValidCoords(eachX, eachY));
+    return Array2D.nearbyCoords(this.cells, x, y, distance);
   }
 
   /**
@@ -182,8 +159,7 @@ class Grid {
    * @return {[[number, number, number]]}
    */
   nearbyCells(x, y, distance = 1) {
-    return this.nearbyCoords(x, y, distance)
-      .map(([nx, ny]) => [nx, ny, this.get(nx, ny)]);
+    return Array2D.nearbyCells(this.cells, x, y, distance);
   }
 
   /**

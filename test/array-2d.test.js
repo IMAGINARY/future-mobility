@@ -530,4 +530,158 @@ describe('Array2D', () => {
       expect(result[1][1]).toEqual({ val: 4, x: 1, y: 1 });
     });
   });
+
+  describe('isValidCoords', () => {
+    it('returns true for valid coordinates', () => {
+      const arr = [[1, 2, 3], [4, 5, 6]];
+      expect(Array2D.isValidCoords(arr, 0, 0)).toBe(true);
+      expect(Array2D.isValidCoords(arr, 2, 1)).toBe(true);
+      expect(Array2D.isValidCoords(arr, 1, 0)).toBe(true);
+    });
+
+    it('returns false for negative x', () => {
+      const arr = [[1, 2, 3], [4, 5, 6]];
+      expect(Array2D.isValidCoords(arr, -1, 0)).toBe(false);
+    });
+
+    it('returns false for negative y', () => {
+      const arr = [[1, 2, 3], [4, 5, 6]];
+      expect(Array2D.isValidCoords(arr, 0, -1)).toBe(false);
+    });
+
+    it('returns false for x >= width', () => {
+      const arr = [[1, 2, 3], [4, 5, 6]];
+      expect(Array2D.isValidCoords(arr, 3, 0)).toBe(false);
+      expect(Array2D.isValidCoords(arr, 4, 0)).toBe(false);
+    });
+
+    it('returns false for y >= height', () => {
+      const arr = [[1, 2, 3], [4, 5, 6]];
+      expect(Array2D.isValidCoords(arr, 0, 2)).toBe(false);
+      expect(Array2D.isValidCoords(arr, 0, 3)).toBe(false);
+    });
+
+    it('works with 1x1 array', () => {
+      const arr = [[42]];
+      expect(Array2D.isValidCoords(arr, 0, 0)).toBe(true);
+      expect(Array2D.isValidCoords(arr, 1, 0)).toBe(false);
+      expect(Array2D.isValidCoords(arr, 0, 1)).toBe(false);
+    });
+  });
+
+  describe('adjacentCells', () => {
+    it('returns four adjacent cells for center cell', () => {
+      const arr = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+      const adjacent = Array2D.adjacentCells(arr, 1, 1);
+      expect(adjacent).toHaveLength(4);
+      expect(adjacent).toContainEqual([1, 0, 2]); // top
+      expect(adjacent).toContainEqual([2, 1, 6]); // right
+      expect(adjacent).toContainEqual([1, 2, 8]); // bottom
+      expect(adjacent).toContainEqual([0, 1, 4]); // left
+    });
+
+    it('returns two adjacent cells for corner', () => {
+      const arr = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+      const adjacent = Array2D.adjacentCells(arr, 0, 0);
+      expect(adjacent).toHaveLength(2);
+      expect(adjacent).toContainEqual([1, 0, 2]); // right
+      expect(adjacent).toContainEqual([0, 1, 4]); // bottom
+    });
+
+    it('returns three adjacent cells for edge', () => {
+      const arr = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+      const adjacent = Array2D.adjacentCells(arr, 1, 0);
+      expect(adjacent).toHaveLength(3);
+      expect(adjacent).toContainEqual([2, 0, 3]); // right
+      expect(adjacent).toContainEqual([1, 1, 5]); // bottom
+      expect(adjacent).toContainEqual([0, 0, 1]); // left
+    });
+
+    it('does not include diagonals', () => {
+      const arr = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+      const adjacent = Array2D.adjacentCells(arr, 1, 1);
+      const coords = adjacent.map(([x, y]) => `${x},${y}`);
+      expect(coords).not.toContain('0,0');
+      expect(coords).not.toContain('2,0');
+      expect(coords).not.toContain('0,2');
+      expect(coords).not.toContain('2,2');
+    });
+
+    it('works with 1x1 array', () => {
+      const arr = [[42]];
+      expect(Array2D.adjacentCells(arr, 0, 0)).toEqual([]);
+    });
+  });
+
+  describe('nearbyCoords', () => {
+    it('returns coordinates at distance 1', () => {
+      const arr = Array2D.create(5, 5);
+      const coords = Array2D.nearbyCoords(arr, 2, 2, 1);
+      expect(coords).toHaveLength(8);
+      expect(coords).toContainEqual([1, 1]);
+      expect(coords).toContainEqual([2, 1]);
+      expect(coords).toContainEqual([3, 1]);
+      expect(coords).toContainEqual([3, 2]);
+      expect(coords).toContainEqual([3, 3]);
+      expect(coords).toContainEqual([2, 3]);
+      expect(coords).toContainEqual([1, 3]);
+      expect(coords).toContainEqual([1, 2]);
+    });
+
+    it('filters out-of-bounds coordinates', () => {
+      const arr = Array2D.create(3, 3);
+      const coords = Array2D.nearbyCoords(arr, 0, 0, 1);
+      coords.forEach(([x, y]) => {
+        expect(Array2D.isValidCoords(arr, x, y)).toBe(true);
+      });
+    });
+
+    it('returns coordinates at distance 2', () => {
+      const arr = Array2D.create(5, 5);
+      const coords = Array2D.nearbyCoords(arr, 2, 2, 2);
+      expect(coords).toContainEqual([0, 0]);
+      expect(coords).toContainEqual([4, 4]);
+    });
+
+    it('returns empty for corner in 1x1 array', () => {
+      const arr = [[42]];
+      expect(Array2D.nearbyCoords(arr, 0, 0, 1)).toEqual([]);
+    });
+  });
+
+  describe('nearbyCells', () => {
+    it('returns cells at distance 1 with values', () => {
+      const arr = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+      const cells = Array2D.nearbyCells(arr, 1, 1, 1);
+      expect(cells).toHaveLength(8);
+      expect(cells).toContainEqual([0, 0, 1]);
+      expect(cells).toContainEqual([1, 0, 2]);
+      expect(cells).toContainEqual([2, 0, 3]);
+      expect(cells).toContainEqual([2, 1, 6]);
+      expect(cells).toContainEqual([2, 2, 9]);
+      expect(cells).toContainEqual([1, 2, 8]);
+      expect(cells).toContainEqual([0, 2, 7]);
+      expect(cells).toContainEqual([0, 1, 4]);
+    });
+
+    it('defaults to distance 1', () => {
+      const arr = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+      const cells = Array2D.nearbyCells(arr, 1, 1);
+      expect(cells).toHaveLength(8);
+    });
+
+    it('filters out-of-bounds cells', () => {
+      const arr = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+      const cells = Array2D.nearbyCells(arr, 0, 0, 1);
+      expect(cells).toHaveLength(3);
+      expect(cells).toContainEqual([1, 0, 2]);
+      expect(cells).toContainEqual([1, 1, 5]);
+      expect(cells).toContainEqual([0, 1, 4]);
+    });
+
+    it('works with 1x1 array', () => {
+      const arr = [[42]];
+      expect(Array2D.nearbyCells(arr, 0, 0, 1)).toEqual([]);
+    });
+  });
 });

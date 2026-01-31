@@ -245,6 +245,93 @@ class Array2D {
     }
     return result;
   }
+
+  /**
+   * Returns true if (x, y) are valid coordinates within the 2D array's bounds.
+   *
+   * @param {any[][]} a 2D array
+   * @param {number} x
+   * @param {number} y
+   * @return {boolean}
+   */
+  static isValidCoords(a, x, y) {
+    const [width, height] = Array2D.size(a);
+    return x >= 0 && y >= 0 && x < width && y < height;
+  }
+
+  /**
+   * Get cells adjacent to the cell at (x, y).
+   *
+   * Each cell is represented by an array of the form [x, y, value].
+   * A cell has at most four adjacent cells, which share one side
+   * (diagonals are not adjacent).
+   *
+   * @param {any[][]} a 2D array
+   * @param {number} x
+   * @param {number} y
+   * @return {[number, number, any][]}
+   */
+  static adjacentCells(a, x, y) {
+    return [[x, y - 1], [x + 1, y], [x, y + 1], [x - 1, y]]
+      .filter(([cx, cy]) => Array2D.isValidCoords(a, cx, cy))
+      .map(([cx, cy]) => [cx, cy, a[cy][cx]]);
+  }
+
+  /**
+   * Returns the coordinates of cells around the cell at (x, y).
+   *
+   * Each cell returned is represented as an array [x, y].
+   * Cells "around" are those reachable by no more than <distance> steps in
+   * any direction, including diagonals. Returns cells on the perimeter
+   * at exactly <distance> steps away.
+   *
+   * @param {any[][]} a 2D array
+   * @param {number} x
+   * @param {number} y
+   * @param {number} distance
+   * @return {[number, number][]}
+   */
+  static nearbyCoords(a, x, y, distance) {
+    const coords = [];
+    // Top
+    for (let i = x - distance; i < x + distance; i += 1) {
+      coords.push([i, y - distance]);
+    }
+    // Right
+    for (let i = y - distance; i < y + distance; i += 1) {
+      coords.push([x + distance, i]);
+    }
+    // Bottom
+    for (let i = x + distance; i > x - distance; i -= 1) {
+      coords.push([i, y + distance]);
+    }
+    // Left
+    for (let i = y + distance; i > y - distance; i -= 1) {
+      coords.push([x - distance, i]);
+    }
+
+    return coords
+      .filter(([cx, cy]) => Array2D.isValidCoords(a, cx, cy));
+  }
+
+  /**
+   * Returns the cells around the cell at (x, y).
+   *
+   * Each cell returned is represented as an array [x, y, value].
+   * Cells "around" are those reachable by no more than <distance> steps in
+   * any direction, including diagonals. Returns cells on the perimeter
+   * at exactly <distance> steps away.
+   *
+   * @param {any[][]} a 2D array
+   * @param {number} x
+   * @param {number} y
+   * @param {number} distance
+   * @return {[number, number, any][]}
+   */
+  static nearbyCells(a, x, y, distance = 1) {
+    return Array2D.nearbyCoords(a, x, y, distance)
+      .map(([cx, cy]) => [cx, cy, a[cy][cx]]);
+  }
 }
 
 module.exports = Array2D;
