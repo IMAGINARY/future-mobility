@@ -1,7 +1,7 @@
 const DataSource = require('./data-source');
 const { allDistancesToTileType } = require('../data/distance');
 const { getTileTypeId } = require('../data/config-helpers');
-const { regionAreas } = require('../data/regions');
+const { findRegions } = require('../data/regions');
 
 class GreenSpacesData extends DataSource {
   constructor(city, config) {
@@ -48,7 +48,8 @@ class GreenSpacesData extends DataSource {
     const parkTileId = getTileTypeId(this.config, 'park');
     const waterTileId = getTileTypeId(this.config, 'water');
 
-    this.areas = regionAreas(this.city.map, [parkTileId, waterTileId]);
+    const { regions } = findRegions(this.city.map.cells, [parkTileId, waterTileId]);
+    this.areas = regions.map((region) => region.length);
   }
 
   calculateProximities() {
