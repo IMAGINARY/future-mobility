@@ -18,7 +18,9 @@
   "scripts": {
     "build": "npx webpack",
     "watch": "npx webpack --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint \"src/**/*.{js,jsx}\" --max-warnings=0",
+    "lint:style": "stylelint \"src/**/*.{css,scss}\""
   },
   "devDependencies": {
     "eslint": "^8.57.1",

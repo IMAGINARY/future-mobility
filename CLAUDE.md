@@ -36,7 +36,7 @@ npm test                 # Run Jest tests
 ## Architecture
 
 ### Entry Points
-- `src/js/main.js` - Standalone demo (runs without server, for GitHub Pages)
+- `src/js/main.js` - Standalone development version (runs without server)
 - `src/js/main-city.js` - City display client
 - `src/js/main-dashboard.js` - Dashboard touchscreen UI
 - `src/js/main-editor.js` - Map editor for development
