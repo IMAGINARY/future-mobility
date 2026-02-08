@@ -247,6 +247,20 @@ class Array2D {
   }
 
   /**
+   * Applies a mapping function to every element, modifying the array in place.
+   *
+   * @param {any[][]} a 2D array to mutate
+   * @param {(value: any, x: number, y: number) => any} callback Function producing the new value
+   */
+  static mapInPlace(a, callback) {
+    for (let y = 0; y < a.length; y += 1) {
+      for (let x = 0; x < a[y].length; x += 1) {
+        a[y][x] = callback(a[y][x], x, y);
+      }
+    }
+  }
+
+  /**
    * Returns true if (x, y) are valid coordinates within the 2D array's bounds.
    *
    * @param {any[][]} a 2D array

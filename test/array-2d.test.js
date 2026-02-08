@@ -531,6 +531,50 @@ describe('Array2D', () => {
     });
   });
 
+  describe('mapInPlace', () => {
+    it('transforms values in place', () => {
+      const arr = [[1, 2], [3, 4]];
+      Array2D.mapInPlace(arr, (val) => val * 2);
+      expect(arr).toEqual([[2, 4], [6, 8]]);
+    });
+
+    it('modifies array in place', () => {
+      const arr = [[1, 2], [3, 4]];
+      const originalRef = arr;
+      Array2D.mapInPlace(arr, (val) => val * 2);
+      expect(arr).toBe(originalRef);
+    });
+
+    it('passes correct coordinates to callback', () => {
+      const arr = [[0, 0], [0, 0]];
+      Array2D.mapInPlace(arr, (val, x, y) => `${x},${y}`);
+      expect(arr).toEqual([['0,0', '1,0'], ['0,1', '1,1']]);
+    });
+
+    it('callback receives current value', () => {
+      const arr = [[10, 20], [30, 40]];
+      const received = [];
+      Array2D.mapInPlace(arr, (val, x, y) => {
+        received.push(val);
+        return val;
+      });
+      expect(received).toEqual([10, 20, 30, 40]);
+    });
+
+    it('works with 1x1 array', () => {
+      const arr = [[5]];
+      Array2D.mapInPlace(arr, (val) => val * 10);
+      expect(arr).toEqual([[50]]);
+    });
+
+    it('can map to different types', () => {
+      const arr = [[1, 2], [3, 4]];
+      Array2D.mapInPlace(arr, (val, x, y) => ({ val, x, y }));
+      expect(arr[0][0]).toEqual({ val: 1, x: 0, y: 0 });
+      expect(arr[1][1]).toEqual({ val: 4, x: 1, y: 1 });
+    });
+  });
+
   describe('isValidCoords', () => {
     it('returns true for valid coordinates', () => {
       const arr = [[1, 2, 3], [4, 5, 6]];
