@@ -5,6 +5,7 @@ const initWinston = require('../lib/init-winston');
 const CfgLoader = require('../../src/js/lib/cfg-loader/cfg-loader');
 const CfgReaderFile = require('../../src/js/lib/cfg-loader/cfg-reader-file');
 const initApp = require('../lib/app');
+const configFiles = require('../../src/js/lib/init/inject-config-files');
 
 const TEST_PORT = 3012;
 
@@ -26,19 +27,7 @@ async function createServer(port, config) {
 
 beforeAll(() => {
   const cfgLoader = new CfgLoader(CfgReaderFile, yaml.load);
-  return cfgLoader.load([
-    '../config/city.yml',
-    '../config/tiles.yml',
-    '../config/variables.yml',
-    '../config/goals.yml',
-    '../config/citizen-requests.yml',
-    '../config/dashboard.yml',
-    '../config/traffic.yml',
-    '../config/cars.yml',
-    '../config/power-ups.yml',
-    '../config/default-settings.yml',
-    '../settings.yml',
-  ])
+  return cfgLoader.load(configFiles.map((name) => `../config/${name}.yml`))
     .then((data) => {
       config = data;
     });

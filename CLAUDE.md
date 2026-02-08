@@ -15,6 +15,7 @@ Key design: The same model classes (`City`, `Grid`, etc.) run in both server and
 npm install              # Install client dependencies
 npm run build            # Build all client apps with Webpack
 npm run watch            # Watch mode for development
+npm test                 # Run Jest tests for shared/client code
 npm run lint             # ESLint check
 npm run lint:style       # Stylelint check
 ```

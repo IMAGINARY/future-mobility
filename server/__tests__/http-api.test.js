@@ -6,25 +6,14 @@ const initWinston = require('../lib/init-winston');
 const initApp = require('../lib/app');
 const CfgLoader = require('../../src/js/lib/cfg-loader/cfg-loader');
 const CfgReaderFile = require('../../src/js/lib/cfg-loader/cfg-reader-file');
+const configFiles = require('../../src/js/lib/init/inject-config-files');
 
 let app = null;
 initWinston({ level: 'quiet' });
 
 beforeAll(() => {
   const cfgLoader = new CfgLoader(CfgReaderFile, yaml.load);
-  return cfgLoader.load([
-    '../config/city.yml',
-    '../config/tiles.yml',
-    '../config/variables.yml',
-    '../config/goals.yml',
-    '../config/citizen-requests.yml',
-    '../config/dashboard.yml',
-    '../config/traffic.yml',
-    '../config/cars.yml',
-    '../config/power-ups.yml',
-    '../config/default-settings.yml',
-    '../settings.yml',
-  ])
+  return cfgLoader.load(configFiles.map((name) => `../config/${name}.yml`))
     .then((config) => {
       return initApp(config);
     })
