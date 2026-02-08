@@ -19,9 +19,13 @@ class ModelManager {
     this.cityMapModeTimer = null;
 
     logger.verbose(`Initializing DataManager with throttle time ${config.dataManager.throttleTime} ms.`);
-    this.stats = new DataManager({
-      throttleTime: config.dataManager.throttleTime,
-    });
+    this.stats = new DataManager(
+      config.cityWidth,
+      config.cityHeight,
+      {
+        throttleTime: config.dataManager.throttleTime,
+      }
+    );
 
     logger.verbose('Registering data sources:');
     dataSrcCfg.dataSources.forEach((DataSource) => {

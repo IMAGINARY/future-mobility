@@ -1,10 +1,14 @@
 const EventEmitter = require('events');
+const TagMap = require('../data/tag-map');
 
 class DataManager {
-  constructor(userOptions = {}) {
+  constructor(cityWidth, cityHeight, userOptions = {}) {
+    this.cityWidth = cityWidth;
+    this.cityHeight = cityHeight;
     this.options = { ...DataManager.DefaultOptions, ...userOptions};
     this.sources = [];
     this.variables = {};
+    this.tagMap = new TagMap(cityWidth, cityHeight);
     this.events = new EventEmitter();
 
     this.calculationPending = false;
@@ -69,10 +73,30 @@ class DataManager {
     }
   }
 
+  clearAllTags() {
+    this.tagMap.clear();
+  }
+
+  setAllTagsForSource(source) {
+    Object.entries(source.getCellTagCheckers())
+      .forEach(([tag, checker]) => {
+        for (let y = 0; y < this.tagMap.height; y += 1) {
+          for (let x = 0; x < this.tagMap.width; x += 1) {
+            if (checker(x, y)) {
+              this.tagMap.set(x, y, tag);
+            }
+          }
+        }
+      });
+  }
+
   calculateAll() {
+    this.clearAllTags();
     this.sources.forEach((source) => {
       source.calculate();
+      this.setAllTagsForSource(source);
     });
+
     this.events.emit('update');
   }
 

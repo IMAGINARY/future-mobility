@@ -67,9 +67,13 @@ const initMapModes = require('./lib/init/init-map-modes');
   app.ticker.add(() => mapView.animate());
   injectTileRenderers(config, mapView);
 
-  const stats = new DataManager({
-    throttleTime: config.dataManager.throttleTime,
-  });
+  const stats = new DataManager(
+    config.cityWidth,
+    config.cityHeight,
+    {
+      throttleTime: config.dataManager.throttleTime,
+    }
+  );
   dataSrcCfg.dataSources.forEach((DataSrc) => {
     stats.registerSource(new DataSrc(city, config));
   });

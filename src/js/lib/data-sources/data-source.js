@@ -37,6 +37,18 @@ class DataSource {
   }
 
   /**
+   * Get a list of cell tag checkers implemented by this data source.
+   *
+   * Provides a map of callbacks that return a function which takes a cell's (x, y) coordinates
+   * and returns a boolean indicating whether the cell has the tag.
+   *
+   * @return {Object.<string, function>}
+   */
+  getCellTagCheckers() {
+    return {};
+  }
+
+  /**
    * Computes the values of all variables provided by this source.
    */
   calculate() {
