@@ -1,3 +1,5 @@
+const { clamp } = require('../helpers/math');
+
 class DataSource {
   #dataManager = null;
 
@@ -60,6 +62,18 @@ class DataSource {
    */
   getGoals() {
     return [];
+  }
+
+  /**
+   * Calculates an index by summing the points of all met goals.
+   * @return {number}
+   */
+  calculateIndex() {
+    const raw = this.getGoals().reduce(
+      (score, goal) => score + (goal.condition ? (goal.points || 0) : 0),
+      0,
+    );
+    return clamp(raw, 1, 5);
   }
 
   goalProgress(currValue, goal) {

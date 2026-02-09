@@ -41,7 +41,7 @@ class GreenSpacesData extends DataSource {
   calculate() {
     this.calculateAreas();
     this.calculateProximities();
-    this.calculateIndex();
+    this.calculateGreenSpacesIndex();
   }
 
   calculateAreas() {
@@ -66,7 +66,7 @@ class GreenSpacesData extends DataSource {
     });
   }
 
-  calculateIndex() {
+  calculateGreenSpacesIndex() {
     const parkTileId = getTileTypeId(this.config, 'park');
     const waterTileId = getTileTypeId(this.config, 'water');
 
