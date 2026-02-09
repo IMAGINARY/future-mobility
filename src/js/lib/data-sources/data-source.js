@@ -69,7 +69,7 @@ class DataSource {
    * @return {number}
    */
   calculateIndex() {
-    const raw = this.getGoals().reduce(
+    const raw = 1 + this.getGoals().reduce(
       (score, goal) => score + (goal.condition ? (goal.points || 0) : 0),
       0,
     );
