@@ -139,6 +139,123 @@ describe('TagMap', () => {
     });
   });
 
+  describe('toCompact()', () => {
+    it('returns empty tags and indices for an empty map', () => {
+      const map = new TagMap(2, 2);
+      const { tags, indices } = map.toCompact();
+      expect(tags).toEqual([]);
+      for (let y = 0; y < 2; y += 1) {
+        for (let x = 0; x < 2; x += 1) {
+          expect(indices[y][x]).toEqual([]);
+        }
+      }
+    });
+
+    it('handles a single-cell single-tag map', () => {
+      const map = new TagMap(1, 1);
+      map.set(0, 0, 'road');
+      const { tags, indices } = map.toCompact();
+      expect(tags).toEqual(['road']);
+      expect(indices[0][0]).toEqual([0]);
+    });
+
+    it('deduplicates shared tags across cells', () => {
+      const map = new TagMap(2, 1);
+      map.set(0, 0, 'road');
+      map.set(0, 0, 'lit');
+      map.set(1, 0, 'road');
+      map.set(1, 0, 'park');
+      const { tags, indices } = map.toCompact();
+      expect(tags).toContain('road');
+      expect(tags).toContain('lit');
+      expect(tags).toContain('park');
+      expect(new Set(tags).size).toBe(tags.length);
+      // Verify indices map back correctly
+      const cell0 = indices[0][0].map((i) => tags[i]);
+      const cell1 = indices[0][1].map((i) => tags[i]);
+      expect(cell0).toEqual(['road', 'lit']);
+      expect(cell1).toEqual(['road', 'park']);
+    });
+
+    it('produces no duplicate entries in tags array', () => {
+      const map = new TagMap(3, 3);
+      for (let x = 0; x < 3; x += 1) {
+        for (let y = 0; y < 3; y += 1) {
+          map.set(x, y, 'shared');
+        }
+      }
+      const { tags } = map.toCompact();
+      expect(tags).toEqual(['shared']);
+    });
+
+    it('cells with no tags produce empty index arrays', () => {
+      const map = new TagMap(2, 2);
+      map.set(0, 0, 'road');
+      const { indices } = map.toCompact();
+      expect(indices[0][1]).toEqual([]);
+      expect(indices[1][0]).toEqual([]);
+      expect(indices[1][1]).toEqual([]);
+    });
+  });
+
+  describe('fromCompact()', () => {
+    it('round-trips through toCompact and fromCompact', () => {
+      const original = new TagMap(3, 2);
+      original.set(0, 0, 'road');
+      original.set(0, 0, 'lit');
+      original.set(1, 0, 'park');
+      original.set(2, 1, 'road');
+      original.set(2, 1, 'residential');
+
+      const { tags, indices } = original.toCompact();
+      const restored = TagMap.fromCompact(3, 2, tags, indices);
+
+      expect(restored.width).toBe(3);
+      expect(restored.height).toBe(2);
+      for (let x = 0; x < 3; x += 1) {
+        for (let y = 0; y < 2; y += 1) {
+          expect(restored.getTags(x, y)).toEqual(original.getTags(x, y));
+        }
+      }
+    });
+
+    it('reconstructs an empty compact representation', () => {
+      const map = new TagMap(2, 2);
+      const { tags, indices } = map.toCompact();
+      const restored = TagMap.fromCompact(2, 2, tags, indices);
+      for (let x = 0; x < 2; x += 1) {
+        for (let y = 0; y < 2; y += 1) {
+          expect(restored.getTags(x, y)).toEqual([]);
+        }
+      }
+    });
+
+    it('reconstructs a 1x1 grid', () => {
+      const map = new TagMap(1, 1);
+      map.set(0, 0, 'solo');
+      const { tags, indices } = map.toCompact();
+      const restored = TagMap.fromCompact(1, 1, tags, indices);
+      expect(restored.getTags(0, 0)).toEqual(['solo']);
+    });
+
+    it('handles all cells sharing the same tags', () => {
+      const map = new TagMap(2, 2);
+      for (let x = 0; x < 2; x += 1) {
+        for (let y = 0; y < 2; y += 1) {
+          map.set(x, y, 'shared');
+          map.set(x, y, 'common');
+        }
+      }
+      const { tags, indices } = map.toCompact();
+      const restored = TagMap.fromCompact(2, 2, tags, indices);
+      for (let x = 0; x < 2; x += 1) {
+        for (let y = 0; y < 2; y += 1) {
+          expect(restored.getTags(x, y)).toEqual(['shared', 'common']);
+        }
+      }
+    });
+  });
+
   describe('clear()', () => {
     it('removes all tags from all cells', () => {
       const map = new TagMap(2, 2);

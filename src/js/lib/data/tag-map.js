@@ -104,6 +104,47 @@ class TagMap {
   clear() {
     Array2D.fill(this.cells, () => []);
   }
+
+  /**
+   * Returns a compact representation of this TagMap where tag strings
+   * are deduplicated into a dictionary and replaced with numeric indices.
+   *
+   * @returns {{ tags: string[], indices: number[][] }} Object with:
+   *   - `tags` — array of all unique tag strings found in the map
+   *   - `indices` — Array2D with the same dimensions, each cell containing
+   *     an array of indices into `tags`
+   */
+  toCompact() {
+    const tagIndex = Array2D.reduce(this.cells, (map, cellTags) => {
+      cellTags.forEach((tag) => {
+        if (!map.has(tag)) map.set(tag, map.size);
+      });
+      return map;
+    }, new Map());
+
+    const tags = [...tagIndex.keys()];
+    const indices = Array2D.map(this.cells, (cellTags) =>
+      cellTags.map((tag) => tagIndex.get(tag)));
+
+    return { tags, indices };
+  }
+
+  /**
+   * Reconstructs a TagMap from a compact representation.
+   *
+   * @param {number} width - Grid width (columns).
+   * @param {number} height - Grid height (rows).
+   * @param {string[]} tags - Array of unique tag strings.
+   * @param {number[][]} indices - Array2D where each cell holds an array
+   *   of indices into `tags`.
+   * @returns {TagMap}
+   */
+  static fromCompact(width, height, tags, indices) {
+    const tagMap = new TagMap(width, height);
+    Array2D.fill(tagMap.cells, (x, y) =>
+      indices[y][x].map((i) => tags[i]));
+    return tagMap;
+  }
 }
 
 module.exports = TagMap;
