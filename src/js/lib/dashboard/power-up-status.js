@@ -39,6 +39,8 @@ class PowerUpStatus {
 
   renderPowerUpThumb(powerUpId) {
     const props = this.config.powerUps[powerUpId];
+    const showImage = this.config.dashboard.powerUps.showImagesInStatusPanel;
+    const imageName = props.image || `${powerUpId}.svg`;
     return (
       $('<div></div>').addClass('powerup')
         .attr('type', 'button')
@@ -50,6 +52,10 @@ class PowerUpStatus {
                 .html(props.title[lang])
             ))
           ))
+        .append(showImage
+          ? $('<div></div>').addClass('image')
+            .attr('style', `background-image: url('static/powerups/${imageName}')`)
+          : null)
         .append($('<button></button>').attr('type', 'button')
           .addClass('btn btn-power-ups-disable')
           .append(

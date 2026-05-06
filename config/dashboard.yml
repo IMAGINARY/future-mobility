@@ -61,6 +61,9 @@ dashboard:
       # If true, the Power-up selector's randomizer will not consider the Power-ups that were used
       # last, unless there are no other Power-ups available.
       hideLastActive: true
+    # If true, the active Power-Up thumbnails in the status panel will include the Power-Up's
+    # image (between the title and the disable button).
+    showImagesInStatusPanel: false
     noneActive:
       text:
         de: 'Keine Power-Ups aktiv'

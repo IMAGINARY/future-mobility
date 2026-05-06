@@ -65,6 +65,16 @@
       }
     }
   }
+
+  .powerup {
+    .image {
+      height: 0;
+      padding-bottom: 40%;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center center;
+    }
+  }
 }
 
 .powerups-selector-main {
