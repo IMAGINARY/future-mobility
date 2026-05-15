@@ -5,6 +5,7 @@ const PencilCursor = require('../../../../static/fa/pencil-alt-solid.svg');
 const SolidColorTileRenderer = require('../tile-renderers/solid-color-tile-renderer');
 const shallowEqual = require('../data/shallow-equal');
 const { logger } = require('../helpers/logger');
+const SpriteGrid = require('./sprite-grid');
 
 class MapView {
   constructor(city, config, textures) {
@@ -23,23 +24,19 @@ class MapView {
 
     this.displayObject = new PIXI.Container();
     this.bgTiles = Array2D.create(this.city.map.width, this.city.map.height, null);
-    this.textureTiles = Array2D.create(this.city.map.width, this.city.map.height, null);
 
     this.city.map.allCells().forEach(([x, y]) => {
       const bgTile = new PIXI.Graphics();
       bgTile.x = x * MapView.TILE_SIZE;
       bgTile.y = y * MapView.TILE_SIZE;
       this.bgTiles[y][x] = bgTile;
-
-      const textureTile = new PIXI.Sprite();
-      textureTile.x = x * MapView.TILE_SIZE + MapView.TILE_SIZE / 2;
-      textureTile.y = y * MapView.TILE_SIZE + MapView.TILE_SIZE / 2;
-      textureTile.width = MapView.TILE_SIZE;
-      textureTile.height = MapView.TILE_SIZE;
-      textureTile.pivot.set(MapView.TILE_SIZE / 2, MapView.TILE_SIZE / 2);
-      textureTile.roundPixels = true;
-      this.textureTiles[y][x] = textureTile;
     });
+
+    this.tileSprites = new SpriteGrid(
+      this.city.map.width,
+      this.city.map.height,
+      MapView.TILE_SIZE
+    );
 
     this.graphicsLayer = new PIXI.Container();
     // PIXI.ColorMatrixFilter is not deprecated, as far as I can tell...
@@ -51,9 +48,7 @@ class MapView {
     this.zoningLayer = new PIXI.Container();
     this.zoningLayer.addChild(...Array2D.flatten(this.bgTiles));
     this.graphicsLayer.addChild(this.zoningLayer);
-    this.tileTextureLayer = new PIXI.Container();
-    this.tileTextureLayer.addChild(...Array2D.flatten(this.textureTiles));
-    this.graphicsLayer.addChild(this.tileTextureLayer);
+    this.graphicsLayer.addChild(this.tileSprites.displayObject);
     this.graphicsOverlayLayer = new PIXI.Container();
     this.graphicsLayer.addChild(this.graphicsOverlayLayer);
     this.dataOverlayLayer = new PIXI.Container();
@@ -208,10 +203,6 @@ class MapView {
     return this.bgTiles[y][x];
   }
 
-  getTextureTile(x, y) {
-    return this.textureTiles[y][x];
-  }
-
   renderTile(x, y, props) {
     if (props.bgColor !== undefined) {
       this.getBgTile(x, y)
@@ -240,13 +231,14 @@ class MapView {
         .endFill();
     }
     if (props.bundle && props.texture) {
-      const textureTile = this.getTextureTile(x, y);
-      textureTile.texture = this.getTexture(props.bundle, props.texture);
-      textureTile.angle = props.textureAngle || 0;
-
-      this.getTextureTile(x, y).visible = true;
+      this.tileSprites.setTexture(
+        x,
+        y,
+        this.getTexture(props.bundle, props.texture),
+        props.textureAngle || 0
+      );
     } else {
-      this.getTextureTile(x, y).visible = false;
+      this.tileSprites.clearTile(x, y);
     }
   }
 
