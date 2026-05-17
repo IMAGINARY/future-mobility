@@ -15,9 +15,16 @@ const W = 6;
 const NW = 7;
 
 class WaterTileRenderer {
-  constructor(mapView, waterTileId, bgBundle = 'water-bg', coastBundle = 'water-coasts') {
+  constructor(
+    mapView,
+    waterTileId,
+    coastMatchTileIds = [waterTileId],
+    bgBundle = 'water-bg',
+    coastBundle = 'water-coasts',
+  ) {
     this.mapView = mapView;
     this.waterTileId = waterTileId;
+    this.coastMatchTileIds = coastMatchTileIds;
     this.bgBundle = bgBundle;
     this.coastBundle = coastBundle;
 
@@ -69,7 +76,9 @@ class WaterTileRenderer {
       bgTexture: `water-tiles-bg-${bgIndex}`,
     };
 
-    const bitmask = Array2D.getBitmask(this.mapView.city.map.cells, x, y, this.waterTileId);
+    const bitmask = Array2D.getBitmask(
+      this.mapView.city.map.cells, x, y, this.coastMatchTileIds, true,
+    );
     const names = this.coastLookup[parseInt(bitmask, 2)];
     if (names) {
       const idx = Math.floor(this.randomMap[y][x] * names.length);

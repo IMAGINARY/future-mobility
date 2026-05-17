@@ -10,7 +10,10 @@ function injectTileRenderers(config, mapView) {
 
   mapView.addTileTypeRenderer(roadTileId, new RoadTileRenderer(mapView, roadTileId));
   mapView.addTileTypeRenderer(parkTileId, new RandomTextureTileRenderer(mapView, 'parks', 'park', 8));
-  mapView.addTileTypeRenderer(waterTileId, new WaterTileRenderer(mapView, waterTileId));
+  mapView.addTileTypeRenderer(
+    waterTileId,
+    new WaterTileRenderer(mapView, waterTileId, [waterTileId, roadTileId]),
+  );
 }
 
 module.exports = injectTileRenderers;
