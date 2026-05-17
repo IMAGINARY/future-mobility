@@ -1,3 +1,11 @@
+// 8 neighbor offsets in N, NE, E, SE, S, SW, W, NW order
+const BITMASK_DIRECTIONS = [
+  [0, -1], [1, -1], [1, 0], [1, 1],
+  [0, 1], [-1, 1], [-1, 0], [-1, -1],
+];
+// Indices into BITMASK_DIRECTIONS picking the 4 cardinals: N, E, S, W
+const CARDINAL_INDICES = [0, 2, 4, 6];
+
 /**
  * This class provides helper functions to work with 2D arrays.
  * (arrays of arrays)
@@ -345,6 +353,64 @@ class Array2D {
   static nearbyCells(a, x, y, distance = 1) {
     return Array2D.nearbyCoords(a, x, y, distance)
       .map(([cx, cy]) => [cx, cy, a[cy][cx]]);
+  }
+
+  /**
+   * Returns an 8-character bitmask string of '0'/'1' in N, NE, E, SE, S, SW, W, NW order.
+   *
+   * A '1' means the neighbor's value is strictly equal (===) to the reference value;
+   * '0' otherwise. Out-of-bounds neighbors are treated as '0'.
+   *
+   * @param {any[][]} a 2D array
+   * @param {number} x
+   * @param {number} y
+   * @param {any} [value=null] Reference value to compare neighbors against.
+   *   If null, uses the value at (x, y).
+   * @return {string} 8-character bitmask string
+   * @throws {Error} If (x, y) is out of bounds.
+   */
+  static getBitmask(a, x, y, value = null) {
+    if (!Array2D.isValidCoords(a, x, y)) {
+      const [width, height] = Array2D.size(a);
+      throw new Error(`(${x}, ${y}) is out of bounds (${width}x${height})`);
+    }
+    const ref = value === null ? a[y][x] : value;
+    return BITMASK_DIRECTIONS.map(([dx, dy]) => {
+      const nx = x + dx;
+      const ny = y + dy;
+      if (!Array2D.isValidCoords(a, nx, ny)) return '0';
+      return a[ny][nx] === ref ? '1' : '0';
+    }).join('');
+  }
+
+  /**
+   * Returns a 4-character bitmask string of '0'/'1' for the cardinal directions
+   * in N, E, S, W order.
+   *
+   * A '1' means the neighbor's value is strictly equal (===) to the reference value;
+   * '0' otherwise. Out-of-bounds neighbors are treated as '0'.
+   *
+   * @param {any[][]} a 2D array
+   * @param {number} x
+   * @param {number} y
+   * @param {any} [value=null] Reference value to compare neighbors against.
+   *   If null, uses the value at (x, y).
+   * @return {string} 4-character bitmask string
+   * @throws {Error} If (x, y) is out of bounds.
+   */
+  static getCardinalBitmask(a, x, y, value = null) {
+    if (!Array2D.isValidCoords(a, x, y)) {
+      const [width, height] = Array2D.size(a);
+      throw new Error(`(${x}, ${y}) is out of bounds (${width}x${height})`);
+    }
+    const ref = value === null ? a[y][x] : value;
+    return CARDINAL_INDICES.map((i) => {
+      const [dx, dy] = BITMASK_DIRECTIONS[i];
+      const nx = x + dx;
+      const ny = y + dy;
+      if (!Array2D.isValidCoords(a, nx, ny)) return '0';
+      return a[ny][nx] === ref ? '1' : '0';
+    }).join('');
   }
 }
 

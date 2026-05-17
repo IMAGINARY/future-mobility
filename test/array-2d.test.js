@@ -728,4 +728,118 @@ describe('Array2D', () => {
       expect(Array2D.nearbyCells(arr, 0, 0, 1)).toEqual([]);
     });
   });
+
+  describe('getCardinalBitmask', () => {
+    // 3x3 map with uniform center cross and distinct corners:
+    //  0 1 0
+    //  1 1 1
+    //  0 1 0
+    const makeCross = () => [
+      [0, 1, 0],
+      [1, 1, 1],
+      [0, 1, 0],
+    ];
+    // 3x3 map with all distinct values
+    const makeDistinct = () => [
+      [1, 2, 3],
+      [4, 5, 6],
+      [7, 8, 9],
+    ];
+
+    it('returns all ones for center of cross pattern', () => {
+      // Center (1,1)=1. N=1, E=1, S=1, W=1
+      expect(Array2D.getCardinalBitmask(makeCross(), 1, 1)).toBe('1111');
+    });
+
+    it('returns all zeros when no neighbors match', () => {
+      expect(Array2D.getCardinalBitmask(makeDistinct(), 1, 1)).toBe('0000');
+    });
+
+    it('returns correct bitmask for E-W corridor', () => {
+      const arr = [
+        [0, 0, 0],
+        [1, 1, 1],
+        [0, 0, 0],
+      ];
+      // Center (1,1)=1. N=0, E=1, S=0, W=1
+      expect(Array2D.getCardinalBitmask(arr, 1, 1)).toBe('0101');
+    });
+
+    it('returns correct bitmask for T-junction', () => {
+      const arr = [
+        [0, 1, 0],
+        [1, 1, 1],
+        [0, 0, 0],
+      ];
+      // Center (1,1)=1. N=1, E=1, S=0, W=1
+      expect(Array2D.getCardinalBitmask(arr, 1, 1)).toBe('1101');
+    });
+
+    it('treats out-of-bounds neighbors as 0', () => {
+      // Top-center (1,0)=1. N=OOB, E=0, S=1, W=0
+      expect(Array2D.getCardinalBitmask(makeCross(), 1, 0)).toBe('0010');
+    });
+
+    it('handles corner cell bitmask', () => {
+      // (0,0)=0. N=OOB, E=1≠0, S=1≠0, W=OOB
+      expect(Array2D.getCardinalBitmask(makeCross(), 0, 0)).toBe('0000');
+    });
+
+    it('uses explicit value parameter when provided', () => {
+      // Center (1,1) with value=0. N=1≠0, E=1≠0, S=1≠0, W=1≠0
+      expect(Array2D.getCardinalBitmask(makeCross(), 1, 1, 0)).toBe('0000');
+    });
+
+    it('throws if the cell is out of bounds', () => {
+      expect(() => Array2D.getCardinalBitmask(makeDistinct(), -1, 0))
+        .toThrow('out of bounds');
+      expect(() => Array2D.getCardinalBitmask(makeDistinct(), 0, 3))
+        .toThrow('out of bounds');
+    });
+  });
+
+  describe('getBitmask', () => {
+    const makeCross = () => [
+      [0, 1, 0],
+      [1, 1, 1],
+      [0, 1, 0],
+    ];
+    const makeDistinct = () => [
+      [1, 2, 3],
+      [4, 5, 6],
+      [7, 8, 9],
+    ];
+
+    it('returns correct bitmask for center of cross pattern', () => {
+      // Center (1,1)=1. Neighbors: N=1, NE=0, E=1, SE=0, S=1, SW=0, W=1, NW=0
+      expect(Array2D.getBitmask(makeCross(), 1, 1)).toBe('10101010');
+    });
+
+    it('returns all zeros when no neighbors match', () => {
+      expect(Array2D.getBitmask(makeDistinct(), 1, 1)).toBe('00000000');
+    });
+
+    it('treats out-of-bounds neighbors as 0', () => {
+      // Top-center (1,0)=1. N=OOB, NE=OOB, E=0, SE=1, S=1, SW=1, W=0, NW=OOB
+      expect(Array2D.getBitmask(makeCross(), 1, 0)).toBe('00011100');
+    });
+
+    it('handles corner cell bitmask', () => {
+      // (0,0)=0. N=OOB, NE=OOB, E=1≠0, SE=1≠0, S=1≠0, SW=OOB, W=OOB, NW=OOB
+      expect(Array2D.getBitmask(makeCross(), 0, 0)).toBe('00000000');
+    });
+
+    it('uses explicit value parameter when provided', () => {
+      // Center (1,1) with value=0 instead of 1.
+      // N=1≠0, NE=0=0, E=1≠0, SE=0=0, S=1≠0, SW=0=0, W=1≠0, NW=0=0
+      expect(Array2D.getBitmask(makeCross(), 1, 1, 0)).toBe('01010101');
+    });
+
+    it('throws if the cell is out of bounds', () => {
+      expect(() => Array2D.getBitmask(makeDistinct(), -1, 0))
+        .toThrow('out of bounds');
+      expect(() => Array2D.getBitmask(makeDistinct(), 0, 3))
+        .toThrow('out of bounds');
+    });
+  });
 });
