@@ -37,6 +37,11 @@ class MapView {
       this.city.map.height,
       MapView.TILE_SIZE
     );
+    this.bgTileSprites = new SpriteGrid(
+      this.city.map.width,
+      this.city.map.height,
+      MapView.TILE_SIZE
+    );
 
     this.graphicsLayer = new PIXI.Container();
     // PIXI.ColorMatrixFilter is not deprecated, as far as I can tell...
@@ -48,6 +53,7 @@ class MapView {
     this.zoningLayer = new PIXI.Container();
     this.zoningLayer.addChild(...Array2D.flatten(this.bgTiles));
     this.graphicsLayer.addChild(this.zoningLayer);
+    this.graphicsLayer.addChild(this.bgTileSprites.displayObject);
     this.graphicsLayer.addChild(this.tileSprites.displayObject);
     this.graphicsOverlayLayer = new PIXI.Container();
     this.graphicsLayer.addChild(this.graphicsOverlayLayer);
@@ -239,6 +245,16 @@ class MapView {
       );
     } else {
       this.tileSprites.clearTile(x, y);
+    }
+    if (props.bgBundle && props.bgTexture) {
+      this.bgTileSprites.setTexture(
+        x,
+        y,
+        this.getTexture(props.bgBundle, props.bgTexture),
+        props.bgTextureAngle || 0
+      );
+    } else {
+      this.bgTileSprites.clearTile(x, y);
     }
   }
 
