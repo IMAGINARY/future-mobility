@@ -358,27 +358,43 @@ class Array2D {
   /**
    * Returns an 8-character bitmask string of '0'/'1' in N, NE, E, SE, S, SW, W, NW order.
    *
-   * A '1' means the neighbor's value is strictly equal (===) to the reference value;
-   * '0' otherwise. Out-of-bounds neighbors are treated as '0'.
+   * A '1' means the neighbor's value matches the reference; '0' otherwise.
+   * By default, out-of-bounds neighbors are treated as '0'; pass
+   * `outOfBoundsMatch=true` to treat them as '1' instead. Matching is strict
+   * equality (===) against a single reference value, or inclusion when the
+   * reference is an array.
    *
    * @param {any[][]} a 2D array
    * @param {number} x
    * @param {number} y
-   * @param {any} [value=null] Reference value to compare neighbors against.
-   *   If null, uses the value at (x, y).
+   * @param {any|any[]} [value=null] Reference value(s) to compare neighbors against.
+   *   If an array, a neighbor matches when its value is included in the array
+   *   (strict equality on each element). If null, uses the value at (x, y).
+   * @param {boolean} [outOfBoundsMatch=false] When true, neighbors outside
+   *   the grid are treated as matches (return '1'). When false (the default),
+   *   they return '0'.
    * @return {string} 8-character bitmask string
    * @throws {Error} If (x, y) is out of bounds.
    */
-  static getBitmask(a, x, y, value = null) {
+  static getBitmask(a, x, y, value = null, outOfBoundsMatch = false) {
     if (!Array2D.isValidCoords(a, x, y)) {
       const [width, height] = Array2D.size(a);
       throw new Error(`(${x}, ${y}) is out of bounds (${width}x${height})`);
     }
     const ref = value === null ? a[y][x] : value;
+    const oobBit = outOfBoundsMatch ? '1' : '0';
+    if (Array.isArray(ref)) {
+      return BITMASK_DIRECTIONS.map(([dx, dy]) => {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (!Array2D.isValidCoords(a, nx, ny)) return oobBit;
+        return ref.includes(a[ny][nx]) ? '1' : '0';
+      }).join('');
+    }
     return BITMASK_DIRECTIONS.map(([dx, dy]) => {
       const nx = x + dx;
       const ny = y + dy;
-      if (!Array2D.isValidCoords(a, nx, ny)) return '0';
+      if (!Array2D.isValidCoords(a, nx, ny)) return oobBit;
       return a[ny][nx] === ref ? '1' : '0';
     }).join('');
   }
@@ -387,28 +403,45 @@ class Array2D {
    * Returns a 4-character bitmask string of '0'/'1' for the cardinal directions
    * in N, E, S, W order.
    *
-   * A '1' means the neighbor's value is strictly equal (===) to the reference value;
-   * '0' otherwise. Out-of-bounds neighbors are treated as '0'.
+   * A '1' means the neighbor's value matches the reference; '0' otherwise.
+   * By default, out-of-bounds neighbors are treated as '0'; pass
+   * `outOfBoundsMatch=true` to treat them as '1' instead. Matching is strict
+   * equality (===) against a single reference value, or inclusion when the
+   * reference is an array.
    *
    * @param {any[][]} a 2D array
    * @param {number} x
    * @param {number} y
-   * @param {any} [value=null] Reference value to compare neighbors against.
-   *   If null, uses the value at (x, y).
+   * @param {any|any[]} [value=null] Reference value(s) to compare neighbors against.
+   *   If an array, a neighbor matches when its value is included in the array
+   *   (strict equality on each element). If null, uses the value at (x, y).
+   * @param {boolean} [outOfBoundsMatch=false] When true, neighbors outside
+   *   the grid are treated as matches (return '1'). When false (the default),
+   *   they return '0'.
    * @return {string} 4-character bitmask string
    * @throws {Error} If (x, y) is out of bounds.
    */
-  static getCardinalBitmask(a, x, y, value = null) {
+  static getCardinalBitmask(a, x, y, value = null, outOfBoundsMatch = false) {
     if (!Array2D.isValidCoords(a, x, y)) {
       const [width, height] = Array2D.size(a);
       throw new Error(`(${x}, ${y}) is out of bounds (${width}x${height})`);
     }
     const ref = value === null ? a[y][x] : value;
+    const oobBit = outOfBoundsMatch ? '1' : '0';
+    if (Array.isArray(ref)) {
+      return CARDINAL_INDICES.map((i) => {
+        const [dx, dy] = BITMASK_DIRECTIONS[i];
+        const nx = x + dx;
+        const ny = y + dy;
+        if (!Array2D.isValidCoords(a, nx, ny)) return oobBit;
+        return ref.includes(a[ny][nx]) ? '1' : '0';
+      }).join('');
+    }
     return CARDINAL_INDICES.map((i) => {
       const [dx, dy] = BITMASK_DIRECTIONS[i];
       const nx = x + dx;
       const ny = y + dy;
-      if (!Array2D.isValidCoords(a, nx, ny)) return '0';
+      if (!Array2D.isValidCoords(a, nx, ny)) return oobBit;
       return a[ny][nx] === ref ? '1' : '0';
     }).join('');
   }

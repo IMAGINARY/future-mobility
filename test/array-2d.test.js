@@ -790,6 +790,50 @@ describe('Array2D', () => {
       expect(Array2D.getCardinalBitmask(makeCross(), 1, 1, 0)).toBe('0000');
     });
 
+    it('matches via inclusion when value is an array', () => {
+      // Center (1,1)=5 on makeDistinct. Cardinals N=2, E=6, S=8, W=4.
+      // [2, 6] → N hit, E hit, S miss, W miss
+      expect(Array2D.getCardinalBitmask(makeDistinct(), 1, 1, [2, 6])).toBe('1100');
+    });
+
+    it('treats single-element array equivalently to a scalar value', () => {
+      expect(Array2D.getCardinalBitmask(makeCross(), 1, 1, [1])).toBe('1111');
+    });
+
+    it('returns all zeros for an empty array', () => {
+      expect(Array2D.getCardinalBitmask(makeCross(), 1, 1, [])).toBe('0000');
+    });
+
+    it('returns all zeros when no array values match', () => {
+      expect(Array2D.getCardinalBitmask(makeDistinct(), 1, 1, [100, 200])).toBe('0000');
+    });
+
+    it('treats out-of-bounds neighbors as 0 in array mode', () => {
+      // Corner (0,0) on makeCross. N=OOB, E=1, S=1, W=OOB. Array [0, 1]:
+      // E hit, S hit
+      expect(Array2D.getCardinalBitmask(makeCross(), 0, 0, [0, 1])).toBe('0110');
+    });
+
+    it('treats out-of-bounds neighbors as 1 when outOfBoundsMatch is true (scalar)', () => {
+      // Corner (0,0) on makeCross. N=OOB→1, E=1→1, S=1→1, W=OOB→1
+      expect(Array2D.getCardinalBitmask(makeCross(), 0, 0, 1, true)).toBe('1111');
+    });
+
+    it('treats out-of-bounds neighbors as 1 when outOfBoundsMatch is true (array)', () => {
+      // Same as above but value is an array
+      expect(Array2D.getCardinalBitmask(makeCross(), 0, 0, [1], true)).toBe('1111');
+    });
+
+    it('does not flip non-matching in-bounds cells when outOfBoundsMatch is true', () => {
+      // Corner (0,0) on makeDistinct, value=999. N=OOB→1, E=2≠999, S=4≠999, W=OOB→1
+      expect(Array2D.getCardinalBitmask(makeDistinct(), 0, 0, 999, true)).toBe('1001');
+    });
+
+    it('matches default behavior when outOfBoundsMatch is explicitly false', () => {
+      expect(Array2D.getCardinalBitmask(makeCross(), 0, 0, 1, false))
+        .toBe(Array2D.getCardinalBitmask(makeCross(), 0, 0, 1));
+    });
+
     it('throws if the cell is out of bounds', () => {
       expect(() => Array2D.getCardinalBitmask(makeDistinct(), -1, 0))
         .toThrow('out of bounds');
@@ -833,6 +877,51 @@ describe('Array2D', () => {
       // Center (1,1) with value=0 instead of 1.
       // N=1≠0, NE=0=0, E=1≠0, SE=0=0, S=1≠0, SW=0=0, W=1≠0, NW=0=0
       expect(Array2D.getBitmask(makeCross(), 1, 1, 0)).toBe('01010101');
+    });
+
+    it('matches via inclusion when value is an array', () => {
+      // Center (1,1)=5 on makeDistinct. Neighbors in N,NE,E,SE,S,SW,W,NW order
+      // are 2,3,6,9,8,7,4,1. Array [2, 6] → N hit, E hit, rest miss.
+      expect(Array2D.getBitmask(makeDistinct(), 1, 1, [2, 6])).toBe('10100000');
+    });
+
+    it('treats single-element array equivalently to a scalar value', () => {
+      expect(Array2D.getBitmask(makeCross(), 1, 1, [1])).toBe('10101010');
+    });
+
+    it('returns all zeros for an empty array', () => {
+      expect(Array2D.getBitmask(makeCross(), 1, 1, [])).toBe('00000000');
+    });
+
+    it('returns all zeros when no array values match', () => {
+      expect(Array2D.getBitmask(makeDistinct(), 1, 1, [100, 200])).toBe('00000000');
+    });
+
+    it('treats out-of-bounds neighbors as 0 in array mode', () => {
+      // Corner (0,0) on makeCross. In-bounds neighbors: E=1, SE=1, S=1.
+      // Array [0, 1] → E hit, SE hit, S hit; all OOB → 0.
+      expect(Array2D.getBitmask(makeCross(), 0, 0, [0, 1])).toBe('00111000');
+    });
+
+    it('treats out-of-bounds neighbors as 1 when outOfBoundsMatch is true (scalar)', () => {
+      // Corner (0,0) on makeCross with value=1, outOfBoundsMatch=true.
+      // N=OOB→1, NE=OOB→1, E=1→1, SE=1→1, S=1→1, SW=OOB→1, W=OOB→1, NW=OOB→1
+      expect(Array2D.getBitmask(makeCross(), 0, 0, 1, true)).toBe('11111111');
+    });
+
+    it('treats out-of-bounds neighbors as 1 when outOfBoundsMatch is true (array)', () => {
+      expect(Array2D.getBitmask(makeCross(), 0, 0, [1], true)).toBe('11111111');
+    });
+
+    it('does not flip non-matching in-bounds cells when outOfBoundsMatch is true', () => {
+      // Corner (0,0) on makeDistinct, value=999. In-bounds E=2, SE=5, S=4 all mismatch.
+      // N=OOB→1, NE=OOB→1, E=2→0, SE=5→0, S=4→0, SW=OOB→1, W=OOB→1, NW=OOB→1
+      expect(Array2D.getBitmask(makeDistinct(), 0, 0, 999, true)).toBe('11000111');
+    });
+
+    it('matches default behavior when outOfBoundsMatch is explicitly false', () => {
+      expect(Array2D.getBitmask(makeCross(), 0, 0, 1, false))
+        .toBe(Array2D.getBitmask(makeCross(), 0, 0, 1));
     });
 
     it('throws if the cell is out of bounds', () => {
