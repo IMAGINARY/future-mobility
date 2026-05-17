@@ -1,6 +1,7 @@
 const { getTileTypeId } = require('../data/config-helpers');
 const RoadTileRenderer = require('../tile-renderers/road-tile-renderer');
 const RandomTextureTileRenderer = require('../tile-renderers/random-texture-tile-renderer');
+const WaterTileRenderer = require('../tile-renderers/water-tile-renderer');
 
 function injectTileRenderers(config, mapView) {
   const roadTileId = getTileTypeId(config, 'road');
@@ -9,7 +10,7 @@ function injectTileRenderers(config, mapView) {
 
   mapView.addTileTypeRenderer(roadTileId, new RoadTileRenderer(mapView, roadTileId));
   mapView.addTileTypeRenderer(parkTileId, new RandomTextureTileRenderer(mapView, 'parks', 'park', 8));
-  mapView.addTileTypeRenderer(waterTileId, new RandomTextureTileRenderer(mapView, 'water', 'water', 8));
+  mapView.addTileTypeRenderer(waterTileId, new WaterTileRenderer(mapView, waterTileId));
 }
 
 module.exports = injectTileRenderers;

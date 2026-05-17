@@ -5,6 +5,7 @@ textures:
       - roads
       - roads-walkable
       - parks
-      - water
       - cars
       - orientation-arrows
+      - water-bg
+      - water-coasts
